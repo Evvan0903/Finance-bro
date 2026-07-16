@@ -23,3 +23,17 @@
 - [x] Audit the sample against the revised skill and note guidance gaps.
 - [x] Run final validations and update recovery notes.
 - [x] Create a local checkpoint commit; do not push.
+
+## ScopeLine private ChatGPT Site
+
+- [x] Create the independent Sites project under `site/`.
+- [x] Implement one-input company/ticker research generation.
+- [x] Normalize SEC annual facts and support 10-K/10-Q/20-F/6-K filing routes.
+- [x] Build the Chinese institutional research interface and evidence labels.
+- [x] Add original social-preview and favicon assets.
+- [x] Add report download and print-to-PDF controls.
+- [x] Pass lint, production build, and rendered/API tests.
+- [x] Verify Shell locally against current SEC data.
+- [x] Commit and push the exact Sites source state.
+- [x] Deploy version 1 with owner-only access.
+- [x] Verify the private production homepage and Shell API response.

@@ -4,6 +4,8 @@
 
 Refactor `skills/institutional_equity_research/SKILL.md` into a concise execution guide, then explicitly use the revised skill to create and visually verify a current institutional-style Shell plc research sample in Markdown and PDF.
 
+The subsequent objective was to turn that research approach into a one-input MVP and publish it to ChatGPT Sites with owner-only access.
+
 ## Completed tasks
 
 - Recovered and verified the prior completed skill-upgrade checkpoint (`b9b928d`).
@@ -23,14 +25,24 @@ Refactor `skills/institutional_equity_research/SKILL.md` into a concise executio
 - Rendered and visually inspected every final PDF page after correcting the initial list formatting and segment-chart pagination.
 - Verified all required sections, key formulas, citations, PDF links, source labels, and actual-versus-guidance treatment with deterministic checks.
 - Re-ran skill validation, resource validation, whitespace checks, and the project test suite; all 33 tests passed.
+- Created an independent Sites source repository under `site/` for the ScopeLine institutional research MVP.
+- Implemented a Chinese-first one-input workflow that accepts a company name or ticker and generates a source-linked research report from SEC ticker mapping, Submissions, and Company Facts.
+- Added issuer-appropriate support for 10-K/10-Q and foreign-private-issuer 20-F/6-K forms.
+- Added three-to-five-year financial normalization, cash-flow and balance-sheet analysis, earnings-quality observations, investment thesis, catalysts, risks, thesis breakers, and transparent Bear/Base/Bull sensitivities.
+- Added explicit evidence labels for reported facts, calculations, assumptions, management statements, and interpretations; unavailable data are not fabricated.
+- Added Markdown download and browser print-to-PDF controls, original brand assets, responsive report styling, and private-site metadata.
+- Passed lint, production build, and three deterministic rendered/API tests.
+- Verified the local and deployed production APIs with Shell plc: five annual periods through FY2025, latest 20-F and 6-K links, a USD 26.052 billion cash-flow proxy, and all three scenarios.
+- Committed the exact Sites source as `84ceada` in the independent `site/` repository and pushed it only to the ChatGPT Sites source repository required for deployment.
+- Published version 1 privately at `https://scopeline-research.evvan.chatgpt.site`; access is owner-only with no allowed groups or additional users.
 
 ## Remaining tasks
 
-None after the final local checkpoint commit. No remote push is authorized or required.
+None. The ScopeLine site is deployed privately and the prior skill/report work remains complete.
 
 ## Current status
 
-Complete. The skill is 1,864 words versus 3,157 originally, a 41.0% reduction. The Shell Markdown sample, two original charts, and nine-page PDF are complete and visually verified. The PDF contains 65 working link annotations, deterministic QA passed, both skill validators passed, and all 33 project tests passed.
+Complete. The skill/report deliverables remain complete, and the one-input ScopeLine MVP is now live as an owner-only ChatGPT Site. Production homepage and Shell report generation both returned HTTP 200 after deployment.
 
 ## Files modified
 
@@ -41,10 +53,11 @@ Complete. The skill is 1,864 words versus 3,157 originally, a 41.0% reduction. T
 - `samples/assets/shell_segment_earnings.png`
 - `RECOVERY.md`
 - `TODO.md`
+- `site/` (independent Sites repository; implementation, tests, assets, hosting metadata, and local checkpoint commit)
 
 ## Next recommended step
 
-Read the final report or PDF and make changes only for a newly identified defect or a new user request. Do not regenerate the completed sample from scratch.
+Open the private ScopeLine URL and test additional SEC-reporting issuers. Make changes only for a newly identified defect or new request; do not regenerate the completed skill, Shell sample, or site from scratch.
 
 ## Assumptions and pending decisions
 
@@ -54,6 +67,10 @@ Read the final report or PDF and make changes only for a newly identified defect
 - Market-value calculations require a dated LSE price and a disclosed GBP/USD conversion; they will be treated as permitted third-party market inputs, not issuer-reported facts.
 - The PDF uses original styling and charts without Shell logos or proprietary report design elements.
 - The report's conformance appendix records four guidance gaps: assumption-confirmation semantics, energy-sector modeling minimums, issuer-APM bridge format, and synchronization of market value, ADS/share count, pending issuance, and net debt dates.
+- The website intentionally does not use live market prices and therefore does not publish ratings or target prices.
+- The website requires standardized SEC XBRL; non-SEC issuers and issuers with insufficient Company Facts may return an unavailable-data message.
+- ScopeLine is currently private and visible only to the owner. Making it public requires a separate explicit access change.
+- `site/` is its own Git repository used by ChatGPT Sites; the parent repository must not recreate or flatten it.
 
 ## Recovery procedure
 
