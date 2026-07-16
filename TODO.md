@@ -20,7 +20,7 @@
 
 ## Unfinished
 
-- [ ] Perform semantic review of the newly written design and asset YAML files.
+- [x] Perform semantic review of the newly written design and asset YAML files.
 - [ ] Create `research_corpus.yaml` with the complete source/rights metadata schema.
 - [ ] Create `patterns/forensic_patterns.yaml` with complete topic coverage and bounded screening labels.
 - [ ] Create `patterns/chart_patterns.yaml` with all seventeen required chart types.
