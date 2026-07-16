@@ -30,7 +30,7 @@
 - [x] Create `patterns/disclosure_patterns.yaml`.
 - [x] Create `patterns/sector_patterns.yaml`.
 - [x] Create `patterns/pattern_provenance.yaml` for every adopted pattern.
-- [ ] Create the deterministic support-resource validation script.
+- [x] Create the deterministic support-resource validation script.
 - [ ] Incrementally update `SKILL.md` after all support libraries exist.
 - [ ] Add the exact ten-level conflict hierarchy and publication-blocking QA.
 - [ ] Add forensic, diligence, credit-style risk, and investment-committee routing.
