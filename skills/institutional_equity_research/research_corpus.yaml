@@ -1,0 +1,587 @@
+version: "1.0"
+purpose: "Metadata-only ledger for legally accessible public materials reviewed to abstract common research methods. It is not a content store, training set, report archive, or source of issuer-specific conclusions."
+access_rules:
+  - "Public access does not establish a redistribution license."
+  - "Record only metadata, original generalized observations, rights assessment, and pinpoint verification references."
+  - "Do not store report prose, figures, tables, screenshots, forecasts, ratings, price targets, branded frameworks, or trade dress."
+  - "Do not bypass a paywall, form, authentication, robots policy, client portal, or technical control."
+  - "Use methodology sources to design workflows; use issuer or authoritative public evidence for issuer-level findings."
+
+sources:
+  - source_id: SRC-001
+    publisher: CFA Institute
+    document_title: Equity Research Report Essentials
+    document_type: public_professional_guidance_pdf
+    publication_date: "2020-09"
+    access_date: "2026-07-15"
+    public_url: "https://www.cfainstitute.org/sites/default/files/-/media/documents/support/research-challenge/challenge/rc-equity-research-report-essentials.pdf"
+    official_domain: true
+    access_status: public
+    redistribution_status: permission_required
+    permitted_use: [structural_observation, analytical_observation, citation_link]
+    prohibited_use: [text_reproduction, chart_reproduction, branding_reproduction, framework_reproduction]
+    sectors: [general]
+    research_categories: [fundamental_equity, valuation, earnings_quality]
+    pages_reviewed: ["pp. 1-4"]
+    notes: "Generalized a report spine linking business economics, industry context, financial analysis, valuation, risks, and disclosures; did not adopt its wording or identity."
+
+  - source_id: SRC-002
+    publisher: CFA Institute Research Foundation
+    document_title: "Equity Valuation: Science, Art, or Craft?"
+    document_type: research_monograph_pdf
+    publication_date: "2017-11"
+    access_date: "2026-07-15"
+    public_url: "https://rpc.cfainstitute.org/-/media/documents/book/rf-publication/2017/rf-v2017-n4-1-pdf.pdf"
+    official_domain: true
+    access_status: public
+    redistribution_status: permission_required
+    permitted_use: [structural_observation, analytical_observation, citation_link]
+    prohibited_use: [text_reproduction, chart_reproduction, table_reproduction, interview_reproduction]
+    sectors: [general]
+    research_categories: [fundamental_equity, valuation, investment_committee]
+    pages_reviewed: ["pp. 1-6", "pp. 11-14", "pp. 28-39", "pp. 84-90", "pp. 104-106", "pp. 135-138"]
+    notes: "Generalized the need to expose valuation assumptions, model limitations, and judgment rather than presenting a model output as fact."
+
+  - source_id: SRC-003
+    publisher: Morningstar
+    document_title: Morningstar Equity Research Methodology
+    document_type: methodology_pdf
+    publication_date: "2022-09-29"
+    access_date: "2026-07-15"
+    public_url: "https://www.morningstar.com/content/dam/marketing/shared/research/methodology/705988Morningstar_Equity_Research_Methodology.pdf"
+    official_domain: true
+    access_status: public
+    redistribution_status: permission_required
+    permitted_use: [structural_observation, analytical_observation, citation_link]
+    prohibited_use: [text_reproduction, diagram_reproduction, rating_reproduction, branded_taxonomy_reproduction]
+    sectors: [general]
+    research_categories: [fundamental_equity, valuation, capital_allocation]
+    pages_reviewed: ["pp. 1-3", "pp. 7-11", "p. 14"]
+    notes: "Generalized a linkage among business durability, cash-flow forecasting, uncertainty, valuation cross-checks, and capital allocation without using proprietary terminology or thresholds."
+
+  - source_id: SRC-004
+    publisher: CFRA Research
+    document_title: CFRA Equity Research Methodology
+    document_type: methodology_webpage
+    publication_date: "2023-11-03"
+    access_date: "2026-07-15"
+    public_url: "https://www.cfraresearch.com/insights/cfra-equity-research-methodology/"
+    official_domain: true
+    access_status: public
+    redistribution_status: permission_required
+    permitted_use: [analytical_observation, citation_link]
+    prohibited_use: [text_reproduction, rating_reproduction, forecast_reproduction, report_format_reproduction]
+    sectors: [general]
+    research_categories: [fundamental_equity, forensic_accounting, legal_regulatory]
+    pages_reviewed: ["HTML methodology page"]
+    notes: "Generalized the value of triangulating issuer fundamentals, sector conditions, accounting review, and regulatory or legal developments."
+
+  - source_id: SRC-005
+    publisher: Value Line
+    document_title: The Value Line 600 Product Guide
+    document_type: educational_product_guide_pdf
+    publication_date: "2018"
+    access_date: "2026-07-15"
+    public_url: "https://investor.valueline.com/hubfs/Guides/1412506_Product_Guide_VL600_WEB.pdf"
+    official_domain: true
+    access_status: public
+    redistribution_status: restricted
+    permitted_use: [structural_observation, citation_link]
+    prohibited_use: [text_reproduction, sample_report_reproduction, ranking_reproduction, layout_reproduction]
+    sectors: [general, consumer]
+    research_categories: [fundamental_equity, report_design, data_presentation]
+    pages_reviewed: ["pp. 1-17"]
+    notes: "Generalized visible actual-versus-estimate treatment, hierarchical layering of summary and detail, and source-aware metric labeling; did not recreate the sample grid or ranks."
+
+  - source_id: SRC-006
+    publisher: University of Iowa Tippie College of Business, Krause Fund
+    document_title: Apple Inc. Equity Report
+    document_type: university_equity_research_pdf
+    publication_date: "2025-11-18"
+    access_date: "2026-07-15"
+    public_url: "https://students.tippie.uiowa.edu/sites/students.tippie.uiowa.edu/files/2026-04/f25_AAPL.pdf"
+    official_domain: true
+    access_status: public
+    redistribution_status: no_reuse_license_identified
+    permitted_use: [structural_observation, citation_link]
+    prohibited_use: [text_reproduction, forecast_reproduction, valuation_reproduction, chart_reproduction, layout_reproduction]
+    sectors: [technology, consumer]
+    research_categories: [fundamental_equity, valuation, report_design]
+    pages_reviewed: ["pp. 1-31"]
+    notes: "Generalized a traceable progression from a decision snapshot to business drivers, financial statements, valuation, risks, bibliography, and appendices."
+
+  - source_id: SRC-007
+    publisher: S&P Global Market Intelligence
+    document_title: Point-In-Time vs. Lagged Fundamentals
+    document_type: quantitative_research_pdf
+    publication_date: "2015-08"
+    access_date: "2026-07-15"
+    public_url: "https://www.spglobal.com/content/dam/spglobal/mi/en/documents/general/sp-capitaliq-quantamental-point-in-time-vs-lagged-fundamentals.pdf"
+    official_domain: true
+    access_status: public
+    redistribution_status: permission_required
+    permitted_use: [analytical_observation, citation_link]
+    prohibited_use: [text_reproduction, data_reproduction, table_reproduction, backtest_reproduction]
+    sectors: [general]
+    research_categories: [data_integrity, fundamental_equity, research_governance]
+    pages_reviewed: ["pp. 1-10", "pp. 26-27"]
+    notes: "Generalized the point-in-time controls that keep reporting period, public release date, retrieval time, revision state, and research cutoff distinct."
+
+  - source_id: SRC-008
+    publisher: J.P. Morgan Global Research
+    document_title: "Mid-year market outlook 2026: The tug of war continues"
+    document_type: public_research_outlook_webpage
+    publication_date: "2026-07-01"
+    access_date: "2026-07-15"
+    public_url: "https://www.jpmorgan.com/insights/global-research/outlook/mid-year-outlook"
+    official_domain: true
+    access_status: public
+    redistribution_status: restricted
+    permitted_use: [structural_observation, analytical_observation, citation_link]
+    prohibited_use: [text_reproduction, forecast_reproduction, chart_reproduction, branding_reproduction]
+    sectors: [general]
+    research_categories: [investment_committee, macro_risk, report_design]
+    pages_reviewed: ["HTML overview and modular sections"]
+    notes: "Generalized short takeaways followed by causal views, countervailing risk, and visible attribution; no forecast or recommendation was retained."
+
+  - source_id: SRC-009
+    publisher: BlackRock Investment Institute
+    document_title: "2025 Midyear Global Outlook: Getting a grip on uncertainty"
+    document_type: public_global_outlook_pdf
+    publication_date: "2025-07-01"
+    access_date: "2026-07-15"
+    public_url: "https://www.blackrock.com/ca/institutional/en/literature/market-commentary/bii-global-outlook-2025-midyear-en-ca.pdf"
+    official_domain: true
+    access_status: public
+    redistribution_status: permission_required
+    permitted_use: [structural_observation, analytical_observation, citation_link]
+    prohibited_use: [text_reproduction, chart_reproduction, framework_reproduction, branding_reproduction]
+    sectors: [general]
+    research_categories: [investment_committee, macro_risk, report_design]
+    pages_reviewed: ["summary and selected theme sections"]
+    notes: "Generalized explicit horizon separation, stated evidence conditions, and object-level source and methodology notes."
+
+  - source_id: SRC-010
+    publisher: S&P Global Ratings
+    document_title: Corporate Methodology
+    document_type: corporate_credit_methodology_webpage
+    publication_date: "2024-01-07"
+    access_date: "2026-07-15"
+    public_url: "https://www.spglobal.com/ratings/en/regulatory/article/-/view/sourceId/12913251"
+    official_domain: true
+    access_status: public
+    redistribution_status: restricted
+    permitted_use: [analytical_observation, citation_link]
+    prohibited_use: [text_reproduction, rating_methodology_reproduction, score_reproduction, branding_reproduction]
+    sectors: [general, industrials, consumer, energy, real_estate, technology, healthcare]
+    research_categories: [credit_risk, liquidity, debt, governance]
+    pages_reviewed: ["public methodology page"]
+    notes: "Generalized separate business-risk and financial-risk review, cash-flow and leverage analysis, liquidity sources and uses, capital structure, management, and sector adjustments."
+
+  - source_id: SRC-011
+    publisher: Fitch Ratings
+    document_title: Corporate Rating Criteria
+    document_type: corporate_credit_criteria_pdf
+    publication_date: "2026-01-09"
+    access_date: "2026-07-15"
+    public_url: "https://assets.fitchratings.com/downloadFile?reportType=report&sfReport=false&slug=corporate-finance%2Fcorporate-rating-criteria-09-01-2026"
+    official_domain: true
+    access_status: public
+    redistribution_status: restricted
+    permitted_use: [analytical_observation, citation_link]
+    prohibited_use: [text_reproduction, rating_criteria_reproduction, formula_reproduction, branding_reproduction]
+    sectors: [general]
+    research_categories: [credit_risk, liquidity, debt, cash_flow_quality]
+    pages_reviewed: ["pp. 23-24", "pp. 63-66"]
+    notes: "Generalized the need to distinguish freely available cash, restricted cash, factoring effects, cash-flow definitions, debt maturity, and committed facilities."
+
+  - source_id: SRC-012
+    publisher: Office of the Comptroller of the Currency
+    document_title: Commercial Loans, Comptroller's Handbook
+    document_type: government_supervisory_handbook_webpage
+    publication_date: "1998"
+    access_date: "2026-07-15"
+    public_url: "https://www.occ.treas.gov/publications-and-resources/publications/comptrollers-handbook/files/commercial-loans/index-commercial-loans.html"
+    official_domain: true
+    access_status: public
+    redistribution_status: government_public_record
+    permitted_use: [structural_observation, analytical_observation, citation_link]
+    prohibited_use: [misrepresenting_as_current_issuer_analysis, out_of_context_reproduction]
+    sectors: [financials, general]
+    research_categories: [public_side_diligence, credit_risk, underwriting]
+    pages_reviewed: ["HTML overview and review objectives"]
+    notes: "Generalized a review discipline based on scope, information completeness, underwriting changes, product volume, market focus, and evidence trails."
+
+  - source_id: SRC-013
+    publisher: Stanford Long-Term Investing Initiative and Addepar
+    document_title: Investment Memos and Decision-Making
+    document_type: institutional_process_pdf
+    publication_date: "undated_public_pdf"
+    access_date: "2026-07-15"
+    public_url: "https://longterminvesting.stanford.edu/sites/g/files/sbiybj23856/files/media/file/addepar-investment-memos-and-decision-making.pdf"
+    official_domain: true
+    access_status: public
+    redistribution_status: no_reuse_license_identified
+    permitted_use: [structural_observation, analytical_observation, citation_link]
+    prohibited_use: [text_reproduction, template_reproduction, branded_process_reproduction]
+    sectors: [general]
+    research_categories: [investment_committee, decision_process, governance]
+    pages_reviewed: ["pp. 8-12"]
+    notes: "Generalized a decision memo process with consistent evidence, explicit pros and cons, critique, assumptions, dissent, and post-decision review."
+
+  - source_id: SRC-014
+    publisher: CFA Institute
+    document_title: Elements of an Investment Policy Statement for Institutional Investors
+    document_type: policy_position_paper
+    publication_date: "2010-05-01"
+    access_date: "2026-07-15"
+    public_url: "https://rpc.cfainstitute.org/policy/positions/elements-of-an-investment-policy-statement-for-institutional-investors"
+    official_domain: true
+    access_status: public
+    redistribution_status: permission_required
+    permitted_use: [structural_observation, analytical_observation, citation_link]
+    prohibited_use: [text_reproduction, policy_template_reproduction, branding_reproduction]
+    sectors: [general]
+    research_categories: [investment_committee, governance, risk_management]
+    pages_reviewed: ["public position page and linked paper"]
+    notes: "Generalized decision roles, objectives, benchmark context, risk limits, governance, and accountability as distinct memo inputs."
+
+  - source_id: SRC-015
+    publisher: UConn School of Business Student Managed Fund
+    document_title: SMF Team White Spring 2024 IAB Report
+    document_type: university_investment_committee_report_pdf
+    publication_date: "2024-05-06"
+    access_date: "2026-07-15"
+    public_url: "https://smf-business.media.uconn.edu/wp-content/uploads/sites/818/2024/07/SMF-UG-Team-White-Spring-2024-Report.pdf"
+    official_domain: true
+    access_status: public
+    redistribution_status: no_reuse_license_identified
+    permitted_use: [structural_observation, citation_link]
+    prohibited_use: [text_reproduction, holdings_reproduction, chart_reproduction, report_layout_reproduction]
+    sectors: [general]
+    research_categories: [investment_committee, portfolio_risk, report_design]
+    pages_reviewed: ["pp. 1-20"]
+    notes: "Generalized a documented challenge loop: initial proposal, group review, unresolved research questions, reconvening, and decision record."
+
+  - source_id: SRC-016
+    publisher: U.S. Securities and Exchange Commission
+    document_title: Xerox Corporation, Accounting and Auditing Enforcement Release 1542
+    document_type: government_enforcement_release
+    publication_date: "2002-04-11"
+    access_date: "2026-07-15"
+    public_url: "https://www.sec.gov/enforcement-litigation/litigation-releases/lr-17465"
+    official_domain: true
+    access_status: public
+    redistribution_status: government_public_record
+    permitted_use: [analytical_observation, factual_citation, citation_link]
+    prohibited_use: [implying_current_conduct, ratio_as_proof, unsupported_issuer_analogy]
+    sectors: [general]
+    research_categories: [forensic_accounting, revenue_quality, governance]
+    pages_reviewed: ["release page"]
+    notes: "Generalized the need to investigate unusual revenue timing, allocation, reserves, controls, and restatement disclosures while preserving allegation and settlement context."
+
+  - source_id: SRC-017
+    publisher: U.S. Securities and Exchange Commission
+    document_title: Qwest Communications International Inc., Accounting and Auditing Enforcement Release 2127
+    document_type: government_enforcement_release
+    publication_date: "2004-10-21"
+    access_date: "2026-07-15"
+    public_url: "https://www.sec.gov/enforcement-litigation/litigation-releases/lr-18936"
+    official_domain: true
+    access_status: public
+    redistribution_status: government_public_record
+    permitted_use: [analytical_observation, factual_citation, citation_link]
+    prohibited_use: [implying_current_conduct, ratio_as_proof, unsupported_issuer_analogy]
+    sectors: [telecommunications, general]
+    research_categories: [forensic_accounting, revenue_quality, expense_quality, related_parties]
+    pages_reviewed: ["release page"]
+    notes: "Generalized contextual questions around recurring revenue presentation, upfront recognition, side arrangements, capitalization, and related-party disclosures."
+
+  - source_id: SRC-018
+    publisher: U.S. Securities and Exchange Commission, Division of Corporation Finance
+    document_title: Non-GAAP Financial Measures Compliance and Disclosure Interpretations
+    document_type: staff_guidance_webpage
+    publication_date: "updated 2022-12-13"
+    access_date: "2026-07-15"
+    public_url: "https://www.sec.gov/rules-regulations/staff-guidance/corporation-finance-interpretations/non-gaap-financial-measures"
+    official_domain: true
+    access_status: public
+    redistribution_status: government_public_record
+    permitted_use: [analytical_observation, factual_citation, citation_link]
+    prohibited_use: [mechanical_misconduct_test, legal_conclusion_without_review]
+    sectors: [general]
+    research_categories: [forensic_accounting, earnings_quality, non_gaap]
+    pages_reviewed: ["current C&DI page"]
+    notes: "Generalized review of recurring exclusions, reconciliation, labeling, prominence, and changing adjustment definitions without turning guidance into a misconduct score."
+
+  - source_id: SRC-019
+    publisher: U.S. Securities and Exchange Commission, Division of Corporation Finance
+    document_title: Financial Reporting Manual Topic 4, Change in Accountants and Non-Reliance
+    document_type: staff_manual_webpage
+    publication_date: "current public manual page"
+    access_date: "2026-07-15"
+    public_url: "https://www.sec.gov/about/divisions-offices/division-corporation-finance/financial-reporting-manual/frm-topic-4"
+    official_domain: true
+    access_status: public
+    redistribution_status: government_public_record
+    permitted_use: [analytical_observation, factual_citation, citation_link]
+    prohibited_use: [legal_conclusion_without_review, treating_amendment_as_restatement]
+    sectors: [general]
+    research_categories: [forensic_accounting, governance, reporting_risk]
+    pages_reviewed: ["sections 4500-4600"]
+    notes: "Generalized evidence routing for Item 4.01, Item 4.02, Exhibit 16, disagreements, reportable events, and non-reliance, with issuer filing review required."
+
+  - source_id: SRC-020
+    publisher: Financial Accounting Standards Board
+    document_title: Accounting Standards Update 2022-04, Disclosure of Supplier Finance Program Obligations
+    document_type: accounting_standard_update_pdf
+    publication_date: "2022-09"
+    access_date: "2026-07-15"
+    public_url: "https://storage.fasb.org/ASU%202022-04.pdf"
+    official_domain: true
+    access_status: public
+    redistribution_status: restricted
+    permitted_use: [analytical_observation, citation_link]
+    prohibited_use: [codification_reproduction, accounting_conclusion_without_issuer_facts]
+    sectors: [general]
+    research_categories: [forensic_accounting, cash_flow_quality, liquidity, supplier_diligence]
+    pages_reviewed: ["full ASU, disclosure and transition sections"]
+    notes: "Generalized a supplier-finance review of terms, balance-sheet presentation, outstanding obligations, rollforward, working-capital effects, and liquidity."
+
+  - source_id: SRC-021
+    publisher: Public Company Accounting Oversight Board
+    document_title: AS 2201, An Audit of Internal Control Over Financial Reporting
+    document_type: auditing_standard_webpage
+    publication_date: "current public standard page"
+    access_date: "2026-07-15"
+    public_url: "https://pcaobus.org/oversight/standards/auditing-standards/details/AS2201"
+    official_domain: true
+    access_status: public
+    redistribution_status: permission_required
+    permitted_use: [analytical_observation, citation_link]
+    prohibited_use: [audit_procedure_reproduction, audit_opinion_inference, misconduct_conclusion]
+    sectors: [general]
+    research_categories: [forensic_accounting, governance, internal_controls]
+    pages_reviewed: ["current standard page"]
+    notes: "Generalized the importance of material-weakness disclosures, control environment, management override, estimates, unusual transactions, and remediation status."
+
+  - source_id: SRC-022
+    publisher: Public Company Accounting Oversight Board
+    document_title: AS 2410, Related Parties
+    document_type: auditing_standard_webpage
+    publication_date: "current public standard page"
+    access_date: "2026-07-15"
+    public_url: "https://pcaobus.org/oversight/standards/auditing-standards/details/AS2410"
+    official_domain: true
+    access_status: public
+    redistribution_status: permission_required
+    permitted_use: [analytical_observation, citation_link]
+    prohibited_use: [audit_procedure_reproduction, audit_opinion_inference, misconduct_conclusion]
+    sectors: [general]
+    research_categories: [forensic_accounting, governance, related_parties]
+    pages_reviewed: ["current standard page"]
+    notes: "Generalized a public-filings screen for business purpose, authorization, unusual terms, extended payments, guarantees, and disclosed related-party balance changes."
+
+  - source_id: SRC-023
+    publisher: CFA Institute
+    document_title: Evaluating Quality of Financial Reports
+    document_type: professional_learning_webpage
+    publication_date: "2026"
+    access_date: "2026-07-15"
+    public_url: "https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/evaluating-quality-financial-reports"
+    official_domain: true
+    access_status: public
+    redistribution_status: permission_required
+    permitted_use: [analytical_observation, citation_link]
+    prohibited_use: [text_reproduction, framework_reproduction, issuer_conclusion_without_evidence]
+    sectors: [general]
+    research_categories: [forensic_accounting, earnings_quality, cash_flow_quality]
+    pages_reviewed: ["public refresher reading"]
+    notes: "Generalized the distinction between earnings quality and reporting quality, including accruals, persistence, cash conversion, one-off items, and balance-sheet completeness."
+
+  - source_id: SRC-024
+    publisher: Deloitte
+    document_title: "Roadmap: Goodwill and Intangible Assets"
+    document_type: accounting_methodology_landing_page
+    publication_date: "2025-09"
+    access_date: "2026-07-15"
+    public_url: "https://dart.deloitte.com/USDART/home/publications/roadmap/goodwill"
+    official_domain: true
+    access_status: public_reference_page
+    redistribution_status: restricted
+    permitted_use: [metadata, citation_link]
+    prohibited_use: [download_circumvention, text_reproduction, table_reproduction, methodology_reproduction]
+    sectors: [general]
+    research_categories: [forensic_accounting, balance_sheet_risk, acquisition_accounting]
+    pages_reviewed: ["public landing page only"]
+    notes: "Recorded only a high-level reference for goodwill and intangible-asset judgment; no restricted content was accessed or ingested."
+
+  - source_id: SRC-025
+    publisher: Dechow, Ge, Larson, and Sloan
+    document_title: Predicting Material Accounting Misstatements
+    document_type: academic_working_paper_landing_page
+    publication_date: "2010-05-24"
+    access_date: "2026-07-15"
+    public_url: "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=997483"
+    official_domain: false
+    access_status: public
+    redistribution_status: restricted
+    permitted_use: [analytical_observation, citation_link]
+    prohibited_use: [text_reproduction, table_reproduction, approximate_score_reproduction, misconduct_conclusion]
+    sectors: [general]
+    research_categories: [forensic_accounting, earnings_quality, academic_research]
+    pages_reviewed: ["abstract and author-posted paper reference"]
+    notes: "Generalized the need to use published screening models only when every variable, scaling convention, and validation requirement is available; a screen is not proof."
+
+  - source_id: SRC-026
+    publisher: CalPERS
+    document_title: Investment Office Policies
+    document_type: institutional_policy_webpage
+    publication_date: "current public policy page"
+    access_date: "2026-07-15"
+    public_url: "https://www.calpers.ca.gov/investments/about-investment-office/policies"
+    official_domain: true
+    access_status: public
+    redistribution_status: no_reuse_license_identified
+    permitted_use: [structural_observation, analytical_observation, citation_link]
+    prohibited_use: [policy_reproduction, governance_claim_without_scope, branding_reproduction]
+    sectors: [general]
+    research_categories: [investment_committee, governance, risk_management, liquidity]
+    pages_reviewed: ["policy page and total-fund policy sections"]
+    notes: "Generalized visible ownership of beliefs, allocation constraints, benchmarks, risk management, leverage, liquidity, and governance."
+
+  - source_id: SRC-027
+    publisher: S&P Global Ratings
+    document_title: Industry Credit Outlook 2026
+    document_type: industry_credit_outlook_hub
+    publication_date: "2026-01-14"
+    access_date: "2026-07-15"
+    public_url: "https://www.spglobal.com/ratings/en/research/sectors/corporates/industry-credit-outlook"
+    official_domain: true
+    access_status: public
+    redistribution_status: restricted
+    permitted_use: [structural_observation, analytical_observation, citation_link]
+    prohibited_use: [outlook_reproduction, forecast_reproduction, rating_reproduction, branding_reproduction]
+    sectors: [industrials, consumer, energy, real_estate, technology, healthcare, utilities, telecommunications]
+    research_categories: [credit_risk, industry_analysis, report_design]
+    pages_reviewed: ["public hub and capital-goods example page"]
+    notes: "Generalized concise cross-sector cards that put demand, pricing, capex, cash flow, leverage, and policy risk beside the outlook frame."
+
+  - source_id: SRC-028
+    publisher: Morgan Stanley Investment Management
+    document_title: "Stock Market Outlook 2025: Can the Bull Run Persist?"
+    document_type: public_research_commentary_webpage
+    publication_date: "2025-02-19"
+    access_date: "2026-07-15"
+    public_url: "https://www.morganstanley.com/insights/articles/stock-market-outlook-2025"
+    official_domain: true
+    access_status: public
+    redistribution_status: restricted
+    permitted_use: [structural_observation, analytical_observation, citation_link]
+    prohibited_use: [text_reproduction, forecast_reproduction, chart_reproduction, branding_reproduction]
+    sectors: [general]
+    research_categories: [fundamental_equity, macro_risk, report_design]
+    pages_reviewed: ["HTML article"]
+    notes: "Generalized author attribution, front-loaded takeaways, a stated base view, supporting evidence, monitoring indicators, and visible limitations."
+
+  - source_id: SRC-029
+    publisher: Goldman Sachs Research
+    document_title: The S&P 500 is forecast to return 10% in 2025
+    document_type: public_research_summary_webpage
+    publication_date: "2024-11-26"
+    access_date: "2026-07-15"
+    public_url: "https://www.goldmansachs.com/insights/articles/the-s-and-p-500-is-forecast-to-return-10-percent-in-2025"
+    official_domain: true
+    access_status: public
+    redistribution_status: restricted
+    permitted_use: [structural_observation, analytical_observation, citation_link]
+    prohibited_use: [text_reproduction, forecast_reproduction, chart_reproduction, branding_reproduction]
+    sectors: [general]
+    research_categories: [fundamental_equity, valuation, macro_risk]
+    pages_reviewed: ["HTML article"]
+    notes: "Generalized a question-led organization that separates macro assumptions, earnings, valuation context, baseline view, downside risks, and thematic observations."
+
+  - source_id: SRC-030
+    publisher: Chief Investment Office, Merrill / Bank of America
+    document_title: Capital Market Outlook - September 15, 2025
+    document_type: public_weekly_capital_markets_pdf
+    publication_date: "2025-09-15"
+    access_date: "2026-07-15"
+    public_url: "https://mlaem.fs.ml.com/content/dam/ML/ecomm/pdf/CMO_Merrill_09-15-2025_ada.pdf"
+    official_domain: true
+    access_status: public
+    redistribution_status: restricted
+    permitted_use: [structural_observation, analytical_observation, citation_link]
+    prohibited_use: [text_reproduction, chart_reproduction, icon_reproduction, color_system_reproduction, branding_reproduction]
+    sectors: [general]
+    research_categories: [investment_committee, macro_risk, data_presentation]
+    pages_reviewed: ["front-page summary, selected modules, and disclosures"]
+    notes: "Generalized issue summaries, bounded research modules, evidence-to-implication sidebars, and object-level source and as-of labeling."
+
+  - source_id: SRC-031
+    publisher: Citi Wealth
+    document_title: "Wealth Outlook 2025: Growth Amid Discord"
+    document_type: public_flagship_outlook_pdf
+    publication_date: "2024-12-11"
+    access_date: "2026-07-15"
+    public_url: "https://www.docs.citi.com/WealthOCIO/WealthOutlook2025.pdf"
+    official_domain: true
+    access_status: public
+    redistribution_status: restricted
+    permitted_use: [structural_observation, analytical_observation, citation_link]
+    prohibited_use: [text_reproduction, chart_reproduction, table_reproduction, forecast_reproduction, branding_reproduction]
+    sectors: [general]
+    research_categories: [investment_committee, valuation, report_design]
+    pages_reviewed: ["contents, executive framing, selected chapters, and disclosures"]
+    notes: "Generalized separation of strategic and tactical horizons, visible actual-versus-estimate treatment, and charts with source, date, caveat, and method notes."
+
+  - source_id: SRC-032
+    publisher: Fidelity Institutional
+    document_title: Fourth Quarter 2025 Quarterly Market Update
+    document_type: institutional_market_update_webpage
+    publication_date: "2025-10-16"
+    access_date: "2026-07-15"
+    public_url: "https://institutional.fidelity.com/institutions/insights/topics/market-commentary/fourth-quarter-2025-quarterly-market-update"
+    official_domain: true
+    access_status: public
+    redistribution_status: restricted
+    permitted_use: [structural_observation, analytical_observation, citation_link]
+    prohibited_use: [text_reproduction, presentation_reproduction, chart_reproduction, branding_reproduction]
+    sectors: [general]
+    research_categories: [investment_committee, macro_risk, portfolio_risk]
+    pages_reviewed: ["HTML summary and linked presentation metadata"]
+    notes: "Generalized a layered reading sequence that starts with concise summary buckets before expanding into macro, business-cycle, valuation, and resilience detail."
+
+  - source_id: SRC-033
+    publisher: S&P Global Ratings
+    document_title: "Global Credit Outlook 2025: Promise and Peril"
+    document_type: public_global_credit_outlook_pdf
+    publication_date: "2024-12-04"
+    access_date: "2026-07-15"
+    public_url: "https://www.spglobal.com/_assets/documents/ratings/research/101609737.pdf"
+    official_domain: true
+    access_status: public
+    redistribution_status: restricted
+    permitted_use: [structural_observation, analytical_observation, citation_link]
+    prohibited_use: [text_reproduction, chart_reproduction, forecast_reproduction, rating_reproduction, branding_reproduction]
+    sectors: [general]
+    research_categories: [credit_risk, macro_risk, scenario_analysis]
+    pages_reviewed: ["global thesis, risk matrix, selected scenario and disclosure pages"]
+    notes: "Generalized a question-to-relevance-to-transmission-to-evidence sequence and a risk matrix that gives scenarios more analytical weight than decoration."
+
+  - source_id: SRC-034
+    publisher: UBS Global Wealth Management
+    document_title: Investment opportunities for the new year
+    document_type: public_cio_commentary_webpage
+    publication_date: "2025-01-10"
+    access_date: "2026-07-15"
+    public_url: "https://www.ubs.com/global/en/wealthmanagement/insights/marketnews/article.1797883.html"
+    official_domain: true
+    access_status: public
+    redistribution_status: restricted
+    permitted_use: [structural_observation, citation_link]
+    prohibited_use: [text_reproduction, forecast_reproduction, chart_reproduction, branding_reproduction]
+    sectors: [general]
+    research_categories: [investment_committee, freshness_control, report_design]
+    pages_reviewed: ["HTML article and displayed freshness status"]
+    notes: "Generalized explicit freshness labeling and a compact immediate-positioning-to-supporting-evidence-to-recap structure; did not retain outdated conclusions."

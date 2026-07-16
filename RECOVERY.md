@@ -21,11 +21,11 @@ Incrementally upgrade `skills/institutional_equity_research/SKILL.md` into a pub
 - Created the manifest-gated asset registry in `assets/asset_manifest.yaml`.
 - Parsed all ten currently present skill YAML files successfully with PyYAML after correcting flow-list quoting in `section_blueprints.yaml`.
 - Semantically reviewed the design and asset layer against the requested layout, visual-grammar, asset-manifest, and sector-motif requirements.
+- Created and validated `research_corpus.yaml` with 34 public-source metadata entries, complete required fields, unique source IDs, conservative reuse boundaries, and no report-content storage.
 - Stopped all active implementation work at a completed patch boundary when the checkpoint was requested.
 
 ## Remaining tasks
 
-- Create `research_corpus.yaml` from the completed source ledgers, with every required metadata and rights field.
 - Create `patterns/forensic_patterns.yaml` and cover every requested revenue, expense, cash-flow, balance-sheet, governance, and reporting-risk topic.
 - Create the remaining pattern files: `chart_patterns.yaml`, `table_patterns.yaml`, `layout_patterns.yaml`, `writing_patterns.yaml`, `disclosure_patterns.yaml`, and `sector_patterns.yaml`.
 - Create `patterns/pattern_provenance.yaml` for every adopted pattern.
@@ -38,7 +38,7 @@ Incrementally upgrade `skills/institutional_equity_research/SKILL.md` into a pub
 
 ## Current status
 
-Checkpointed mid-upgrade. The gap analysis, core archetype/blueprint layer, analytical patterns, diligence library, benchmark cases, and initial design/asset resources exist on disk. All ten present YAML files parse successfully, and the design/asset layer semantically covers the requested layout archetypes, all 18 visual types, manifest gate, asset directories, and sector motifs. `SKILL.md` itself has deliberately not yet been changed, because the request requires supporting libraries to be created before the concise routing update. The skill remains usable in its original form, while the new support files are not yet wired into it.
+Checkpointed mid-upgrade. The gap analysis, core archetype/blueprint layer, analytical patterns, diligence library, benchmark cases, design/asset resources, and a 34-source rights-aware corpus exist on disk. All present YAML files parse successfully, and the design/asset layer semantically covers the requested layout archetypes, all 18 visual types, manifest gate, asset directories, and sector motifs. `SKILL.md` itself has deliberately not yet been changed, because the request requires supporting libraries to be created before the concise routing update. The skill remains usable in its original form, while the new support files are not yet wired into it.
 
 No remote push has been performed. No full third-party reports, report pages, screenshots, branded visuals, proprietary ratings, forecasts, target prices, or copied layouts were added.
 
@@ -54,6 +54,7 @@ No remote push has been performed. No full third-party reports, report pages, sc
 - `skills/institutional_equity_research/design/visual_grammar.yaml`
 - `skills/institutional_equity_research/design/sector_visual_motifs.yaml`
 - `skills/institutional_equity_research/assets/asset_manifest.yaml`
+- `skills/institutional_equity_research/research_corpus.yaml`
 - `RECOVERY.md`
 - `TODO.md`
 
@@ -61,7 +62,7 @@ The existing `skills/institutional_equity_research/SKILL.md` was inspected but n
 
 ## Next recommended step
 
-Read this file and `TODO.md`, inspect the latest local commit, and compare the committed tree with these notes. Then create `research_corpus.yaml` from the reviewed public-source ledger before creating `forensic_patterns.yaml`. Resume only the unchecked work; do not regenerate or overwrite the completed gap audit, archetypes, section blueprints, analytical patterns, diligence patterns, benchmarks, or design/asset resources unless validation identifies a specific defect.
+Read this file and `TODO.md`, inspect the latest local commit, and compare the committed tree with these notes. Then create `patterns/forensic_patterns.yaml` from the reviewed methodology ledger, preserving deterministic calculations, alternative explanations, limits, and non-accusatory labels. Resume only the unchecked work; do not regenerate or overwrite the completed gap audit, archetypes, section blueprints, analytical patterns, diligence patterns, benchmarks, design/asset resources, or corpus unless validation identifies a specific defect.
 
 ## Assumptions and pending decisions
 
