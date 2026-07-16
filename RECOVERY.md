@@ -2,92 +2,57 @@
 
 ## Original objective
 
-Incrementally upgrade `skills/institutional_equity_research/SKILL.md` into a public-source, research-pattern learning system for institutional equity research, forensic accounting, public-side due diligence, earnings quality, credit-style risk review, and investment-committee memos. The upgrade must abstract functional methods without copying protected expression or trade dress, add structured supporting YAML libraries and design/asset controls, validate every resource, and preserve the existing skill rather than replace it.
+Refactor `skills/institutional_equity_research/SKILL.md` into a concise execution guide, then explicitly use the revised skill to create and visually verify a current institutional-style Shell plc research sample in Markdown and PDF.
 
 ## Completed tasks
 
-- Read the full upgrade request and the existing `SKILL.md`.
-- Read and followed the Codex `skill-creator` instructions.
-- Performed the required pre-edit gap audit and saved it as `gap_analysis.yaml`.
-- Completed public-source research across fundamental research, valuation, investment-committee process, credit methodology, forensic accounting, reporting quality, and public-side diligence.
-- Confirmed the governing rights rule: public access does not imply redistribution permission; store source metadata and original observations only.
-- Created the required directory skeleton for patterns, design resources, assets, benchmarks, and validation scripts.
-- Created six report archetypes in `patterns/report_archetypes.yaml`.
-- Created section contracts in `patterns/section_blueprints.yaml`, including the requested report sections plus evidence-for/evidence-against committee sections.
-- Created twelve reusable analytical chains in `patterns/analytical_patterns.yaml`.
-- Created all seventeen public-side diligence categories and the bounded finding schema in `patterns/diligence_patterns.yaml`.
-- Created five cross-sector benchmark cases in `benchmarks/benchmark_cases.yaml`.
-- Created initial design-system resources in `design/layout_tokens.yaml`, `design/visual_grammar.yaml`, and `design/sector_visual_motifs.yaml`.
-- Created the manifest-gated asset registry in `assets/asset_manifest.yaml`.
-- Parsed all ten currently present skill YAML files successfully with PyYAML after correcting flow-list quoting in `section_blueprints.yaml`.
-- Semantically reviewed the design and asset layer against the requested layout, visual-grammar, asset-manifest, and sector-motif requirements.
-- Created and validated `research_corpus.yaml` with 34 public-source metadata entries, complete required fields, unique source IDs, conservative reuse boundaries, and no report-content storage.
-- Created and validated `patterns/forensic_patterns.yaml` with 38 deterministic public-filings screens, full required topic coverage, explicit alternative explanations, source routing, and non-accusatory signal labels.
-- Created and validated the six complementary pattern libraries: 17 chart patterns, 10 table patterns, 8 layout patterns, 7 writing patterns, 8 disclosure blocks, and 9 sector patterns; all existing referenced IDs resolve.
-- Created and validated `patterns/pattern_provenance.yaml`, covering all 166 adopted pattern, layout, visual, and motif IDs plus all 29 section-blueprint IDs through 24 rights-reviewed provenance sets.
-- Created and ran `scripts/validate_resources.py`; it validates required resources, YAML parsing, corpus metadata, forensic contracts, reference resolution, provenance coverage, asset manifest gating, benchmark coverage, terminology, and named-style prohibition.
-- Incrementally extended `SKILL.md` from 254 to 335 lines with concise resource routing, public-research rules, archetype/diligence/forensic/credit/IC execution, original design controls, the required ten-level conflict hierarchy, and a publication-blocking QA gate; both resource and skill validation pass.
-- Completed the final integrity checks: resource validation passed, skill-creator quick validation passed, terminology/prohibited-claim, copyright, asset-manifest, and provenance checks passed, and the unrelated project suite passed 33 tests.
-- Forward-tested the skill in a fresh subagent context with a generic public-side software diligence request; it selected `AR-002`, routed resources correctly, applied bounded findings and disclosures, and required no follow-up change.
-- Prepared the final skill directory tree and required implementation handoff; the local working tree is clean and all work is captured in local checkpoint commits.
-- Stopped all active implementation work at a completed patch boundary when the checkpoint was requested.
+- Recovered and verified the prior completed skill-upgrade checkpoint (`b9b928d`).
+- Read the complete `skill-creator` and PDF skill instructions.
+- Counted the original `SKILL.md` at 3,157 words.
+- Rewrote `SKILL.md` in place to 1,864 words, a 41.0% reduction.
+- Consolidated repeated policy, provenance, asset, publication-control, and QA material while retaining the requested analytical workflow and controls.
+- Included the requested single copyright red line and single missing-data rule exactly once each.
+- Validated the revised skill with the skill-creator quick validator and the repository resource validator.
+- Read the revised skill completely and began applying it to Shell plc with a research cutoff of July 15, 2026.
+- Collected issuer-appropriate evidence from Shell's FY2025 Form 20-F, FY2025 annual report, Q1 2026 IAS 34 results, July 2026 Q2 update, investor materials, and official transaction releases.
+- Confirmed that Shell is a foreign private issuer using Form 20-F and Form 6-K rather than domestic Form 10-K and Form 10-Q.
 
 ## Remaining tasks
 
-None. Implementation, validation, forward testing, and the final handoff preparation are complete.
+- Finish deterministic historical, segment, cash-flow, earnings-quality, scenario, and valuation calculations.
+- Create original report tables and charts.
+- Write `samples/shell_equity_research_sample.md`.
+- Create `samples/shell_equity_research_sample.pdf` using the project's PDF-capable environment.
+- Render and inspect every PDF page and correct any visual defects.
+- Audit the sample against the revised skill and document any unclear, restrictive, or missing guidance.
+- Run final repository checks and create the next local checkpoint commit without pushing.
 
 ## Current status
 
-Complete. The gap analysis, core archetype/blueprint layer, analytical patterns, diligence library, benchmark cases, design/asset resources, a 34-source rights-aware corpus, a 38-test forensic library, the complete chart/table/layout/writing/disclosure/sector pattern layer, full pattern provenance, deterministic resource validation, and an incrementally extended `SKILL.md` exist on disk. All present YAML files parse successfully; `SKILL.md` is 335 lines, resource and skill-creator validation pass, 33 project tests pass, and fresh-context forward testing passed without refinements. The support files are wired into the existing skill without replacing its original Sections 1–26.
+Part 1 is complete and validated. Part 2 research is in progress; no Shell sample artifact has yet been finalized at this checkpoint.
 
-No remote push has been performed. No full third-party reports, report pages, screenshots, branded visuals, proprietary ratings, forecasts, target prices, or copied layouts were added.
+## Files modified
 
-## Files modified or created for this upgrade
-
-- `skills/institutional_equity_research/gap_analysis.yaml`
-- `skills/institutional_equity_research/patterns/report_archetypes.yaml`
-- `skills/institutional_equity_research/patterns/section_blueprints.yaml`
-- `skills/institutional_equity_research/patterns/analytical_patterns.yaml`
-- `skills/institutional_equity_research/patterns/diligence_patterns.yaml`
-- `skills/institutional_equity_research/benchmarks/benchmark_cases.yaml`
-- `skills/institutional_equity_research/design/layout_tokens.yaml`
-- `skills/institutional_equity_research/design/visual_grammar.yaml`
-- `skills/institutional_equity_research/design/sector_visual_motifs.yaml`
-- `skills/institutional_equity_research/assets/asset_manifest.yaml`
-- `skills/institutional_equity_research/research_corpus.yaml`
-- `skills/institutional_equity_research/patterns/forensic_patterns.yaml`
-- `skills/institutional_equity_research/patterns/chart_patterns.yaml`
-- `skills/institutional_equity_research/patterns/table_patterns.yaml`
-- `skills/institutional_equity_research/patterns/layout_patterns.yaml`
-- `skills/institutional_equity_research/patterns/writing_patterns.yaml`
-- `skills/institutional_equity_research/patterns/disclosure_patterns.yaml`
-- `skills/institutional_equity_research/patterns/sector_patterns.yaml`
-- `skills/institutional_equity_research/patterns/pattern_provenance.yaml`
-- `skills/institutional_equity_research/scripts/validate_resources.py`
+- `skills/institutional_equity_research/SKILL.md`
 - `RECOVERY.md`
 - `TODO.md`
 
-The existing `skills/institutional_equity_research/SKILL.md` was extended in place after all supporting libraries were created and validated.
-
 ## Next recommended step
 
-Read this file and `TODO.md`, inspect the latest local commit, and compare the committed tree with these notes. The upgrade is complete; make changes only for a newly identified defect or a new user request. Do not regenerate or overwrite completed resources.
+Complete and verify the deterministic Shell calculation table, then use it as the single numerical source for the Markdown report, charts, and PDF.
 
 ## Assumptions and pending decisions
 
-- All public research sources are methodology/provenance references only unless an explicit compatible reuse license is recorded.
-- Quantitative forensic thresholds are configurable screening heuristics, not legal, GAAP, audit, fraud, or misconduct thresholds.
-- Issuer-level findings must cite issuer or authoritative public evidence; methodology documents cannot prove an issuer-specific finding.
-- Public-side diligence cannot claim complete verification and must label matters outside public scope.
-- Asset folders may remain empty; every future asset must be original or properly licensed and registered in `asset_manifest.yaml` before use.
-- The exact report-style implementation should remain original and generic; named institutional style imitation is prohibited.
-- No product-code integration was requested in this phase; the primary deliverable is the upgraded reusable skill and its support resources.
+- Research cutoff is July 15, 2026; Q1 2026 is the latest reported quarter, while the July 7 Q2 update is management guidance rather than reported results.
+- FY2025 and Q1 2026 issuer figures are primarily USD and may not sum because of rounding.
+- Scenario values will be explicitly labeled analyst assumptions and will use transparent enterprise cash-flow proxy formulas rather than unsupported target-price precision.
+- Market-value calculations require a dated LSE price and a disclosed GBP/USD conversion; they will be treated as permitted third-party market inputs, not issuer-reported facts.
+- The PDF will use original styling and charts without Shell logos or proprietary report design elements.
 
-## Recovery procedure for the next session
+## Recovery procedure
 
-1. Read `RECOVERY.md`.
-2. Read `TODO.md`.
-3. Inspect the latest local commit.
-4. Compare the repository with the recovery notes.
-5. Resume only unfinished work.
-6. Never restart the project from scratch or overwrite completed work.
+1. Read `RECOVERY.md` and `TODO.md` completely.
+2. Inspect the latest local commit and working tree.
+3. Treat the repository as the source of truth.
+4. Resume only the first unchecked task.
+5. Preserve existing code and do not push checkpoint commits.

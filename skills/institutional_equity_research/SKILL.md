@@ -1,335 +1,134 @@
 ---
 name: institutional-equity-research
-description: Build original, source-backed institutional-style equity research, earnings-quality reviews, public-side due diligence reports, credit-style risk analysis, forensic accounting screens, and investment-committee memos from public filings and licensed inputs. Use when analyzing a public company, normalizing financial history, testing reporting quality, writing an evidence-led thesis, creating transparent forecasts or valuation scenarios, designing cited charts and tables, or running numerical, citation, provenance, visual, and copyright QA on an equity-research deliverable.
+description: Create source-backed institutional-style equity research, earnings-quality reviews, public-side diligence, forensic screens, credit-style risk analysis, and investment-committee memos for listed companies. Use when Codex must normalize filings, analyze historical and segment performance, build transparent forecasts or valuation scenarios, formulate a falsifiable thesis, or produce cited research tables, charts, Markdown, or PDF outputs.
 ---
 
 # Institutional Equity Research
 
-## 1. Purpose
+## Objective and execution sequence
 
-Create an original, reproducible institutional-style research report. Lead with the decision-relevant view, then show the verified evidence, assumptions, calculations, uncertainties, and sources that support it. Treat the SEC record as the primary factual foundation for U.S. issuers.
+Create original, decision-useful research whose evidence and calculations can be reproduced. Lead with the investment view, then show supporting and conflicting evidence, uncertainty, and what would change the conclusion.
 
-Use this execution sequence:
+1. Define the issuer, security, audience, research date, point-in-time data cutoff, requested periods, currency, forecast horizon, and deliverable.
+2. Identify the issuer's jurisdiction, accounting basis, fiscal calendar, listing structure, and filing status. Use the forms appropriate to the issuer; for example, do not treat a foreign private issuer as a U.S. domestic 10-K/10-Q filer.
+3. Inventory primary filings and amendments available by the cutoff. Record source dates, reporting periods, accessions or stable URLs, and retrieval dates.
+4. Extract, normalize, and reconcile the statements, segments, KPIs, guidance, capital structure, and material filing text before drawing conclusions.
+5. Analyze the business model, historical performance, earnings quality, industry position, thesis, catalysts, and risks.
+6. Build forecasts, scenarios, and valuation only from visible inputs and deterministic formulas supported by the available evidence.
+7. Draft conclusion-first prose and original analytical tables or charts. Explain why every major finding matters to an investor.
+8. Run the final QA checklist and state sources, limitations, unresolved questions, and data freshness.
 
-1. Define issuer eligibility, requested filing scope, data cutoff, forecast horizon, permitted inputs, and intended audience.
-2. Inventory filings through the cutoff date and record originals, amendments, report periods, and accessions.
-3. Snapshot permitted sources with retrieval metadata and populate the source ledger.
-4. Extract and normalize reported facts and filing text; keep raw provenance.
-5. Reconcile statements, periods, units, restatements, and any derived quarters before analysis.
-6. Obtain user approval for material user-entered or AI-suggested assumptions before valuation.
-7. Draft from the verified research object, then validate claims and citations.
-8. Run numerical, citation, freshness, visual, missing-data, licensing, and copyright QA before export.
+## Sources and point-in-time discipline
 
-## 2. Legal and copyright boundaries
+Classify every research input as `Reported fact`, `Management statement`, `Assumption`, `Derived calculation`, or `Interpretation`. Do not let an assumption or interpretation overwrite a reported fact.
 
-- Study public research only to infer functional conventions.
-- Do not copy wording, forecasts, ratings, target prices, charts, layouts, logos, color systems, named frameworks, or analyst voice.
-- Treat public access as distinct from a reuse license.
-- Do not bypass paywalls, authentication, download controls, or client portals.
-- Do not imply affiliation, endorsement, or equivalence to a financial institution.
-- Use `institutional-style research report`; do not name an institution as the style source.
+Use this source hierarchy:
 
-## 3. Source hierarchy
-
-Classify every input as `Observed evidence`, `User assumption`, `Derived calculation`, or `Interpretation`. Only observed evidence participates in this reliability hierarchy:
-
-1. SEC XBRL facts tied to an accession and reporting period.
-2. SEC filing text and exhibits.
-3. Company investor-relations materials.
-4. Government and regulator data.
-5. Properly licensed third-party data.
-6. Public third-party analysis with clear usage boundaries.
-Do not let a lower-ranked source silently override a higher-ranked source. User assumptions never overwrite observed evidence; store them separately. Derived calculations must name their formula and cited inputs. Interpretations must link to supporting evidence and remain clearly labeled.
+1. Issuer filings and filing-level XBRL tied to the relevant period and filing.
+2. Issuer annual/interim reports, results releases, presentations, and other official investor-relations materials.
+3. Government, regulator, exchange, and official industry data.
+4. Permitted third-party datasets with transparent methodology.
+5. Public third-party analysis used only as secondary context.
 
-Use XBRL as an extraction layer, not an automatic override of the rendered filing. When tags, face statements, amendments, later recasts, or filing text conflict, stop automatic selection, preserve both records, and send the item to review. Record source rights or permitted-use status for investor-relations materials, third-party exhibits, and external research.
+Prefer the rendered filing when XBRL tags, dimensions, or contexts conflict with the face statements or notes. Do not let a lower-ranked source silently override a higher-ranked source. Preserve both records when a conflict cannot be resolved and describe the effect on the analysis.
 
-## 4. Standard report architecture
+Lock the cutoff before analysis. Information published after that cutoff may be mentioned only as a separately dated subsequent event; do not use it to rewrite the point-in-time view. For each material source, retain title, issuer or publisher, document type or form, filing/publication date, reporting period, accession when applicable, stable URL, and retrieval date. Cite the original source rather than a search result or aggregator whenever possible.
 
-Use this order unless the assignment requires a narrower deliverable:
-
-1. Research Dashboard
-2. Company Overview
-3. Historical Financial Performance
-4. Segment and KPI Analysis
-5. Management Commentary
-6. Industry and Competitive Position
-7. Forecast and Scenarios
-8. Valuation
-9. Catalysts and Risks
-10. Appendix, QA, Sources, and Disclosures
+## Financial normalization and calculation discipline
 
-Show company, ticker, exchange, industry, publication date, data cutoff, currency, fiscal basis, version, and freshness status on the first page.
+Create a normalized research table before computing trends. For every value, retain the issuer, statement or note, concept, period start/end, duration or instant context, unit, scale, currency, sign convention, dimensions, filing date, form, amendment status, and source.
 
-## 5. Company-overview analysis
+- Compare like periods and keep annual, quarterly, and year-to-date observations distinct.
+- Convert scales explicitly and identify the exchange-rate source and date for any currency conversion. Do not mix reporting and trading currencies without a labeled bridge.
+- Normalize presentation signs without losing the reported sign. State whether capex, debt, and cash outflows appear as positive magnitudes or negative cash-flow values.
+- Prefer the latest valid amendment or issuer recast for the same period, retain the superseded value, and explain material changes. Treat a restatement as a new version of history, not a current-period operating movement.
+- Adjust per-share history for disclosed stock splits and identify material fiscal-calendar or reporting-perimeter changes.
+- Use filing-level XBRL or filing text for custom concepts, dimensions, segments, and KPIs. Map custom tags only when their definitions are economically equivalent.
+- Derive a discrete quarter only from compatible year-to-date values: `Discrete quarter = current YTD - prior-quarter YTD`. Label it `Derived calculation` and cite both inputs.
+- Use deterministic arithmetic outside the language model. For each derived metric, show the formula, input periods, units, and rounding. Treat a zero or missing denominator as unavailable.
 
-- Explain how the company earns revenue and incurs major costs.
-- Identify products, services, segments, geographies, customers, end markets, and capital intensity only when disclosed.
-- Separate filing facts from interpretation.
-- State `Not disclosed` when the source does not support a requested dimension.
-
-## 6. Historical financial analysis
+> Do not fabricate missing financial values. Use `Data unavailable`, `Not disclosed`, `Insufficient public data`, or `Unable to calculate from available filings`.
 
-- Use three to five annual periods and available discrete quarters.
-- Analyze revenue, profitability, cash conversion, working capital, balance-sheet quality, leverage, liquidity, capital allocation, dilution, and unusual items.
-- Reconcile reported and derived figures.
-- Compare like periods and units; never mix annual, quarterly, and year-to-date values.
-- Explain earnings quality through the relationship among earnings, operating cash flow, free cash flow, and working capital.
-- Select facts deterministically using accession, form, report period, start/end context, duration or instant type, fiscal frame, unit, dimensions, amendment status, and filing date.
-- Prefer the latest valid amendment or issuer recast for the same disclosed period, but retain the superseded record and explain the change.
-- Normalize stock splits and fiscal-calendar changes explicitly. Do not treat custom tags as equivalent to standard tags without a documented semantic mapping.
-- Company Facts covers entity-wide standard-taxonomy facts only. Use filing-level XBRL or filing text for custom concepts, dimensions, segments, and KPIs; otherwise mark them unavailable.
-- Derive a discrete quarter from compatible year-to-date facts only with a deterministic subtraction rule and label it `Derived quarter`. Do not infer a missing quarter from narrative or trends.
-
-## 7. Segment analysis
-
-- Use reported segment measures and retain their taxonomy or filing source.
-- Reconcile segment totals to consolidated amounts within a stated tolerance.
-- Do not force cross-company comparability when segment definitions differ.
-- Mark segment data unavailable when dimension extraction is incomplete.
-
-## 8. Industry analysis
-
-- Describe industry structure, demand drivers, cyclicality, regulation, capacity, pricing, and substitution using cited evidence.
-- Separate company disclosures from licensed external industry data.
-- State the limitation when no external industry dataset is configured.
+## Report architecture
 
-## 9. Competitive-positioning analysis
-
-- Link each claimed advantage or pressure to observable evidence.
-- Analyze switching costs, scale, cost position, network effects, intellectual property, distribution, customer concentration, and capital requirements only where relevant.
-- Avoid unsupported market-share or moat claims.
-
-## 10. Management-guidance analysis
-
-- Preserve the exact reporting period, metric definition, range, date, and source.
-- Distinguish guidance from historical results, consensus, user assumptions, and AI suggestions.
-- Compare language over time only with cited filing excerpts.
-- Do not fabricate or paraphrase a quotation as though it were verbatim.
-
-## 11. Forecast methodology
-
-- Build forecasts from visible revenue, margin, tax, reinvestment, working-capital, and share-count assumptions.
-- Label each assumption `Company guidance`, `Historical trend`, `User assumption`, `AI-suggested assumption`, or `System-calculated`.
-- Keep actuals and forecasts in separate fields and label periods `A` and `E`.
-- Never allow an AI-suggested value to replace company or user input silently.
-- Keep every calculation deterministic. An AI may propose a numeric assumption only as a visibly labeled draft, and that value requires explicit user approval before it enters a valuation.
-- Record forecast horizon, approval status, source date, and rationale for every material assumption.
-- Use `Unable to calculate from available filings` when required inputs are absent.
-
-## 12. Valuation methodology
-
-- Use methods appropriate to the business and available data.
-- Show the complete DCF bridge: revenue, margin, tax, depreciation and amortization, capex, working-capital change, unlevered free cash flow, discount rate, terminal growth, terminal value, enterprise value, net debt, equity value, shares, and per-share value.
-- Reconcile valuation methods rather than averaging them mechanically.
-- Require a dated diluted share count and net-debt position. Require sourced or user-entered market price only for price-relative analysis, and peer multiples only when using relative valuation.
-- Show the discount-rate method, terminal-value method, and sensitivity table. Require discount rate to exceed terminal growth and disclose the share-count date.
-- State peer-selection criteria and reject hidden or unlicensed peer data.
-- Use `Valuation Assessment` and `Model-Implied Value Range`; do not generate a rating by default.
-
-## 13. Investment-thesis methodology
-
-- Limit the front-page thesis to three to five falsifiable points.
-- Connect each point through driver, operating effect, financial-statement effect, and valuation implication.
-- Explain what may be under- or over-discounted without claiming access to proprietary market expectations.
-- Attach a source marker to every material factual premise.
+Adapt depth to the assignment while keeping a traceable decision path:
 
-## 14. Catalyst methodology
-
-- Use dated or observable events.
-- State the expected transmission from event to operating result or valuation.
-- Separate near-term and medium-term catalysts.
-- Do not list generic positives as catalysts.
-
-## 15. Risk methodology
+1. Research dashboard: issuer, security, exchange, research date, data cutoff, currency, fiscal basis, latest reported period, valuation reference date, and three to five headline findings.
+2. Company and business model: revenue drivers, cost structure, segments, geographies, customers, capital intensity, and economic sensitivities that are actually disclosed.
+3. Historical financial performance: three to five annual periods plus useful recent interim periods.
+4. Segment and KPI analysis: reported measures, reconciliations, definition changes, and mix implications.
+5. Cash flow, capex, balance sheet, liquidity, and shareholder returns.
+6. Earnings quality: cash conversion, working capital, non-operating items, impairments, provisions, acquisitions/disposals, adjusted measures, and share dilution.
+7. Industry and competitive context based on cited evidence.
+8. Three to five falsifiable thesis points, catalysts, key risks, and thesis-breaking conditions.
+9. Forecasts, bull/base/bear scenarios, and valuation assessment when supported.
+10. Sources, formulas, limitations, and unresolved questions.
 
-- Classify company, industry, macro, regulatory, accounting, liquidity, and valuation risks.
-- Rank material risks by likelihood and impact when evidence permits.
-- Include leading indicators and thesis-breaking conditions.
-- Pair each risk with the assumption or thesis point it threatens.
-
-## 16. Bull/base/bear methodology
-
-- Change a small set of explicit, causal assumptions across scenarios.
-- Keep formulas identical across scenarios.
-- Make the base case the central visible assumption set, not a hidden default.
-- Show scenario dependencies and probability only when the user supplies or approves probabilities.
+## Historical, segment, and earnings-quality analysis
 
-## 17. Chart-design rules
+Analyze revenue, operating profit, margins, tax, net income, operating cash flow, cash capital expenditure, free cash flow, working capital, debt, net debt, pensions or other material obligations, liquidity, dividends, repurchases, and diluted shares where available. Define non-GAAP or issuer-adjusted measures and reconcile them to reported measures when the issuer supplies a bridge.
 
-- Give every chart one analytical job.
-- Use an interpretive title, units, period frequency, source, and as-of date.
-- Distinguish actuals and estimates with line style, marker, and label, not color alone.
-- Use lines for trends, bars for comparisons, waterfalls for bridges, and matrices for likelihood/impact.
-- Use a zero baseline for absolute bars and avoid misleading truncated axes.
-- Omit or label missing observations; do not connect across unsupported gaps.
-- Provide a text or table equivalent for decision-relevant visuals.
-- Select a matching recipe from `patterns/chart_patterns.yaml` before drafting a chart; do not use a chart merely to increase visual density.
+Use formulas consistently, for example:
 
-## 18. Table-design rules
+- `Growth = current / prior - 1`
+- `Margin = profit measure / revenue`
+- `Cash conversion = operating cash flow / net income` when both measures are comparable and the denominator is positive
+- `Free cash flow proxy = operating cash flow - cash capital expenditure`
+- `Net debt = interest-bearing debt - cash and cash equivalents`, adjusted only for clearly identified items
 
-- Put periods in columns or rows consistently across the report.
-- Label actual and forecast periods directly.
-- Use one currency and scale per table.
-- Align decimals, use parentheses for negatives when appropriate, and display `—` for unavailable values.
-- Place source and calculation notes immediately below the table.
-- Select a matching contract from `patterns/table_patterns.yaml` when a table carries a material reconciliation, forecast, diligence finding, forensic screen, or source ledger.
+Explain material movements through price, volume, mix, margins, working capital, portfolio changes, financing, tax, or other disclosed drivers. Separate recurring operating performance from commodity or foreign-exchange effects, one-offs, accounting estimates, and management-defined adjustments. A numerical correlation is not a causal explanation.
 
-## 19. Citation standards
+Use the issuer's reported segment definitions. Reconcile segment totals to consolidated results or explain corporate items, eliminations, and definition differences. Compare segment trends only across periods with consistent definitions; show recasts where available. For KPIs, retain the exact definition, scope, period basis, and any definition change. Do not force cross-company comparability when definitions differ.
 
-- Give each source a stable identifier.
-- Store title, type, form, filing date, reporting period, accession, URL, and retrieval timestamp.
-- Cite material facts at paragraph level and charts/tables at object level.
-- Cite system calculations to their source inputs and formula definition.
-- Never fabricate a URL, accession, quotation, or citation marker.
+Assess earnings quality by linking reported earnings to cash generation and balance-sheet movements. Investigate large gaps among net income, operating cash flow, and the free-cash-flow proxy; working-capital releases; recurring exclusions from adjusted earnings; capitalization or provision changes; impairments and reversals; acquisition/disposal gains; tax volatility; and dilution. Present alternative explanations and distinguish a monitoring signal from a conclusion about intent.
 
-## 20. Image-use standards
+## Forecasts and scenarios
 
-- Create original charts from public or properly licensed data.
-- Do not copy institutional report charts, screenshots, illustrations, or logos.
-- Use decorative imagery only when it communicates necessary context and licensing permits use.
-- Add accessible text for every decision-relevant image.
-- Use `assets/asset_manifest.yaml` as a hard gate: do not place a non-data asset until its complete manifest entry is approved.
+Build forecasts from causal operating drivers rather than extrapolating a headline growth rate. Show revenue or volume, pricing, margins, tax, depreciation, capex, working capital, financing, and share-count assumptions as applicable. Label each period `A` for actual or `E` for estimate and each assumption as `Company guidance`, `Historical trend`, `User assumption`, or `Analyst assumption`. Keep assumptions visible beside the resulting calculations and obtain user confirmation before using material user-entered or AI-suggested inputs in a requested valuation.
 
-## 21. Institutional writing standards
+Use identical formulas in bull, base, and bear cases. Change only a small number of explicit variables that explain the outcome, state the causal path, and avoid assigning probabilities unless the user supplies or approves them. Prefer ranges when operating uncertainty does not support point precision. Show sensitivity to the few assumptions that dominate value.
 
-- Write concisely, neutrally, and with calibrated confidence.
-- Lead each section with its conclusion, then evidence and counterevidence.
-- Distinguish fact, management statement, calculation, assumption, inference, and opinion.
-- Use conditional language for forecasts.
-- Avoid marketing superlatives, false precision, and unexplained jargon.
-- State what changed, why it matters, and what to monitor.
-- Use `patterns/writing_patterns.yaml` and `patterns/layout_patterns.yaml` to select an original conclusion-first structure, not a publisher's distinctive heading or prose style.
+## Valuation
 
-## 22. Numerical QA standards
+Choose methods that fit the business and the available data. A DCF should show revenue, margins, tax, depreciation and amortization, capex, working-capital change, free cash flow, discount rate, terminal method, enterprise value, net debt, equity value, dated diluted shares, and per-share value. State the discount-rate method and require terminal growth to remain below the discount rate.
 
-- Reconcile assets to liabilities plus total equity within tolerance.
-- Reconcile segments where available.
-- Verify units, currency, scaling, sign conventions, and comparable periods.
-- Recalculate debt, net debt, free cash flow, enterprise value, and every DCF bridge deterministically.
-- Resolve duplicate and amended facts explicitly.
-- Confirm narrative, table, and chart values agree.
-- Treat division by zero as unavailable, never infinity.
-- Use explicit tolerances from project configuration. A default face-statement tolerance may be the greater of 0.5% of assets and one reporting-unit rounding increment; disclose any project override.
+For multiples, define the numerator and denominator, use comparable periods, explain peer selection, date market inputs, and distinguish reported from adjusted metrics. For asset-heavy, cyclical, financial, or resource companies, consider asset value, mid-cycle cash flow, dividend capacity, leverage, or sum-of-the-parts methods when better supported. Reconcile different methods by explaining what each captures; do not average incompatible outputs mechanically. Call the conclusion `Valuation assessment` or `Model-implied value range`, and state when current market inputs are absent.
 
-## 23. Citation QA standards
+## Thesis, catalysts, and risks
 
-- Verify every citation identifier exists in the source ledger.
-- Require citation coverage for material factual paragraphs.
-- Verify filing markers match the stated form, date, reporting period, and accession.
-- Remove, weaken, or label any claim that cannot be supported.
-- Do not count a generic source list as paragraph-level citation coverage.
+Limit the thesis to three to five testable points. Connect each point through `driver -> operating effect -> financial-statement effect -> valuation implication`, cite its factual premises, present counterevidence, and identify a monitoring indicator.
 
-## 24. Missing-data standards
+Use catalysts that are dated or observable, and explain how each may transmit into operations, cash flow, risk, or valuation. Separate near-term events from medium-term developments. Pair each material company, industry, macro, regulatory, accounting, liquidity, or valuation risk with the thesis assumption it threatens, a leading indicator, and a thesis-breaking condition. Calibrate confidence to the evidence.
 
-Use only these explicit responses when appropriate:
+## Citations, writing, tables, and charts
 
-- `Data unavailable`
-- `Not disclosed`
-- `Insufficient public data`
-- `Unable to calculate from available filings`
+Cite material factual paragraphs and management statements at paragraph level. Cite tables and charts at object level, including the source, period, currency, units, and as-of date. Cite calculations through their formula and source inputs. Never invent a URL, accession, quotation, citation marker, market price, or peer value.
 
-Do not interpolate, infer, backfill, or ask an LLM to create a missing financial value. Preserve partial data only when the output is clearly labeled partial.
+Write neutrally and concisely. Lead each section with the conclusion, then evidence, counterevidence, investor relevance, and what to monitor. Keep reported facts, calculations, assumptions, and interpretations visibly distinct. Use conditional language for forecasts and avoid unsupported precision.
 
-## 25. Prohibited behaviors
+Create each table or chart for one analytical question. Keep currency and scale consistent, label actuals and estimates directly, show missing observations without bridging gaps, use zero-based axes for absolute bars, and provide a readable table or text equivalent for decision-relevant visuals. Put calculation and source notes directly below the object.
 
-- Do not provide hidden or unsupported target prices, ratings, consensus values, peer data, or market prices.
-- Do not calculate financial values with an LLM.
-- Do not present stale research as current.
-- Do not mix reported, adjusted, and forecast values without labels.
-- Do not claim specialized bank, insurer, REIT, or other sector support until extraction, formulas, and tests pass.
-- Do not label a report institutional quality based on appearance alone.
+> Do not copy or closely reproduce proprietary research text, charts, forecasts, ratings, target prices, logos, or distinctive report designs. Use public or permitted data to create original analysis and visuals.
 
-## 26. Institutional-style scoring rubric
+## Task-specific resource routing
 
-Score 100 points:
+Keep this guide as the default execution layer. Load supplementary resources only when they change the work:
 
-- Data completeness: 15
-- Data integrity: 20
-- Citation coverage: 15
-- Calculation integrity: 20
-- Analytical completeness: 10
-- Forecast transparency: 10
-- Visual consistency: 10
+- Use `patterns/report_archetypes.yaml` and `patterns/section_blueprints.yaml` for a broad report whose format is not already specified.
+- Use `patterns/sector_patterns.yaml` for relevant issuer economics; fall back to the general method when no sector pattern fits.
+- Use `patterns/analytical_patterns.yaml` for complex causal or committee reasoning; use `patterns/forensic_patterns.yaml` or `patterns/diligence_patterns.yaml` only for those requested scopes.
+- Use `patterns/disclosure_patterns.yaml` when forecasts, valuation, forensic work, public-side diligence, or credit-style analysis requires a specialized limitation.
+- Use `patterns/chart_patterns.yaml`, `patterns/table_patterns.yaml`, `patterns/writing_patterns.yaml`, and `patterns/layout_patterns.yaml` when producing designed tables, charts, or longer reports. For PDF or other visual export, also load `design/layout_tokens.yaml` and `design/visual_grammar.yaml`.
+- Consult `research_corpus.yaml` and `patterns/pattern_provenance.yaml` only when adding or validating reusable patterns. Use `benchmarks/benchmark_cases.yaml` only for acceptance testing, and `assets/asset_manifest.yaml` only when introducing a non-data asset.
+- Run `python scripts/validate_resources.py` after changing bundled resources, not for ordinary issuer analysis.
 
-Use `Institutional Quality` only when the overall score is at least 85, data integrity is at least 18/20, citation coverage is at least 13/15, and there are no critical errors, fabricated values, unsupported valuation outputs, or copyright-policy violations. Otherwise use `Draft`, `Incomplete`, `Research Preview`, or `QA Review Required`.
+## Final QA checklist
 
-Before delivery, run numerical, citation, visual, missing-data, freshness, licensing, and copyright checks. Document the denominator used for citation coverage and the evidence behind every subscore. Render every PDF page and inspect for clipping, overlap, unreadable text, missing charts, broken links, and incorrect page metadata.
-
-Hard-block client-facing delivery when a report contains a fabricated citation or value, an unsupported valuation output, an unreconciled core statement above tolerance without a visible limitation, a material copyright or licensing violation, or stale data presented as current. A technical preview may still be exported only when it is visibly labeled `QA Review Required` and lists the blocking errors. `Institutional Quality` is a project QA label, not a claim of institutional authorship, affiliation, endorsement, or regulatory compliance. Route regulated research distribution and analyst-certification questions to qualified compliance review.
-
-## 27. Pattern-resource routing
-
-Load only the resources needed for the assignment, but treat the following controls as mandatory:
-
-- For any external public research source, read `research_corpus.yaml`; add only metadata and original observations after rights review. Never store full report content, images, ratings, forecasts, targets, proprietary scores, or production hidden context.
-- Select one report type from `patterns/report_archetypes.yaml`, then load the matching required and optional section contracts from `patterns/section_blueprints.yaml`.
-- Load `patterns/sector_patterns.yaml` when the issuer's disclosed sector economics match a supported sector. Otherwise use the general pattern and state missing sector support.
-- Load `patterns/disclosure_patterns.yaml` for every output and apply the required disclosure combination for forecasts, valuation, public-side due diligence, or forensic screens.
-- Load `patterns/pattern_provenance.yaml` before adopting a pattern. Use only approved, generalized patterns and never imitate a named institution.
-
-Use these resources when applicable:
-
-- `patterns/analytical_patterns.yaml` for causal, change, thesis-validation, point-in-time, and committee reasoning.
-- `patterns/forensic_patterns.yaml` for public-filings screens, earnings-quality review, red flags, or reporting-risk analysis.
-- `patterns/diligence_patterns.yaml` for public-side diligence reports, IC memos, and unresolved diligence questions.
-- `patterns/chart_patterns.yaml`, `patterns/table_patterns.yaml`, `patterns/layout_patterns.yaml`, and `patterns/writing_patterns.yaml` for analytical displays and readable report flow.
-- `design/layout_tokens.yaml` and `design/visual_grammar.yaml` for any designed or exported visual deliverable. `design/sector_visual_motifs.yaml` is optional and secondary to analysis.
-- `assets/asset_manifest.yaml` only when using a non-data asset; charts and original diagrams take precedence over decoration.
-- `benchmarks/benchmark_cases.yaml` for acceptance testing only. Never use a benchmark case to infer an issuer conclusion.
-
-## 28. Public research and pattern-adoption workflow
-
-Before adding a source or pattern:
-
-1. Verify that the source is legally accessible without bypassing a paywall, form, authentication, robots policy, portal, or technical control.
-2. Record source metadata, access date, rights status, reviewed pages or sections, and an original generalized note in `research_corpus.yaml`.
-3. Record only common functional conventions, multi-source observations, or an independent usability justification in `patterns/pattern_provenance.yaml`.
-4. Reject any pattern that depends on copied prose, tables, charts, forecasts, ratings, scores, logos, color systems, layouts, named frameworks, or trade dress.
-
-Public availability is not a redistribution license. Copyright restrictions override visual-similarity goals. Do not say an output is in the style of, equivalent to, affiliated with, or endorsed by a named institution.
-
-## 29. Archetype, diligence, forensic, and credit execution
-
-Choose the narrowest archetype that supports the requested decision. Complete all required sections and disclosures, then add optional sections only when evidence supports them.
-
-- For public-side due diligence, use the finding schema and allowed statuses in `patterns/diligence_patterns.yaml`. Preserve evidence, alternative explanations, confidence, open questions, further verification, and matters outside public scope. Do not claim complete diligence, full verification, absence of risk, or fraud.
-- For forensic accounting, run only applicable deterministic tests. Preserve inputs, formula version, threshold version, issuer sources, methodology sources, alternative explanations, confounders, and limitations. Use only `Normal`, `Monitor`, `Elevated`, `High concern`, or `Insufficient data`. A signal is a review priority, never proof of misconduct.
-- For credit-style risk, use the liquidity, debt, maturity, commitment, cash-flow, and downside patterns without assigning a credit rating. Distinguish freely available cash from restricted or uncertain liquidity.
-- For an investment-committee memo, state evidence for, evidence against, key assumptions, source cutoff, unresolved questions, thesis-breaking conditions, owner, and review date. Include portfolio constraints or sizing only when user-supplied.
-
-## 30. Original design and asset controls
-
-Use the original layout system and visual grammar, not a publisher's presentation. For every chart, table, diagram, card, timeline, map, or risk matrix, state its analytical question, sources, units when applicable, period basis, as-of date, and accessible equivalent.
-
-Use sector motifs only as restrained context. Do not present a motif, decorative image, generated image, logo, or map as evidence. When image generation is available, record prompt, negative prompt, model or method, date, checksum, license, placement, and alt text in the asset manifest. When it is not available, prefer original deterministic SVG or data-driven diagrams; do not download random internet images.
-
-Hard-block a visual if it is decorative without analytical purpose, missing provenance, unlicensed, copied, logo-bearing, trademark-bearing without permission, low resolution, unreadable, low contrast, color-only encoded, inconsistent with actual-versus-estimate styling, clipped, or missing a source when it contains evidence.
-
-## 31. Conflict resolution
-
-Resolve conflicts in this order:
-
-1. Legal and copyright restrictions
-2. Data integrity
-3. Source provenance
-4. Calculation integrity
-5. Citation requirements
-6. Report archetype requirements
-7. Sector requirements
-8. Analytical pattern rules
-9. Layout rules
-10. Decorative preferences
-
-Aesthetic similarity must never override copyright, accuracy, readability, accessibility, or provenance. When a lower-priority preference conflicts with a higher-priority control, preserve the higher-priority control and state the limitation or omit the element.
-
-## 32. Pattern and visual QA gate
-
-Before publication, run:
-
-```bash
-python scripts/validate_resources.py
-```
-
-Then verify that the selected archetype is complete, every required section has its completion conditions, selected patterns have approved provenance, and every cross-reference resolves. Check for excessive decorative imagery, missing asset-manifest entries, copied logos or trademarks, charts without sources, images presented as evidence, inconsistent chart styles, excessive color, poor contrast, layout clipping, orphaned headings, widowed paragraphs, broken hierarchy, unreadable footnotes, and inconsistent actual-versus-estimate styling.
-
-Block publication when resource validation fails, a source has unresolved rights, a pattern lacks provenance, an asset lacks an approved manifest entry, a required disclosure is absent, or a visual or analytical claim fails the standards above. Label any technical export with unresolved blockers as `QA Review Required`.
+- Financial reconciliation
+- Period, unit, sign, and currency consistency
+- Formula accuracy
+- Citation coverage
+- Actual-versus-estimate labeling
+- Visible assumptions
+- Agreement among narrative, tables, and charts
+- Basic visual readability
