@@ -39,5 +39,5 @@
 - [x] Run terminology, prohibited-claim, provenance, asset, and copyright checks.
 - [x] Forward-test the upgraded skill on a fresh task.
 - [x] Address only defects found by validation or forward testing (no defects found).
-- [ ] Produce the final directory tree and requested eighteen-part completion summary.
-- [ ] Do not push any checkpoint commit to a remote.
+- [x] Produce the final directory tree and requested eighteen-part completion summary.
+- [x] Do not push any checkpoint commit to a remote.

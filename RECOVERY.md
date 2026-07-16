@@ -29,15 +29,16 @@ Incrementally upgrade `skills/institutional_equity_research/SKILL.md` into a pub
 - Incrementally extended `SKILL.md` from 254 to 335 lines with concise resource routing, public-research rules, archetype/diligence/forensic/credit/IC execution, original design controls, the required ten-level conflict hierarchy, and a publication-blocking QA gate; both resource and skill validation pass.
 - Completed the final integrity checks: resource validation passed, skill-creator quick validation passed, terminology/prohibited-claim, copyright, asset-manifest, and provenance checks passed, and the unrelated project suite passed 33 tests.
 - Forward-tested the skill in a fresh subagent context with a generic public-side software diligence request; it selected `AR-002`, routed resources correctly, applied bounded findings and disclosures, and required no follow-up change.
+- Prepared the final skill directory tree and required implementation handoff; the local working tree is clean and all work is captured in local checkpoint commits.
 - Stopped all active implementation work at a completed patch boundary when the checkpoint was requested.
 
 ## Remaining tasks
 
-- Produce the requested final directory tree and eighteen-part implementation summary.
+None. Implementation, validation, forward testing, and the final handoff preparation are complete.
 
 ## Current status
 
-Checkpointed near completion. The gap analysis, core archetype/blueprint layer, analytical patterns, diligence library, benchmark cases, design/asset resources, a 34-source rights-aware corpus, a 38-test forensic library, the complete chart/table/layout/writing/disclosure/sector pattern layer, full pattern provenance, deterministic resource validation, and an incrementally extended `SKILL.md` exist on disk. All present YAML files parse successfully; `SKILL.md` is 335 lines, resource and skill-creator validation pass, 33 project tests pass, and fresh-context forward testing passed without refinements. The support files are wired into the existing skill without replacing its original Sections 1–26.
+Complete. The gap analysis, core archetype/blueprint layer, analytical patterns, diligence library, benchmark cases, design/asset resources, a 34-source rights-aware corpus, a 38-test forensic library, the complete chart/table/layout/writing/disclosure/sector pattern layer, full pattern provenance, deterministic resource validation, and an incrementally extended `SKILL.md` exist on disk. All present YAML files parse successfully; `SKILL.md` is 335 lines, resource and skill-creator validation pass, 33 project tests pass, and fresh-context forward testing passed without refinements. The support files are wired into the existing skill without replacing its original Sections 1–26.
 
 No remote push has been performed. No full third-party reports, report pages, screenshots, branded visuals, proprietary ratings, forecasts, target prices, or copied layouts were added.
 
@@ -70,7 +71,7 @@ The existing `skills/institutional_equity_research/SKILL.md` was extended in pla
 
 ## Next recommended step
 
-Read this file and `TODO.md`, inspect the latest local commit, and compare the committed tree with these notes. Then produce the final directory tree and required eighteen-part completion summary. Do not regenerate or overwrite the completed resources unless validation identifies a specific defect.
+Read this file and `TODO.md`, inspect the latest local commit, and compare the committed tree with these notes. The upgrade is complete; make changes only for a newly identified defect or a new user request. Do not regenerate or overwrite completed resources.
 
 ## Assumptions and pending decisions
 
