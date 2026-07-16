@@ -15,11 +15,11 @@
 
 ## Unfinished
 
-- [ ] Reconcile and verify all derived Shell calculations.
-- [ ] Create original chart assets.
-- [ ] Write `samples/shell_equity_research_sample.md`.
-- [ ] Generate `samples/shell_equity_research_sample.pdf`.
-- [ ] Render and visually inspect every PDF page.
-- [ ] Audit the sample against the revised skill and note guidance gaps.
-- [ ] Run final validations and update recovery notes.
-- [ ] Create a local checkpoint commit; do not push.
+- [x] Reconcile and verify all derived Shell calculations.
+- [x] Create original chart assets.
+- [x] Write `samples/shell_equity_research_sample.md`.
+- [x] Generate `samples/shell_equity_research_sample.pdf`.
+- [x] Render and visually inspect every PDF page.
+- [x] Audit the sample against the revised skill and note guidance gaps.
+- [x] Run final validations and update recovery notes.
+- [x] Create a local checkpoint commit; do not push.

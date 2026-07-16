@@ -16,38 +16,44 @@ Refactor `skills/institutional_equity_research/SKILL.md` into a concise executio
 - Read the revised skill completely and began applying it to Shell plc with a research cutoff of July 15, 2026.
 - Collected issuer-appropriate evidence from Shell's FY2025 Form 20-F, FY2025 annual report, Q1 2026 IAS 34 results, July 2026 Q2 update, investor materials, and official transaction releases.
 - Confirmed that Shell is a foreign private issuer using Form 20-F and Form 6-K rather than domestic Form 10-K and Form 10-Q.
+- Reconciled FY2021-FY2025 historical statements, recast FY2023-FY2025 segment data, Q1 2026 actuals, and July 2026 management guidance.
+- Created the complete compact report at `samples/shell_equity_research_sample.md` with all 13 requested sections and a revised-skill conformance appendix.
+- Created two original, source-noted chart assets under `samples/assets/`.
+- Generated `samples/shell_equity_research_sample.pdf` as a nine-page landscape report using the project's PDF-capable environment.
+- Rendered and visually inspected every final PDF page after correcting the initial list formatting and segment-chart pagination.
+- Verified all required sections, key formulas, citations, PDF links, source labels, and actual-versus-guidance treatment with deterministic checks.
+- Re-ran skill validation, resource validation, whitespace checks, and the project test suite; all 33 tests passed.
 
 ## Remaining tasks
 
-- Finish deterministic historical, segment, cash-flow, earnings-quality, scenario, and valuation calculations.
-- Create original report tables and charts.
-- Write `samples/shell_equity_research_sample.md`.
-- Create `samples/shell_equity_research_sample.pdf` using the project's PDF-capable environment.
-- Render and inspect every PDF page and correct any visual defects.
-- Audit the sample against the revised skill and document any unclear, restrictive, or missing guidance.
-- Run final repository checks and create the next local checkpoint commit without pushing.
+None after the final local checkpoint commit. No remote push is authorized or required.
 
 ## Current status
 
-Part 1 is complete and validated. Part 2 research is in progress; no Shell sample artifact has yet been finalized at this checkpoint.
+Complete. The skill is 1,864 words versus 3,157 originally, a 41.0% reduction. The Shell Markdown sample, two original charts, and nine-page PDF are complete and visually verified. The PDF contains 65 working link annotations, deterministic QA passed, both skill validators passed, and all 33 project tests passed.
 
 ## Files modified
 
 - `skills/institutional_equity_research/SKILL.md`
+- `samples/shell_equity_research_sample.md`
+- `samples/shell_equity_research_sample.pdf`
+- `samples/assets/shell_cash_generation.png`
+- `samples/assets/shell_segment_earnings.png`
 - `RECOVERY.md`
 - `TODO.md`
 
 ## Next recommended step
 
-Complete and verify the deterministic Shell calculation table, then use it as the single numerical source for the Markdown report, charts, and PDF.
+Read the final report or PDF and make changes only for a newly identified defect or a new user request. Do not regenerate the completed sample from scratch.
 
 ## Assumptions and pending decisions
 
 - Research cutoff is July 15, 2026; Q1 2026 is the latest reported quarter, while the July 7 Q2 update is management guidance rather than reported results.
 - FY2025 and Q1 2026 issuer figures are primarily USD and may not sum because of rounding.
-- Scenario values will be explicitly labeled analyst assumptions and will use transparent enterprise cash-flow proxy formulas rather than unsupported target-price precision.
+- Scenario values are explicitly labeled analyst assumptions and use transparent enterprise cash-flow proxy formulas rather than unsupported target-price precision.
 - Market-value calculations require a dated LSE price and a disclosed GBP/USD conversion; they will be treated as permitted third-party market inputs, not issuer-reported facts.
-- The PDF will use original styling and charts without Shell logos or proprietary report design elements.
+- The PDF uses original styling and charts without Shell logos or proprietary report design elements.
+- The report's conformance appendix records four guidance gaps: assumption-confirmation semantics, energy-sector modeling minimums, issuer-APM bridge format, and synchronization of market value, ADS/share count, pending issuance, and net debt dates.
 
 ## Recovery procedure
 
