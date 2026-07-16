@@ -1,0 +1,93 @@
+version: "1.0"
+selection_rule: "Apply only the sector pattern that matches the issuer's disclosed business model. Add a sector-specific KPI only when the issuer discloses it, a licensed dataset supports it, or the user supplies it."
+
+sectors:
+  - pattern_id: SP-001
+    sector: general
+    decision_focus: [business_model, revenue_drivers, margins, cash_conversion, balance_sheet, capital_allocation, valuation, risks]
+    preferred_KPIs: [reported_revenue, gross_margin_if_applicable, operating_margin, operating_cash_flow, capex, net_debt, diluted_shares]
+    required_diligence_categories: [Business-model diligence, Revenue-quality diligence, Accounting diligence, Liquidity diligence, Capital-allocation diligence, Valuation diligence]
+    required_forensic_patterns: [FA-001, FA-006, FA-015, FA-016, FA-025, FA-030, FA-032, FA-033]
+    preferred_charts: [CHART-001, CHART-003, CHART-004, CHART-006, CHART-015, CHART-017]
+    visual_motif: SVM-008
+    key_limitations: [sector_labels_can_mask_different_economics, do_not_force_unavailable_KPIs, preserve_reporting_perimeter]
+
+  - pattern_id: SP-002
+    sector: technology
+    decision_focus: [recurring_vs_transactional_revenue, usage_or_seat_drivers_if_disclosed, gross_margin, customer_concentration, R_and_D, stock_based_compensation, cloud_or_infrastructure_capex]
+    preferred_KPIs: [subscription_or_services_mix_if_disclosed, remaining_performance_obligations_if_disclosed, net_retention_if_disclosed, gross_margin, R_and_D_to_revenue, SBC_to_revenue, free_cash_flow]
+    required_diligence_categories: [Business-model diligence, Revenue-quality diligence, Customer diligence, Cybersecurity diligence, Data-privacy diligence, Capital-allocation diligence]
+    required_forensic_patterns: [FA-001, FA-002, FA-006, FA-008, FA-011, FA-013, FA-015, FA-038]
+    preferred_charts: [CHART-001, CHART-002, CHART-003, CHART-004, CHART-009, CHART-016]
+    visual_motif: SVM-001
+    key_limitations: [do_not_infer_retention_or_usage, distinguish_consumption_from_subscription, do_not_treat_R_and_D_as_uniformly_comparable]
+
+  - pattern_id: SP-003
+    sector: semiconductor
+    decision_focus: [end_market_mix, inventory_cycle, supply_commitments, capacity, gross_margin, product_transition, geographic_and_export_exposure]
+    preferred_KPIs: [reported_platform_or_segment_mix, inventory_days, gross_margin, backlog_if_disclosed, customer_concentration_if_disclosed, capex, supply_commitments]
+    required_diligence_categories: [Revenue-quality diligence, Customer diligence, Supplier diligence, Industry diligence, Geographic and geopolitical diligence]
+    required_forensic_patterns: [FA-001, FA-004, FA-014, FA-016, FA-017, FA-022, FA-023, FA-026]
+    preferred_charts: [CHART-001, CHART-002, CHART-003, CHART-005, CHART-007, CHART-016]
+    visual_motif: SVM-001
+    key_limitations: [do_not_use_channel_inventory_without_disclosure, separate_fabless_and_integrated_models, distinguish_end_demand_from_sell_in]
+
+  - pattern_id: SP-004
+    sector: financials
+    decision_focus: [balance_sheet_funding, liquidity, asset_quality, credit_costs, capital, interest_rate_sensitivity, regulation]
+    preferred_KPIs: [net_interest_income_if_disclosed, net_interest_margin_if_disclosed, deposits, loan_growth, charge_offs, provision, capital_ratios, liquidity_metrics]
+    required_diligence_categories: [Accounting diligence, Liquidity diligence, Debt diligence, Legal and regulatory diligence, Governance diligence]
+    required_forensic_patterns: [FA-014, FA-015, FA-021, FA-025, FA-029, FA-030, FA-032, FA-035]
+    preferred_charts: [CHART-003, CHART-005, CHART-007, CHART-016, CHART-017]
+    visual_motif: SVM-002
+    key_limitations: [do_not_apply_industrial_FCF_framework_unmodified, do_not_compare_regulatory_capital_across_incompatible_regimes, retain_balance_sheet_measure_definitions]
+
+  - pattern_id: SP-005
+    sector: healthcare
+    decision_focus: [pipeline_or_product_concentration, reimbursement, regulatory_timing, clinical_orcommercial_evidence, gross_margin, R_and_D, patent_or_exclusivity_if_disclosed]
+    preferred_KPIs: [product_revenue, pipeline_stage_if_disclosed, R_and_D_to_revenue, gross_margin, payer_or_geographic_mix_if_disclosed, cash_runway]
+    required_diligence_categories: [Business-model diligence, Revenue-quality diligence, Legal and regulatory diligence, Cybersecurity diligence, Data-privacy diligence, Valuation diligence]
+    required_forensic_patterns: [FA-001, FA-006, FA-008, FA-010, FA-015, FA-020, FA-030]
+    preferred_charts: [CHART-001, CHART-002, CHART-003, CHART-007, CHART-015, CHART-017]
+    visual_motif: SVM-003
+    key_limitations: [do_not_make_medical_or_efficacy_claims_without_authoritative_evidence, distinguish_pipeline_stage_from_probability_of_success, preserve_regulatory_source_dates]
+
+  - pattern_id: SP-006
+    sector: industrials
+    decision_focus: [volume_price_mix, backlog, capacity, dealer_or_distribution_inventory_if_disclosed, incremental_margin, working_capital, financing_exposure]
+    preferred_KPIs: [segment_revenue, orders_or_backlog_if_disclosed, volume_price_mix_if_disclosed, incremental_margin, inventory_days, capex, debt_maturity]
+    required_diligence_categories: [Industry diligence, Customer diligence, Supplier diligence, Debt diligence, Geographic and geopolitical diligence]
+    required_forensic_patterns: [FA-001, FA-014, FA-016, FA-017, FA-021, FA-022, FA-025, FA-026]
+    preferred_charts: [CHART-001, CHART-002, CHART-003, CHART-005, CHART-007, CHART-015]
+    visual_motif: SVM-004
+    key_limitations: [do_not_treat_backlog_as_revenue, separate_price_from_volume_when_disclosed, preserve_cyclicality_and_period_basis]
+
+  - pattern_id: SP-007
+    sector: consumer
+    decision_focus: [traffic_or_units_if_disclosed, price_mix, membership_or_loyalty_if_disclosed, channel, inventory, vendor_terms, gross_margin, working_capital]
+    preferred_KPIs: [comparable_sales_if_disclosed, membership_or_loyalty_metric_if_disclosed, units_or_traffic_if_disclosed, gross_margin, inventory_turns, cash_conversion_cycle]
+    required_diligence_categories: [Business-model diligence, Customer diligence, Supplier diligence, Competitive diligence, Valuation diligence]
+    required_forensic_patterns: [FA-001, FA-004, FA-012, FA-016, FA-017, FA-018, FA-022, FA-023]
+    preferred_charts: [CHART-001, CHART-003, CHART-005, CHART-006, CHART-012, CHART-013]
+    visual_motif: SVM-005
+    key_limitations: [do_not_infer_customer_demographics, distinguish_comparable_sales_definition, account_for_seasonality_and_calendar_shift]
+
+  - pattern_id: SP-008
+    sector: energy
+    decision_focus: [production_or_throughput_if_disclosed, commodity_price_sensitivity, reserve_or_resource_disclosure_scope, capital_intensity, hedging, leverage, regulatory_and_geopolitical_exposure]
+    preferred_KPIs: [production_or_throughput_if_disclosed, realized_price_if_disclosed, unit_cost_if_disclosed, capex, cash_flow, debt_maturity, hedging_if_disclosed]
+    required_diligence_categories: [Industry diligence, Supplier diligence, Legal and regulatory diligence, Geographic and geopolitical diligence, Liquidity diligence]
+    required_forensic_patterns: [FA-007, FA-014, FA-016, FA-021, FA-025, FA-026, FA-030]
+    preferred_charts: [CHART-001, CHART-003, CHART-006, CHART-007, CHART-008, CHART-017]
+    visual_motif: SVM-006
+    key_limitations: [do_not_make_reserve_claims_without_qualified_source, separate_price_volume_and_foreign_exchange, preserve_hedging_and_unit_definitions]
+
+  - pattern_id: SP-009
+    sector: real_estate
+    decision_focus: [occupancy, lease_expiry, same_property_metrics_if_disclosed, net_operating_income, financing, interest_rates, property_valuation_and_liquidity]
+    preferred_KPIs: [occupancy_if_disclosed, lease_expiry_schedule, same_property_NOI_if_disclosed, funds_from_operations_if_disclosed, debt_maturity, fixed_variable_rate_mix]
+    required_diligence_categories: [Business-model diligence, Customer diligence, Liquidity diligence, Debt diligence, Geographic and geopolitical diligence, Valuation diligence]
+    required_forensic_patterns: [FA-001, FA-014, FA-016, FA-025, FA-026, FA-027, FA-030]
+    preferred_charts: [CHART-001, CHART-003, CHART-007, CHART-008, CHART-012, CHART-017]
+    visual_motif: SVM-007
+    key_limitations: [do_not_treat_FFO_as_standardized_without_definition, distinguish_property_and_corporate_debt, do_not_infer_property_value_from_decoration]

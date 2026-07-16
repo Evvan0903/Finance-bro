@@ -1,0 +1,93 @@
+version: "1.0"
+selection_rule: "Use a table when exact values, definitions, reconciliations, inputs, or a durable audit trail matter more than visual trend recognition."
+
+tables:
+  - table_id: TABLE-001
+    name: Annual Financial History
+    analytical_question: "What are the comparable annual reported financial outcomes and key derived ratios?"
+    required_rows: [revenue, gross_profit_if_applicable, operating_income, net_income, operating_cash_flow, capex, free_cash_flow, net_debt, diluted_shares]
+    required_columns: [three_to_five_fiscal_years, units, actual_status, source_marker]
+    calculation_requirements: [reconcile_derived_values, label_non_GAAP_or_adjusted_values, separate_unavailable_values]
+    source_note_format: "Source: [source IDs]; units: [currency/scale]; fiscal-year ends: [dates]; calculations: [formula IDs]."
+    common_misuses: [mixing_fiscal_calendars, mixing_actual_and_estimate, hidden_adjustments, inconsistent_currency_scale]
+
+  - table_id: TABLE-002
+    name: Quarterly Performance and Variance
+    analytical_question: "What changed in the latest discrete quarter relative to comparable periods and guidance?"
+    required_rows: [revenue, margins, earnings_measure, operating_cash_flow_if_available, key_KPIs, guidance_variance_if_available]
+    required_columns: [four_to_eight_discrete_quarters, year_over_year, sequential_change, actual_estimate_status, source_marker]
+    calculation_requirements: [derive_quarters_only_from_compatible_YTD_facts, label_derived_quarter, preserve_definition_changes]
+    source_note_format: "Source: [source IDs]; period basis: [discrete quarter or labeled derivation]; units: [scale]; as of: [date]."
+    common_misuses: [comparing_YTD_to_quarter, omitting_guidance_definition, annualizing_one_quarter, hiding_recast]
+
+  - table_id: TABLE-003
+    name: Segment, KPI, and Business-Driver Detail
+    analytical_question: "Which reported segments or disclosed operational metrics explain performance?"
+    required_rows: [reported_segment_or_metric, value, growth, mix_or_margin_if_disclosed, definition]
+    required_columns: [current_period, comparable_prior_period, change, units, source_marker]
+    calculation_requirements: [reconcile_segments, preserve_taxonomy_or_filing_source, flag_definition_changes]
+    source_note_format: "Source: [source IDs]; reported definition: [filing reference]; units: [scale]; reconciliation: [status]."
+    common_misuses: [inventing_KPIs, treating_custom_metric_as_standard, forcing_cross_company_comparability, omitting_segment_reconciliation]
+
+  - table_id: TABLE-004
+    name: Forecast Assumptions and Revisions
+    analytical_question: "Which inputs drive the forecast, what is their source, and what changed?"
+    required_rows: [revenue_driver, margin, tax, capex, working_capital, shares, scenario_assumption]
+    required_columns: [historical_base, current_assumption, prior_assumption, source_class, approval_status, rationale]
+    calculation_requirements: [no_AI_value_without_user_approval, versioned_assumption_log, actual_estimate_separation]
+    source_note_format: "Source: [source IDs]; forecast version: [ID]; approval status: [label]; calculation model: [version]."
+    common_misuses: [hidden_assumption, mixing_guidance_and_AI_draft, overwriting_history, treating_assumption_as_observed_fact]
+
+  - table_id: TABLE-005
+    name: DCF Bridge
+    analytical_question: "Can the reader reproduce the path from operating assumptions to enterprise value and model-implied equity value?"
+    required_rows: [revenue, margin, tax, D_and_A, capex, working_capital_change, UFCF, discount_rate, terminal_value, enterprise_value, net_debt, shares, per_share_value]
+    required_columns: [forecast_years_or_scenario, units, formula_or_source_marker, actual_estimate_status]
+    calculation_requirements: [discount_rate_above_terminal_growth, dated_shares_and_net_debt, deterministic_formula_trace]
+    source_note_format: "Source: [source and assumption IDs]; DCF version: [ID]; valuation date: [date]; formulas: [version]."
+    common_misuses: [missing_bridge_step, undated_shares, hidden_terminal_method, presenting_model_as_target_price]
+
+  - table_id: TABLE-006
+    name: Valuation Sensitivity and Reconciliation
+    analytical_question: "How does valuation change across explicitly defined assumption ranges and methods?"
+    required_rows: [assumption_pair_or_method, base_case, sensitivity_outputs, reconciliation_notes, limitations]
+    required_columns: [range_values, model_implied_outcomes, approval_status, source_marker]
+    calculation_requirements: [formula_consistency, visible_base_case, method_reconciliation_not_average]
+    source_note_format: "Source: [source IDs]; model versions: [IDs]; valuation date: [date]; assumptions: [status]."
+    common_misuses: [false_precision, unapproved_probability, incompatible_dates, unsupported_peer_data]
+
+  - table_id: TABLE-007
+    name: Diligence, Risks, and Open Questions
+    analytical_question: "What public evidence supports, contradicts, or leaves unresolved each material decision question?"
+    required_rows: [finding_or_risk, evidence, alternative_explanation, severity, confidence, status, open_question, next_step]
+    required_columns: [category, current_status, source_marker, owner_if_user_supplied, review_date]
+    calculation_requirements: [use_allowed_diligence_status, retain_counterevidence, distinguish_public_scope]
+    source_note_format: "Source: [source IDs]; public-side scope: [definition]; evidence cutoff: [date]; status meanings: [reference]."
+    common_misuses: [claiming_complete_diligence, omitting_alternatives, treating_unknown_as_clear, unsupported_severity]
+
+  - table_id: TABLE-008
+    name: Forensic Screen Detail
+    analytical_question: "Which deterministic tests were run, with what inputs, labels, confounders, and limits?"
+    required_rows: [forensic_test, observed_value, threshold, label, alternative_explanations, confounders, next_step]
+    required_columns: [period, formula_version, threshold_version, issuer_source, methodology_source]
+    calculation_requirements: [preserve_input_fact_ids, label_insufficient_data, prevent_automatic_escalation]
+    source_note_format: "Source: [issuer and methodology source IDs]; forensic pattern: [ID]; formula and threshold version: [IDs]; as of: [date]."
+    common_misuses: [treating_screen_as_proof, hiding_missing_data, combining_into_proprietary_score, omitting_alternatives]
+
+  - table_id: TABLE-009
+    name: Debt, Liquidity, and Obligation Schedule
+    analytical_question: "What disclosed obligations, liquidity sources, restrictions, maturities, and downside dependencies require review?"
+    required_rows: [debt_instrument, maturity, rate_or_type_if_disclosed, ranking, cash, restricted_cash, revolver, commitments, covenant_note]
+    required_columns: [amount, currency, maturity_bucket, source_marker, limitation]
+    calculation_requirements: [separate_gross_and_net_debt, identify_restricted_cash, distinguish_committed_and_uncommitted_liquidity]
+    source_note_format: "Source: [source IDs]; debt scope: [instruments]; liquidity definition: [formula]; as of: [date]."
+    common_misuses: [assuming_cash_is_freely_available, omitting_commitments, treating_undrawn_facility_as_unconditional, mixing_periods]
+
+  - table_id: TABLE-010
+    name: Source, Calculation, and Disclosure Ledger
+    analytical_question: "Can every material claim, display, input, and limitation be traced to a source or formula?"
+    required_rows: [claim_or_object_id, source_id, source_type, filing_or_publication_date, retrieval_date, calculation_id, rights_status, limitation]
+    required_columns: [location, actual_estimate_status, review_status, disclosure_reference]
+    calculation_requirements: [unique_source_id, formula_input_trace, rights_check, citation_coverage_denominator]
+    source_note_format: "Ledger cutoff: [date]; source policy: [version]; calculation registry: [version]; QA status: [label]."
+    common_misuses: [generic_bibliography_without_claim_links, fabricated_URL, stale_source_presented_as_current, missing_rights_status]

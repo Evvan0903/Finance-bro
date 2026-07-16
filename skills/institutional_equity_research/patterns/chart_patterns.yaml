@@ -1,0 +1,190 @@
+version: "1.0"
+selection_rule: "Select one chart only when it makes one stated analytical conclusion easier to evaluate than a table or concise prose. Every chart must use verified, licensed, user-supplied, or deterministically derived data."
+
+charts:
+  - chart_id: CHART-001
+    name: Revenue and Growth
+    analytical_question: "How has reported revenue changed by period, and what is the comparable growth rate?"
+    required_data: [reported_revenue, comparable_periods, units, actual_estimate_status, source_ids]
+    recommended_chart_type: "bars for revenue with a line or labels for growth"
+    required_annotations: [period_basis, actual_estimate_legend, units, source_and_as_of]
+    required_comparisons: [year_over_year_or_sequential_growth, actual_vs_estimate_when_applicable]
+    source_note_format: "Source: [source IDs]; units: [currency/scale]; periods: [fiscal basis]; actuals/estimates: [labels]; as of: [date]."
+    common_misuses: [mixing_YTD_and_discrete_quarters, connecting_missing_periods, hiding_acquisition_or_recast_effects, color_only_actual_estimate_distinction]
+    accessibility_equivalent: "Table of revenue and growth by period, with every actual/estimate label and a one-sentence implication."
+
+  - chart_id: CHART-002
+    name: Segment Mix
+    analytical_question: "Which reported segments, products, or geographies drive mix and mix change?"
+    required_data: [reported_segment_values, segment_definitions, periods, units, reconciliation_status, source_ids]
+    recommended_chart_type: "stacked bars for mix over time or grouped bars for a small number of periods"
+    required_annotations: [reported_vs_derived_label, segment_definition_note, reconciled_total_note, source_and_as_of]
+    required_comparisons: [segment_growth, mix_shift, consolidated_reconciliation]
+    source_note_format: "Source: [source IDs]; reported segment definitions: [filing reference]; units: [scale]; period: [basis]; as of: [date]."
+    common_misuses: [treating_analyst_categories_as_reported_segments, comparing_changed_segment_definitions, using_more_than_six_stacks_without_table, omitting_reconciliation]
+    accessibility_equivalent: "Table of segment values, mix percentages, definitions, and reconciliation status."
+
+  - chart_id: CHART-003
+    name: Margin Progression
+    analytical_question: "How have gross, operating, and other decision-relevant margins changed through time?"
+    required_data: [reported_profitability_measures, revenue_or_relevant_denominator, comparable_periods, source_ids]
+    recommended_chart_type: "multi-line chart with direct labels or grouped bars for a short history"
+    required_annotations: [margin_definition, actual_estimate_status, material_reclassification_note, source_and_as_of]
+    required_comparisons: [gross_vs_operating_margin, period_over_period_change, peer_comparison_only_when_permitted]
+    source_note_format: "Source: [source IDs]; metric definitions: [definitions]; periods: [basis]; actuals/estimates: [labels]; as of: [date]."
+    common_misuses: [mixing_GAAP_and_non_GAAP_margins, changing_denominator_without_note, truncated_axis_that_exaggerates_changes, omitting_nonrecurring_items]
+    accessibility_equivalent: "Table of margin definitions and values by period, with drivers and limitations."
+
+  - chart_id: CHART-004
+    name: Earnings versus Cash Flow
+    analytical_question: "Do reported earnings and operating cash flow move consistently, and what explains divergence?"
+    required_data: [net_income_or_operating_income, operating_cash_flow, comparable_periods, units, source_ids]
+    recommended_chart_type: "paired bars or dual-panel trend; use a bridge when reconciliation matters more than trend"
+    required_annotations: [earnings_measure_definition, cash_flow_definition, material_working_capital_note, source_and_as_of]
+    required_comparisons: [cash_conversion, multi_period_direction, reported_vs_adjusted_label]
+    source_note_format: "Source: [source IDs]; earnings measure: [definition]; cash-flow measure: [definition]; units: [scale]; as of: [date]."
+    common_misuses: [calling_divergence_misconduct, comparing_incompatible_periods, hiding_negative_values, omitting_working_capital_context]
+    accessibility_equivalent: "Table of earnings, cash flow, conversion, and disclosed drivers with cautionary limitations."
+
+  - chart_id: CHART-005
+    name: Working-Capital Bridge
+    analytical_question: "Which working-capital components explain the period change in operating cash flow?"
+    required_data: [opening_or_net_income_base, receivables_change, inventory_change, payables_change, other_operating_changes, ending_cash_flow_measure, source_ids]
+    recommended_chart_type: waterfall
+    required_annotations: [sign_convention, period_basis, component_definition, source_and_as_of]
+    required_comparisons: [current_vs_prior_period, disclosed_component_detail, total_reconciliation]
+    source_note_format: "Source: [source IDs]; bridge convention: [signs]; periods: [basis]; units: [scale]; as of: [date]."
+    common_misuses: [mixing_cash_and_non_cash_items, reversing_signs, treating_aggregation_as_precise_detail, omitting_reconciliation]
+    accessibility_equivalent: "Ordered sources-and-uses table with opening base, each component, ending total, and sign convention."
+
+  - chart_id: CHART-006
+    name: Cash-Flow Conversion
+    analytical_question: "How consistently do earnings or operating profit convert to operating cash flow and free cash flow?"
+    required_data: [earnings_or_operating_profit, operating_cash_flow, capex, comparable_periods, capex_definition, source_ids]
+    recommended_chart_type: "line or bars for conversion ratio with supporting absolute-value panel"
+    required_annotations: [free_cash_flow_definition, denominator_definition, actual_estimate_status, source_and_as_of]
+    required_comparisons: [CFO_conversion, FCF_conversion, multi_period_consistency]
+    source_note_format: "Source: [source IDs]; FCF definition: [formula]; denominator: [formula]; units: [scale]; as of: [date]."
+    common_misuses: [using_nonstandard_FCF_without_definition, dividing_by_near_zero_values, masking_capex_reclassification, treating_one_period_as_durability]
+    accessibility_equivalent: "Table of earnings, CFO, capex, FCF, conversion ratios, and formula notes."
+
+  - chart_id: CHART-007
+    name: Debt Maturity
+    analytical_question: "When do disclosed debt obligations mature relative to liquidity and cash-generation capacity?"
+    required_data: [debt_maturity_schedule, unrestricted_cash, committed_facility_availability_if_disclosed, units, source_ids]
+    recommended_chart_type: "maturity bars by year with a separate liquidity reference line or companion table"
+    required_annotations: [instrument_scope, gross_vs_net_debt_label, restricted_cash_note, source_and_as_of]
+    required_comparisons: [12_month_and_24_month_maturities, freely_available_liquidity, refinancing_assumptions_only_if_approved]
+    source_note_format: "Source: [source IDs]; debt scope: [instruments]; liquidity definition: [formula]; units: [scale]; as of: [date]."
+    common_misuses: [assuming_all_cash_available, netting_debt_without_definition, omitting_lease_or_other_obligations, inventing_refinancing]
+    accessibility_equivalent: "Maturity table by instrument, ranking, year, liquidity source, and disclosed covenant note."
+
+  - chart_id: CHART-008
+    name: Capital Allocation
+    analytical_question: "How did the issuer deploy internally generated cash and financing across investment, acquisitions, debt, dividends, and repurchases?"
+    required_data: [operating_cash_flow, capex, acquisition_spend, debt_change, dividends, repurchases, equity_issuance, ending_cash, source_ids]
+    recommended_chart_type: "sources-and-uses waterfall or stacked bars by period"
+    required_annotations: [cash_vs_non_cash_label, share_count_note, source_and_as_of]
+    required_comparisons: [gross_repurchases_vs_issuance, reinvestment_vs_distributions, debt_change]
+    source_note_format: "Source: [source IDs]; cash-flow classification: [definition]; period: [basis]; units: [scale]; as of: [date]."
+    common_misuses: [showing_buybacks_without_dilution, mixing_authorization_and_spend, omitting_acquisition_cash, calling_all_capital_return_value_creative]
+    accessibility_equivalent: "Table of cash sources and uses plus share-count bridge and policy context."
+
+  - chart_id: CHART-009
+    name: Share Dilution
+    analytical_question: "How have basic and diluted shares changed after issuance, compensation, conversions, and repurchases?"
+    required_data: [basic_shares, diluted_shares, shares_issued, shares_repurchased, share_based_compensation, periods, source_ids]
+    recommended_chart_type: "line chart for share counts with bars for issuance and repurchases when disclosed"
+    required_annotations: [weighted_average_vs_period_end_label, split_adjustment_note, source_and_as_of]
+    required_comparisons: [basic_vs_diluted, gross_buybacks_vs_issuance, multi_period_CAGR]
+    source_note_format: "Source: [source IDs]; share-count basis: [weighted average or period end]; split treatment: [note]; as of: [date]."
+    common_misuses: [mixing_period_end_and_weighted_average_shares, ignoring_splits, treating_buyback_authorization_as_reduction, omitting_dilution_from_awards]
+    accessibility_equivalent: "Table of shares, issuance, repurchases, dilution drivers, and basis by period."
+
+  - chart_id: CHART-010
+    name: Guidance versus Actual
+    analytical_question: "How did reported outcomes compare with contemporaneous company guidance on a consistent metric basis?"
+    required_data: [guidance_range, guidance_date, metric_definition, actual_result, actual_date, comparable_period, source_ids]
+    recommended_chart_type: "range bars with actual markers or a variance bridge"
+    required_annotations: [guidance_date, exact_metric_definition, period, range_midpoint_if_used, source_and_as_of]
+    required_comparisons: [actual_vs_low_high_range, sequential_guidance_changes, definition_consistency]
+    source_note_format: "Source: [guidance and actual source IDs]; metric definition: [verbatim label or labeled paraphrase]; period: [basis]; as of: [date]."
+    common_misuses: [using_consensus_as_guidance, comparing_changed_metric_definitions, treating_midpoint_as_company_forecast, omitting_withdrawn_guidance]
+    accessibility_equivalent: "Table of dated guidance range, actual outcome, variance, definition, and source."
+
+  - chart_id: CHART-011
+    name: Forecast Revisions
+    analytical_question: "How did approved or sourced forecast assumptions change after new evidence, and why?"
+    required_data: [forecast_versions, assumption_ids, approved_status, revision_dates, resulting_outputs, source_ids]
+    recommended_chart_type: "revision waterfall, slope graph, or versioned line chart"
+    required_annotations: [forecast_version, approval_status, actual_estimate_label, revision_reason, source_and_as_of]
+    required_comparisons: [current_vs_prior_forecast, assumption_to_output_bridge, actuals_when_available]
+    source_note_format: "Source: [source IDs]; forecast version: [ID]; approval status: [label]; revision date: [date]; as of: [date]."
+    common_misuses: [showing_unapproved_AI_assumptions_as_forecast, overwriting_prior_versions, mixing_consensus_without_license, hiding_revision_reason]
+    accessibility_equivalent: "Table of forecast versions, changed assumptions, reason, approval status, and outcome impact."
+
+  - chart_id: CHART-012
+    name: Historical Valuation
+    analytical_question: "How has a clearly defined valuation measure changed over time relative to its own history?"
+    required_data: [market_input_with_rights, valuation_measure_definition, historical_dates, financial_denominator, source_ids]
+    recommended_chart_type: "line chart with historical range bands only when all observations are comparable"
+    required_annotations: [multiple_definition, price_date_or_period, denominator_basis, source_and_as_of]
+    required_comparisons: [current_vs_historical_range, comparable_business_or_capital_structure_changes]
+    source_note_format: "Source: [licensed or user-supplied market input and issuer source IDs]; measure: [formula]; dates: [basis]; as of: [date]."
+    common_misuses: [using_unlicensed_market_data, mixing_forward_and_trailing_multiples, hiding_negative_denominators, treating_history_as_fair_value]
+    accessibility_equivalent: "Table of dates, market inputs, denominators, multiple definitions, and comparability caveats."
+
+  - chart_id: CHART-013
+    name: Peer Valuation
+    analytical_question: "How do clearly selected peers compare on a consistently defined valuation measure and operating context?"
+    required_data: [peer_selection_criteria, licensed_or_user_supplied_peer_inputs, valuation_measures, operating_context, source_ids]
+    recommended_chart_type: "sorted dot plot or grouped bars with an accompanying criteria table"
+    required_annotations: [peer_selection_criteria, multiple_definition, date, source_and_as_of]
+    required_comparisons: [operating_growth_or_margin_context, capital_structure_context, business_model_similarity]
+    source_note_format: "Source: [licensed or user-supplied peer inputs and issuer source IDs]; peer criteria: [text]; measure: [formula]; as of: [date]."
+    common_misuses: [hidden_peer_selection, unlicensed_data, averaging_incomparable_businesses, implying_a_rating_or_target]
+    accessibility_equivalent: "Peer table with selection criteria, metrics, valuation inputs, dates, and comparability notes."
+
+  - chart_id: CHART-014
+    name: DCF Sensitivity
+    analytical_question: "How does model-implied value change when a small number of disclosed or approved DCF assumptions change?"
+    required_data: [DCF_formula, discount_rate_range, terminal_growth_or_exit_range, approved_assumptions, share_count_date, source_ids]
+    recommended_chart_type: "two-way sensitivity table or heat map with direct cell labels"
+    required_annotations: [valuation_date, discount_rate_definition, terminal_method, share_count_date, source_and_as_of]
+    required_comparisons: [base_case_visibility, feasible_assumption_range, discount_rate_above_terminal_growth]
+    source_note_format: "Source: [source IDs]; model version: [ID]; valuation date: [date]; assumptions: [approved or labeled]; as of: [date]."
+    common_misuses: [discount_rate_not_above_terminal_growth, hidden_formula_changes, false_precision, unapproved_assumptions, presenting_as_price_target]
+    accessibility_equivalent: "Matrix table of every assumption pair and model-implied output with formula notes."
+
+  - chart_id: CHART-015
+    name: Bull, Base, and Bear Outcomes
+    analytical_question: "Which small set of causal assumptions creates the range of operating and valuation outcomes?"
+    required_data: [scenario_names, scenario_assumptions, consistent_formulas, outcomes, approval_status, source_ids]
+    recommended_chart_type: "scenario bars, range plot, or side-by-side assumptions-and-outcomes table"
+    required_annotations: [base_case_label, causal_assumption_list, probability_status, valuation_date_if_any, source_and_as_of]
+    required_comparisons: [assumption_deltas, outcome_deltas, thesis_breaking_conditions]
+    source_note_format: "Source: [source IDs]; scenario definitions: [version]; approval status: [label]; valuation date: [if applicable]; as of: [date]."
+    common_misuses: [changing_multiple_formulas, inventing_probabilities, hiding_base_case, using_scenarios_as_predictions, omitting_downside_mechanism]
+    accessibility_equivalent: "Table of scenario assumptions, formula consistency, outcomes, and disconfirming conditions."
+
+  - chart_id: CHART-016
+    name: Accounting Red-Flag Trends
+    analytical_question: "Which configured forensic signals are triggered over time, with inputs, alternative explanations, and source status?"
+    required_data: [forensic_signal_records, periods, labels, input_values, threshold_versions, alternative_explanations, source_ids]
+    recommended_chart_type: "signal timeline or small-multiple trend chart paired with a detailed table"
+    required_annotations: [screening_not_proof_label, formula_version, threshold_version, source_and_as_of]
+    required_comparisons: [multi_period_persistence, corroborating_signals, confounder_status]
+    source_note_format: "Source: [issuer source IDs and methodology source IDs]; screen: [pattern ID/version]; status: [label]; as of: [date]."
+    common_misuses: [treating_signal_as_misconduct, hiding_alternative_explanations, presenting_missing_data_as_normal, combining_unrelated_signals_into_score]
+    accessibility_equivalent: "Forensic screen table with each test, inputs, label, alternatives, limitations, and next step."
+
+  - chart_id: CHART-017
+    name: Risk Likelihood versus Impact
+    analytical_question: "Which material risks have the highest defined likelihood and impact within a stated horizon?"
+    required_data: [risk_ids, likelihood_basis, impact_basis, time_horizon, threatened_assumptions, source_ids]
+    recommended_chart_type: "labeled matrix with a ranked explanatory table"
+    required_annotations: [likelihood_definition, impact_definition, time_horizon, uncertainty_note, source_and_as_of]
+    required_comparisons: [risk_rank, leading_indicators, thesis_breaking_conditions]
+    source_note_format: "Source: [source IDs]; risk horizon: [period]; likelihood and impact basis: [definitions]; as of: [date]."
+    common_misuses: [invented_probabilities, color_only_severity, unlabeled_ordinal_scales, treating_matrix_as_complete_risk_register]
+    accessibility_equivalent: "Ranked risk table with likelihood, impact, basis, indicators, threatened assumption, and uncertainty."

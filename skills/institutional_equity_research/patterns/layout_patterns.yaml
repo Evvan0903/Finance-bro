@@ -1,0 +1,70 @@
+version: "1.0"
+purpose: "Original reading and page-composition conventions for evidence-led research. These patterns coordinate with design/layout_tokens.yaml and never reproduce a publisher's exact page architecture."
+
+global_segmentation_rules:
+  maximum_paragraph_length: "90 words for standard analytical prose; split earlier when evidence, counterevidence, or a new causal step begins."
+  maximum_ideas_per_paragraph: 2
+  heading_hierarchy: "Use one H1 for a major report section, H2 for a decision question, and H3 only for a necessary sub-question; do not create headings solely for decoration."
+  use_bullets_when: [listing_independent_conditions, comparing_short_items, recording_open_questions, stating_assumptions_or_monitors]
+  use_prose_when: [explaining_causality, qualifying_evidence, comparing_alternative_explanations, stating_a_calibrated_judgment]
+  use_a_table_when: [exact_values_matter, a_reconciliation_is_required, multiple_definitions_or_periods_must_remain_visible]
+  use_a_chart_when: [one_pattern_or_comparison_is_easier_to_see_than_read, data_are_comparable_and_sourced]
+  use_a_callout_when: [a_material_risk, thesis_breaker, evidence_limit, or decision condition needs separation from the narrative]
+  move_to_appendix_when: [detail_is_auditable_but_not_decision_critical, display_cannot_be_read_at_minimum_font_size, formulas_or_source_logs_interrupt_main_flow]
+
+patterns:
+  - pattern_id: LP-001
+    name: Conclusion-first section
+    use_when: "A section answers a material analytical or diligence question."
+    sequence: [conclusion_or_current_judgment, evidence, counterevidence_or_limit, financial_implication, what_to_monitor]
+    display_rules: [place_conclusion_in_first_two_sentences, keep_source_markers_near_claims, put_detail_after_implication]
+    avoid: [scene_setting_without_decision_relevance, unsupported_certainty, conclusion_buried_after_data_dump]
+
+  - pattern_id: LP-002
+    name: Evidence display followed by interpretation
+    use_when: "A chart or table carries a key calculation or comparison."
+    sequence: [interpretive_title, visual_or_table, source_and_unit_note, one_sentence_implication, short_method_or_limit]
+    display_rules: [keep_title_visual_and_source_together, do_not_repeat_all_values_in_prose, label_actuals_estimates_and_scenarios]
+    avoid: [chart_without_implication, source_in_distant_bibliography, decorative_visual_without_question]
+
+  - pattern_id: LP-003
+    name: Decision sidebar
+    use_when: "A reader needs a compact view of the current thesis, status, or action condition beside detailed evidence."
+    sequence: [decision_question, current_status, evidence_for, evidence_against, key_assumption, next_monitor]
+    display_rules: [maximum_five_short_items, include_uncertainty, do_not_use_as_advertising_panel]
+    avoid: [one_sided_thesis, hidden_rating, decorative_metric_card_overload]
+
+  - pattern_id: LP-004
+    name: Risk and red-flag callout
+    use_when: "A risk, forensic signal, or unresolved diligence item materially affects interpretation."
+    sequence: [neutral_title, why_it_matters, evidence, alternative_explanation, status, further_work]
+    display_rules: [use_text_label_not_color_alone, cite_source, retain_limitations, link_to_threatened_assumption]
+    avoid: [alarmist_language, proof_by_formatting, unsupported_severity]
+
+  - pattern_id: LP-005
+    name: Analytical comparison page
+    use_when: "Two sources, periods, scenarios, or claims must be compared on a common basis."
+    sequence: [comparison_question, common_definition, left_or_top_case, right_or_bottom_case, implication, limits]
+    display_rules: [use_symmetrical_columns_only_for_comparable_items, state_definition_changes, preserve_dates_and_units]
+    avoid: [false_symmetry, mixed_actual_and_forecast_data, hidden_selection_criteria]
+
+  - pattern_id: LP-006
+    name: Diligence findings page
+    use_when: "Multiple public-side diligence questions need a bounded evidence status."
+    sequence: [scope_and_cutoff, status_legend, findings, alternative_explanations, open_questions, further_verification]
+    display_rules: [use_allowed_status_labels, separate_cleared_from_outside_scope, show_source_per_finding]
+    avoid: [claiming_complete_diligence, collapsing_unknown_into_no_issue, presenting_screen_as_proof]
+
+  - pattern_id: LP-007
+    name: Appendix separation
+    use_when: "A formula, reconciliation, detailed source ledger, or supplemental history must remain auditable but disrupts the decision flow."
+    sequence: [appendix_label, cross_reference, detailed_display, source_or_formula, reconciliation_status]
+    display_rules: [use_stable_references, preserve_units_and_periods, keep_main_section_conclusion_independent]
+    avoid: [new_uncited_conclusions, orphaned_supporting_display, material_qualification_hidden_only_in_appendix]
+
+  - pattern_id: LP-008
+    name: Page-level provenance footer
+    use_when: "A page contains material sources, assumptions, forecast periods, or report limitations."
+    sequence: [report_version, data_cutoff, key_source_markers, actual_estimate_legend, applicable_disclosure_marker]
+    display_rules: [keep_compact_and_legible, do_not_replace_object_level_sources, use_repeated_format_across_pages]
+    avoid: [generic_footer_without_dates, unreadable_font, citation_dump]

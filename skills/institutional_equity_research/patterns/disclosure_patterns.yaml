@@ -1,0 +1,57 @@
+version: "1.0"
+purpose: "Required disclosure blocks and object-level labels. Apply the narrowest combination that fully describes scope, evidence, assumptions, limitations, rights, and permitted use."
+
+disclosures:
+  - disclosure_id: DISC-001
+    name: Educational and non-advice status
+    use_when: "Every externally shared research preview, report, dashboard, or memo."
+    required_elements: [educational_or_research_status, not_personalized_investment_advice, user_responsibility, no_affiliation_or_endorsement]
+    prohibited_claims: [guaranteed_outcome, regulated_research_claim_without_review, institution_affiliation]
+
+  - disclosure_id: DISC-002
+    name: Sources, methods, and provenance
+    use_when: "Every report containing material facts, calculations, or visual objects."
+    required_elements: [data_cutoff, source_classes, retrieval_or_filing_dates, calculation_trace, source_limitations]
+    prohibited_claims: [uncited_fact, fabricated_source, hidden_method]
+
+  - disclosure_id: DISC-003
+    name: Forecast and assumption status
+    use_when: "Any forecast, scenario, guidance comparison, valuation, or forward-looking discussion."
+    required_elements: [actual_estimate_scenario_labels, assumption_sources, approval_status, forecast_horizon, conditional_language]
+    prohibited_claims: [unapproved_AI_assumption_as_fact, certainty_about_future_results, hidden_consensus]
+
+  - disclosure_id: DISC-004
+    name: Data freshness, completeness, and comparability
+    use_when: "Any output with public data, revisions, missing information, partial periods, or derived quarters."
+    required_elements: [as_of_date, data_cutoff, missing_data_label, restatement_or_recast_status, comparability_limit]
+    prohibited_claims: [stale_data_as_current, inferred_missing_value, incomparable_period_as_trend]
+
+  - disclosure_id: DISC-005
+    name: Public-side diligence scope
+    use_when: "Public-Side Due Diligence Reports, investment committee memos, or any diligence finding."
+    required_elements: [public_evidence_scope, allowed_status_labels, open_questions, further_verification, outside_scope_statement]
+    prohibited_claims: [complete_due_diligence, fully_verified, no_risk_exists, fraud_confirmed]
+
+  - disclosure_id: DISC-006
+    name: Valuation assessment and no-rating status
+    use_when: "Any valuation output, sensitivity, relative valuation, or model-implied value range."
+    required_elements: [methodology, valuation_date, model_limitations, assumptions, model_implied_not_target_price]
+    prohibited_claims: [unsupported_rating, hidden_price_target, guaranteed_return]
+
+  - disclosure_id: DISC-007
+    name: Forensic screening limitation
+    use_when: "Any forensic pattern, red-flag display, accounting-quality observation, or signal table."
+    required_elements: [screening_not_proof, alternative_explanations, source_requirements, insufficient_data_handling, no_audit_or_legal_conclusion]
+    prohibited_claims: [misconduct_from_ratio, fraud_from_screen, audit_opinion_without_audit]
+
+  - disclosure_id: DISC-008
+    name: Copyright, asset, and non-affiliation safeguards
+    use_when: "Any output using a public methodology source, asset, motif, chart pattern, or external material."
+    required_elements: [public_access_not_reuse_license, original_or_manifest_approved_asset, no_named_institution_style, no_logos_or_trade_dress, rights_review_status]
+    prohibited_claims: [source_affiliation, copied_branding, unlicensed_redistribution]
+
+publication_gate:
+  required_for_every_output: [DISC-001, DISC-002, DISC-004, DISC-008]
+  required_when_forecast_or_valuation: [DISC-003, DISC-006]
+  required_when_public_side_diligence: [DISC-005]
+  required_when_forensic_screening: [DISC-007]

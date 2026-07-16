@@ -1,0 +1,68 @@
+version: "1.0"
+purpose: "Original paragraph and display structures for calibrated, evidence-led research writing. Patterns organize reasoning and do not authorize unsourced conclusions."
+
+global_rules:
+  - "Open with the answer or current judgment, not generic market context."
+  - "Use one causal chain per paragraph and identify whether each element is observed, calculated, assumed, or interpreted."
+  - "Place the strongest credible counterevidence beside the conclusion it qualifies."
+  - "Use conditional language for forecast, valuation, and scenario statements."
+  - "Use exact quotations only when cited and necessary; otherwise write an attributed paraphrase."
+
+forbidden_filler:
+  - "best-in-class"
+  - "compelling opportunity"
+  - "robust platform"
+  - "transformational potential"
+  - "clear winner"
+  - "obvious upside"
+  - "institutional-quality" 
+
+patterns:
+  - pattern_id: WP-001
+    name: Conclusion–Evidence–Implication–Monitor
+    structure: [conclusion, evidence, financial_implication, what_to_monitor]
+    use_when: "A fact pattern supports a current but falsifiable judgment."
+    required_labels: [evidence_status, source_marker, monitor_or_disconfirming_indicator]
+    constraints: [conclusion_must_not_exceed_evidence, distinguish_fact_from_inference, include_counterevidence_when_material]
+
+  - pattern_id: WP-002
+    name: Change–Cause–Durability
+    structure: [observed_change, primary_cause, temporary_or_structural_assessment, forecast_implication]
+    use_when: "A period-over-period change needs a causal explanation and durability assessment."
+    required_labels: [comparison_period, metric_definition, evidence_for_cause, uncertainty]
+    constraints: [do_not_assign_cause_without_support, do_not_extrapolate_one_period, label_assumption_in_forecast_implication]
+
+  - pattern_id: WP-003
+    name: Finding–Alternative Explanation–Judgment
+    structure: [finding, evidence, alternative_explanation, current_judgment, residual_uncertainty]
+    use_when: "A public-side diligence or forensic signal has plausible competing explanations."
+    required_labels: [severity_or_signal_label, confidence, source_marker, further_work_if_needed]
+    constraints: [never_treat_screen_as_proof, retain_benign_explanations, use_allowed_diligence_status]
+
+  - pattern_id: WP-004
+    name: Thesis–Disconfirming Evidence
+    structure: [thesis, supporting_evidence, contradictory_evidence, disconfirming_condition]
+    use_when: "A decision thesis needs a balanced, testable presentation."
+    required_labels: [assumption, valuation_or_financial_transmission, monitor, review_date]
+    constraints: [strongest_countercase_required, disconfirming_condition_observable, no_hidden_rating_or_target]
+
+  - pattern_id: WP-005
+    name: Diligence Finding
+    structure: [finding, why_it_matters, evidence, severity, confidence, further_work_required]
+    use_when: "A review question has enough public evidence for a bounded finding."
+    required_labels: [category, allowed_status, alternative_explanations, scope_limit, sources]
+    constraints: [do_not_claim_complete_diligence, distinguish_outside_scope, state_open_questions]
+
+  - pattern_id: WP-006
+    name: Table-to-interpretation bridge
+    structure: [display_reference, one_sentence_readout, driver, limitation, monitor]
+    use_when: "A table contains the evidence and prose should explain, not duplicate it."
+    required_labels: [table_id, source_marker, actual_estimate_status]
+    constraints: [do_not_repeat_every_cell, do_not_hide_definition_change, retain_units_and_period_basis]
+
+  - pattern_id: WP-007
+    name: Source-limit statement
+    structure: [what_is_known, what_is_not_disclosed, why_limit_matters, permitted_next_step]
+    use_when: "Public data, rights, comparability, or calculation inputs are incomplete."
+    required_labels: [missing_data_label, source_cutoff, further_verification_needed]
+    constraints: [do_not_fill_gap_with_inference, do_not_imply_nonpublic_access, do_not_weaken_limit_to_preserve_narrative]

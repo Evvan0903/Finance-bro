@@ -23,12 +23,12 @@
 - [x] Perform semantic review of the newly written design and asset YAML files.
 - [x] Create `research_corpus.yaml` with the complete source/rights metadata schema.
 - [x] Create `patterns/forensic_patterns.yaml` with complete topic coverage and bounded screening labels.
-- [ ] Create `patterns/chart_patterns.yaml` with all seventeen required chart types.
-- [ ] Create `patterns/table_patterns.yaml`.
-- [ ] Create `patterns/layout_patterns.yaml`.
-- [ ] Create `patterns/writing_patterns.yaml`.
-- [ ] Create `patterns/disclosure_patterns.yaml`.
-- [ ] Create `patterns/sector_patterns.yaml`.
+- [x] Create `patterns/chart_patterns.yaml` with all seventeen required chart types.
+- [x] Create `patterns/table_patterns.yaml`.
+- [x] Create `patterns/layout_patterns.yaml`.
+- [x] Create `patterns/writing_patterns.yaml`.
+- [x] Create `patterns/disclosure_patterns.yaml`.
+- [x] Create `patterns/sector_patterns.yaml`.
 - [ ] Create `patterns/pattern_provenance.yaml` for every adopted pattern.
 - [ ] Create the deterministic support-resource validation script.
 - [ ] Incrementally update `SKILL.md` after all support libraries exist.
