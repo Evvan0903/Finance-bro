@@ -37,3 +37,17 @@
 - [x] Commit and push the exact Sites source state.
 - [x] Deploy version 1 with owner-only access.
 - [x] Verify the private production homepage and Shell API response.
+
+## ScopeLine bilingual version 2
+
+- [x] Add an accessible `中文 / EN` switch without changing the established design.
+- [x] Translate all static UI, loading, error, report, action, and export labels.
+- [x] Persist the selected language and update the document language.
+- [x] Add `zh` / `en` locale handling to the research API.
+- [x] Localize all generated report narratives, sources, limitations, and errors.
+- [x] Add bilingual metadata and regression tests.
+- [x] Pass lint, production build, and all five tests.
+- [x] Verify Shell in Chinese and English locally.
+- [x] Commit and push the exact bilingual Sites source state.
+- [x] Deploy version 2 to the existing owner-only Site.
+- [x] Verify the production homepage and both localized Shell APIs.

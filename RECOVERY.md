@@ -6,6 +6,8 @@ Refactor `skills/institutional_equity_research/SKILL.md` into a concise executio
 
 The subsequent objective was to turn that research approach into a one-input MVP and publish it to ChatGPT Sites with owner-only access.
 
+The latest objective was to upgrade that existing private Site to a complete Chinese/English experience without changing its URL or access policy.
+
 ## Completed tasks
 
 - Recovered and verified the prior completed skill-upgrade checkpoint (`b9b928d`).
@@ -35,6 +37,15 @@ The subsequent objective was to turn that research approach into a one-input MVP
 - Verified the local and deployed production APIs with Shell plc: five annual periods through FY2025, latest 20-F and 6-K links, a USD 26.052 billion cash-flow proxy, and all three scenarios.
 - Committed the exact Sites source as `84ceada` in the independent `site/` repository and pushed it only to the ChatGPT Sites source repository required for deployment.
 - Published version 1 privately at `https://scopeline-research.evvan.chatgpt.site`; access is owner-only with no allowed groups or additional users.
+- Added an accessible `中文 / EN` switch to the existing ScopeLine header while preserving the institutional report design.
+- Localized every client-visible state, including the request form, loading and error messages, report headings, evidence labels, tables, scenarios, source ledger, limitations, actions, footer, and Markdown export.
+- Persisted the selected language in browser storage and synchronized the document language to `zh-CN` or `en`.
+- Extended the research API to accept `locale: "zh" | "en"`, default to Chinese, return `report.locale`, and localize all generated dashboard, narrative, thesis, risk, catalyst, valuation, formula, source, limitation, and error text.
+- Added bilingual metadata and regression coverage for Chinese SSR, both language controls, localized validation errors, the client/API locale contract, persistence, document language, and starter cleanup.
+- Passed lint, the production build, and all five bilingual regression tests.
+- Verified Shell locally and in production in both languages; both versions returned five annual periods, 20-F and 6-K filing links, and the full scenario set. The English JSON had no Chinese-character residue.
+- Committed the bilingual Sites source as `a5e4f29`, published version 2 to the existing private URL, and reverified the production homepage plus Chinese and English report APIs with HTTP 200 responses.
+- Confirmed the access policy remains owner-only with no groups or additional users.
 
 ## Remaining tasks
 
@@ -42,7 +53,7 @@ None. The ScopeLine site is deployed privately and the prior skill/report work r
 
 ## Current status
 
-Complete. The skill/report deliverables remain complete, and the one-input ScopeLine MVP is now live as an owner-only ChatGPT Site. Production homepage and Shell report generation both returned HTTP 200 after deployment.
+Complete. The skill/report deliverables remain complete, and ScopeLine version 2 is live at the existing owner-only ChatGPT Site with complete Chinese/English switching. Production homepage and both localized Shell report paths returned HTTP 200 after deployment.
 
 ## Files modified
 
@@ -57,7 +68,7 @@ Complete. The skill/report deliverables remain complete, and the one-input Scope
 
 ## Next recommended step
 
-Open the private ScopeLine URL and test additional SEC-reporting issuers. Make changes only for a newly identified defect or new request; do not regenerate the completed skill, Shell sample, or site from scratch.
+Open the private ScopeLine URL, switch between `中文` and `EN`, and test additional SEC-reporting issuers. Make changes only for a newly identified defect or new request; do not regenerate the completed skill, Shell sample, or site from scratch.
 
 ## Assumptions and pending decisions
 
@@ -71,6 +82,8 @@ Open the private ScopeLine URL and test additional SEC-reporting issuers. Make c
 - The website requires standardized SEC XBRL; non-SEC issuers and issuers with insufficient Company Facts may return an unavailable-data message.
 - ScopeLine is currently private and visible only to the owner. Making it public requires a separate explicit access change.
 - `site/` is its own Git repository used by ChatGPT Sites; the parent repository must not recreate or flatten it.
+- Chinese remains the server-rendered default; the browser remembers a user's selected language under `scopeline-locale` and restores it after hydration.
+- Switching language after report generation refetches the same issuer in the selected language so the narrative and exported Markdown do not mix languages.
 
 ## Recovery procedure
 
