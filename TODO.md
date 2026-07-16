@@ -31,9 +31,9 @@
 - [x] Create `patterns/sector_patterns.yaml`.
 - [x] Create `patterns/pattern_provenance.yaml` for every adopted pattern.
 - [x] Create the deterministic support-resource validation script.
-- [ ] Incrementally update `SKILL.md` after all support libraries exist.
-- [ ] Add the exact ten-level conflict hierarchy and publication-blocking QA.
-- [ ] Add forensic, diligence, credit-style risk, and investment-committee routing.
+- [x] Incrementally update `SKILL.md` after all support libraries exist.
+- [x] Add the exact ten-level conflict hierarchy and publication-blocking QA.
+- [x] Add forensic, diligence, credit-style risk, and investment-committee routing.
 - [ ] Validate every YAML file.
 - [ ] Run the skill-creator quick validation.
 - [ ] Run terminology, prohibited-claim, provenance, asset, and copyright checks.

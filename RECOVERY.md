@@ -26,11 +26,11 @@ Incrementally upgrade `skills/institutional_equity_research/SKILL.md` into a pub
 - Created and validated the six complementary pattern libraries: 17 chart patterns, 10 table patterns, 8 layout patterns, 7 writing patterns, 8 disclosure blocks, and 9 sector patterns; all existing referenced IDs resolve.
 - Created and validated `patterns/pattern_provenance.yaml`, covering all 166 adopted pattern, layout, visual, and motif IDs plus all 29 section-blueprint IDs through 24 rights-reviewed provenance sets.
 - Created and ran `scripts/validate_resources.py`; it validates required resources, YAML parsing, corpus metadata, forensic contracts, reference resolution, provenance coverage, asset manifest gating, benchmark coverage, terminology, and named-style prohibition.
+- Incrementally extended `SKILL.md` from 254 to 335 lines with concise resource routing, public-research rules, archetype/diligence/forensic/credit/IC execution, original design controls, the required ten-level conflict hierarchy, and a publication-blocking QA gate; both resource and skill validation pass.
 - Stopped all active implementation work at a completed patch boundary when the checkpoint was requested.
 
 ## Remaining tasks
 
-- Incrementally extend the existing `SKILL.md` with concise resource routing, mandatory versus optional rules, the exact conflict hierarchy, forensic/diligence/credit/IC execution guidance, copyright supremacy, and publication-blocking QA.
 - Validate all YAML files and run the skill-creator `quick_validate.py` check.
 - Run terminology, prohibited-claim, copyright, asset-manifest, and provenance coverage checks.
 - Forward-test the upgraded skill on a fresh example task and record any refinements.
@@ -38,7 +38,7 @@ Incrementally upgrade `skills/institutional_equity_research/SKILL.md` into a pub
 
 ## Current status
 
-Checkpointed mid-upgrade. The gap analysis, core archetype/blueprint layer, analytical patterns, diligence library, benchmark cases, design/asset resources, a 34-source rights-aware corpus, a 38-test forensic library, the complete chart/table/layout/writing/disclosure/sector pattern layer, full pattern provenance, and deterministic resource validation exist on disk. All present YAML files parse successfully, and the design/asset layer semantically covers the requested layout archetypes, all 18 visual types, manifest gate, asset directories, and sector motifs. `SKILL.md` itself has deliberately not yet been changed, because the request requires supporting libraries to be created before the concise routing update. The skill remains usable in its original form, while the new support files are not yet wired into it.
+Checkpointed mid-upgrade. The gap analysis, core archetype/blueprint layer, analytical patterns, diligence library, benchmark cases, design/asset resources, a 34-source rights-aware corpus, a 38-test forensic library, the complete chart/table/layout/writing/disclosure/sector pattern layer, full pattern provenance, deterministic resource validation, and an incrementally extended `SKILL.md` exist on disk. All present YAML files parse successfully; `SKILL.md` is 335 lines, resource validation passes, and the skill-creator validation passes. The support files are now wired into the existing skill without replacing its original Sections 1–26.
 
 No remote push has been performed. No full third-party reports, report pages, screenshots, branded visuals, proprietary ratings, forecasts, target prices, or copied layouts were added.
 
@@ -67,11 +67,11 @@ No remote push has been performed. No full third-party reports, report pages, sc
 - `RECOVERY.md`
 - `TODO.md`
 
-The existing `skills/institutional_equity_research/SKILL.md` was inspected but not modified during this interrupted phase.
+The existing `skills/institutional_equity_research/SKILL.md` was extended in place after all supporting libraries were created and validated.
 
 ## Next recommended step
 
-Read this file and `TODO.md`, inspect the latest local commit, and compare the committed tree with these notes. Then incrementally extend `SKILL.md` to route the new resources, distinguish mandatory from optional controls, state the exact conflict hierarchy, and enforce the publication gate without duplicating the detailed YAML libraries. Resume only the unchecked work; do not regenerate or overwrite the completed resources unless validation identifies a specific defect.
+Read this file and `TODO.md`, inspect the latest local commit, and compare the committed tree with these notes. Then run the complete YAML and skill validation suite, terminology and prohibited-claim checks, asset/provenance checks, and a fresh-context forward test. Resume only the unchecked work; do not regenerate or overwrite the completed resources unless validation identifies a specific defect.
 
 ## Assumptions and pending decisions
 

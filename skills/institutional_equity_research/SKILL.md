@@ -1,6 +1,6 @@
 ---
 name: institutional-equity-research
-description: Build original, source-backed institutional-style equity research reports from public filings and licensed inputs. Use when analyzing a public company, normalizing financial history, writing an evidence-led investment thesis, creating transparent forecasts or valuation scenarios, designing cited charts and tables, or running numerical, citation, and copyright QA on an equity research deliverable.
+description: Build original, source-backed institutional-style equity research, earnings-quality reviews, public-side due diligence reports, credit-style risk analysis, forensic accounting screens, and investment-committee memos from public filings and licensed inputs. Use when analyzing a public company, normalizing financial history, testing reporting quality, writing an evidence-led thesis, creating transparent forecasts or valuation scenarios, designing cited charts and tables, or running numerical, citation, provenance, visual, and copyright QA on an equity-research deliverable.
 ---
 
 # Institutional Equity Research
@@ -163,6 +163,7 @@ Show company, ticker, exchange, industry, publication date, data cutoff, currenc
 - Use a zero baseline for absolute bars and avoid misleading truncated axes.
 - Omit or label missing observations; do not connect across unsupported gaps.
 - Provide a text or table equivalent for decision-relevant visuals.
+- Select a matching recipe from `patterns/chart_patterns.yaml` before drafting a chart; do not use a chart merely to increase visual density.
 
 ## 18. Table-design rules
 
@@ -171,6 +172,7 @@ Show company, ticker, exchange, industry, publication date, data cutoff, currenc
 - Use one currency and scale per table.
 - Align decimals, use parentheses for negatives when appropriate, and display `—` for unavailable values.
 - Place source and calculation notes immediately below the table.
+- Select a matching contract from `patterns/table_patterns.yaml` when a table carries a material reconciliation, forecast, diligence finding, forensic screen, or source ledger.
 
 ## 19. Citation standards
 
@@ -186,6 +188,7 @@ Show company, ticker, exchange, industry, publication date, data cutoff, currenc
 - Do not copy institutional report charts, screenshots, illustrations, or logos.
 - Use decorative imagery only when it communicates necessary context and licensing permits use.
 - Add accessible text for every decision-relevant image.
+- Use `assets/asset_manifest.yaml` as a hard gate: do not place a non-data asset until its complete manifest entry is approved.
 
 ## 21. Institutional writing standards
 
@@ -195,6 +198,7 @@ Show company, ticker, exchange, industry, publication date, data cutoff, currenc
 - Use conditional language for forecasts.
 - Avoid marketing superlatives, false precision, and unexplained jargon.
 - State what changed, why it matters, and what to monitor.
+- Use `patterns/writing_patterns.yaml` and `patterns/layout_patterns.yaml` to select an original conclusion-first structure, not a publisher's distinctive heading or prose style.
 
 ## 22. Numerical QA standards
 
@@ -252,3 +256,80 @@ Use `Institutional Quality` only when the overall score is at least 85, data int
 Before delivery, run numerical, citation, visual, missing-data, freshness, licensing, and copyright checks. Document the denominator used for citation coverage and the evidence behind every subscore. Render every PDF page and inspect for clipping, overlap, unreadable text, missing charts, broken links, and incorrect page metadata.
 
 Hard-block client-facing delivery when a report contains a fabricated citation or value, an unsupported valuation output, an unreconciled core statement above tolerance without a visible limitation, a material copyright or licensing violation, or stale data presented as current. A technical preview may still be exported only when it is visibly labeled `QA Review Required` and lists the blocking errors. `Institutional Quality` is a project QA label, not a claim of institutional authorship, affiliation, endorsement, or regulatory compliance. Route regulated research distribution and analyst-certification questions to qualified compliance review.
+
+## 27. Pattern-resource routing
+
+Load only the resources needed for the assignment, but treat the following controls as mandatory:
+
+- For any external public research source, read `research_corpus.yaml`; add only metadata and original observations after rights review. Never store full report content, images, ratings, forecasts, targets, proprietary scores, or production hidden context.
+- Select one report type from `patterns/report_archetypes.yaml`, then load the matching required and optional section contracts from `patterns/section_blueprints.yaml`.
+- Load `patterns/sector_patterns.yaml` when the issuer's disclosed sector economics match a supported sector. Otherwise use the general pattern and state missing sector support.
+- Load `patterns/disclosure_patterns.yaml` for every output and apply the required disclosure combination for forecasts, valuation, public-side due diligence, or forensic screens.
+- Load `patterns/pattern_provenance.yaml` before adopting a pattern. Use only approved, generalized patterns and never imitate a named institution.
+
+Use these resources when applicable:
+
+- `patterns/analytical_patterns.yaml` for causal, change, thesis-validation, point-in-time, and committee reasoning.
+- `patterns/forensic_patterns.yaml` for public-filings screens, earnings-quality review, red flags, or reporting-risk analysis.
+- `patterns/diligence_patterns.yaml` for public-side diligence reports, IC memos, and unresolved diligence questions.
+- `patterns/chart_patterns.yaml`, `patterns/table_patterns.yaml`, `patterns/layout_patterns.yaml`, and `patterns/writing_patterns.yaml` for analytical displays and readable report flow.
+- `design/layout_tokens.yaml` and `design/visual_grammar.yaml` for any designed or exported visual deliverable. `design/sector_visual_motifs.yaml` is optional and secondary to analysis.
+- `assets/asset_manifest.yaml` only when using a non-data asset; charts and original diagrams take precedence over decoration.
+- `benchmarks/benchmark_cases.yaml` for acceptance testing only. Never use a benchmark case to infer an issuer conclusion.
+
+## 28. Public research and pattern-adoption workflow
+
+Before adding a source or pattern:
+
+1. Verify that the source is legally accessible without bypassing a paywall, form, authentication, robots policy, portal, or technical control.
+2. Record source metadata, access date, rights status, reviewed pages or sections, and an original generalized note in `research_corpus.yaml`.
+3. Record only common functional conventions, multi-source observations, or an independent usability justification in `patterns/pattern_provenance.yaml`.
+4. Reject any pattern that depends on copied prose, tables, charts, forecasts, ratings, scores, logos, color systems, layouts, named frameworks, or trade dress.
+
+Public availability is not a redistribution license. Copyright restrictions override visual-similarity goals. Do not say an output is in the style of, equivalent to, affiliated with, or endorsed by a named institution.
+
+## 29. Archetype, diligence, forensic, and credit execution
+
+Choose the narrowest archetype that supports the requested decision. Complete all required sections and disclosures, then add optional sections only when evidence supports them.
+
+- For public-side due diligence, use the finding schema and allowed statuses in `patterns/diligence_patterns.yaml`. Preserve evidence, alternative explanations, confidence, open questions, further verification, and matters outside public scope. Do not claim complete diligence, full verification, absence of risk, or fraud.
+- For forensic accounting, run only applicable deterministic tests. Preserve inputs, formula version, threshold version, issuer sources, methodology sources, alternative explanations, confounders, and limitations. Use only `Normal`, `Monitor`, `Elevated`, `High concern`, or `Insufficient data`. A signal is a review priority, never proof of misconduct.
+- For credit-style risk, use the liquidity, debt, maturity, commitment, cash-flow, and downside patterns without assigning a credit rating. Distinguish freely available cash from restricted or uncertain liquidity.
+- For an investment-committee memo, state evidence for, evidence against, key assumptions, source cutoff, unresolved questions, thesis-breaking conditions, owner, and review date. Include portfolio constraints or sizing only when user-supplied.
+
+## 30. Original design and asset controls
+
+Use the original layout system and visual grammar, not a publisher's presentation. For every chart, table, diagram, card, timeline, map, or risk matrix, state its analytical question, sources, units when applicable, period basis, as-of date, and accessible equivalent.
+
+Use sector motifs only as restrained context. Do not present a motif, decorative image, generated image, logo, or map as evidence. When image generation is available, record prompt, negative prompt, model or method, date, checksum, license, placement, and alt text in the asset manifest. When it is not available, prefer original deterministic SVG or data-driven diagrams; do not download random internet images.
+
+Hard-block a visual if it is decorative without analytical purpose, missing provenance, unlicensed, copied, logo-bearing, trademark-bearing without permission, low resolution, unreadable, low contrast, color-only encoded, inconsistent with actual-versus-estimate styling, clipped, or missing a source when it contains evidence.
+
+## 31. Conflict resolution
+
+Resolve conflicts in this order:
+
+1. Legal and copyright restrictions
+2. Data integrity
+3. Source provenance
+4. Calculation integrity
+5. Citation requirements
+6. Report archetype requirements
+7. Sector requirements
+8. Analytical pattern rules
+9. Layout rules
+10. Decorative preferences
+
+Aesthetic similarity must never override copyright, accuracy, readability, accessibility, or provenance. When a lower-priority preference conflicts with a higher-priority control, preserve the higher-priority control and state the limitation or omit the element.
+
+## 32. Pattern and visual QA gate
+
+Before publication, run:
+
+```bash
+python scripts/validate_resources.py
+```
+
+Then verify that the selected archetype is complete, every required section has its completion conditions, selected patterns have approved provenance, and every cross-reference resolves. Check for excessive decorative imagery, missing asset-manifest entries, copied logos or trademarks, charts without sources, images presented as evidence, inconsistent chart styles, excessive color, poor contrast, layout clipping, orphaned headings, widowed paragraphs, broken hierarchy, unreadable footnotes, and inconsistent actual-versus-estimate styling.
+
+Block publication when resource validation fails, a source has unresolved rights, a pattern lacks provenance, an asset lacks an approved manifest entry, a required disclosure is absent, or a visual or analytical claim fails the standards above. Label any technical export with unresolved blockers as `QA Review Required`.
