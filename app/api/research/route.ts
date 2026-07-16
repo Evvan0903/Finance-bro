@@ -2,6 +2,7 @@ import type {
   DashboardMetric,
   FilingSource,
   FinancialPeriod,
+  ResearchLocale,
   ResearchReport,
   RiskPoint,
   Scenario,
@@ -55,6 +56,25 @@ type Submissions = {
 };
 
 type Series = { unit: string; values: Map<string, number> };
+
+const COPY = {
+  zh: {
+    dataUnavailable: "数据不可用",
+    notDisclosed: "未披露",
+    unableToCalculate: "无法根据现有申报计算",
+    annualFiling: "最新年度申报",
+    interimFiling: "最新中期/当前申报",
+    reportingIssuer: "SEC 申报发行人",
+  },
+  en: {
+    dataUnavailable: "Data unavailable",
+    notDisclosed: "Not disclosed",
+    unableToCalculate: "Unable to calculate from available filings",
+    annualFiling: "Latest annual filing",
+    interimFiling: "Latest interim/current filing",
+    reportingIssuer: "SEC reporting issuer",
+  },
+} as const;
 
 let tickerRecordsPromise: Promise<TickerRecord[]> | null = null;
 
@@ -313,8 +333,8 @@ function cagr(periods: FinancialPeriod[]) {
   return Math.pow(last.revenue / first.revenue, 1 / years) - 1;
 }
 
-function compactMoney(value: number | null, currency: string) {
-  if (value === null) return "Data unavailable";
+function compactMoney(value: number | null, currency: string, locale: ResearchLocale) {
+  if (value === null) return COPY[locale].dataUnavailable;
   const absolute = Math.abs(value);
   const scale = absolute >= 1e9 ? 1e9 : absolute >= 1e6 ? 1e6 : 1;
   const suffix = scale === 1e9 ? "bn" : scale === 1e6 ? "m" : "";
@@ -322,8 +342,8 @@ function compactMoney(value: number | null, currency: string) {
   return `${currency} ${amount.toFixed(Math.abs(amount) >= 100 ? 0 : 1)}${suffix}`;
 }
 
-function percentage(value: number | null) {
-  return value === null ? "Data unavailable" : `${(value * 100).toFixed(1)}%`;
+function percentage(value: number | null, locale: ResearchLocale) {
+  return value === null ? COPY[locale].dataUnavailable : `${(value * 100).toFixed(1)}%`;
 }
 
 function recentFilings(submissions: Submissions) {
@@ -430,6 +450,7 @@ function buildScenarios(periods: FinancialPeriod[]): Scenario[] {
 function buildNarrative(
   periods: FinancialPeriod[],
   currency: string,
+  locale: ResearchLocale,
 ): {
   dashboard: DashboardMetric[];
   earningsQuality: string[];
@@ -443,10 +464,14 @@ function buildNarrative(
   const fcf = latest?.freeCashFlowProxy ?? null;
   const cashFlowProxyFormula =
     latest?.cashCapex !== null && latest?.cashCapex !== undefined
-      ? "经营现金流 - |现金资本开支|"
+      ? locale === "zh"
+        ? "经营现金流 − |现金资本开支|"
+        : "Operating cash flow − |cash capital expenditure|"
       : latest?.investingCashFlow !== null && latest?.investingCashFlow !== undefined
-        ? "经营现金流 + 投资活动现金流"
-        : "Unable to calculate from available filings";
+        ? locale === "zh"
+          ? "经营现金流 + 投资活动现金流"
+          : "Operating cash flow + investing cash flow"
+        : COPY[locale].unableToCalculate;
   const cashConversion = latest?.cashConversion ?? null;
   const liabilityRatio = safeDivide(latest?.liabilities ?? null, latest?.assets ?? null);
   const capexIntensity = safeDivide(latest?.cashCapex ?? null, latest?.revenue ?? null);
@@ -456,73 +481,181 @@ function buildNarrative(
       ? null
       : latest.netMargin - priorNetMargin;
 
+  if (locale === "en") {
+    const dashboard: DashboardMetric[] = [
+      {
+        label: "Latest revenue",
+        value: compactMoney(latest?.revenue ?? null, currency, locale),
+        detail: `YoY ${percentage(growth, locale)}; multi-period CAGR ${percentage(revenueCagr, locale)}`,
+        classification: "Reported fact",
+        tone: growth === null ? "neutral" : growth >= 0 ? "positive" : "watch",
+      },
+      {
+        label: "Net margin",
+        value: percentage(latest?.netMargin ?? null, locale),
+        detail: `Change from prior year ${marginDelta === null ? COPY.en.dataUnavailable : `${(marginDelta * 100).toFixed(1)}ppt`}`,
+        classification: "Derived calculation",
+        tone: marginDelta === null ? "neutral" : marginDelta >= 0 ? "positive" : "watch",
+      },
+      {
+        label: "Cash-flow proxy",
+        value: compactMoney(fcf, currency, locale),
+        detail: `${cashFlowProxyFormula}; the measure may differ from issuer-defined FCF`,
+        classification: "Derived calculation",
+        tone: fcf === null ? "neutral" : fcf > 0 ? "positive" : "watch",
+      },
+      {
+        label: "Cash conversion",
+        value: cashConversion === null ? COPY.en.dataUnavailable : `${cashConversion.toFixed(2)}x`,
+        detail: "Cash-flow proxy / net income; calculated only when net income is non-zero",
+        classification: "Derived calculation",
+        tone: cashConversion === null ? "neutral" : cashConversion >= 0.8 ? "positive" : "watch",
+      },
+      {
+        label: "Liabilities / assets",
+        value: percentage(liabilityRatio, locale),
+        detail: `Current ratio ${latest?.currentRatio === null || latest?.currentRatio === undefined ? COPY.en.dataUnavailable : `${latest.currentRatio.toFixed(2)}x`}`,
+        classification: "Derived calculation",
+        tone: liabilityRatio === null ? "neutral" : liabilityRatio <= 0.65 ? "positive" : "watch",
+      },
+    ];
+
+    const earningsQuality = [
+      `Latest annual net income was ${compactMoney(latest?.netIncome ?? null, currency, locale)}, versus operating cash flow of ${compactMoney(latest?.operatingCashFlow ?? null, currency, locale)}.`,
+      `The cash-flow proxy (${cashFlowProxyFormula}) was ${compactMoney(fcf, currency, locale)}, for cash conversion of ${cashConversion === null ? COPY.en.dataUnavailable : `${cashConversion.toFixed(2)}x`}.`,
+      `Capital-expenditure intensity was ${percentage(capexIntensity, locale)}; a higher ratio raises the bar for revenue quality and funding capacity.`,
+      "Standardized XBRL is insufficient to identify every one-off item, restructuring charge, or management adjustment; verify these in the notes to the latest annual filing.",
+    ];
+
+    const thesis: ThesisPoint[] = [
+      {
+        title: "Revenue trend sets the direction of operating leverage",
+        view: `Latest annual revenue growth was ${percentage(growth, locale)}, with a multi-period CAGR of ${percentage(revenueCagr, locale)}. Improving revenue can support profit and cash coverage.`,
+        counterEvidence:
+          growth !== null && growth < 0
+            ? "Latest annual revenue was still contracting, so scale benefits remain unproven."
+            : "Revenue growth does not automatically convert to cash; margins and working capital still matter.",
+        monitor: "Revenue growth, gross/net margin, and management guidance in the next periodic report.",
+      },
+      {
+        title: "Cash conversion is closer to distributable capacity than accounting profit",
+        view: `The cash-flow proxy was ${compactMoney(fcf, currency, locale)}, with cash conversion of ${cashConversion === null ? COPY.en.dataUnavailable : `${cashConversion.toFixed(2)}x`}.`,
+        counterEvidence:
+          cashConversion !== null && cashConversion < 0.8
+            ? "Cash conversion below 0.8x may indicate pressure from working capital, capital expenditure, or earnings quality."
+            : "A single year of cash release may reflect working-capital timing rather than permanent improvement.",
+        monitor: "Operating cash flow, working capital, capital expenditure, and cash balances.",
+      },
+      {
+        title: "The balance sheet determines downside resilience",
+        view: `Liabilities / assets were ${percentage(liabilityRatio, locale)}, and the current ratio was ${latest?.currentRatio === null || latest?.currentRatio === undefined ? COPY.en.dataUnavailable : `${latest.currentRatio.toFixed(2)}x`}.`,
+        counterEvidence:
+          liabilityRatio !== null && liabilityRatio > 0.65
+            ? "A high liability share makes rates, refinancing, and earnings weakness transmit more quickly to equity value."
+            : "A lower liability share does not rule out off-balance-sheet, lease, or pension obligations.",
+        monitor: "Total debt, cash, liquidity, interest expense, and the maturity profile.",
+      },
+      {
+        title: "Capital intensity determines whether growth can be self-funded",
+        view: `Cash capital expenditure / revenue was ${percentage(capexIntensity, locale)}. Stable capital efficiency supports free-cash-flow expansion.`,
+        counterEvidence: "Standardized data cannot distinguish maintenance from growth capital expenditure.",
+        monitor: "Capital-expenditure guidance, asset turnover, project returns, and impairments.",
+      },
+    ];
+
+    const risks: RiskPoint[] = [
+      {
+        title: "Sustained revenue or margin deterioration",
+        evidence: `Latest revenue growth was ${percentage(growth, locale)}; net margin was ${percentage(latest?.netMargin ?? null, locale)}.`,
+        thesisBreaker: "Revenue and margins decline together for two consecutive years without a credible management recovery plan.",
+      },
+      {
+        title: "Cash conversion trails accounting profit",
+        evidence: `Cash conversion was ${cashConversion === null ? COPY.en.dataUnavailable : `${cashConversion.toFixed(2)}x`}.`,
+        thesisBreaker: "Operating cash flow and the cash-flow proxy remain below net income without a working-capital timing explanation.",
+      },
+      {
+        title: "Capital expenditure or leverage crowds out shareholder returns",
+        evidence: `Capital-expenditure intensity was ${percentage(capexIntensity, locale)}; liabilities / assets were ${percentage(liabilityRatio, locale)}.`,
+        thesisBreaker: "Capital expenditure and distributions continue to exceed operating cash flow while cash falls or debt rises.",
+      },
+      {
+        title: "Disclosure and standardized-data boundaries",
+        evidence: "SEC Company Facts supports verification of core financial history but does not fully capture segment KPIs, orders, customer concentration, or every one-off item.",
+        thesisBreaker: "Material differences between the latest annual-filing notes and standardized XBRL cannot be reconciled.",
+      },
+    ];
+
+    return { dashboard, earningsQuality, thesis, risks };
+  }
+
   const dashboard: DashboardMetric[] = [
     {
       label: "最新营收",
-      value: compactMoney(latest?.revenue ?? null, currency),
-      detail: `同比 ${percentage(growth)}；多期 CAGR ${percentage(revenueCagr)}`,
+      value: compactMoney(latest?.revenue ?? null, currency, locale),
+      detail: `同比 ${percentage(growth, locale)}；多期 CAGR ${percentage(revenueCagr, locale)}`,
       classification: "Reported fact",
       tone: growth === null ? "neutral" : growth >= 0 ? "positive" : "watch",
     },
     {
       label: "净利润率",
-      value: percentage(latest?.netMargin ?? null),
-      detail: `较上一年度变化 ${marginDelta === null ? "Data unavailable" : `${(marginDelta * 100).toFixed(1)}pct`}`,
+      value: percentage(latest?.netMargin ?? null, locale),
+      detail: `较上一年度变化 ${marginDelta === null ? COPY.zh.dataUnavailable : `${(marginDelta * 100).toFixed(1)}个百分点`}`,
       classification: "Derived calculation",
       tone: marginDelta === null ? "neutral" : marginDelta >= 0 ? "positive" : "watch",
     },
     {
       label: "现金流代理",
-      value: compactMoney(fcf, currency),
+      value: compactMoney(fcf, currency, locale),
       detail: `${cashFlowProxyFormula}；口径可能不同于公司自定义 FCF`,
       classification: "Derived calculation",
       tone: fcf === null ? "neutral" : fcf > 0 ? "positive" : "watch",
     },
     {
       label: "现金转化",
-      value: cashConversion === null ? "Data unavailable" : `${cashConversion.toFixed(2)}x`,
+      value: cashConversion === null ? COPY.zh.dataUnavailable : `${cashConversion.toFixed(2)}x`,
       detail: "现金流代理 / 净利润；仅在净利润非零时计算",
       classification: "Derived calculation",
       tone: cashConversion === null ? "neutral" : cashConversion >= 0.8 ? "positive" : "watch",
     },
     {
       label: "负债 / 资产",
-      value: percentage(liabilityRatio),
-      detail: `流动比率 ${latest?.currentRatio === null || latest?.currentRatio === undefined ? "Data unavailable" : `${latest.currentRatio.toFixed(2)}x`}`,
+      value: percentage(liabilityRatio, locale),
+      detail: `流动比率 ${latest?.currentRatio === null || latest?.currentRatio === undefined ? COPY.zh.dataUnavailable : `${latest.currentRatio.toFixed(2)}x`}`,
       classification: "Derived calculation",
       tone: liabilityRatio === null ? "neutral" : liabilityRatio <= 0.65 ? "positive" : "watch",
     },
   ];
 
   const earningsQuality = [
-    `最新年度净利润为 ${compactMoney(latest?.netIncome ?? null, currency)}，经营现金流为 ${compactMoney(latest?.operatingCashFlow ?? null, currency)}。`,
-    `现金流代理（${cashFlowProxyFormula}）为 ${compactMoney(fcf, currency)}，现金转化为 ${cashConversion === null ? "Data unavailable" : `${cashConversion.toFixed(2)}x`}。`,
-    `资本开支强度为 ${percentage(capexIntensity)}；该比率越高，对收入增长质量和融资能力的要求越高。`,
+    `最新年度净利润为 ${compactMoney(latest?.netIncome ?? null, currency, locale)}，经营现金流为 ${compactMoney(latest?.operatingCashFlow ?? null, currency, locale)}。`,
+    `现金流代理（${cashFlowProxyFormula}）为 ${compactMoney(fcf, currency, locale)}，现金转化为 ${cashConversion === null ? COPY.zh.dataUnavailable : `${cashConversion.toFixed(2)}x`}。`,
+    `资本开支强度为 ${percentage(capexIntensity, locale)}；该比率越高，对收入增长质量和融资能力的要求越高。`,
     "标准化 XBRL 不足以判断全部一次性项目、重组费用或管理层调整项，需回到最新年报附注复核。",
   ];
 
   const thesis: ThesisPoint[] = [
     {
       title: "收入趋势决定经营杠杆方向",
-      view: `最新年度收入增长为 ${percentage(growth)}，多期 CAGR 为 ${percentage(revenueCagr)}。收入改善通常可带动利润和现金覆盖。`,
+      view: `最新年度收入增长为 ${percentage(growth, locale)}，多期 CAGR 为 ${percentage(revenueCagr, locale)}。收入改善通常可带动利润和现金覆盖。`,
       counterEvidence: growth !== null && growth < 0 ? "最新年度收入仍在收缩，规模效应尚未得到确认。" : "收入增长并不自动转化为现金，仍需观察利润率和营运资本。",
       monitor: "下一次定期报告中的收入增速、毛利/净利率和管理层指引。",
     },
     {
       title: "现金转化比会计利润更接近分配能力",
-      view: `现金流代理为 ${compactMoney(fcf, currency)}，现金转化 ${cashConversion === null ? "Data unavailable" : `${cashConversion.toFixed(2)}x`}。`,
+      view: `现金流代理为 ${compactMoney(fcf, currency, locale)}，现金转化 ${cashConversion === null ? COPY.zh.dataUnavailable : `${cashConversion.toFixed(2)}x`}。`,
       counterEvidence: cashConversion !== null && cashConversion < 0.8 ? "现金转化低于 0.8x，可能反映营运资本、资本开支或利润质量压力。" : "单一年度的现金释放可能来自营运资本时点，并非永久改善。",
       monitor: "经营现金流、营运资本、资本开支和现金余额。",
     },
     {
       title: "资产负债表决定下行情景的容错空间",
-      view: `负债 / 资产为 ${percentage(liabilityRatio)}，流动比率为 ${latest?.currentRatio === null || latest?.currentRatio === undefined ? "Data unavailable" : `${latest.currentRatio.toFixed(2)}x`}。`,
+      view: `负债 / 资产为 ${percentage(liabilityRatio, locale)}，流动比率为 ${latest?.currentRatio === null || latest?.currentRatio === undefined ? COPY.zh.dataUnavailable : `${latest.currentRatio.toFixed(2)}x`}。`,
       counterEvidence: liabilityRatio !== null && liabilityRatio > 0.65 ? "负债占比较高，利率、再融资和盈利下行会更快传导到股东价值。" : "较低负债占比也不能排除表外义务、租赁或养老金风险。",
       monitor: "总债务、现金、流动性、利息费用和到期结构。",
     },
     {
       title: "资本强度决定增长是否可自筹",
-      view: `现金资本开支 / 收入为 ${percentage(capexIntensity)}。稳定的资本效率有利于自由现金流扩张。`,
+      view: `现金资本开支 / 收入为 ${percentage(capexIntensity, locale)}。稳定的资本效率有利于自由现金流扩张。`,
       counterEvidence: "标准化数据无法区分维护性与增长性资本开支。",
       monitor: "资本开支指引、资产周转、项目回报和减值。",
     },
@@ -531,17 +664,17 @@ function buildNarrative(
   const risks: RiskPoint[] = [
     {
       title: "收入或利润率持续恶化",
-      evidence: `最新收入增长 ${percentage(growth)}；净利润率 ${percentage(latest?.netMargin ?? null)}。`,
+      evidence: `最新收入增长 ${percentage(growth, locale)}；净利润率 ${percentage(latest?.netMargin ?? null, locale)}。`,
       thesisBreaker: "收入和利润率连续两个年度同步下降，且管理层没有可信的修复路径。",
     },
     {
       title: "现金转化弱于会计利润",
-      evidence: `现金转化 ${cashConversion === null ? "Data unavailable" : `${cashConversion.toFixed(2)}x`}。`,
+      evidence: `现金转化 ${cashConversion === null ? COPY.zh.dataUnavailable : `${cashConversion.toFixed(2)}x`}。`,
       thesisBreaker: "经营现金流和现金流代理持续低于净利润，且无法由营运资本时点解释。",
     },
     {
       title: "资本开支或杠杆挤压股东回报",
-      evidence: `资本开支强度 ${percentage(capexIntensity)}；负债 / 资产 ${percentage(liabilityRatio)}。`,
+      evidence: `资本开支强度 ${percentage(capexIntensity, locale)}；负债 / 资产 ${percentage(liabilityRatio, locale)}。`,
       thesisBreaker: "资本开支和分配持续超过经营现金流，同时现金下降或债务上升。",
     },
     {
@@ -554,7 +687,7 @@ function buildNarrative(
   return { dashboard, earningsQuality, thesis, risks };
 }
 
-async function buildReport(record: TickerRecord): Promise<ResearchReport> {
+async function buildReport(record: TickerRecord, locale: ResearchLocale): Promise<ResearchReport> {
   const cik = String(record.cik_str).padStart(10, "0");
   const [submissions, facts] = await Promise.all([
     secFetch<Submissions>(`https://data.sec.gov/submissions/CIK${cik}.json`),
@@ -634,32 +767,37 @@ async function buildReport(record: TickerRecord): Promise<ResearchReport> {
   }
 
   const currency = revenue.unit || netIncome.unit || "USD";
-  const latestAnnual = filingSource(submissions, ANNUAL_FORMS, "Latest annual filing");
-  const latestInterim = filingSource(submissions, INTERIM_FORMS, "Latest interim/current filing");
-  const narrative = buildNarrative(periods, currency);
+  const latestAnnual = filingSource(submissions, ANNUAL_FORMS, COPY[locale].annualFiling);
+  const latestInterim = filingSource(submissions, INTERIM_FORMS, COPY[locale].interimFiling);
+  const narrative = buildNarrative(periods, currency, locale);
   const scenarios = buildScenarios(periods);
   const today = new Date();
   const retrievedAt = today.toISOString();
   const latest = periods.at(-1);
   const cashFlowProxyFormula =
     latest?.cashCapex !== null && latest?.cashCapex !== undefined
-      ? "现金流代理 = 经营现金流 - |现金资本开支|"
+      ? locale === "zh"
+        ? "现金流代理 = 经营现金流 − |现金资本开支|"
+        : "Cash-flow proxy = operating cash flow − |cash capital expenditure|"
       : latest?.investingCashFlow !== null && latest?.investingCashFlow !== undefined
-        ? "现金流代理 = 经营现金流 + 投资活动现金流"
-        : "Unable to calculate from available filings";
+        ? locale === "zh"
+          ? "现金流代理 = 经营现金流 + 投资活动现金流"
+          : "Cash-flow proxy = operating cash flow + investing cash flow"
+        : COPY[locale].unableToCalculate;
   const sourceBase = `https://data.sec.gov/submissions/CIK${cik}.json`;
   const factsUrl = `https://data.sec.gov/api/xbrl/companyfacts/CIK${cik}.json`;
 
   return {
+    locale,
     company: {
       name: submissions.name || facts.entityName || record.title,
       ticker: submissions.tickers?.[0] || record.ticker,
       cik,
-      exchange: submissions.exchanges?.[0] || "Not disclosed",
-      sic: submissions.sic || "Not disclosed",
-      sicDescription: submissions.sicDescription || "Not disclosed",
-      fiscalYearEnd: submissions.fiscalYearEnd || "Not disclosed",
-      filingStatus: submissions.entityType || submissions.category || "SEC reporting issuer",
+      exchange: submissions.exchanges?.[0] || COPY[locale].notDisclosed,
+      sic: submissions.sic || COPY[locale].notDisclosed,
+      sicDescription: submissions.sicDescription || COPY[locale].notDisclosed,
+      fiscalYearEnd: submissions.fiscalYearEnd || COPY[locale].notDisclosed,
+      filingStatus: submissions.entityType || submissions.category || COPY[locale].reportingIssuer,
     },
     researchDate: today.toLocaleDateString("en-CA", { timeZone: "UTC" }),
     cutoff: retrievedAt,
@@ -668,76 +806,149 @@ async function buildReport(record: TickerRecord): Promise<ResearchReport> {
     latestInterim,
     periods,
     dashboard: narrative.dashboard,
-    overview: `${submissions.name || record.title} 在 SEC 的行业分类为 ${submissions.sicDescription || "Not disclosed"}（SIC ${submissions.sic || "Not disclosed"}）。本报告以该发行人的申报身份、财政年度和标准化 XBRL 为基础；详细商业模式仍需结合最新年报业务与分部附注。`,
+    overview:
+      locale === "zh"
+        ? `${submissions.name || record.title} 在 SEC 的行业分类为 ${submissions.sicDescription || COPY.zh.notDisclosed}（SIC ${submissions.sic || COPY.zh.notDisclosed}）。本报告以该发行人的申报身份、财政年度和标准化 XBRL 为基础；详细商业模式仍需结合最新年报业务与分部附注。`
+        : `${submissions.name || record.title} is classified by the SEC in ${submissions.sicDescription || COPY.en.notDisclosed} (SIC ${submissions.sic || COPY.en.notDisclosed}). This report is based on the issuer's filing status, fiscal year, and standardized XBRL; the detailed business model should be verified against the business and segment notes in the latest annual filing.`,
     segmentAnalysis:
-      "标准化 Company Facts 无法稳定保留所有分部维度和发行人自定义 KPI。本 MVP 不猜测分部数值；请通过最新年报链接复核分部收入、利润、资本开支及定义变化。",
+      locale === "zh"
+        ? "标准化 Company Facts 无法稳定保留所有分部维度和发行人自定义 KPI。本 MVP 不猜测分部数值；请通过最新年报链接复核分部收入、利润、资本开支及定义变化。"
+        : "Standardized Company Facts does not consistently preserve every segment dimension or issuer-defined KPI. This MVP does not infer segment values; use the latest annual-filing link to verify segment revenue, profit, capital expenditure, and definition changes.",
     earningsQuality: narrative.earningsQuality,
     thesis: narrative.thesis,
-    catalysts: [
-      latestInterim
-        ? {
-            timing: latestInterim.filed,
-            event: `${latestInterim.form} 已提交`,
-            investorRelevance: "检查最新经营变化、流动性、指引和一次性项目。",
-          }
-        : {
-            timing: "Not disclosed",
-            event: "下一次中期更新",
-            investorRelevance: "SEC 标准化数据未提供可靠的下一次业绩发布日期。",
-          },
-      latestAnnual
-        ? {
-            timing: latestAnnual.filed,
-            event: `${latestAnnual.form} 年报基线`,
-            investorRelevance: "用于复核业务分部、风险因素、资本配置和会计政策。",
-          }
-        : {
-            timing: "Not disclosed",
-            event: "年度报告",
-            investorRelevance: "最新年度申报链接不可用。",
-          },
-      {
-        timing: "持续监测",
-        event: "现金转化和资产负债表",
-        investorRelevance: `最新现金流代理 ${compactMoney(latest?.freeCashFlowProxy ?? null, currency)}；重点观察下一期经营现金流、资本开支和债务。`,
-      },
-    ],
+    catalysts:
+      locale === "zh"
+        ? [
+            latestInterim
+              ? {
+                  timing: latestInterim.filed,
+                  event: `${latestInterim.form} 已提交`,
+                  investorRelevance: "检查最新经营变化、流动性、指引和一次性项目。",
+                }
+              : {
+                  timing: COPY.zh.notDisclosed,
+                  event: "下一次中期更新",
+                  investorRelevance: "SEC 标准化数据未提供可靠的下一次业绩发布日期。",
+                },
+            latestAnnual
+              ? {
+                  timing: latestAnnual.filed,
+                  event: `${latestAnnual.form} 年报基线`,
+                  investorRelevance: "用于复核业务分部、风险因素、资本配置和会计政策。",
+                }
+              : {
+                  timing: COPY.zh.notDisclosed,
+                  event: "年度报告",
+                  investorRelevance: "最新年度申报链接不可用。",
+                },
+            {
+              timing: "持续监测",
+              event: "现金转化和资产负债表",
+              investorRelevance: `最新现金流代理 ${compactMoney(latest?.freeCashFlowProxy ?? null, currency, locale)}；重点观察下一期经营现金流、资本开支和债务。`,
+            },
+          ]
+        : [
+            latestInterim
+              ? {
+                  timing: latestInterim.filed,
+                  event: `${latestInterim.form} filed`,
+                  investorRelevance: "Review the latest operating changes, liquidity, guidance, and one-off items.",
+                }
+              : {
+                  timing: COPY.en.notDisclosed,
+                  event: "Next interim update",
+                  investorRelevance: "Standardized SEC data does not provide a reliable date for the next results release.",
+                },
+            latestAnnual
+              ? {
+                  timing: latestAnnual.filed,
+                  event: `${latestAnnual.form} annual baseline`,
+                  investorRelevance: "Use it to verify business segments, risk factors, capital allocation, and accounting policies.",
+                }
+              : {
+                  timing: COPY.en.notDisclosed,
+                  event: "Annual report",
+                  investorRelevance: "The latest annual-filing link is unavailable.",
+                },
+            {
+              timing: "Ongoing",
+              event: "Cash conversion and balance sheet",
+              investorRelevance: `The latest cash-flow proxy was ${compactMoney(latest?.freeCashFlowProxy ?? null, currency, locale)}; monitor operating cash flow, capital expenditure, and debt in the next period.`,
+            },
+          ],
     risks: narrative.risks,
     scenarios,
     valuationAssessment:
-      "该自动化版本没有使用未获许可或未注明日期的实时股价，因此不输出目标价。情景表仅以标准化现金流代理和显式倍数生成模型隐含企业价值，用于敏感性分析，而非投资建议。",
+      locale === "zh"
+        ? "该自动化版本没有使用未获许可或未注明日期的实时股价，因此不输出目标价。情景表仅以标准化现金流代理和显式倍数生成模型隐含企业价值，用于敏感性分析，而非投资建议。"
+        : "This automated version does not use unlicensed or undated real-time share prices, so it does not provide a price target. The scenario table applies explicit multiples to a standardized cash-flow proxy to produce model-implied enterprise values for sensitivity analysis, not investment advice.",
     cashFlowProxyFormula,
     valuationFormula:
-      `模型隐含企业价值 = 情景现金流代理 x 假设 EV/现金流倍数；${cashFlowProxyFormula}。`,
+      locale === "zh"
+        ? `模型隐含企业价值 = 情景现金流代理 × 假设 EV/现金流倍数；${cashFlowProxyFormula}。`
+        : `Model-implied enterprise value = scenario cash-flow proxy × assumed EV/cash-flow multiple; ${cashFlowProxyFormula}.`,
     sources: [
       {
-        title: "SEC company ticker mapping",
+        title: locale === "zh" ? "SEC 公司与交易代码映射" : "SEC company and ticker mapping",
         url: "https://www.sec.gov/files/company_tickers.json",
         retrievedAt,
       },
-      { title: "SEC issuer submissions", url: sourceBase, retrievedAt },
-      { title: "SEC filing-level Company Facts", url: factsUrl, retrievedAt },
+      {
+        title: locale === "zh" ? "SEC 发行人申报索引" : "SEC issuer submissions index",
+        url: sourceBase,
+        retrievedAt,
+      },
+      {
+        title: locale === "zh" ? "SEC 申报层级 Company Facts" : "SEC filing-level Company Facts",
+        url: factsUrl,
+        retrievedAt,
+      },
       ...(latestAnnual
-        ? [{ title: `${latestAnnual.form} annual filing`, url: latestAnnual.url, retrievedAt }]
+        ? [
+            {
+              title:
+                locale === "zh"
+                  ? `${latestAnnual.form} 年度申报`
+                  : `${latestAnnual.form} annual filing`,
+              url: latestAnnual.url,
+              retrievedAt,
+            },
+          ]
         : []),
     ],
-    limitations: [
-      "MVP 目前覆盖能够在 SEC Company Facts 中取得标准化年度 XBRL 的发行人；非 SEC 发行人或缺乏标准化历史的公司可能无法生成。",
-      "分部、运营 KPI、客户集中度、订单、管理层指引和风险因素需要阅读最新年报正文；系统不会填造缺失值。",
-      "所有情景均为分析师假设，不是公司指引、概率预测、评级或目标价。",
-      "公司名称解析基于 SEC ticker mapping；重名公司可能需要输入交易代码。",
-      "数据按检索时点锁定，并优先使用最新申报/修订后的标准化事实。",
-    ],
+    limitations:
+      locale === "zh"
+        ? [
+            "MVP 目前覆盖能够在 SEC Company Facts 中取得标准化年度 XBRL 的发行人；非 SEC 发行人或缺乏标准化历史的公司可能无法生成。",
+            "分部、运营 KPI、客户集中度、订单、管理层指引和风险因素需要阅读最新年报正文；系统不会填造缺失值。",
+            "所有情景均为分析师假设，不是公司指引、概率预测、评级或目标价。",
+            "公司名称解析基于 SEC 公司与交易代码映射；重名公司可能需要输入交易代码。",
+            "数据按检索时点锁定，并优先使用最新申报或修订后的标准化事实。",
+          ]
+        : [
+            "The MVP currently covers issuers with standardized annual XBRL available in SEC Company Facts; non-SEC issuers or companies without standardized history may not generate a report.",
+            "Segments, operating KPIs, customer concentration, orders, management guidance, and risk factors require review of the latest annual filing; the system does not fabricate missing values.",
+            "All scenarios are analyst assumptions, not company guidance, probability forecasts, ratings, or price targets.",
+            "Company-name resolution uses the SEC company and ticker mapping; similarly named companies may require a ticker.",
+            "Data is locked to the retrieval timestamp, with priority given to the latest filed or amended standardized facts.",
+          ],
   };
 }
 
 export async function POST(request: Request) {
+  let locale: ResearchLocale = "zh";
   try {
-    const payload = (await request.json()) as { company?: string };
+    const payload = (await request.json()) as { company?: string; locale?: ResearchLocale };
+    locale = payload.locale === "en" ? "en" : "zh";
     const company = payload.company?.trim() ?? "";
     if (company.length < 2 || company.length > 100) {
       return Response.json(
-        { error: "请输入 2-100 个字符的公司名或交易代码。" },
+        {
+          error:
+            locale === "zh"
+              ? "请输入 2-100 个字符的公司名或交易代码。"
+              : "Enter a company name or ticker between 2 and 100 characters.",
+        },
         { status: 400 },
       );
     }
@@ -745,20 +956,29 @@ export async function POST(request: Request) {
     const record = await resolveCompany(company);
     if (!record) {
       return Response.json(
-        { error: "在 SEC 公司目录中未找到匹配项。请尝试法定公司名或交易代码。" },
+        {
+          error:
+            locale === "zh"
+              ? "在 SEC 公司目录中未找到匹配项。请尝试法定公司名或交易代码。"
+              : "No match was found in the SEC company directory. Try the legal company name or ticker.",
+        },
         { status: 404 },
       );
     }
 
-    return Response.json({ report: await buildReport(record) });
+    return Response.json({ report: await buildReport(record, locale) });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected error";
     return Response.json(
       {
         error:
           message.includes("Insufficient")
-            ? "该公司缺少足够的标准化年度申报数据。请尝试另一家公司或交易代码。"
-            : "公开数据暂时无法获取，请稍后重试。",
+            ? locale === "zh"
+              ? "该公司缺少足够的标准化年度申报数据。请尝试另一家公司或交易代码。"
+              : "This company does not have enough standardized annual filing data. Try another company or ticker."
+            : locale === "zh"
+              ? "公开数据暂时无法获取，请稍后重试。"
+              : "Public data is temporarily unavailable. Please try again later.",
       },
       { status: 502 },
     );

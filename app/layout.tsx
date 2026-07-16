@@ -16,24 +16,24 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase,
-    title: "ScopeLine｜输入公司名，生成机构尽调报告",
-    description: "基于 SEC 公开申报生成可追溯的三至五年财务、现金流、投资论点、风险与情景估值。",
+    title: "ScopeLine｜机构研究台 · Institutional Research",
+    description: "输入公司名，基于 SEC 公开申报生成中英文可切换、来源可追溯的机构研究报告。 Enter a company to generate a bilingual, source-linked institutional research report.",
     applicationName: "ScopeLine",
     icons: {
       icon: "/favicon.png",
       shortcut: "/favicon.png",
     },
     openGraph: {
-      title: "ScopeLine 机构研究台",
-      description: "输入一家公司，生成事实与假设分离、来源可追溯的尽调报告。",
+      title: "ScopeLine 机构研究台 · Institutional Research",
+      description: "输入公司名，生成中英文可切换、事实与假设分离、来源可追溯的研究报告。",
       type: "website",
       locale: "zh_CN",
-      images: [{ url: "/og.png", width: 1200, height: 630, alt: "ScopeLine 机构研究台" }],
+      images: [{ url: "/og.png", width: 1200, height: 630, alt: "ScopeLine 机构研究台 / Institutional Research" }],
     },
     twitter: {
       card: "summary_large_image",
-      title: "ScopeLine 机构研究台",
-      description: "输入公司名，生成可追溯的机构尽调报告。",
+      title: "ScopeLine 机构研究台 · Institutional Research",
+      description: "Bilingual, source-linked institutional research from public SEC filings.",
       images: ["/og.png"],
     },
   };

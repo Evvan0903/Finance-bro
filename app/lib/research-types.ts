@@ -5,6 +5,8 @@ export type EvidenceKind =
   | "Interpretation"
   | "Management statement";
 
+export type ResearchLocale = "zh" | "en";
+
 export type FilingSource = {
   title: string;
   form: string;
@@ -70,6 +72,7 @@ export type Scenario = {
 };
 
 export type ResearchReport = {
+  locale: ResearchLocale;
   company: {
     name: string;
     ticker: string;

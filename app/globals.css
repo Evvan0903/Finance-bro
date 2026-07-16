@@ -119,6 +119,49 @@ main {
   text-transform: uppercase;
 }
 
+.header-actions {
+  align-items: center;
+  display: flex;
+  gap: 18px;
+}
+
+.locale-toggle {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  display: inline-flex;
+  padding: 3px;
+}
+
+.locale-toggle button {
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: #aebfc8;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  min-height: 29px;
+  min-width: 43px;
+  padding: 3px 10px;
+  transition: background .2s ease, color .2s ease;
+}
+
+.locale-toggle button[aria-pressed="true"] {
+  background: var(--teal);
+  color: var(--navy-950);
+}
+
+.locale-toggle button:hover:not(:disabled):not([aria-pressed="true"]) {
+  color: #fff;
+}
+
+.locale-toggle button:disabled {
+  cursor: wait;
+  opacity: .6;
+}
+
 .hero {
   background:
     linear-gradient(102deg, rgba(7, 24, 39, 0.98) 0%, rgba(9, 31, 48, 0.98) 62%, rgba(12, 45, 61, 0.96) 100%);
@@ -1022,6 +1065,8 @@ tbody tr:hover { background: #f1f5f2; }
 @media (max-width: 760px) {
   .site-header { height: 62px; padding: 0 18px; }
   .header-note { display: none; }
+  .header-actions { gap: 0; }
+  .locale-toggle button { min-width: 40px; padding-left: 8px; padding-right: 8px; }
   .hero { min-height: 710px; }
   .hero-content { padding: 64px 18px 45px; }
   .hero h1 { font-size: clamp(41px, 12vw, 58px); }

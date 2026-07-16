@@ -1,10 +1,11 @@
 # ScopeLine
 
-ScopeLine is a Chinese-first institutional research MVP for ChatGPT Sites. Enter a company name or ticker to generate a point-in-time, source-linked research brief from official SEC filings.
+ScopeLine is a bilingual Chinese/English institutional research MVP for ChatGPT Sites. Enter a company name or ticker to generate a point-in-time, source-linked research brief from official SEC filings.
 
 ## What it does
 
 - resolves the issuer through the SEC company directory;
+- switches the full interface, generated report, errors, and Markdown export between Chinese and English while remembering the user's preference;
 - supports domestic and foreign-private-issuer forms, including 10-K, 10-Q, 20-F, and 6-K;
 - normalizes three to five annual periods from SEC Company Facts;
 - separates reported facts, derived calculations, analyst assumptions, management statements, and interpretations;
