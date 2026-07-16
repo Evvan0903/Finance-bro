@@ -1,0 +1,572 @@
+version: "1.0"
+purpose: "Deterministic public-filings screens for earnings quality and reporting risk. A screen prioritizes disclosure review; it never establishes fraud, manipulation, misconduct, an audit conclusion, or a legal conclusion."
+
+usage_rules:
+  - "Run a test only when periods, units, definitions, and reporting perimeter are comparable."
+  - "Retain accession, form, filing date, reporting period, unit, input fact IDs, formula version, threshold version, source locations, and confounders for every result."
+  - "Use methodology sources to define a test and issuer sources to support an issuer-level observation."
+  - "Do not combine custom concepts, segments, discontinued operations, acquisitions, restatements, or recast periods without a documented reconciliation."
+  - "A warning label is a review priority, not evidence of intent, accounting error, misconduct, or financial condition."
+
+signal_labels:
+  - Normal
+  - Monitor
+  - Elevated
+  - High concern
+  - Insufficient data
+
+label_interpretation:
+  Normal: "No configured screen is triggered after comparability checks; it is not assurance."
+  Monitor: "One screening trigger or a qualitative disclosure requires review in the next reporting cycle."
+  Elevated: "A repeated trigger or two corroborating signals in the same theme require focused source review."
+  High concern: "An explicit issuer disclosure requiring priority review, or three corroborating independent signals; it is not a misconduct finding."
+  Insufficient data: "Required comparable facts, definitions, or source text are missing, conflicting, or not reliable enough to calculate."
+
+signal_record_schema:
+  signal_id: "FA-001:issuer:period:formula_version"
+  label: "Normal | Monitor | Elevated | High concern | Insufficient data"
+  observed_value: "Calculated value or disclosed event"
+  threshold_version: "Configurable heuristic version"
+  input_fact_ids: []
+  issuer_sources: []
+  methodology_source_ids: []
+  alternative_explanations: []
+  confounders: []
+  limitation: "Why the screen cannot be read as proof"
+  next_step: "Focused public-source review, monitoring, or insufficient-data escalation"
+
+coverage_map:
+  receivables_growth_vs_revenue_growth: [FA-001]
+  contract_assets_growth: [FA-002]
+  deferred_revenue_changes: [FA-003]
+  unbilled_revenue: [FA-002]
+  channel_stuffing_indicators: [FA-004]
+  customer_concentration: [FA-005]
+  revenue_recognition_policy_changes: [FA-006]
+  organic_versus_acquired_growth: [FA-007]
+  capitalized_versus_expensed_costs: [FA-008]
+  repeated_restructuring_expenses: [FA-009]
+  acquisition_related_adjustments: [FA-010]
+  stock_based_compensation_exclusions: [FA-011]
+  unusual_depreciation_assumptions: [FA-012]
+  rd_capitalization: [FA-013]
+  reserve_changes: [FA-014]
+  net_income_versus_operating_cash_flow: [FA-015]
+  free_cash_flow_conversion: [FA-016]
+  working_capital_contribution: [FA-017]
+  supplier_financing_effects: [FA-018]
+  factoring_or_receivable_sales: [FA-019]
+  one_time_tax_benefits: [FA-020]
+  deferred_cash_obligations: [FA-021]
+  inventory_growth_versus_sales: [FA-022]
+  obsolescence_reserves: [FA-023]
+  goodwill_and_intangible_concentration: [FA-024]
+  debt_maturity_concentration: [FA-025]
+  off_balance_sheet_commitments: [FA-026]
+  pension_obligations: [FA-027]
+  contingent_consideration: [FA-028]
+  deferred_tax_assets: [FA-029]
+  liquidity_dependency: [FA-030]
+  auditor_changes: [FA-031]
+  material_weaknesses: [FA-032]
+  restatements: [FA-033]
+  late_filings: [FA-034]
+  related_party_transactions: [FA-035]
+  executive_turnover: [FA-036]
+  unusual_insider_transactions: [FA-037]
+  frequent_metric_definition_changes: [FA-038]
+
+tests:
+  - pattern_id: FA-001
+    name: Receivables and revenue divergence
+    category: revenue_quality
+    question: "Are receivables and collection days rising materially faster than comparable revenue?"
+    required_inputs: [net_revenue, accounts_receivable, prior_period_revenue, prior_period_receivables, days_in_period]
+    deterministic_calculation: "Calculate revenue growth, receivables growth, DSO = ending receivables / revenue * days, and DSO change versus the comparable prior period."
+    warning_threshold: "Configurable screen: DSO rises at least 10 days and receivables growth exceeds revenue growth by at least 10 percentage points."
+    severity_logic: "Insufficient data for missing comparable periods or near-zero revenue; Monitor for one trigger; Elevated when repeated or paired with contract-balance or terms changes; High concern only for three corroborating signals or explicit issuer disclosure requiring priority review."
+    alternative_explanations: [seasonality, enterprise_customer_mix, acquisition, foreign_exchange, disclosed_extended_terms, rapid_growth]
+    required_sources: [issuer_10-K_or_10-Q, revenue_note, receivables_note, cash_flow_statement, SRC-016, SRC-017, SRC-023]
+    output_format: forensic_signal_record_v1
+    limitations: ["Balance-sheet timing can differ from revenue timing.", "The result does not establish premature revenue recognition or collection failure."]
+
+  - pattern_id: FA-002
+    name: Contract assets and unbilled revenue growth
+    category: revenue_quality
+    question: "Do contract assets or disclosed unbilled balances grow materially faster than revenue?"
+    required_inputs: [contract_assets_or_unbilled_revenue, revenue, prior_period_contract_assets_or_unbilled_revenue, prior_period_revenue]
+    deterministic_calculation: "Calculate current and prior contract-asset-to-revenue ratios and the difference between contract-asset growth and revenue growth."
+    warning_threshold: "Configurable screen: contract assets grow at least 20 percentage points faster than revenue and exceed 10% of annual revenue."
+    severity_logic: "Insufficient data if contract balances are unavailable or definitions changed; Monitor for a single threshold breach; Elevated if repeated or accompanied by extended-term, return-right, or unusual billing disclosures; High concern only under the global corroboration rule."
+    alternative_explanations: [long_duration_projects, milestone_billing, newly_acquired_contracts, ordinary_ASC_606_timing, project_mix]
+    required_sources: [issuer_10-K_or_10-Q, revenue_recognition_note, contract_balance_note, SRC-017, SRC-022]
+    output_format: forensic_signal_record_v1
+    limitations: ["Contract assets can be a normal feature of performance obligations.", "Public filings may not separately disclose unbilled balances."]
+
+  - pattern_id: FA-003
+    name: Deferred revenue and billing support
+    category: revenue_quality
+    question: "Are changes in deferred revenue consistent with the issuer's disclosed billing model and reported revenue trend?"
+    required_inputs: [deferred_revenue_or_contract_liability, revenue, prior_period_deferred_revenue, prior_period_revenue, disclosed_billing_model]
+    deterministic_calculation: "Calculate deferred-revenue-to-revenue ratio, period-over-period change, and difference between deferred-revenue growth and revenue growth."
+    warning_threshold: "Configurable screen: revenue grows at least 15% while deferred revenue declines at least 15%, or the ratio changes at least 10 percentage points without a disclosed billing explanation."
+    severity_logic: "Insufficient data if contract-liability definitions are missing; Monitor for one unexplained divergence; Elevated for repeated divergence with inconsistent billings commentary; High concern only under the global corroboration rule."
+    alternative_explanations: [annual_billing_cycle, contract_timing, customer_mix, acquisition, foreign_exchange, consumption_based_revenue]
+    required_sources: [issuer_10-K_or_10-Q, revenue_note, contract_liability_note, management_discussion, SRC-023]
+    output_format: forensic_signal_record_v1
+    limitations: ["Deferred revenue is not a universal demand indicator.", "Billing arrangements may be disclosed only qualitatively."]
+
+  - pattern_id: FA-004
+    name: Quarter-end revenue timing and returns consistency
+    category: revenue_quality
+    question: "Do quarter-end revenue concentration, receivables, returns, allowances, or channel disclosures warrant a timing review?"
+    required_inputs: [quarterly_revenue, quarterly_receivables, returns_or_allowances_if_disclosed, channel_inventory_if_disclosed, prior_quarterly_history]
+    deterministic_calculation: "Calculate fourth-quarter revenue share of annual revenue, quarter-end receivables change, and allowance or return-rate change relative to a three-year comparable baseline."
+    warning_threshold: "Configurable screen: fourth-quarter revenue share or quarter-end receivables change is at least two standard deviations above the comparable history, with a material adverse return or allowance movement when disclosed."
+    severity_logic: "Insufficient data without at least three comparable annual histories; Monitor for one unusual timing result; Elevated if paired with receivable divergence or customer-term disclosures; High concern only under the global corroboration rule."
+    alternative_explanations: [seasonality, product_launch, contractual_delivery_schedule, fiscal_calendar, channel_restocking, acquisition]
+    required_sources: [issuer_10-K_or_10-Q, quarterly_financials, revenue_note, returns_and_allowances_note_if_any, SRC-016, SRC-017]
+    output_format: forensic_signal_record_v1
+    limitations: ["The test is not a channel-stuffing determination.", "Channel data and returns data are often incomplete in public filings."]
+
+  - pattern_id: FA-005
+    name: Customer concentration movement
+    category: revenue_quality
+    question: "Has disclosed customer concentration increased or changed without an adequate public explanation?"
+    required_inputs: [customer_concentration_percentages, revenue, prior_period_concentration, material_customer_disclosures]
+    deterministic_calculation: "Calculate change in disclosed top-customer revenue share and change in number of customers above the issuer's materiality threshold."
+    warning_threshold: "Configurable screen: a disclosed customer share rises at least 10 percentage points year over year or exceeds 25% of revenue without a disclosed contractual or strategic explanation."
+    severity_logic: "Insufficient data when customers are not disclosed; Monitor for one concentration threshold; Elevated for consecutive increases plus collection or renewal weakness; High concern only under the global corroboration rule."
+    alternative_explanations: [large_project, government_contract, distributor_model, acquisition, disclosed_long_term_agreement]
+    required_sources: [issuer_10-K_or_10-Q, concentration_note, risk_factors, revenue_note, SRC-023]
+    output_format: forensic_signal_record_v1
+    limitations: ["High concentration can be an ordinary feature of a business model.", "Public filings may identify neither customer nor contract duration."]
+
+  - pattern_id: FA-006
+    name: Revenue-recognition policy change
+    category: revenue_quality
+    question: "Did the issuer change a material revenue-recognition policy, judgment, disclosure definition, or presentation?"
+    required_inputs: [current_revenue_policy_text, prior_revenue_policy_text, current_revenue_note, prior_revenue_note, adoption_or_recast_disclosure]
+    deterministic_calculation: "Perform a versioned text and note-heading comparison; flag added, removed, or materially changed policy, judgment, timing, principal-agent, return, or contract-balance language for analyst review."
+    warning_threshold: "Qualitative screen: any material policy change, revision, recast, or unexplained definition change is a Monitor event."
+    severity_logic: "Insufficient data if historical notes are unavailable; Monitor for an identified change; Elevated if the change coincides with material metric improvement without quantified explanation; High concern only for explicit non-reliance or the global corroboration rule."
+    alternative_explanations: [new_accounting_standard, acquisition, business_model_change, improved_disclosure, immaterial_reclassification]
+    required_sources: [issuer_10-K_or_10-Q, revenue_note, accounting_policies_note, amended_filings, SRC-018]
+    output_format: forensic_signal_record_v1
+    limitations: ["Text difference alone does not establish economic or accounting deterioration.", "Interpretation may require technical accounting review."]
+
+  - pattern_id: FA-007
+    name: Organic versus acquired growth reconciliation
+    category: revenue_quality
+    question: "Is reported growth reconciled between organic operations, acquisitions, divestitures, foreign exchange, and reporting changes?"
+    required_inputs: [reported_revenue_growth, disclosed_acquired_revenue, disclosed_divested_revenue, foreign_exchange_impact_if_disclosed, recast_information]
+    deterministic_calculation: "Calculate residual organic growth = reported growth minus disclosed acquisition contribution plus disclosed divestiture and foreign-exchange adjustments only when periods and definitions align."
+    warning_threshold: "Configurable screen: residual organic growth cannot be reconciled within 5 percentage points of reported growth, or management labels organic growth without a consistent disclosed definition."
+    severity_logic: "Insufficient data when contributions are absent; Monitor for an unreconciled residual; Elevated for repeated definition changes or material reconciliation gaps; High concern only under the global corroboration rule."
+    alternative_explanations: [partial_period_acquisition, foreign_exchange, segment_reclassification, discontinued_operations, rounding]
+    required_sources: [issuer_10-K_or_10-Q, acquisition_note, management_discussion, non_GAAP_or_key_metric_reconciliation, SRC-023]
+    output_format: forensic_signal_record_v1
+    limitations: ["Organic growth is often a management-defined measure.", "Do not backsolve undisclosed acquisition revenue as fact."]
+
+  - pattern_id: FA-008
+    name: Capitalized versus expensed cost shift
+    category: expense_quality
+    question: "Do capital expenditures or capitalized costs rise while related operating expenses fall unusually relative to revenue?"
+    required_inputs: [capex, revenue, research_and_development_expense, selling_general_administrative_expense, prior_period_values, capitalization_policy]
+    deterministic_calculation: "Calculate capex-to-revenue, capex growth less revenue growth, and combined R&D-plus-SG&A margin change versus prior comparable period."
+    warning_threshold: "Configurable screen: capex-to-revenue rises at least 5 points, capex growth exceeds revenue growth by at least 25 points, and R&D-plus-SG&A margin falls at least 3 points."
+    severity_logic: "Insufficient data for incomparable cash-flow classifications; Monitor only when all configured conditions are met; Elevated if repeated or policy language changes; High concern only under the global corroboration rule."
+    alternative_explanations: [capacity_expansion, data_center_build, product_launch, acquired_assets, legitimate_internal_use_software]
+    required_sources: [issuer_10-K_or_10-Q, cash_flow_statement, PP&E_note, intangible_assets_note, accounting_policies_note, SRC-017, SRC-023, SRC-025]
+    output_format: forensic_signal_record_v1
+    limitations: ["Capex includes many legitimate investment types.", "A screen cannot determine whether capitalization is appropriate under accounting standards."]
+
+  - pattern_id: FA-009
+    name: Repeated restructuring charge dependence
+    category: expense_quality
+    question: "Are restructuring charges recurring enough to require a durability and adjustment review?"
+    required_inputs: [restructuring_charges, revenue, operating_income, prior_three_year_charges, non_GAAP_reconciliations]
+    deterministic_calculation: "Calculate restructuring charges as a percentage of revenue and operating income; count years with charges exceeding the configured materiality threshold."
+    warning_threshold: "Configurable screen: charges exceed 1% of revenue or 10% of operating income in at least two of three years, or are excluded from non-GAAP measures in consecutive years."
+    severity_logic: "Insufficient data if charge components cannot be isolated; Monitor for one material charge; Elevated for recurring charges or recurring exclusions; High concern only under the global corroboration rule."
+    alternative_explanations: [portfolio_repositioning, plant_closure, integration_program, macro_disruption, regulatory_change]
+    required_sources: [issuer_10-K_or_10-Q, restructuring_note, non_GAAP_reconciliation, earnings_release, SRC-018, SRC-023]
+    output_format: forensic_signal_record_v1
+    limitations: ["Recurring charges can reflect genuine operating change.", "Materiality varies by industry and issuer scale."]
+
+  - pattern_id: FA-010
+    name: Acquisition-related adjustment persistence
+    category: expense_quality
+    question: "Do acquisition-related adjustments persist or expand beyond a reasonable disclosed transaction timeline?"
+    required_inputs: [acquisition_related_adjustments, acquisition_spend, revenue, operating_income, acquisition_dates, non_GAAP_reconciliations]
+    deterministic_calculation: "Calculate adjustment-to-revenue and adjustment-to-acquisition-spend ratios, then compare the adjustment duration with the disclosed acquisition timeline."
+    warning_threshold: "Configurable screen: adjustment persists more than eight quarters after a material acquisition or exceeds 20% of acquisition cash paid without specific reconciliation."
+    severity_logic: "Insufficient data if acquisition dates or adjustment labels are unavailable; Monitor for a single persistent item; Elevated for repeated or growing exclusions; High concern only under the global corroboration rule."
+    alternative_explanations: [multi_year_integration, serial_acquisition_strategy, earnout_accounting, purchase_accounting_amortization, restructuring]
+    required_sources: [issuer_10-K_or_10-Q, acquisition_note, non_GAAP_reconciliation, earnings_release, SRC-018, SRC-023]
+    output_format: forensic_signal_record_v1
+    limitations: ["The appropriate treatment depends on the disclosed transaction and measure definition.", "Do not label an adjustment illegitimate solely because it recurs."]
+
+  - pattern_id: FA-011
+    name: Stock-based compensation exclusion and dilution
+    category: expense_quality
+    question: "Are stock-based compensation intensity, non-GAAP exclusions, and dilution mutually consistent?"
+    required_inputs: [share_based_compensation, revenue, operating_cash_flow, diluted_share_count, prior_period_share_count, non_GAAP_reconciliation]
+    deterministic_calculation: "Calculate SBC-to-revenue, SBC-to-positive-CFO, SBC intensity change, and diluted-share CAGR; flag whether SBC is excluded from a prominently presented non-GAAP measure."
+    warning_threshold: "Configurable screen: SBC exceeds 10% of revenue, 50% of positive CFO, or rises at least 5 points year over year, with diluted-share CAGR above 3% or recurring exclusion."
+    severity_logic: "Insufficient data when SBC or share counts are unavailable; Monitor for one intensity trigger; Elevated when intensity and dilution or exclusion co-occur; High concern only under the global corroboration rule."
+    alternative_explanations: [equity_heavy_compensation, one_time_grants, share_price_change, hiring_surge, buybacks_offsetting_dilution]
+    required_sources: [issuer_10-K_or_10-Q, share_compensation_note, EPS_note, cash_flow_statement, non_GAAP_reconciliation, DEF_14A_if_available, SRC-018, SRC-023]
+    output_format: forensic_signal_record_v1
+    limitations: ["SBC is a real economic cost but an issuer's adjustment rationale must be evaluated in context.", "Dilution can be affected by price and capital-return activity."]
+
+  - pattern_id: FA-012
+    name: Depreciation and useful-life assumption movement
+    category: expense_quality
+    question: "Do depreciation expense, capex, asset balances, useful-life disclosures, or residual values move in a way that warrants review?"
+    required_inputs: [depreciation_expense, gross_PPE, net_PPE, capex, estimated_useful_lives, prior_period_values]
+    deterministic_calculation: "Calculate depreciation-to-gross-PPE, depreciation-to-capex, net-PPE growth, and compare disclosed useful-life ranges and residual-value policies year over year."
+    warning_threshold: "Configurable screen: depreciation-to-gross-PPE declines at least 20% while gross-PPE grows at least 15%, or useful-life ranges lengthen without quantified explanation."
+    severity_logic: "Insufficient data without gross asset or policy data; Monitor for one unexplained change; Elevated if repeated and paired with capitalization shift; High concern only under the global corroboration rule."
+    alternative_explanations: [asset_mix, recent_capex, asset_disposals, depreciation_method_change, acquisition, technology_refresh]
+    required_sources: [issuer_10-K_or_10-Q, PP&E_note, accounting_policies_note, cash_flow_statement, SRC-023]
+    output_format: forensic_signal_record_v1
+    limitations: ["Depreciation is sensitive to asset mix and timing.", "Public disclosures may not quantify all estimate changes."]
+
+  - pattern_id: FA-013
+    name: Research and development capitalization review
+    category: expense_quality
+    question: "Where applicable, are disclosed R&D, software-development, or other internally developed asset policies changing in a way that affects earnings comparability?"
+    required_inputs: [research_and_development_expense, capitalized_development_costs_if_disclosed, intangible_additions, revenue, policy_text, prior_period_values]
+    deterministic_calculation: "Calculate capitalized-development-to-revenue and R&D-to-revenue ratios; compare policy text and additions with prior periods."
+    warning_threshold: "Configurable screen: capitalized development rises at least 3 points of revenue while R&D expense margin declines at least 3 points, or policy language changes materially."
+    severity_logic: "Insufficient data when the issuer does not disclose the relevant category; Monitor for a policy change or ratio divergence; Elevated for repeated divergence with earnings sensitivity; High concern only under the global corroboration rule."
+    alternative_explanations: [software_business_model, stage_of_development, acquisition, accounting_standard_adoption, product_cycle]
+    required_sources: [issuer_10-K_or_10-Q, accounting_policies_note, intangible_assets_note, cash_flow_statement, SRC-017, SRC-023]
+    output_format: forensic_signal_record_v1
+    limitations: ["R&D capitalization is not applicable to every accounting regime or issuer.", "The screen cannot determine accounting compliance."]
+
+  - pattern_id: FA-014
+    name: Reserve and allowance movement
+    category: expense_quality
+    question: "Do reserve rates change materially while the related exposure or loss proxy moves in the opposite direction?"
+    required_inputs: [reserve_balance, related_exposure, reserve_expense_or_release, loss_proxy, prior_period_values, reserve_methodology_disclosure]
+    deterministic_calculation: "Calculate reserve-to-exposure ratio and period change; compare direction with a like-for-like loss proxy and disclosed reserve expense or release."
+    warning_threshold: "Configurable screen: reserve rate falls at least 20% while the related loss proxy worsens at least 20%, or reserve balance changes at least 25% without comparable exposure movement."
+    severity_logic: "Insufficient data if unlike reserve categories are mixed; Monitor for one divergence; Elevated for repeated divergence or missing methodology explanation; High concern only under the global corroboration rule."
+    alternative_explanations: [portfolio_mix, recoveries, product_quality, model_update, aging_change, actuarial_revision]
+    required_sources: [issuer_10-K_or_10-Q, reserve_rollforward, critical_estimates_note, industry_specific_notes, SRC-016, SRC-017, SRC-023]
+    output_format: forensic_signal_record_v1
+    limitations: ["Allowance, warranty, insurance, restructuring, and valuation reserves are not interchangeable.", "Reserve adequacy requires category-specific context."]
+
+  - pattern_id: FA-015
+    name: Net income and operating cash flow conversion
+    category: cash_flow_quality
+    question: "Does cumulative operating cash flow reasonably support cumulative positive net income after disclosed timing effects?"
+    required_inputs: [net_income, operating_cash_flow, average_assets, prior_two_year_values, working_capital_components]
+    deterministic_calculation: "Calculate cumulative CFO divided by cumulative net income over three positive-income years and accrual ratio = (net income minus CFO) / average assets."
+    warning_threshold: "Configurable screen: cumulative CFO-to-net-income is below 0.8, or accrual ratio exceeds 10% once or 5% in two periods."
+    severity_logic: "Insufficient data for negative or near-zero cumulative income, missing assets, or incomparable periods; Monitor for one threshold; Elevated for repeated threshold plus working-capital signal; High concern only under the global corroboration rule."
+    alternative_explanations: [growth_working_capital, tax_or_legal_payment, seasonality, negative_working_capital_model, acquisition]
+    required_sources: [issuer_10-K_or_10-Q, cash_flow_statement, balance_sheet, working_capital_note, SRC-023, SRC-025]
+    output_format: forensic_signal_record_v1
+    limitations: ["Weak conversion may reflect economics rather than reporting quality.", "Cumulative periods reduce but do not eliminate timing effects."]
+
+  - pattern_id: FA-016
+    name: Free cash flow conversion
+    category: cash_flow_quality
+    question: "Does operating cash flow convert to a consistently defined free-cash-flow measure after disclosed capital investment?"
+    required_inputs: [operating_cash_flow, capex, net_income_or_operating_income, prior_period_values, capex_definition]
+    deterministic_calculation: "Calculate free cash flow = CFO minus capex using a documented capex definition, then calculate FCF-to-net-income and FCF-to-operating-income where applicable."
+    warning_threshold: "Configurable screen: FCF conversion is below 0.5 for two of three periods despite positive income, or the capex definition changes without reconciliation."
+    severity_logic: "Insufficient data when capex cannot be isolated; Monitor for one weak conversion period; Elevated for recurring weak conversion plus rising capitalized costs or working-capital use; High concern only under the global corroboration rule."
+    alternative_explanations: [growth_investment, capacity_build, maintenance_cycle, acquisition_related_capex, seasonal_build]
+    required_sources: [issuer_10-K_or_10-Q, cash_flow_statement, PP&E_note, management_discussion, SRC-010, SRC-011, SRC-023]
+    output_format: forensic_signal_record_v1
+    limitations: ["Free cash flow is not standardized.", "A low conversion result can be appropriate during an investment cycle."]
+
+  - pattern_id: FA-017
+    name: Working-capital contribution decomposition
+    category: cash_flow_quality
+    question: "Is reported operating cash flow materially helped or hurt by receivables, inventory, payables, or other working-capital movements?"
+    required_inputs: [operating_cash_flow, net_income, receivables, inventory, accounts_payable, other_operating_assets_liabilities, prior_period_values]
+    deterministic_calculation: "Calculate operating-cash-flow bridge contribution from disclosed working-capital changes and change in days sales outstanding, days inventory, days payables, and cash conversion cycle where inputs exist."
+    warning_threshold: "Configurable screen: working capital contributes more than 30% of CFO in one year, or the cash conversion cycle deteriorates at least 20 days while CFO improves."
+    severity_logic: "Insufficient data for missing component disclosures; Monitor for one material contribution; Elevated for repeated dependence or contradictory balance-sheet trend; High concern only under the global corroboration rule."
+    alternative_explanations: [seasonality, supplier_terms, inventory_release, customer_collections, acquisition, foreign_exchange]
+    required_sources: [issuer_10-K_or_10-Q, cash_flow_statement, balance_sheet, working_capital_notes, SRC-020, SRC-023]
+    output_format: forensic_signal_record_v1
+    limitations: ["Cash-flow statement aggregation may limit component precision.", "A one-year contribution is not inherently adverse."]
+
+  - pattern_id: FA-018
+    name: Supplier-finance program impact
+    category: cash_flow_quality
+    question: "Could supplier-finance obligations or payment-term changes materially affect payables, liquidity, or cash-flow interpretation?"
+    required_inputs: [supplier_finance_obligations, accounts_payable, total_liabilities, days_payable, prior_period_values, program_terms_if_disclosed]
+    deterministic_calculation: "Calculate supplier-finance obligations as a percentage of accounts payable and liabilities, growth rate, and DPO change."
+    warning_threshold: "Configurable screen: obligations exceed 10% of accounts payable or 5% of liabilities, or grow at least 50% while above 2% of liabilities; elevate with DPO increase of at least 15 days or unclear classification."
+    severity_logic: "Insufficient data without program balances or payable data; Monitor for one threshold; Elevated for growth plus term, guarantee, or classification concern; High concern only under the global corroboration rule."
+    alternative_explanations: [voluntary_program, unchanged_commercial_terms, business_growth, seasonality, vendor_mix]
+    required_sources: [issuer_10-K_or_10-Q, supplier_finance_note, accounts_payable, cash_flow_statement, SRC-020, SRC-023]
+    output_format: forensic_signal_record_v1
+    limitations: ["Supplier-finance use is not necessarily financial distress.", "Issuer-specific terms and classification require note review."]
+
+  - pattern_id: FA-019
+    name: Receivables factoring or sales
+    category: cash_flow_quality
+    question: "Are disclosed receivables sales, factoring, securitization, recourse, or continuing-involvement terms material to operating cash flow?"
+    required_inputs: [receivables_sold_or_proceeds, revenue, operating_cash_flow, recourse_or_continuing_involvement_terms, prior_period_values]
+    deterministic_calculation: "Calculate receivables sold or proceeds as a percentage of revenue and CFO, and calculate growth in the program."
+    warning_threshold: "Configurable screen: proceeds exceed 5% of revenue or 25% of CFO, or increase at least 50%; elevate for recourse, continuing involvement, or year-end concentration."
+    severity_logic: "Insufficient data when no program terms are disclosed; Monitor for a material program; Elevated for material growth plus recourse or concentration; High concern only under the global corroboration rule."
+    alternative_explanations: [routine_nonrecourse_program, securitization, seasonal_cash_management, acquisition, customer_financing]
+    required_sources: [issuer_10-K_or_10-Q, transfers_and_servicing_note, receivables_note, cash_flow_statement, SRC-016, SRC-023]
+    output_format: forensic_signal_record_v1
+    limitations: ["Falling receivables alone does not prove factoring.", "Program economics require contractual detail that may not be public."]
+
+  - pattern_id: FA-020
+    name: One-time tax benefit dependence
+    category: cash_flow_quality
+    question: "Did a discrete tax item materially support reported income, cash flow, or non-GAAP presentation?"
+    required_inputs: [income_tax_expense, pretax_income, effective_tax_rate, discrete_tax_items, operating_cash_flow, prior_period_values]
+    deterministic_calculation: "Calculate effective tax rate, cash-tax-to-pretax-income where available, and discrete-tax-item contribution to net income."
+    warning_threshold: "Configurable screen: disclosed discrete tax benefit exceeds 10% of net income or reduces the effective tax rate by at least 10 percentage points in a period."
+    severity_logic: "Insufficient data without discrete item disclosure; Monitor for one material benefit; Elevated if repeated or embedded in adjusted earnings without clear treatment; High concern only under the global corroboration rule."
+    alternative_explanations: [tax_law_change, valuation_allowance_release, audit_settlement, geographic_mix, stock_compensation_tax_effect]
+    required_sources: [issuer_10-K_or_10-Q, income_tax_note, cash_flow_statement, non_GAAP_reconciliation, SRC-018, SRC-023]
+    output_format: forensic_signal_record_v1
+    limitations: ["Tax accounting is complex and jurisdiction-specific.", "A tax benefit can be legitimate and recurring only in limited circumstances."]
+
+  - pattern_id: FA-021
+    name: Deferred cash obligation build
+    category: cash_flow_quality
+    question: "Are unpaid obligations, accrued liabilities, capital commitments, or other deferred cash uses increasing faster than the cash-generation base?"
+    required_inputs: [accrued_liabilities, capital_commitments, purchase_commitments, operating_cash_flow, revenue, prior_period_values]
+    deterministic_calculation: "Calculate deferred-obligation growth, obligations-to-CFO, and obligations-to-revenue ratios, separately by disclosed class."
+    warning_threshold: "Configurable screen: a disclosed obligation class grows at least 30% faster than revenue and exceeds 25% of CFO, without a disclosed timing explanation."
+    severity_logic: "Insufficient data if unlike obligations cannot be separated; Monitor for one material class; Elevated for repeated build plus liquidity pressure; High concern only under the global corroboration rule."
+    alternative_explanations: [growth_commitments, seasonality, project_timing, acquisition, supplier_terms, regulatory_requirement]
+    required_sources: [issuer_10-K_or_10-Q, commitments_note, accrued_liabilities_note, cash_flow_statement, debt_note, SRC-010, SRC-011]
+    output_format: forensic_signal_record_v1
+    limitations: ["Different obligations have different timing, ranking, and settlement mechanisms.", "Public disclosure may be aggregated."]
+
+  - pattern_id: FA-022
+    name: Inventory and sales divergence
+    category: balance_sheet_risk
+    question: "Is inventory growing materially faster than sales or are inventory days rising unusually?"
+    required_inputs: [inventory, revenue_or_cost_of_sales, prior_period_inventory, prior_period_revenue_or_cost_of_sales, days_in_period]
+    deterministic_calculation: "Calculate inventory growth minus sales growth and days inventory outstanding using disclosed cost-of-sales where possible."
+    warning_threshold: "Configurable screen: inventory growth exceeds sales growth by at least 20 percentage points and days inventory rises at least 15 days."
+    severity_logic: "Insufficient data without comparable inventory and cost data; Monitor for one divergence; Elevated if repeated or paired with reserve decline, margin pressure, or demand revision; High concern only under the global corroboration rule."
+    alternative_explanations: [capacity_build, supply_chain_buffer, product_launch, commodity_cost_change, acquisition, seasonality]
+    required_sources: [issuer_10-K_or_10-Q, inventory_note, balance_sheet, cost_of_sales, management_discussion, SRC-023, SRC-025]
+    output_format: forensic_signal_record_v1
+    limitations: ["Inventory levels are industry-specific.", "Sales and cost-of-sales timing can differ from inventory purchases."]
+
+  - pattern_id: FA-023
+    name: Inventory obsolescence reserve movement
+    category: balance_sheet_risk
+    question: "Do inventory reserves move consistently with inventory aging, write-downs, demand conditions, and disclosed reserve policy?"
+    required_inputs: [inventory_reserve_if_disclosed, inventory, write_downs_if_disclosed, demand_or_loss_proxy, prior_period_values, reserve_policy]
+    deterministic_calculation: "Calculate reserve-to-inventory ratio and change, then compare with disclosed write-downs and a like-for-like demand or aging proxy."
+    warning_threshold: "Configurable screen: reserve-to-inventory ratio falls at least 20% while inventory days rise at least 15 days or disclosed write-downs increase."
+    severity_logic: "Insufficient data if the reserve is not disclosed; Monitor for one divergence; Elevated for repeated divergence or vague reserve policy change; High concern only under the global corroboration rule."
+    alternative_explanations: [inventory_mix, recoveries, supply_chain_normalization, product_transition, accounting_presentation_change]
+    required_sources: [issuer_10-K_or_10-Q, inventory_note, critical_estimates_note, management_discussion, SRC-023]
+    output_format: forensic_signal_record_v1
+    limitations: ["Many issuers do not disclose an inventory reserve separately.", "Reserve adequacy cannot be determined from a ratio alone."]
+
+  - pattern_id: FA-024
+    name: Goodwill and intangible concentration
+    category: balance_sheet_risk
+    question: "Is acquired goodwill or intangible exposure sufficiently concentrated to create material impairment or forecast sensitivity?"
+    required_inputs: [goodwill, finite_lived_intangibles, indefinite_lived_intangibles, total_assets, acquisition_cash_paid, impairment_charges, prior_period_values]
+    deterministic_calculation: "Calculate goodwill-plus-intangibles as a percentage of total assets and track changes, acquisition spend, and impairment charges over three years."
+    warning_threshold: "Configurable screen: goodwill plus intangibles exceed 40% of assets and rise at least 10 points year over year, or a material acquisition is followed by impairment above 10% of opening goodwill within three years."
+    severity_logic: "Insufficient data if components are unavailable; Monitor for concentration; Elevated for concentration plus adverse performance or impaired acquisition; High concern only under the global corroboration rule."
+    alternative_explanations: [asset_light_economics, strategic_acquisition, measurement_period_adjustment, macro_or_rate_shock]
+    required_sources: [issuer_10-K_or_10-Q, goodwill_note, intangible_assets_note, acquisition_note, SRC-017, SRC-024]
+    output_format: forensic_signal_record_v1
+    limitations: ["Asset intensity varies by industry.", "Impairment depends on forward-looking judgment and may not imply prior error."]
+
+  - pattern_id: FA-025
+    name: Debt maturity concentration
+    category: balance_sheet_risk
+    question: "Could near-term maturities, fixed charges, or refinancing dependence constrain liquidity under downside conditions?"
+    required_inputs: [debt_maturity_schedule, cash, committed_revolver_availability, operating_cash_flow, fixed_charges_if_disclosed, covenant_terms_if_disclosed]
+    deterministic_calculation: "Calculate debt due within 12 and 24 months as a percentage of freely available liquidity and operating cash flow; list maturities by instrument and ranking."
+    warning_threshold: "Configurable screen: debt due within 24 months exceeds 100% of freely available liquidity or 150% of trailing CFO, without identified committed refinancing capacity."
+    severity_logic: "Insufficient data when maturity or liquidity terms are incomplete; Monitor for a maturity wall; Elevated for a maturity wall plus weak coverage or covenant uncertainty; High concern only under the global corroboration rule."
+    alternative_explanations: [routine_refinancing, cash_held_abroad, undrawn_committed_facility, asset_sale, seasonal_cash_cycle]
+    required_sources: [issuer_10-K_or_10-Q, debt_note, credit_agreements, cash_and_restricted_cash_note, SRC-010, SRC-011]
+    output_format: forensic_signal_record_v1
+    limitations: ["All cash is not necessarily freely available.", "Refinancing access and covenant headroom require document-level review."]
+
+  - pattern_id: FA-026
+    name: Off-balance-sheet commitment pressure
+    category: balance_sheet_risk
+    question: "Are leases, purchase commitments, guarantees, variable-interest entities, or other disclosed obligations material relative to liquidity?"
+    required_inputs: [lease_commitments, purchase_commitments, guarantees, other_off_balance_obligations, cash, operating_cash_flow, prior_period_values]
+    deterministic_calculation: "Calculate each disclosed commitment class as a percentage of cash and CFO, and identify amounts due within 12 and 24 months when disclosed."
+    warning_threshold: "Configurable screen: near-term commitments exceed 75% of freely available liquidity or grow at least 30% while CFO declines."
+    severity_logic: "Insufficient data if commitment timing is not disclosed; Monitor for one material commitment class; Elevated if several classes rise while liquidity weakens; High concern only under the global corroboration rule."
+    alternative_explanations: [growth_plan, long_term_supply_contract, lease_portfolio_change, acquisition, normal_contractual_commitment]
+    required_sources: [issuer_10-K_or_10-Q, commitments_note, lease_note, guarantees_note, cash_flow_statement, SRC-010, SRC-011]
+    output_format: forensic_signal_record_v1
+    limitations: ["Disclosure aggregation can prevent exact cash-timing analysis.", "A commitment is not necessarily a current liability or risk event."]
+
+  - pattern_id: FA-027
+    name: Pension and postretirement obligation sensitivity
+    category: balance_sheet_risk
+    question: "Are pension or postretirement obligations material and sensitive to disclosed discount-rate, return, mortality, or asset assumptions?"
+    required_inputs: [pension_obligation, plan_assets, funded_status, pension_expense, assumption_changes, prior_period_values]
+    deterministic_calculation: "Calculate unfunded obligation as a percentage of market capitalization only if user-supplied or licensed, otherwise assets and CFO; compare funded status and key assumption changes year over year."
+    warning_threshold: "Configurable screen: unfunded status exceeds 25% of CFO, worsens at least 20% year over year, or a key assumption change materially reduces expense without disclosed sensitivity."
+    severity_logic: "Insufficient data without plan disclosures; Monitor for one material sensitivity; Elevated for worsening funded status plus liquidity pressure; High concern only under the global corroboration rule."
+    alternative_explanations: [market_returns, interest_rate_change, benefit_freeze, plan_contribution, demographic_update]
+    required_sources: [issuer_10-K_or_10-Q, pension_note, critical_estimates_note, cash_flow_statement, SRC-023]
+    output_format: forensic_signal_record_v1
+    limitations: ["Defined-benefit obligations are highly assumption-sensitive.", "Do not use an unlicensed market capitalization input automatically."]
+
+  - pattern_id: FA-028
+    name: Contingent consideration exposure
+    category: balance_sheet_risk
+    question: "Do contingent-consideration balances, fair-value changes, or acquisition outcomes create material earnings or liquidity sensitivity?"
+    required_inputs: [contingent_consideration_liability, fair_value_changes, acquisition_dates, acquisition_cash_paid, earnings_impact, prior_period_values]
+    deterministic_calculation: "Calculate contingent consideration as a percentage of acquisition cash paid, liabilities, and operating income; track fair-value changes and settlement timing."
+    warning_threshold: "Configurable screen: contingent consideration exceeds 10% of acquisition cash paid or changes by at least 25% of operating income without a disclosed operating-driver bridge."
+    severity_logic: "Insufficient data when the liability is not separately disclosed; Monitor for material exposure; Elevated for large recurring remeasurement effects or near-term settlement pressure; High concern only under the global corroboration rule."
+    alternative_explanations: [performance_outperformance, discount_rate_change, probability_update, acquisition_integration, measurement_period_adjustment]
+    required_sources: [issuer_10-K_or_10-Q, acquisition_note, fair_value_note, debt_and_liquidity_notes, SRC-017, SRC-024]
+    output_format: forensic_signal_record_v1
+    limitations: ["Fair-value changes can reflect legitimate remeasurement.", "Public disclosures may not separate each acquisition's outcome."]
+
+  - pattern_id: FA-029
+    name: Deferred tax asset realization risk
+    category: balance_sheet_risk
+    question: "Are deferred tax assets and valuation allowances material relative to the issuer's demonstrated taxable-income capacity?"
+    required_inputs: [deferred_tax_assets, valuation_allowance, pretax_income, taxable_income_evidence_if_disclosed, prior_period_values]
+    deterministic_calculation: "Calculate net deferred tax assets and valuation allowance as percentages of total assets, pretax income, and trailing three-year earnings where comparable."
+    warning_threshold: "Configurable screen: net deferred tax assets exceed 20% of total assets or 100% of trailing three-year pretax income, and valuation allowance declines while taxable-income evidence weakens."
+    severity_logic: "Insufficient data when DTA components or valuation allowance are unavailable; Monitor for material DTA; Elevated for material DTA plus weakening income evidence; High concern only under the global corroboration rule."
+    alternative_explanations: [net_operating_loss_utilization, tax_law_change, acquisition, geographic_profit_mix, valuation_allowance_release]
+    required_sources: [issuer_10-K_or_10-Q, income_tax_note, critical_estimates_note, SRC-023]
+    output_format: forensic_signal_record_v1
+    limitations: ["Taxability and jurisdictional rules require specialist interpretation.", "A valuation allowance release can be appropriate."]
+
+  - pattern_id: FA-030
+    name: Liquidity dependency screen
+    category: balance_sheet_risk
+    question: "Does the issuer depend on externally available liquidity sources that may be constrained under stress?"
+    required_inputs: [cash, restricted_cash, revolver_availability, commercial_paper_or_short_term_funding, debt_maturities, operating_cash_flow, near_term_uses]
+    deterministic_calculation: "Calculate freely available liquidity = unrestricted cash plus committed unused facilities, then compare with debt due, modeled near-term uses, and funding concentration."
+    warning_threshold: "Configurable screen: freely available liquidity is below 1.25 times disclosed 12-month uses, or more than 50% of liquidity depends on uncommitted or short-term external funding."
+    severity_logic: "Insufficient data when restrictions, facility terms, or near-term uses are unknown; Monitor for tight coverage; Elevated for tight coverage plus maturity or covenant pressure; High concern only under the global corroboration rule."
+    alternative_explanations: [seasonal_cash_cycle, cash_trapped_by_jurisdiction, committed_backstop, asset_sale, working_capital_release]
+    required_sources: [issuer_10-K_or_10-Q, liquidity_discussion, debt_note, cash_and_restricted_cash_note, credit_agreements, SRC-010, SRC-011, SRC-012]
+    output_format: forensic_signal_record_v1
+    limitations: ["Liquidity availability may change after the reporting date.", "Do not assume all reported cash is available to service debt."]
+
+  - pattern_id: FA-031
+    name: Auditor change event
+    category: governance_reporting_risk
+    question: "Does an auditor change disclosure contain disagreements, reportable events, opinion language, or timing that warrants focused review?"
+    required_inputs: [Item_4_01_text, Exhibit_16_text_if_any, auditor_report, material_weakness_history, non_reliance_history]
+    deterministic_calculation: "Classify an Item 4.01 event by disclosed disagreement, reportable event, auditor opinion, Exhibit 16 response, and proximity to non-reliance or material weakness."
+    warning_threshold: "Informational by default; elevate when the filing discloses disagreements, reportable events, adverse or qualified language, Exhibit 16 disagreement, or occurs within 365 days of non-reliance or material weakness."
+    severity_logic: "Insufficient data if relevant event filings are unavailable; Monitor for any auditor change; Elevated for disclosed disagreement or reportable event; High concern for explicit non-reliance or adverse-control context, not for the change alone."
+    alternative_explanations: [audit_firm_merger, independence, fees, mandatory_rotation, geography, audit_committee_preference]
+    required_sources: [issuer_8-K_Item_4_01, Exhibit_16, issuer_10-K, SRC-019, SRC-021]
+    output_format: forensic_signal_record_v1
+    limitations: ["Auditor change alone is not a negative finding.", "A public screen cannot perform audit procedures."]
+
+  - pattern_id: FA-032
+    name: Material weakness and remediation duration
+    category: governance_reporting_risk
+    question: "Has the issuer disclosed a material weakness, adverse ICFR opinion, or slow remediation that requires priority tracking?"
+    required_inputs: [Item_9A_text, management_ICFR_report, independent_auditor_report, remediation_status, prior_period_control_status]
+    deterministic_calculation: "Extract disclosed control status, affected processes, remediation state, and number of annual periods unresolved."
+    warning_threshold: "Explicit current material weakness or adverse ICFR opinion is a High concern review event; unresolved status for two annual periods remains High concern review priority."
+    severity_logic: "Insufficient data if control reports are unavailable; Normal only when no disclosure is identified in reviewed sources; Monitor for a remediation update; Elevated for unresolved remediation; High concern for explicit current material weakness or adverse ICFR opinion."
+    alternative_explanations: [ERP_implementation, acquired_business_integration, staffing_turnover, newly_public_company_transition]
+    required_sources: [issuer_10-K_Item_9A, management_ICFR_report, independent_auditor_report, SRC-021]
+    output_format: forensic_signal_record_v1
+    limitations: ["Do not infer a material weakness from financial ratios.", "A control weakness is not a determination of a financial-statement error."]
+
+  - pattern_id: FA-033
+    name: Restatement and non-reliance event
+    category: governance_reporting_risk
+    question: "Has the issuer disclosed non-reliance, a restatement, or an amendment requiring issue-level review?"
+    required_inputs: [Item_4_02_text, amended_filings, restatement_note, prior_period_corrections, filing_dates]
+    deterministic_calculation: "Classify filings as Item 4.02 non-reliance, disclosed restatement, revision, or amendment-only; count comparable events over 36 months."
+    warning_threshold: "Item 4.02 non-reliance is a High concern review event; two non-reliance events within 36 months remain High concern review priority."
+    severity_logic: "Insufficient data if historical amendments are missing; Monitor for an amendment with no stated restatement; Elevated for a disclosed revision or correction; High concern for explicit non-reliance, while retaining cause and scope."
+    alternative_explanations: [XBRL_only_correction, exhibit_update, accounting_standard_adoption, immaterial_revision]
+    required_sources: [issuer_8-K_Item_4_02, issuer_10-KA_or_10-QA, restatement_note, SRC-019, SRC-021]
+    output_format: forensic_signal_record_v1
+    limitations: ["An amended filing alone is not a restatement finding.", "Do not infer intent from a correction event."]
+
+  - pattern_id: FA-034
+    name: Filing timeliness and disclosure delay
+    category: governance_reporting_risk
+    question: "Are periodic reports late, repeatedly extended, or associated with unresolved disclosure issues?"
+    required_inputs: [required_filing_deadline, filing_date, Form_12b_25_if_any, prior_filing_dates, stated_reason]
+    deterministic_calculation: "Calculate days late relative to the applicable deadline, count late or extension events over eight quarters, and retain stated reason."
+    warning_threshold: "Configurable screen: filing is late by more than five calendar days or there are two extension or late events within eight quarters."
+    severity_logic: "Insufficient data if filer status or deadline is unknown; Monitor for one late or extension event; Elevated for repeated events or accounting-control reason; High concern only when paired with explicit non-reliance, material weakness, or the global corroboration rule."
+    alternative_explanations: [system_change, acquisition, cybersecurity_incident, auditor_timing, staffing_change, force_majeure]
+    required_sources: [SEC_filing_metadata, Form_12b_25_if_any, issuer_8-K, issuer_10-K_or_10-Q, SRC-019]
+    output_format: forensic_signal_record_v1
+    limitations: ["Deadline calculation depends on filer status and extensions.", "Delay alone does not establish an accounting problem."]
+
+  - pattern_id: FA-035
+    name: Related-party transaction exposure
+    category: governance_reporting_risk
+    question: "Are related-party transactions, balances, terms, or approvals material or changing unusually?"
+    required_inputs: [related_party_transaction_value, related_party_balance, revenue_or_assets, prior_period_values, business_purpose, approval_disclosure]
+    deterministic_calculation: "Calculate related-party transaction value as a percentage of revenue and balances as a percentage of assets; calculate year-over-year growth and flag qualitative term indicators."
+    warning_threshold: "Configurable screen: transactions exceed 5% of revenue, balances exceed 5% of assets, or grow at least 50% while above 1% of the relevant scale; elevate unusual terms, unclear business purpose, or weak approval disclosure."
+    severity_logic: "Insufficient data if transactions are aggregated or absent; Monitor for a disclosed material transaction; Elevated for material size plus unusual terms or approval gap; High concern only under the global corroboration rule."
+    alternative_explanations: [founder_controlled_lease_or_supplier, shared_services, ordinary_approved_transaction, consolidation_effect]
+    required_sources: [issuer_10-K_related_party_note, DEF_14A_related_person_disclosure, issuer_10-K, SRC-017, SRC-022]
+    output_format: forensic_signal_record_v1
+    limitations: ["Related-party disclosure does not by itself indicate an improper transaction.", "Public filings may not disclose all commercial terms."]
+
+  - pattern_id: FA-036
+    name: Executive turnover clustering
+    category: governance_reporting_risk
+    question: "Are senior executive changes clustered around reporting, control, strategy, or performance events?"
+    required_inputs: [executive_change_dates, executive_roles, stated_reasons_if_disclosed, material_weakness_history, restatement_history, guidance_history]
+    deterministic_calculation: "Create a dated turnover timeline and count C-suite or finance-lead departures within 365 days of material weaknesses, non-reliance, repeated guidance changes, or a major restructuring."
+    warning_threshold: "Configurable screen: two or more C-suite or finance-lead departures within 12 months, or one such departure within 180 days of an explicit control or non-reliance event."
+    severity_logic: "Insufficient data when dates or roles are unavailable; Monitor for a single senior change; Elevated for a cluster or linked reporting event; High concern only under the global corroboration rule."
+    alternative_explanations: [retirement, succession_plan, promotion, merger_integration, personal_reason, strategy_change]
+    required_sources: [issuer_8-K, DEF_14A, earnings_release, SEC_officer_disclosures, SRC-021]
+    output_format: forensic_signal_record_v1
+    limitations: ["Executive turnover can be ordinary succession.", "Do not infer a reason beyond disclosed facts."]
+
+  - pattern_id: FA-037
+    name: Unusual insider transaction context
+    category: governance_reporting_risk
+    question: "Do disclosed insider transactions warrant context review because of size, clustering, plan status, or proximity to material events?"
+    required_inputs: [Forms_3_4_5_transactions, insider_role, transaction_date, transaction_type, 10b5_1_status_if_disclosed, share_holdings, material_event_dates]
+    deterministic_calculation: "Calculate transaction size as a percentage of the insider's disclosed holdings where available; flag multiple executive sales within 30 days and proximity to material public events."
+    warning_threshold: "Configurable screen: an officer or director disposes of at least 25% of disclosed holdings outside a documented plan, or three senior insiders sell within 30 days before a material event, subject to public-date sequencing."
+    severity_logic: "Insufficient data without holdings or plan information; Monitor for a single contextual event; Elevated for clustered unusual sales with relevant timing; High concern only under the global corroboration rule and never based on transaction timing alone."
+    alternative_explanations: [diversification, tax_withholding, estate_planning, charitable_giving, prearranged_plan, option_exercise]
+    required_sources: [SEC_Forms_3_4_5, issuer_8-K, DEF_14A, earnings_release]
+    output_format: forensic_signal_record_v1
+    limitations: ["Public Form 4 timing and plan disclosures may be incomplete.", "Do not infer nonpublic-information use or intent from a screen."]
+
+  - pattern_id: FA-038
+    name: Non-GAAP and KPI definition drift
+    category: governance_reporting_risk
+    question: "Do non-GAAP measures or key operating metrics change labels, inclusions, exclusions, periods, or reconciliation treatment over time?"
+    required_inputs: [current_metric_definition, prior_metric_definitions, current_reconciliation, prior_reconciliations, reporting_periods]
+    deterministic_calculation: "Perform versioned comparison of metric names, included and excluded items, numerator, denominator, period basis, and reconciliation availability."
+    warning_threshold: "Qualitative screen: any material definition change without clear retrospective comparability is a Monitor event; repeated changes across two of three periods are Elevated."
+    severity_logic: "Insufficient data if prior definitions are unavailable; Monitor for one material change; Elevated for repeated changes or removal of reconciliation; High concern only if paired with explicit non-reliance, material weakness, or the global corroboration rule."
+    alternative_explanations: [business_model_change, acquisition, new_disclosure, accounting_standard_adoption, simplification]
+    required_sources: [issuer_earnings_releases, Form_8-K_Item_2_02, issuer_10-K_or_10-Q, management_discussion, SRC-018, SRC-023]
+    output_format: forensic_signal_record_v1
+    limitations: ["Metric evolution can improve disclosure.", "A changed metric must be evaluated with its stated rationale and reconciliation."]
