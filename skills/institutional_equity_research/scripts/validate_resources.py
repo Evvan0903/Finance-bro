@@ -127,6 +127,18 @@ EXPECTED_ASSET_DIRECTORIES = {
     "icons",
 }
 
+PROHIBITED_OPERATIONAL_PHRASES = {
+    "fully verified",
+    "no risk exists",
+    "fraud confirmed",
+    "management is dishonest",
+    "complete due diligence performed",
+}
+PROHIBITED_PHRASE_SCHEMA_FILES = {
+    PATTERNS / "diligence_patterns.yaml",
+    PATTERNS / "disclosure_patterns.yaml",
+}
+
 
 def load_yaml(path: Path, errors: list[str]) -> Any:
     try:
@@ -280,6 +292,10 @@ def main() -> int:
             errors.append(f"{asset.get('asset_id', '<missing>')} is not approved")
         if asset.get("contains_company_logo") is True:
             errors.append(f"{asset.get('asset_id', '<missing>')} contains a company logo")
+        if asset.get("contains_trademark") is True:
+            errors.append(f"{asset.get('asset_id', '<missing>')} contains a trademark")
+        if asset.get("asset_type") != "data_visualization" and "evidence_chart" not in asset.get("prohibited_placements", []):
+            errors.append(f"{asset.get('asset_id', '<missing>')} must prohibit evidence_chart placement")
         manifest_paths.add(str(asset.get("file_path", "")))
     allowed_asset_files = {"asset_manifest.yaml"}
     for asset_path in ASSETS.rglob("*"):
@@ -315,6 +331,11 @@ def main() -> int:
         errors.append("Incorrect terminology found: use 'due diligence', not 'due diligent'")
     if re.search(r"\bin the style of\s+(J\.?P\.?\s*Morgan|Morgan Stanley|Goldman Sachs|BlackRock|Fidelity|UBS|Citi|Morningstar|Value Line|CFRA)\b", raw_text, flags=re.IGNORECASE):
         errors.append("Named-institution style imitation found")
+    for path in [SKILL_ROOT / "SKILL.md", *sorted(set(yaml_paths) - PROHIBITED_PHRASE_SCHEMA_FILES)]:
+        content = path.read_text(encoding="utf-8").lower()
+        for phrase in PROHIBITED_OPERATIONAL_PHRASES:
+            if phrase in content:
+                errors.append(f"Prohibited operational phrase found outside its schema: '{phrase}' in {path.relative_to(SKILL_ROOT)}")
     return report(errors, warnings)
 
 

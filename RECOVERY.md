@@ -27,18 +27,17 @@ Incrementally upgrade `skills/institutional_equity_research/SKILL.md` into a pub
 - Created and validated `patterns/pattern_provenance.yaml`, covering all 166 adopted pattern, layout, visual, and motif IDs plus all 29 section-blueprint IDs through 24 rights-reviewed provenance sets.
 - Created and ran `scripts/validate_resources.py`; it validates required resources, YAML parsing, corpus metadata, forensic contracts, reference resolution, provenance coverage, asset manifest gating, benchmark coverage, terminology, and named-style prohibition.
 - Incrementally extended `SKILL.md` from 254 to 335 lines with concise resource routing, public-research rules, archetype/diligence/forensic/credit/IC execution, original design controls, the required ten-level conflict hierarchy, and a publication-blocking QA gate; both resource and skill validation pass.
+- Completed the final integrity checks: resource validation passed, skill-creator quick validation passed, terminology/prohibited-claim, copyright, asset-manifest, and provenance checks passed, and the unrelated project suite passed 33 tests.
+- Forward-tested the skill in a fresh subagent context with a generic public-side software diligence request; it selected `AR-002`, routed resources correctly, applied bounded findings and disclosures, and required no follow-up change.
 - Stopped all active implementation work at a completed patch boundary when the checkpoint was requested.
 
 ## Remaining tasks
 
-- Validate all YAML files and run the skill-creator `quick_validate.py` check.
-- Run terminology, prohibited-claim, copyright, asset-manifest, and provenance coverage checks.
-- Forward-test the upgraded skill on a fresh example task and record any refinements.
 - Produce the requested final directory tree and eighteen-part implementation summary.
 
 ## Current status
 
-Checkpointed mid-upgrade. The gap analysis, core archetype/blueprint layer, analytical patterns, diligence library, benchmark cases, design/asset resources, a 34-source rights-aware corpus, a 38-test forensic library, the complete chart/table/layout/writing/disclosure/sector pattern layer, full pattern provenance, deterministic resource validation, and an incrementally extended `SKILL.md` exist on disk. All present YAML files parse successfully; `SKILL.md` is 335 lines, resource validation passes, and the skill-creator validation passes. The support files are now wired into the existing skill without replacing its original Sections 1–26.
+Checkpointed near completion. The gap analysis, core archetype/blueprint layer, analytical patterns, diligence library, benchmark cases, design/asset resources, a 34-source rights-aware corpus, a 38-test forensic library, the complete chart/table/layout/writing/disclosure/sector pattern layer, full pattern provenance, deterministic resource validation, and an incrementally extended `SKILL.md` exist on disk. All present YAML files parse successfully; `SKILL.md` is 335 lines, resource and skill-creator validation pass, 33 project tests pass, and fresh-context forward testing passed without refinements. The support files are wired into the existing skill without replacing its original Sections 1–26.
 
 No remote push has been performed. No full third-party reports, report pages, screenshots, branded visuals, proprietary ratings, forecasts, target prices, or copied layouts were added.
 
@@ -71,7 +70,7 @@ The existing `skills/institutional_equity_research/SKILL.md` was extended in pla
 
 ## Next recommended step
 
-Read this file and `TODO.md`, inspect the latest local commit, and compare the committed tree with these notes. Then run the complete YAML and skill validation suite, terminology and prohibited-claim checks, asset/provenance checks, and a fresh-context forward test. Resume only the unchecked work; do not regenerate or overwrite the completed resources unless validation identifies a specific defect.
+Read this file and `TODO.md`, inspect the latest local commit, and compare the committed tree with these notes. Then produce the final directory tree and required eighteen-part completion summary. Do not regenerate or overwrite the completed resources unless validation identifies a specific defect.
 
 ## Assumptions and pending decisions
 

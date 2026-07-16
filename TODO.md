@@ -34,10 +34,10 @@
 - [x] Incrementally update `SKILL.md` after all support libraries exist.
 - [x] Add the exact ten-level conflict hierarchy and publication-blocking QA.
 - [x] Add forensic, diligence, credit-style risk, and investment-committee routing.
-- [ ] Validate every YAML file.
-- [ ] Run the skill-creator quick validation.
-- [ ] Run terminology, prohibited-claim, provenance, asset, and copyright checks.
-- [ ] Forward-test the upgraded skill on a fresh task.
-- [ ] Address only defects found by validation or forward testing.
+- [x] Validate every YAML file.
+- [x] Run the skill-creator quick validation.
+- [x] Run terminology, prohibited-claim, provenance, asset, and copyright checks.
+- [x] Forward-test the upgraded skill on a fresh task.
+- [x] Address only defects found by validation or forward testing (no defects found).
 - [ ] Produce the final directory tree and requested eighteen-part completion summary.
 - [ ] Do not push any checkpoint commit to a remote.
