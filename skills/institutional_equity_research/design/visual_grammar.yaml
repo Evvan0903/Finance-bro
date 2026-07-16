@@ -1,0 +1,226 @@
+version: "1.0"
+global_rules:
+  - "Every visual must answer one stated analytical question."
+  - "Use only verified, licensed, user-supplied, or deterministically derived inputs."
+  - "Never use decorative illustration as evidence."
+  - "Never fabricate observations, labels, maps, timelines, or diagram relationships."
+  - "Object-level sources, units, period basis, as-of date, and accessible text are mandatory when applicable."
+  - "Export decision-relevant visuals as vector PDF or SVG when possible and provide a text or table equivalent."
+
+visual_types:
+  - visual_id: VG-001
+    name: Analytical chart
+    analytical_purpose: "Show a comparison, trend, distribution, bridge, or sensitivity that supports one conclusion."
+    required_inputs: [verified_series, period_or_category_labels, units, source_ids]
+    appropriate_use: "A visual pattern is easier to evaluate than the equivalent prose or table."
+    inappropriate_use: "The data are sparse, incomparable, unsupported, or better shown as exact values in a table."
+    required_title: "Conclusion-oriented title that does not overstate causality."
+    required_source_note: true
+    required_units: true
+    required_as_of_date: true
+    required_accessibility_text: "State the conclusion, period, scale, direction, and material values."
+    export_requirements: [vector_preferred, embedded_fonts, print_safe_colors, minimum_300_dpi_if_raster, text_equivalent]
+  - visual_id: VG-002
+    name: Financial table
+    analytical_purpose: "Provide exact historical, forecast, reconciliation, or valuation figures."
+    required_inputs: [labeled_rows, labeled_periods, units, actual_estimate_status, source_ids]
+    appropriate_use: "Readers need exact values, formulas, or multiple related metrics."
+    inappropriate_use: "The purpose is a single directional trend that a chart communicates faster."
+    required_title: "Metric scope, issuer or segment, and period basis."
+    required_source_note: true
+    required_units: true
+    required_as_of_date: true
+    required_accessibility_text: "A machine-readable table with headers, units, and unavailable-value labels."
+    export_requirements: [selectable_text, repeating_headers, no_clipped_columns, grayscale_legibility]
+  - visual_id: VG-003
+    name: KPI card
+    analytical_purpose: "Surface one decision-relevant metric with context and status."
+    required_inputs: [metric_name, value, unit, period, comparison, source_id]
+    appropriate_use: "A small number of comparable headline metrics anchors a dashboard."
+    inappropriate_use: "More than four cards compete, or the metric lacks a meaningful comparator."
+    required_title: "Plain metric label."
+    required_source_note: true
+    required_units: true
+    required_as_of_date: true
+    required_accessibility_text: "Metric, value, comparator, period, and interpretation."
+    export_requirements: [selectable_text, high_contrast, no_color_only_status]
+  - visual_id: VG-004
+    name: Thesis card
+    analytical_purpose: "Connect a falsifiable thesis point to evidence, financial transmission, and monitor."
+    required_inputs: [thesis_statement, supporting_evidence, counterevidence, implication, monitor]
+    appropriate_use: "A dashboard or committee memo needs a compact thesis map."
+    inappropriate_use: "The card substitutes assertion for cited evidence or suppresses contradictory information."
+    required_title: "Falsifiable thesis conclusion."
+    required_source_note: true
+    required_units: false
+    required_as_of_date: true
+    required_accessibility_text: "Thesis, supporting and opposing evidence, implication, and monitoring condition."
+    export_requirements: [selectable_text, source_markers_visible, logical_reading_order]
+  - visual_id: VG-005
+    name: Risk card
+    analytical_purpose: "Explain a material risk, threatened assumption, leading indicator, and thesis-break condition."
+    required_inputs: [risk, likelihood_basis, impact_basis, threatened_assumption, indicator, mitigation_or_counterevidence]
+    appropriate_use: "A small number of top risks require expanded explanation."
+    inappropriate_use: "Severity is implied without an evidence basis or all risks are shown as equally urgent."
+    required_title: "Specific risk event or mechanism."
+    required_source_note: true
+    required_units: false
+    required_as_of_date: true
+    required_accessibility_text: "Risk mechanism, likelihood, impact, evidence, and monitoring trigger."
+    export_requirements: [no_color_only_severity, high_contrast, selectable_text]
+  - visual_id: VG-006
+    name: Diligence finding
+    analytical_purpose: "Present a public-side finding, why it matters, evidence, status, confidence, alternative explanation, and further work."
+    required_inputs: [finding, evidence, status, confidence, alternative_explanations, scope_limit, source_ids]
+    appropriate_use: "A diligence question has enough public evidence for a calibrated finding."
+    inappropriate_use: "A finding is presented as assurance, proof of misconduct, or complete due diligence."
+    required_title: "Neutral finding statement."
+    required_source_note: true
+    required_units: false
+    required_as_of_date: true
+    required_accessibility_text: "Finding, evidence, status, confidence, limitations, and further work."
+    export_requirements: [selectable_text, status_text_visible, source_markers_visible]
+  - visual_id: VG-007
+    name: Timeline
+    analytical_purpose: "Show dated events, guidance, decisions, maturities, or milestones in sequence."
+    required_inputs: [event_dates, event_labels, event_types, source_ids]
+    appropriate_use: "Sequence and elapsed time affect the analysis."
+    inappropriate_use: "Dates are estimated but rendered as exact, or causal links are implied without evidence."
+    required_title: "Event class and covered period."
+    required_source_note: true
+    required_units: false
+    required_as_of_date: true
+    required_accessibility_text: "Chronological list of every event and its date or date range."
+    export_requirements: [date_labels_legible, text_equivalent, no_overlapping_annotations]
+  - visual_id: VG-008
+    name: Business-model diagram
+    analytical_purpose: "Explain how inputs, activities, customers, and economics connect."
+    required_inputs: [business_activities, products_or_services, customers, revenue_mechanisms, cost_mechanisms, evidence_sources]
+    appropriate_use: "The operating model has multiple connected components."
+    inappropriate_use: "Undisclosed relationships are inferred or artwork obscures financial logic."
+    required_title: "How the disclosed business model creates revenue and incurs cost."
+    required_source_note: true
+    required_units: false
+    required_as_of_date: true
+    required_accessibility_text: "Ordered description of nodes, connections, and disclosed economic mechanisms."
+    export_requirements: [vector_preferred, directional_arrows_labeled, logical_reading_order]
+  - visual_id: VG-009
+    name: Revenue-flow diagram
+    analytical_purpose: "Trace volume, price, mix, channel, geography, or contract drivers into revenue."
+    required_inputs: [driver_nodes, flow_relationships, disclosed_segments_or_channels, source_ids]
+    appropriate_use: "A driver chain clarifies how revenue is generated."
+    inappropriate_use: "Flow widths imply magnitude without quantitative data."
+    required_title: "Disclosed revenue pathway and driver scope."
+    required_source_note: true
+    required_units: "Required when flows are quantitatively scaled; otherwise label as conceptual."
+    required_as_of_date: true
+    required_accessibility_text: "List each revenue path, driver, and whether links are quantitative or conceptual."
+    export_requirements: [vector_preferred, conceptual_links_labeled, no_unscaled_sankey_widths]
+  - visual_id: VG-010
+    name: Value-chain diagram
+    analytical_purpose: "Locate the issuer within suppliers, production, distribution, and end demand."
+    required_inputs: [value_chain_stages, issuer_position, disclosed_dependencies, source_ids]
+    appropriate_use: "Industry structure or dependency analysis requires a chain view."
+    inappropriate_use: "Unnamed or unsupported counterparties are presented as established facts."
+    required_title: "Industry value chain and issuer position."
+    required_source_note: true
+    required_units: false
+    required_as_of_date: true
+    required_accessibility_text: "Stage-by-stage description, issuer role, and supported dependencies."
+    export_requirements: [vector_preferred, labels_outside_shapes_when_needed, no_logo_dependency]
+  - visual_id: VG-011
+    name: Segment map
+    analytical_purpose: "Show the relationship among reported segments, products, geography, and financial contribution."
+    required_inputs: [reported_segment_definitions, segment_metrics, period, source_ids]
+    appropriate_use: "Reported segment structure is material and definitions are reconciled."
+    inappropriate_use: "Analyst-created categories are presented as reported segments."
+    required_title: "Reported segment structure and measurement period."
+    required_source_note: true
+    required_units: true
+    required_as_of_date: true
+    required_accessibility_text: "Segments, definitions, contribution measures, and reconciliation status."
+    export_requirements: [reported_vs_derived_labels, text_equivalent, reconciled_total_note]
+  - visual_id: VG-012
+    name: Geographic exposure map
+    analytical_purpose: "Show material disclosed geographic revenue, assets, operations, or risk exposure."
+    required_inputs: [geographic_measure, values_or_categories, period, source_ids]
+    appropriate_use: "Geography is decision-relevant and sufficiently disclosed."
+    inappropriate_use: "A map implies precise location, market share, or risk where only broad regions are disclosed."
+    required_title: "Measure, geographic basis, and period."
+    required_source_note: true
+    required_units: true
+    required_as_of_date: true
+    required_accessibility_text: "Table of regions, measures, values, and unavailable areas."
+    export_requirements: [licensed_or_original_base_map, pattern_or_label_equivalent, text_table_equivalent]
+  - visual_id: VG-013
+    name: Competitive-position matrix
+    analytical_purpose: "Compare evidence-supported dimensions without collapsing them into an unsupported ranking."
+    required_inputs: [comparison_set, dimensions, evidence, source_ids]
+    appropriate_use: "Comparable public or licensed facts exist across a clearly defined peer set."
+    inappropriate_use: "Subjective scores or undisclosed peer data create false precision."
+    required_title: "Comparison scope, dimensions, and date."
+    required_source_note: true
+    required_units: "Required per quantitative dimension."
+    required_as_of_date: true
+    required_accessibility_text: "Matrix values and evidence limitations in table form."
+    export_requirements: [no_unexplained_composite_score, table_equivalent, direct_labels]
+  - visual_id: VG-014
+    name: Risk heat map
+    analytical_purpose: "Place material risks on evidence-based likelihood and impact dimensions."
+    required_inputs: [risk_ids, likelihood_basis, impact_basis, timeframe, source_ids]
+    appropriate_use: "Dimensions and timeframe are defined and calibrated."
+    inappropriate_use: "Probability or impact is invented, or colors imply precision beyond evidence."
+    required_title: "Risk horizon and assessment basis."
+    required_source_note: true
+    required_units: "Use defined ordinal labels or sourced quantitative units."
+    required_as_of_date: true
+    required_accessibility_text: "Risk-by-risk table with likelihood, impact, basis, and uncertainty."
+    export_requirements: [labels_inside_points, non_color_encoding, table_equivalent]
+  - visual_id: VG-015
+    name: Valuation bridge
+    analytical_purpose: "Reconcile operating value, adjustments, net debt, and share count to model-implied equity value."
+    required_inputs: [valuation_components, units, calculation_definitions, source_ids, assumption_ids]
+    appropriate_use: "Readers need to audit the path from enterprise value to per-share value."
+    inappropriate_use: "A bridge hides missing inputs or combines incompatible valuation dates."
+    required_title: "Valuation method, scenario, and valuation date."
+    required_source_note: true
+    required_units: true
+    required_as_of_date: true
+    required_accessibility_text: "Ordered calculation bridge with every component, sign, and value."
+    export_requirements: [signs_visually_distinct, calculation_table_equivalent, assumption_markers]
+  - visual_id: VG-016
+    name: Scenario matrix
+    analytical_purpose: "Show how a small set of causal assumptions changes operating or valuation outcomes."
+    required_inputs: [scenario_names, assumption_values, formulas, outcomes, approval_status]
+    appropriate_use: "Formulas are consistent and assumptions are sourced or user-approved."
+    inappropriate_use: "Scenario probabilities or target prices are invented."
+    required_title: "Scenario variables, horizon, and valuation date when applicable."
+    required_source_note: true
+    required_units: true
+    required_as_of_date: true
+    required_accessibility_text: "Table of every scenario assumption and outcome."
+    export_requirements: [base_case_not_hidden, direct_actual_estimate_labels, table_equivalent]
+  - visual_id: VG-017
+    name: Capital-allocation waterfall
+    analytical_purpose: "Reconcile opening cash, internally generated funds, financing, investment, distributions, and closing cash."
+    required_inputs: [cash_components, period, units, source_ids, formulas]
+    appropriate_use: "Capital sources and uses need to reconcile across a defined period."
+    inappropriate_use: "Noncash items are mixed with cash flows without clear labels."
+    required_title: "Capital sources and uses for the covered period."
+    required_source_note: true
+    required_units: true
+    required_as_of_date: true
+    required_accessibility_text: "Ordered sources-and-uses reconciliation with signs and totals."
+    export_requirements: [opening_and_closing_totals, direct_labels, table_equivalent]
+  - visual_id: VG-018
+    name: Earnings-quality bridge
+    analytical_purpose: "Reconcile reported earnings to operating cash flow or free cash flow and identify material adjustments."
+    required_inputs: [net_income, noncash_items, working_capital_changes, other_adjustments, cash_flow_measure, period, source_ids]
+    appropriate_use: "Readers need to understand why accounting earnings and cash generation differ."
+    inappropriate_use: "Classification uncertainty is hidden or a warning is presented as proof of misconduct."
+    required_title: "Earnings-to-cash reconciliation and covered period."
+    required_source_note: true
+    required_units: true
+    required_as_of_date: true
+    required_accessibility_text: "Ordered reconciliation, material drivers, alternative explanations, and limitations."
+    export_requirements: [calculation_table_equivalent, source_ids_per_material_item, no_color_only_warning]

@@ -1,0 +1,162 @@
+version: "1.0"
+scope_statement: Public-side diligence organizes disclosed evidence and open questions; it is not legal, audit, investigative, expert-network, or complete due diligence.
+
+finding_schema:
+  finding_id: DD-001
+  title: ""
+  category: ""
+  finding: ""
+  evidence: []
+  why_it_matters: ""
+  alternative_explanations: []
+  severity: ""
+  confidence: ""
+  status: ""
+  open_questions: []
+  further_verification_required: []
+  sources: []
+
+allowed_status_labels:
+  - Cleared from public evidence
+  - No material issue identified
+  - Monitor
+  - Requires further investigation
+  - Insufficient public information
+  - Outside public-side diligence scope
+
+forbidden_conclusions:
+  - Fully verified
+  - No risk exists
+  - Fraud confirmed
+  - Management is dishonest
+  - Complete due diligence performed
+
+severity_labels: [Low, Moderate, Elevated, High, Not assessed]
+confidence_labels: [Low, Medium, High, Insufficient evidence]
+
+categories:
+  - pattern_id: DD-CAT-001
+    category: Business-model diligence
+    core_question: How does the issuer create, deliver, and capture value, and which dependencies can interrupt that chain?
+    required_evidence: [10-K business section, segment note, revenue-recognition policy, cost and capital disclosures]
+    checks: [reporting perimeter, economic model, pricing mechanism, recurring versus transactional mix, capital intensity, key dependencies]
+    open_question_triggers: [undisclosed unit economics, unexplained perimeter change, material nonconsolidated activity]
+
+  - pattern_id: DD-CAT-002
+    category: Revenue-quality diligence
+    core_question: Are reported growth, mix, timing, concentration, and cash collection mutually consistent?
+    required_evidence: [revenue footnote, contract balances, receivables, cash flow, customer concentration disclosures]
+    checks: [organic versus acquired growth, recognition-policy changes, DSO, contract assets, deferred revenue, returns and incentives]
+    open_question_triggers: [growth-cash divergence, unusual quarter-end terms, metric-definition drift]
+
+  - pattern_id: DD-CAT-003
+    category: Customer diligence
+    core_question: What does public evidence show about concentration, retention, bargaining power, and end-demand exposure?
+    required_evidence: [10-K concentration note, segment and geography disclosures, backlog or remaining-performance obligations, public customer disclosures]
+    checks: [top-customer exposure, renewal or churn metrics, end-market cyclicality, credit risk, loss or gain of material customers]
+    open_question_triggers: [anonymous material dependency, concentration rise, inconsistent retention definitions]
+
+  - pattern_id: DD-CAT-004
+    category: Supplier diligence
+    core_question: Which suppliers, inputs, contract manufacturers, or logistics nodes are material and replaceable?
+    required_evidence: [risk factors, purchase commitments, inventory note, supplier-finance disclosure, geographic sourcing disclosures]
+    checks: [single-source exposure, lead times, input inflation, substitution, supplier financing, inventory buffers]
+    open_question_triggers: [single-source material input, undisclosed supplier-finance scale, unexplained inventory build]
+
+  - pattern_id: DD-CAT-005
+    category: Competitive diligence
+    core_question: Which observable evidence supports or contradicts the claimed competitive position?
+    required_evidence: [issuer filings, competitor filings, government or licensed market data]
+    checks: [relative growth, margins, returns, switching costs, product substitution, distribution, capacity]
+    open_question_triggers: [unsupported share claim, peer-definition mismatch, margin gap without causal support]
+
+  - pattern_id: DD-CAT-006
+    category: Industry diligence
+    core_question: What structure, cycle, regulation, capacity, and technology shifts govern the opportunity set?
+    required_evidence: [government data, regulator material, issuer and peer filings, licensed industry data]
+    checks: [market structure, supply demand, pricing, cycle position, regulation, substitution, barriers]
+    open_question_triggers: [stale market data, uncited market size, unmodeled regulatory change]
+
+  - pattern_id: DD-CAT-007
+    category: Management diligence
+    core_question: How consistent are management statements, targets, incentives, turnover, and subsequent results?
+    required_evidence: [earnings materials, filings, DEF 14A, Forms 3 4 5, 8-K management changes]
+    checks: [guidance history, target delivery, incentive alignment, succession, turnover, communication consistency]
+    open_question_triggers: [definition changes, repeated misses, unexplained senior departures]
+
+  - pattern_id: DD-CAT-008
+    category: Governance diligence
+    core_question: Do board structure, ownership, related parties, controls, and approvals create material conflicts or oversight gaps?
+    required_evidence: [DEF 14A, 10-K Item 9A, related-party note, ownership filings, governance documents]
+    checks: [independence, committees, control status, related parties, dual-class rights, material weaknesses]
+    open_question_triggers: [unclear approvals, concentrated rights, unresolved control weakness]
+
+  - pattern_id: DD-CAT-009
+    category: Accounting diligence
+    core_question: Do policies, estimates, adjustments, cash flow, and balance-sheet movements support the reported economics?
+    required_evidence: [audited statements, footnotes, auditor report, non-GAAP reconciliation, amendments]
+    checks: [critical estimates, policy changes, recurring adjustments, accruals, restatements, auditor events, reserve movements]
+    open_question_triggers: [unreconciled non-GAAP metric, non-reliance, unexplained estimate shift]
+
+  - pattern_id: DD-CAT-010
+    category: Liquidity diligence
+    core_question: Are freely available liquidity sources sufficient for modeled uses under base and downside cases?
+    required_evidence: [cash-flow statement, debt note, credit agreement, maturity schedule, restricted-cash disclosure]
+    checks: [freely available cash, revolver capacity, near-term uses, seasonal needs, covenants, counterparty conditions]
+    open_question_triggers: [restricted or trapped cash, uncommitted funding reliance, maturity wall]
+
+  - pattern_id: DD-CAT-011
+    category: Debt diligence
+    core_question: What obligations, ranking, covenants, maturities, rates, and refinancing dependencies shape downside risk?
+    required_evidence: [debt footnote, indentures, credit agreements, 8-K financing exhibits, pension and lease notes]
+    checks: [gross and net debt, secured status, maturity concentration, variable rates, covenants, guarantees, off-balance-sheet obligations]
+    open_question_triggers: [missing covenant headroom, near-term refinancing, structurally senior claims]
+
+  - pattern_id: DD-CAT-012
+    category: Legal and regulatory diligence
+    core_question: Which disclosed proceedings, investigations, licenses, or rule changes could affect operations, cash, or valuation?
+    required_evidence: [10-K legal proceedings, contingencies note, regulator sources, 8-K, material correspondence when public]
+    checks: [case status, alleged conduct versus findings, remedies, reserve coverage, license dependency, rule-change exposure]
+    open_question_triggers: [unquantified material proceeding, expired license, unresolved regulator finding]
+
+  - pattern_id: DD-CAT-013
+    category: Cybersecurity diligence
+    core_question: What public evidence exists on governance, material incidents, dependencies, and remediation?
+    required_evidence: [10-K Item 1C, 8-K Item 1.05, risk factors, governance disclosures]
+    checks: [board oversight, management process, material incidents, third-party dependencies, remediation status]
+    open_question_triggers: [material incident with unresolved impact, vague governance, concentrated provider dependency]
+
+  - pattern_id: DD-CAT-014
+    category: Data-privacy diligence
+    core_question: Which data classes, jurisdictions, consent regimes, transfers, and enforcement exposures are material?
+    required_evidence: [risk factors, privacy disclosures, regulator sources, legal proceedings, geography and customer disclosures]
+    checks: [sensitive data, jurisdictional rules, cross-border transfers, consent model, enforcement history, vendor exposure]
+    open_question_triggers: [unclear data boundary, active enforcement, monetization dependency]
+
+  - pattern_id: DD-CAT-015
+    category: Geographic and geopolitical diligence
+    core_question: How do revenue, supply, assets, cash, regulation, sanctions, and currency map to jurisdictions?
+    required_evidence: [geographic note, tax note, sanctions and export-control disclosures, supplier footprint, government sources]
+    checks: [country concentration, repatriation, export controls, tariffs, currency, political disruption]
+    open_question_triggers: [material undisclosed country mix, trapped cash, single-jurisdiction supply]
+
+  - pattern_id: DD-CAT-016
+    category: Capital-allocation diligence
+    core_question: Is cash deployment consistent with stated policy and value creation per share?
+    required_evidence: [cash-flow statement, acquisition notes, repurchase authorizations, dividends, debt transactions, share-count history]
+    checks: [reinvestment, M&A, debt paydown, dividends, gross repurchases, issuance and dilution, post-deal returns]
+    open_question_triggers: [buybacks offset by issuance, repeated impairment, policy-outcome mismatch]
+
+  - pattern_id: DD-CAT-017
+    category: Valuation diligence
+    core_question: Are valuation methods, assumptions, share count, net debt, scenarios, and comparisons reproducible and appropriately sourced?
+    required_evidence: [approved forecast, dated market input if used, debt and cash facts, licensed peer inputs if used]
+    checks: [DCF bridge, terminal assumptions, sensitivity, scenario causality, share-count date, peer criteria, model risk]
+    open_question_triggers: [hidden input, unsupported peer data, discount rate not above terminal growth]
+
+finding_rules:
+  - Every evidence item must identify an issuer or authoritative public source; a methodology source alone cannot clear an issuer finding.
+  - A clear result means only that the reviewed public evidence did not identify a material issue within scope and cutoff.
+  - Separate event facts, allegations, settlements, findings, management explanations, and analyst interpretation.
+  - Preserve alternative explanations and residual uncertainty even when a quantitative screen is triggered.
+  - Use Outside public-side diligence scope whenever resolution requires nonpublic records, interviews, legal opinion, audit work, or physical verification.

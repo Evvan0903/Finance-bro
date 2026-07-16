@@ -1,0 +1,93 @@
+version: "1.0"
+selection_rule: Choose the narrowest archetype that supports the user's decision; do not add unsupported sections merely to increase page count.
+
+archetypes:
+  - archetype_id: AR-001
+    name: Institutional Equity Research Report
+    purpose: Explain a source-backed investment case through historical results, explicit forecasts, reproducible valuation, catalysts, risks, and disconfirming evidence.
+    intended_audience: Public-equity analyst, portfolio manager, or informed investment committee.
+    decision_supported: Whether the evidence supports continued research, monitoring, or a user-authorized portfolio decision.
+    required_sections: [research_dashboard, company_overview, business_model, historical_performance, quarterly_performance, segment_analysis, earnings_quality, forecast, valuation, catalysts, risks, thesis_breaking_conditions, sources_and_disclosures]
+    optional_sections: [unit_economics, management_credibility, governance, industry_structure, competitive_position, public_side_diligence_findings]
+    typical_page_range: "12-35"
+    required_charts: [CHART-001, CHART-003, CHART-004, CHART-006, CHART-014, CHART-015]
+    required_tables: [TABLE-001, TABLE-002, TABLE-004, TABLE-005, TABLE-006, TABLE-010]
+    required_diligence_checks: [business_model, revenue_quality, accounting, liquidity, capital_allocation, valuation]
+    required_disclosures: [DISC-001, DISC-002, DISC-003, DISC-004, DISC-006]
+    minimum_citation_coverage: 0.90
+    appropriate_visual_density: "One decision-useful visual or table per major analytical question; no decorative image quota."
+
+  - archetype_id: AR-002
+    name: Public-Side Due Diligence Report
+    purpose: Test the reliability of a public investment case, identify red flags and information gaps, and separate verified evidence from unresolved assumptions.
+    intended_audience: Public-markets research team or investment committee conducting pre-decision diligence.
+    decision_supported: Whether public evidence clears, weakens, or leaves unresolved each material diligence question.
+    required_sections: [research_dashboard, business_model, revenue_drivers, earnings_quality, cash_flow_quality, balance_sheet, management_credibility, governance, industry_structure, competitive_position, public_side_diligence_findings, red_flags, open_questions, thesis_breaking_conditions, sources_and_disclosures]
+    optional_sections: [segment_analysis, unit_economics, forecast, valuation, catalysts]
+    typical_page_range: "10-30"
+    required_charts: [CHART-004, CHART-005, CHART-006, CHART-009, CHART-016, CHART-017]
+    required_tables: [TABLE-003, TABLE-007, TABLE-008, TABLE-009, TABLE-010]
+    required_diligence_checks: [business_model, revenue_quality, customer, supplier, competitive, management, governance, accounting, liquidity, debt, legal_regulatory, cybersecurity, data_privacy, geographic_geopolitical, capital_allocation, valuation]
+    required_disclosures: [DISC-001, DISC-002, DISC-004, DISC-005, DISC-006, DISC-008]
+    minimum_citation_coverage: 0.95
+    appropriate_visual_density: "Evidence-led; use finding cards, matrices, and appendices only when they reduce review time."
+
+  - archetype_id: AR-003
+    name: Forensic Accounting Review
+    purpose: Evaluate earnings quality, compare accounting income with cash economics, and identify unusual reporting patterns requiring further investigation.
+    intended_audience: Fundamental analyst, forensic reviewer, audit-aware investor, or risk committee.
+    decision_supported: Whether reported results appear internally consistent, require monitoring, or require deeper accounting review.
+    required_sections: [research_dashboard, historical_performance, quarterly_performance, earnings_quality, cash_flow_quality, working_capital, balance_sheet, governance, red_flags, open_questions, sources_and_disclosures]
+    optional_sections: [business_model, revenue_drivers, segment_analysis, capital_allocation, management_credibility, risks]
+    typical_page_range: "8-25"
+    required_charts: [CHART-004, CHART-005, CHART-006, CHART-009, CHART-016]
+    required_tables: [TABLE-001, TABLE-002, TABLE-008, TABLE-009, TABLE-010]
+    required_diligence_checks: [revenue_quality, accounting, governance, liquidity, debt]
+    required_disclosures: [DISC-001, DISC-002, DISC-004, DISC-007, DISC-008]
+    minimum_citation_coverage: 0.95
+    appropriate_visual_density: "Dense evidence tables are acceptable, but every warning must show inputs, period, threshold, alternative explanations, and source."
+
+  - archetype_id: AR-004
+    name: Earnings Update
+    purpose: Compare reported results with prior periods, company guidance, and user-authorized assumptions; explain what changed and update the thesis and risk view.
+    intended_audience: Existing coverage team or portfolio manager.
+    decision_supported: Whether new results confirm, weaken, or change the monitored thesis.
+    required_sections: [research_dashboard, quarterly_performance, revenue_drivers, earnings_quality, management_credibility, forecast, catalysts, risks, thesis_breaking_conditions, sources_and_disclosures]
+    optional_sections: [segment_analysis, working_capital, valuation, public_side_diligence_findings]
+    typical_page_range: "4-12"
+    required_charts: [CHART-001, CHART-003, CHART-004, CHART-010, CHART-011]
+    required_tables: [TABLE-002, TABLE-003, TABLE-004, TABLE-010]
+    required_diligence_checks: [revenue_quality, accounting, management, capital_allocation]
+    required_disclosures: [DISC-001, DISC-002, DISC-003, DISC-004]
+    minimum_citation_coverage: 0.90
+    appropriate_visual_density: "High information density with a short front page, variance displays, and only changed sections expanded."
+
+  - archetype_id: AR-005
+    name: Initiation-Style Report
+    purpose: Establish a complete public baseline for the company, industry, financial history, forecast, valuation, risks, and diligence questions.
+    intended_audience: New coverage analyst, portfolio manager, or investment committee.
+    decision_supported: Whether the issuer merits ongoing coverage and what evidence must be monitored.
+    required_sections: [research_dashboard, company_overview, business_model, revenue_drivers, historical_performance, quarterly_performance, segment_analysis, unit_economics, earnings_quality, cash_flow_quality, balance_sheet, capital_allocation, management_credibility, governance, industry_structure, competitive_position, forecast, valuation, catalysts, risks, public_side_diligence_findings, open_questions, thesis_breaking_conditions, sources_and_disclosures]
+    optional_sections: [working_capital, red_flags]
+    typical_page_range: "20-50"
+    required_charts: [CHART-001, CHART-002, CHART-003, CHART-004, CHART-006, CHART-008, CHART-009, CHART-014, CHART-015, CHART-017]
+    required_tables: [TABLE-001, TABLE-002, TABLE-003, TABLE-004, TABLE-005, TABLE-006, TABLE-007, TABLE-010]
+    required_diligence_checks: [business_model, revenue_quality, customer, supplier, competitive, industry, management, governance, accounting, liquidity, debt, legal_regulatory, cybersecurity, data_privacy, geographic_geopolitical, capital_allocation, valuation]
+    required_disclosures: [DISC-001, DISC-002, DISC-003, DISC-004, DISC-005, DISC-006, DISC-008]
+    minimum_citation_coverage: 0.95
+    appropriate_visual_density: "Layer summary, evidence, and appendix so readers can stop after the dashboard or trace every conclusion."
+
+  - archetype_id: AR-006
+    name: Investment Committee Memo
+    purpose: Present a concise decision frame, evidence for and against, key assumptions, portfolio constraints supplied by the user, and thesis-breaking conditions.
+    intended_audience: Investment committee or designated decision owner.
+    decision_supported: A documented user-authorized decision, deferral, or request for more diligence.
+    required_sections: [research_dashboard, business_model, evidence_for, evidence_against, forecast, valuation, risks, public_side_diligence_findings, open_questions, thesis_breaking_conditions, sources_and_disclosures]
+    optional_sections: [historical_performance, segment_analysis, earnings_quality, capital_allocation, governance, catalysts]
+    typical_page_range: "3-10"
+    required_charts: [CHART-001, CHART-004, CHART-015, CHART-017]
+    required_tables: [TABLE-004, TABLE-005, TABLE-006, TABLE-007, TABLE-010]
+    required_diligence_checks: [business_model, accounting, liquidity, debt, governance, valuation]
+    required_disclosures: [DISC-001, DISC-002, DISC-003, DISC-004, DISC-005, DISC-006]
+    minimum_citation_coverage: 0.95
+    appropriate_visual_density: "Decision-first and compact; put detailed calculations and source material in appendices."

@@ -1,0 +1,66 @@
+version: "1.0"
+purpose: Test report capabilities across sectors without prescribing an investment conclusion, rating, forecast, or valuation.
+
+cases:
+  - case_id: BENCH-001
+    issuer: Apple Inc.
+    ticker: AAPL
+    sector_case: large_technology
+    expected_archetypes: [Institutional Equity Research Report, Earnings Update, Investment Committee Memo]
+    expected_sector_kpis: [product_and_services_mix, geographic_mix, installed_base_if_disclosed, gross_margin, share_count, capital_returns]
+    expected_forensic_tests: [FA-001, FA-004, FA-012, FA-018, FA-029]
+    expected_diligence_categories: [Business-model diligence, Revenue-quality diligence, Supplier diligence, Geographic and geopolitical diligence, Capital-allocation diligence]
+    expected_charts: [CHART-001, CHART-002, CHART-003, CHART-004, CHART-008, CHART-009]
+
+  - case_id: BENCH-002
+    issuer: NVIDIA Corporation
+    ticker: NVDA
+    sector_case: semiconductor
+    expected_archetypes: [Institutional Equity Research Report, Earnings Update, Forensic Accounting Review]
+    expected_sector_kpis: [segment_and_platform_mix, gross_margin, inventory, supply_commitments, customer_concentration_if_disclosed]
+    expected_forensic_tests: [FA-001, FA-002, FA-016, FA-017, FA-022]
+    expected_diligence_categories: [Revenue-quality diligence, Customer diligence, Supplier diligence, Industry diligence, Geographic and geopolitical diligence]
+    expected_charts: [CHART-001, CHART-002, CHART-003, CHART-005, CHART-016]
+
+  - case_id: BENCH-003
+    issuer: JPMorgan Chase & Co.
+    ticker: JPM
+    sector_case: bank
+    expected_archetypes: [Institutional Equity Research Report, Public-Side Due Diligence Report, Investment Committee Memo]
+    expected_sector_kpis: [net_interest_income, net_interest_margin, provision_and_charge_offs, capital_ratios, deposits, liquidity]
+    expected_forensic_tests: [FA-023, FA-024, FA-028, FA-030]
+    expected_diligence_categories: [Accounting diligence, Liquidity diligence, Debt diligence, Legal and regulatory diligence, Governance diligence]
+    expected_charts: [CHART-003, CHART-005, CHART-007, CHART-017]
+
+  - case_id: BENCH-004
+    issuer: Costco Wholesale Corporation
+    ticker: COST
+    sector_case: consumer
+    expected_archetypes: [Institutional Equity Research Report, Earnings Update, Initiation-Style Report]
+    expected_sector_kpis: [comparable_sales_if_disclosed, membership_metrics_if_disclosed, gross_margin, inventory_turns, working_capital]
+    expected_forensic_tests: [FA-001, FA-012, FA-016, FA-018, FA-026]
+    expected_diligence_categories: [Business-model diligence, Customer diligence, Supplier diligence, Competitive diligence, Valuation diligence]
+    expected_charts: [CHART-001, CHART-003, CHART-006, CHART-012, CHART-013]
+
+  - case_id: BENCH-005
+    issuer: Caterpillar Inc.
+    ticker: CAT
+    sector_case: industrial
+    expected_archetypes: [Institutional Equity Research Report, Public-Side Due Diligence Report, Investment Committee Memo]
+    expected_sector_kpis: [segment_revenue, dealer_inventory_if_disclosed, backlog_if_disclosed, incremental_margin, financing_exposure]
+    expected_forensic_tests: [FA-001, FA-016, FA-017, FA-021, FA-025]
+    expected_diligence_categories: [Industry diligence, Customer diligence, Supplier diligence, Debt diligence, Geographic and geopolitical diligence]
+    expected_charts: [CHART-001, CHART-002, CHART-003, CHART-007, CHART-015]
+
+universal_acceptance_tests:
+  - Correct report archetype and section order are selected from the support files.
+  - Sector KPIs are supported by issuer disclosures and unavailable fields are explicit.
+  - Applicable forensic tests retain inputs, formula version, alternatives, and limitations.
+  - Required diligence categories are present with bounded public-side statuses.
+  - Chart selection and visual density match the analytical question.
+  - Actuals, estimates, and scenarios are visibly distinct.
+  - Every material claim and display has source provenance.
+  - Visuals are original and manifest-gated; no logo, branding, or trade dress is copied.
+  - No unsupported rating, target price, peer datum, consensus datum, or forecast appears.
+  - No fabricated value, citation, quotation, accession, or source appears.
+  - Open questions, counterevidence, and thesis-breaking conditions remain visible.

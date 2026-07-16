@@ -1,0 +1,67 @@
+version: "1.0"
+usage_policy:
+  optional: true
+  analytical_priority: "Charts, tables, and diagrams take precedence over decorative imagery."
+  evidence_status: "Motifs are contextual decoration only and must never be presented as evidence or data."
+  originality: "Create project-owned geometric, vector, or generated forms; do not imitate publisher artwork, trade dress, logos, or proprietary interfaces."
+  restraint: "Use at most one low-emphasis motif on a cover or section opener; do not repeat decoration on every page."
+  accessibility: "Decorative motifs use empty alt text; contextual motifs receive concise alt text and remain secondary to the analysis."
+
+motifs:
+  - motif_id: SVM-001
+    sector: technology
+    concepts: [abstract_binary_streams, server_grid, semiconductor_wafer_geometry, network_nodes, data_pipeline, cloud_infrastructure, circuit_paths]
+    permitted_placements: [cover_background, section_divider, low_opacity_context_panel]
+    prohibited_uses: [evidence_chart, market_share_claim, capacity_claim, company_logo, proprietary_interface]
+    construction_rules: [simple_geometry, no_generated_text, no_fake_data, restrained_single_accent]
+  - motif_id: SVM-002
+    sector: financials
+    concepts: [transaction_flow, balance_sheet_blocks, payment_network, yield_curve_geometry, capital_stack]
+    permitted_placements: [cover_background, section_divider, low_opacity_context_panel]
+    prohibited_uses: [evidence_chart, implied_credit_rating, bank_logo, unsupported_yield_curve]
+    construction_rules: [conceptual_links_labeled_if_not_decorative, no_currency_branding, restrained_single_accent]
+  - motif_id: SVM-003
+    sector: healthcare
+    concepts: [molecular_geometry, clinical_timeline, patient_flow, development_funnel, care_pathway]
+    permitted_placements: [cover_background, section_divider, low_opacity_context_panel]
+    prohibited_uses: [clinical_evidence, efficacy_claim, medical_advice, product_trademark]
+    construction_rules: [abstract_not_anatomically_diagnostic, no_patient_identity, no_fake_trial_results]
+  - motif_id: SVM-004
+    sector: industrials
+    concepts: [supply_chain_network, manufacturing_cells, backlog_flow, capacity_system, equipment_geometry]
+    permitted_placements: [cover_background, section_divider, low_opacity_context_panel]
+    prohibited_uses: [evidence_chart, exact_factory_layout, capacity_claim, equipment_trademark]
+    construction_rules: [simple_system_diagram, no_unverified_facilities, restrained_single_accent]
+  - motif_id: SVM-005
+    sector: consumer
+    concepts: [channel_map, customer_funnel, product_category_blocks, demand_map, basket_geometry]
+    permitted_placements: [cover_background, section_divider, low_opacity_context_panel]
+    prohibited_uses: [evidence_chart, consumer_profile_claim, product_packaging, company_logo]
+    construction_rules: [generic_shapes, no_synthetic_people, no_fake_labels]
+  - motif_id: SVM-006
+    sector: energy
+    concepts: [production_chain, commodity_flow, reserve_life_timeline, energy_transition_system, infrastructure_grid]
+    permitted_placements: [cover_background, section_divider, low_opacity_context_panel]
+    prohibited_uses: [reserve_evidence, production_claim, environmental_claim, operator_logo]
+    construction_rules: [conceptual_not_geologic, no_unscaled_flow_widths, restrained_single_accent]
+  - motif_id: SVM-007
+    sector: real_estate
+    concepts: [portfolio_grid, lease_expiry_timeline, noi_bridge_geometry, capital_stack, building_mass_blocks]
+    permitted_placements: [cover_background, section_divider, low_opacity_context_panel]
+    prohibited_uses: [property_evidence, occupancy_claim, actual_property_likeness, brokerage_branding]
+    construction_rules: [generic_architectural_geometry, no_address_or_tenant_logo, restrained_single_accent]
+  - motif_id: SVM-008
+    sector: general
+    concepts: [evidence_nodes, causal_arrows, scenario_paths, source_ledger_grid, neutral_geometric_field]
+    permitted_placements: [cover_background, section_divider, low_opacity_context_panel]
+    prohibited_uses: [evidence_chart, implied_dataset, publisher_branding, decorative_full_page]
+    construction_rules: [simple_geometry, no_generated_text, no_fake_data, grayscale_legible]
+
+generation_requirements:
+  when_image_generation_available:
+    - "Use project-authored prompts and record prompt, negative prompt, model or method, date, checksum, and license in the asset manifest."
+    - "Avoid institution-specific styles, logos, trademarks, proprietary artwork, fake charts, fake data, and unreadable generated text."
+    - "Generate print-resolution output and a dark-on-light variant when needed."
+  when_image_generation_unavailable:
+    - "Generate deterministic SVG patterns or vector diagrams from structured, verified data."
+    - "Use simple geometric motifs; do not download random internet images as a fallback."

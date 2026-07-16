@@ -1,0 +1,163 @@
+version: "1.0"
+design_intent: "Original, print-safe research layout optimized for evidence review; it must not reproduce any publisher's distinctive layout, typography, colors, or trade dress."
+units: pt
+
+page:
+  primary_size: letter
+  width: 612
+  height: 792
+  permitted_alternate_size: a4
+  orientation: portrait
+  margins:
+    top: 42
+    right: 42
+    bottom: 48
+    left: 42
+  live_area:
+    width: 528
+    height: 702
+
+grid:
+  columns: 12
+  gutter: 12
+  baseline: 6
+  column_widths:
+    full: 528
+    two_column_each: 258
+    main_plus_sidebar: [348, 168]
+    three_column_each: 168
+  rules:
+    - "Align titles, tables, charts, and callouts to the grid."
+    - "Do not create more than three simultaneous reading columns."
+    - "Keep evidence notes attached to the object they support."
+
+typography:
+  font_policy: "Use a project-owned or permissively licensed sans-serif family with a complete numeric and symbol set."
+  preferred_generic_stack: [Inter, Arial, Helvetica, sans-serif]
+  heading_scale:
+    display: {size: 24, line_height: 28, weight: 700}
+    h1: {size: 18, line_height: 22, weight: 700}
+    h2: {size: 14, line_height: 18, weight: 700}
+    h3: {size: 11, line_height: 14, weight: 700}
+  body_text_scale:
+    standard: {size: 9.5, line_height: 13, weight: 400}
+    compact_table: {size: 8, line_height: 10, weight: 400}
+  caption_scale: {size: 8, line_height: 10, weight: 400}
+  footnote_scale: {size: 7, line_height: 9, weight: 400}
+  minimum_readable_font_size: 7
+  minimum_body_font_size: 9
+  rules:
+    - "Do not shrink below the minimum font size to force content onto a page."
+    - "Use weight, spacing, and labels in addition to color for hierarchy."
+    - "Use tabular numerals in financial displays when supported."
+
+spacing:
+  line_spacing:
+    body_multiplier: 1.35
+    compact_multiplier: 1.20
+  paragraph_spacing:
+    after: 6
+    between_argument_blocks: 12
+  table_spacing:
+    before: 12
+    after: 12
+    cell_padding_vertical: 4
+    cell_padding_horizontal: 5
+  chart_spacing:
+    before: 12
+    after: 12
+    title_to_plot: 6
+    plot_to_source: 5
+  callout_spacing:
+    before: 12
+    after: 12
+    internal_padding: 10
+  section_spacing:
+    before_h1: 18
+    before_h2: 12
+    keep_with_next_lines: 2
+
+page_furniture:
+  header_behavior:
+    first_page: "Issuer, report archetype, publication date, and data cutoff."
+    continuation_pages: "Short issuer name and current section; no promotional slogan."
+  footer_behavior: "Show report version, confidentiality or educational label when applicable, and compact source/disclosure marker."
+  page_number_placement: "Bottom outside corner with total-page count when known."
+  source_note_placement: "Immediately below each visual or table; page footer only for repeated global sources."
+  disclosure_placement: "Concise applicable notices on the first page and complete disclosures in a separated final section."
+
+information_density:
+  maximum_information_density: "At most two primary analytical displays or one dense financial table per page, plus supporting prose."
+  target_words_per_standard_page: "350-550"
+  target_words_per_dense_appendix_page: "250-450"
+  maximum_kpi_cards_per_row: 4
+  maximum_callouts_per_page: 2
+  minimum_whitespace_share: 0.18
+  escalation_rule: "Move low-priority detail to the appendix before reducing type or whitespace."
+
+color_and_print:
+  base_palette:
+    ink: "#17212B"
+    muted_ink: "#52606D"
+    paper: "#FFFFFF"
+    panel: "#F2F5F7"
+    gridline: "#CCD5DD"
+    accent: "#276678"
+    positive: "#287A57"
+    caution: "#9A6700"
+    negative: "#A33A3A"
+  print_safe_behavior:
+    - "Maintain readable contrast in grayscale."
+    - "Encode actual versus estimate with line style, marker, and direct label, not color alone."
+    - "Use CMYK-safe or grayscale-tested colors for PDF export."
+    - "Avoid full-bleed dark backgrounds and high-ink decorative fields."
+    - "Embed or legally package fonts and preserve vector text where possible."
+
+layout_archetypes:
+  - layout_archetype_id: LA-001
+    name: One-page company snapshot
+    grid_usage: "12-column; title band, four-card maximum KPI row, two-column evidence area, full-width monitored risks footer."
+    required_regions: [identity_and_cutoff, decision_summary, key_evidence, valuation_or_decision_frame, monitored_risks, sources]
+    density: compact
+  - layout_archetype_id: LA-002
+    name: Two-column research page
+    grid_usage: "Seven-column main argument plus four-column evidence sidebar separated by one gutter column."
+    required_regions: [conclusion_first_heading, analytical_prose, evidence_display, implication, object_level_sources]
+    density: standard
+  - layout_archetype_id: LA-003
+    name: Full-width chart page
+    grid_usage: "Twelve-column chart with a short conclusion above and implication plus source note below."
+    required_regions: [analytical_title, chart, annotation_key, one_sentence_implication, source_and_as_of]
+    density: low
+  - layout_archetype_id: LA-004
+    name: Financial-table page
+    grid_usage: "Twelve-column table; optional six-column interpretation block below."
+    required_regions: [table_title, units_and_period_basis, financial_table, calculation_notes, interpretation, sources]
+    density: high
+  - layout_archetype_id: LA-005
+    name: Diligence findings page
+    grid_usage: "Twelve-column summary followed by stacked finding cards; two cards per row only when each remains readable."
+    required_regions: [scope, status_legend, findings, alternative_explanations, further_work, sources]
+    density: standard
+  - layout_archetype_id: LA-006
+    name: Risk matrix page
+    grid_usage: "Eight-column matrix plus four-column ranked-risk explanations."
+    required_regions: [risk_definition, likelihood_impact_matrix, leading_indicators, thesis_link, limitations]
+    density: standard
+  - layout_archetype_id: LA-007
+    name: Valuation page
+    grid_usage: "Seven-column valuation bridge plus five-column assumptions and sensitivity area."
+    required_regions: [method_and_date, valuation_bridge, assumptions, sensitivity, reconciliation, limitations, sources]
+    density: high
+  - layout_archetype_id: LA-008
+    name: Appendix page
+    grid_usage: "Twelve-column source, calculation, methodology, or supplemental display blocks."
+    required_regions: [appendix_label, referenced_detail, provenance_or_formula, cross_reference]
+    density: high
+
+layout_invariants:
+  - "Never orphan a heading at the foot of a page."
+  - "Keep a chart or table title, visual, units, and source note together."
+  - "Do not split a diligence finding from its evidence, status, or limitation."
+  - "Use an appendix cross-reference when required evidence cannot fit legibly."
+  - "Copyright, licensing, data integrity, and accessibility override aesthetic similarity or page-count goals."

@@ -1,0 +1,46 @@
+version: "2.0"
+brand:
+  name: SEC Financial Report Agent
+  descriptor: institutional-style research report
+  primary: "#102A56"
+  secondary: "#2563EB"
+  accent: "#0F766E"
+  positive: "#15803D"
+  negative: "#B91C1C"
+  forecast: "#7C3AED"
+  ink: "#172033"
+  muted: "#64748B"
+  background: "#F5F7FB"
+  line: "#DCE3ED"
+typography:
+  family: Arial
+  title_size_px: 32
+  section_size_px: 22
+  body_size_px: 14
+charts:
+  template: plotly_white
+  height_px: 390
+  line_width_px: 2.5
+  marker_size_px: 7
+  zero_baseline_for_absolute_values: true
+  show_source_footer: true
+  show_as_of_date: true
+  actual_dash: solid
+  forecast_dash: dash
+tables:
+  header_background: "#102A56"
+  header_text: "#FFFFFF"
+  alternating_rows: true
+  max_decimal_places: 2
+formats:
+  date: "%Y-%m-%d"
+  timestamp: "%Y-%m-%d %H:%M UTC"
+  currency: USD
+  missing: "—"
+  actual_label: A
+  forecast_label: E
+pdf:
+  page_size: LETTER
+  margin_points: 42
+  header: SEC Financial Report Agent
+  footer_disclosure: Educational analysis - not investment advice

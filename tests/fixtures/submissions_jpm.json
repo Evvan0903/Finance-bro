@@ -1,0 +1,25 @@
+{
+  "cik": "0000019617",
+  "name": "JPMORGAN CHASE & CO",
+  "sic": "6021",
+  "sicDescription": "National Commercial Banks",
+  "exchanges": ["NYSE"],
+  "filings": {
+    "recent": {
+      "accessionNumber": ["0000019617-26-000001", "0000019617-25-000100"],
+      "filingDate": ["2026-02-20", "2025-11-01"],
+      "reportDate": ["2025-12-31", "2025-09-30"],
+      "acceptanceDateTime": ["2026-02-20T16:00:00.000Z", "2025-11-01T16:00:00.000Z"],
+      "act": ["34", "34"],
+      "form": ["10-K", "10-Q"],
+      "fileNumber": ["001-05805", "001-05805"],
+      "filmNumber": ["261000010", "251000010"],
+      "items": ["", ""],
+      "size": [14000000, 7000000],
+      "isXBRL": [1, 1],
+      "isInlineXBRL": [1, 1],
+      "primaryDocument": ["jpm-20251231.htm", "jpm-20250930.htm"],
+      "primaryDocDescription": ["10-K", "10-Q"]
+    }
+  }
+}

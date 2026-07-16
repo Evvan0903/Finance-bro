@@ -1,0 +1,152 @@
+{
+  "checks": [
+    {
+      "check_id": "structured_object_schema",
+      "message": "All required structured-object keys are present.",
+      "passed": true,
+      "severity": "info"
+    },
+    {
+      "check_id": "balance_sheet_reconciliation",
+      "message": "Assets reconcile to liabilities plus equity within tolerance.",
+      "passed": true,
+      "severity": "info"
+    },
+    {
+      "check_id": "segment_reconciliation",
+      "message": "Segment totals were unavailable; segment reconciliation was not applicable.",
+      "passed": true,
+      "severity": "info"
+    },
+    {
+      "check_id": "period_separation",
+      "message": "Annual and quarterly periods are visibly separated.",
+      "passed": true,
+      "severity": "info"
+    },
+    {
+      "check_id": "historical_forecast_separation",
+      "message": "Historical actuals (A) and forecast estimates (E) are explicitly separated.",
+      "passed": true,
+      "severity": "info"
+    },
+    {
+      "check_id": "unit_consistency",
+      "message": "Every normalized fact has a unit.",
+      "passed": true,
+      "severity": "info"
+    },
+    {
+      "check_id": "currency_consistency",
+      "message": "Currencies present: ['USD']",
+      "passed": true,
+      "severity": "info"
+    },
+    {
+      "check_id": "duplicate_fact_resolution",
+      "message": "Normalized metric-period facts are unique.",
+      "passed": true,
+      "severity": "info"
+    },
+    {
+      "check_id": "fact_provenance",
+      "message": "Normalized facts retain values, units, and required SEC provenance.",
+      "passed": true,
+      "severity": "info"
+    },
+    {
+      "check_id": "calculation_reconciliation",
+      "message": "Net debt, free cash flow, and enterprise value reconcile.",
+      "passed": true,
+      "severity": "info"
+    },
+    {
+      "check_id": "percentage_scaling",
+      "message": "Calculated percentages use decimal scaling and reconcile to their inputs.",
+      "passed": true,
+      "severity": "info"
+    },
+    {
+      "check_id": "dcf_reconciliation",
+      "message": "DCF components reconcile.",
+      "passed": true,
+      "severity": "info"
+    },
+    {
+      "check_id": "unsupported_valuation",
+      "message": "Calculated valuation outputs have complete, internally valid support.",
+      "passed": true,
+      "severity": "info"
+    },
+    {
+      "check_id": "chart_sources",
+      "message": "Every chart has a source reference.",
+      "passed": true,
+      "severity": "info"
+    },
+    {
+      "check_id": "citation_coverage",
+      "message": "Material-text citation coverage is 100.0%; invalid markers: [].",
+      "passed": true,
+      "severity": "info"
+    },
+    {
+      "check_id": "fabricated_citation",
+      "message": "Every citation marker resolves to the source ledger.",
+      "passed": true,
+      "severity": "info"
+    },
+    {
+      "check_id": "source_record_completeness",
+      "message": "Every source record contains the required identity and retrieval fields.",
+      "passed": true,
+      "severity": "info"
+    },
+    {
+      "check_id": "missing_data_disclosure",
+      "message": "Missing data and limitations are disclosed.",
+      "passed": true,
+      "severity": "info"
+    },
+    {
+      "check_id": "unsupported_target_price",
+      "message": "No unsupported target price is present.",
+      "passed": true,
+      "severity": "info"
+    },
+    {
+      "check_id": "restricted_branding",
+      "message": "No prohibited institution-quality or rating claims are present.",
+      "passed": true,
+      "severity": "info"
+    },
+    {
+      "check_id": "restricted_content",
+      "message": "No source is marked as restricted or prohibited for report use.",
+      "passed": true,
+      "severity": "info"
+    }
+  ],
+  "citation_validation": {
+    "cited_text_count": 11,
+    "coverage": 1.0,
+    "invalid_citation_ids": [],
+    "material_text_count": 11,
+    "minimum_required_coverage": 0.85,
+    "passed": true
+  },
+  "critical_errors": [],
+  "maximum_score": 100,
+  "overall_score": 93,
+  "passed_for_export": true,
+  "quality_label": "Research Preview",
+  "scores": {
+    "analytical_completeness": 3,
+    "calculation_integrity": 20,
+    "citation_coverage": 15,
+    "data_completeness": 15,
+    "data_integrity": 20,
+    "forecast_transparency": 10,
+    "visual_consistency": 10
+  }
+}

@@ -1,0 +1,87 @@
+version: "1.0"
+adoption_rule: Use a pattern only when its inputs are supported and its provenance entry is approved; a pattern organizes analysis but never supplies facts.
+
+patterns:
+  - pattern_id: AP-001
+    name: Driver-to-valuation chain
+    purpose: Connect an observable business driver to a valuation consequence without skipping causal steps.
+    sequence: [business_driver, operating_kpi, revenue_or_cost_effect, margin_or_cash_flow_effect, forecast_change, valuation_implication]
+    required_outputs: [cited_driver, deterministic_bridge, affected_assumption, monitorable_indicator]
+    stop_conditions: [unsupported_driver, missing_financial_bridge, unapproved_forecast_assumption]
+
+  - pattern_id: AP-002
+    name: What changed analysis
+    purpose: Separate a measured change from its comparison base, cause, durability, and next indicator.
+    sequence: [observed_change, comparison_basis, primary_cause, temporary_or_structural, affected_financial_line, monitor_next]
+    required_outputs: [periods_and_units, source_dates, alternative_cause, durability_judgment]
+    stop_conditions: [incomparable_periods, undefined_metric, missing_prior_basis]
+
+  - pattern_id: AP-003
+    name: Evidence-counterevidence structure
+    purpose: Prevent one-sided advocacy by giving the strongest supported countercase equal analytical treatment.
+    sequence: [primary_conclusion, supporting_evidence, contradictory_evidence, uncertainty, current_judgment, disconfirming_indicator]
+    required_outputs: [claim_status, evidence_quality, confidence, unresolved_question]
+    stop_conditions: [no_counterevidence_search, unsupported_certainty]
+
+  - pattern_id: AP-004
+    name: Thesis validation chain
+    purpose: Make each thesis claim falsifiable and connected to valuation.
+    sequence: [thesis_claim, required_assumption, current_evidence, leading_indicator, failure_threshold, valuation_consequence]
+    required_outputs: [thesis_owner, review_date, evidence_for, evidence_against]
+    stop_conditions: [nonfalsifiable_claim, no_failure_threshold]
+
+  - pattern_id: AP-005
+    name: Public-side diligence chain
+    purpose: Convert a public question into a bounded finding with residual uncertainty.
+    sequence: [question, public_evidence, evidence_quality, finding, alternative_explanation, residual_uncertainty, further_verification]
+    required_outputs: [scope_label, finding_status, severity, confidence, open_questions]
+    stop_conditions: [nonpublic_information_required, rights_unclear, prohibited_conclusion]
+
+  - pattern_id: AP-006
+    name: Forensic accounting chain
+    purpose: Evaluate reporting quality using corroborating statements, policies, history, and context.
+    sequence: [reported_result, cash_flow_comparison, balance_sheet_movement, accounting_policy, management_explanation, historical_pattern, peer_or_industry_context, risk_classification]
+    required_outputs: [deterministic_test, confounders, alternative_explanations, issuer_sources]
+    stop_conditions: [missing_comparable_period, inferred_misconduct, methodology_source_used_as_issuer_evidence]
+
+  - pattern_id: AP-007
+    name: Earnings durability bridge
+    purpose: Distinguish accounting earnings from repeatable economic cash generation.
+    sequence: [reported_earnings, nonrecurring_items, accruals, working_capital, cash_conversion, reinvestment_need, normalized_range]
+    required_outputs: [gaap_starting_point, reconciliation, normalization_status, limitation]
+    stop_conditions: [hidden_adjustment, unsupported_normalization]
+
+  - pattern_id: AP-008
+    name: Credit resilience chain
+    purpose: Test whether operating downside can be absorbed by liquidity and capital structure.
+    sequence: [downside_driver, ebitda_or_cash_effect, fixed_charges, liquidity_sources, liquidity_uses, covenant_or_maturity_pressure, residual_capacity]
+    required_outputs: [gross_and_net_debt, freely_available_cash, maturity_schedule, committed_facilities, scenario_assumptions]
+    stop_conditions: [all_cash_assumed_available, undisclosed_facility_terms, mixed_debt_definitions]
+
+  - pattern_id: AP-009
+    name: Capital allocation feedback loop
+    purpose: Connect internally generated cash, financing, deployment, and per-share outcomes.
+    sequence: [cash_generation, reinvestment, acquisitions, debt_change, dividends, repurchases, dilution, return_on_incremental_capital]
+    required_outputs: [sources_and_uses, share_count_bridge, stated_policy, observed_outcome]
+    stop_conditions: [gross_buybacks_without_issuance, missing_acquisition_consideration]
+
+  - pattern_id: AP-010
+    name: Management credibility time series
+    purpose: Compare prior statements and guidance with subsequent disclosed outcomes.
+    sequence: [dated_statement, metric_definition, promised_period, actual_outcome, variance, explanation, repeat_pattern]
+    required_outputs: [verbatim_or_labeled_paraphrase, source_date, comparable_definition, confidence]
+    stop_conditions: [definition_drift, cherry_picked_horizon, fabricated_quote]
+
+  - pattern_id: AP-011
+    name: Point-in-time evidence chain
+    purpose: Prevent hindsight leakage and silent overwriting of preliminary or restated facts.
+    sequence: [reporting_period, public_release_timestamp, retrieved_version, revision_state, supersession_link, research_cutoff, permitted_use]
+    required_outputs: [source_id, accession_or_document_id, as_of, retrieved_at, stale_status]
+    stop_conditions: [release_date_after_cutoff, unknown_revision_state]
+
+  - pattern_id: AP-012
+    name: Investment-committee decision log
+    purpose: Preserve evidence, dissent, portfolio fit, decision ownership, and follow-up.
+    sequence: [independent_previews, standardized_evidence, evidence_for, evidence_against, unresolved_questions, portfolio_fit, decision, owner, review_date]
+    required_outputs: [decision_status, dissent_record, risk_budget_if_supplied, follow_up_actions]
+    stop_conditions: [unsupported_consensus, omitted_material_dissent, hidden_position_sizing]

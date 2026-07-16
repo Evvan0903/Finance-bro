@@ -1,0 +1,37 @@
+version: "2.0"
+thresholds:
+  balance_sheet_relative_tolerance: 0.02
+  segment_reconciliation_relative_tolerance: 0.02
+  dcf_relative_tolerance: 0.001
+  minimum_material_claim_citation_coverage: 0.85
+  institutional_style_overall_score: 85
+  institutional_style_data_integrity_score: 18
+  institutional_style_citation_score: 13
+  institutional_style_analytical_score: 8
+score_weights:
+  data_completeness: 15
+  data_integrity: 20
+  citation_coverage: 15
+  calculation_integrity: 20
+  analytical_completeness: 10
+  forecast_transparency: 10
+  visual_consistency: 10
+critical_checks:
+  - fabricated_data
+  - fabricated_citation
+  - unsupported_valuation
+  - restricted_content
+  - dcf_reconciliation
+prohibited_phrases:
+  - Official J.P. Morgan quality
+  - Morgan Stanley approved
+  - Equivalent to licensed sell-side research
+  - Guaranteed institutional-grade investment advice
+  - Buy rating
+  - Sell rating
+allowed_quality_labels:
+  - Draft
+  - Incomplete
+  - Research Preview
+  - QA Review Required
+  - Institutional Quality

@@ -1,0 +1,69 @@
+version: "1.0"
+manifest_status: active
+manifest_gate:
+  enforcement: required
+  rule: "No asset may be placed in a report unless it has a complete manifest entry and review_status is approved."
+  evidence_rule: "Decorative or contextual images must never be presented as analytical evidence."
+  preferred_order:
+    - original_data_visualization
+    - original_svg_diagram
+    - original_generated_illustration
+    - properly_licensed_image
+    - public_domain_image
+  chart_first_rule: "Do not use an image when a chart or diagram communicates the information more effectively."
+
+required_fields:
+  - asset_id
+  - title
+  - sector
+  - asset_type
+  - purpose
+  - file_path
+  - source_type
+  - source_url
+  - license
+  - generation_prompt
+  - negative_prompt
+  - model_or_method
+  - created_at
+  - checksum
+  - aspect_ratio
+  - allowed_placements
+  - prohibited_placements
+  - alt_text
+  - contains_company_logo
+  - contains_trademark
+  - review_status
+
+field_contract:
+  asset_id: "Unique stable identifier using a sector or general prefix."
+  title: "Original descriptive title; do not use a copied publisher title."
+  sector: "technology | financials | healthcare | industrials | consumer | energy | real_estate | general"
+  asset_type: "data_visualization | svg_diagram | generated_illustration | licensed_image | public_domain_image | icon"
+  purpose: "Specific contextual or navigational role; never a substitute for sourced evidence."
+  file_path: "Project-relative path under assets/."
+  source_type: "original_generation | original_code | licensed_third_party | public_domain"
+  source_url: "Required for licensed or public-domain sources; null for project-original work."
+  license: "Explicit reuse status such as project_owned, licensed_with_terms, or public_domain."
+  generation_prompt: "Required for generated illustrations; empty only when not generated."
+  negative_prompt: "Required for generated illustrations; empty only when not generated."
+  model_or_method: "Generation model, deterministic script, or acquisition method."
+  created_at: "ISO 8601 timestamp."
+  checksum: "SHA-256 checksum of the reviewed file."
+  aspect_ratio: "Width-to-height ratio such as 16:9."
+  allowed_placements: "Explicit allowed report placements."
+  prohibited_placements: "Must include evidence_chart for decorative or contextual imagery."
+  alt_text: "Meaningful context text or an empty string only for purely decorative assets."
+  contains_company_logo: "Boolean; logo-bearing assets are rejected by default."
+  contains_trademark: "Boolean; trademark-bearing assets require documented permission and legal review."
+  review_status: "draft | rights_review | accessibility_review | approved | rejected"
+
+review_checks:
+  - "File exists and checksum matches."
+  - "Source and license permit the intended placement and distribution."
+  - "No copied report image, chart screenshot, logo, distinctive layout, or proprietary artwork is present."
+  - "No fake chart, fake data, unsupported label, or unreadable generated text is present."
+  - "Resolution, contrast, aspect ratio, and alt text are suitable for print and accessible export."
+  - "Asset remains secondary to analysis and its placement is explicitly allowed."
+
+assets: []

@@ -1,0 +1,97 @@
+version: "2.0"
+report_name: Institutional-Style Equity Research Report
+required_object_keys:
+  - report_metadata
+  - company_profile
+  - filings_used
+  - historical_annual_financials
+  - historical_quarterly_financials
+  - segment_analysis
+  - operating_kpis
+  - management_commentary
+  - risk_factors
+  - industry_analysis
+  - competitive_positioning
+  - forecast_assumptions
+  - forecast_financials
+  - valuation
+  - investment_thesis
+  - catalysts
+  - risks
+  - bull_case
+  - base_case
+  - bear_case
+  - charts
+  - tables
+  - sources
+  - qa_results
+  - limitations
+sections:
+  - id: research_dashboard
+    title: Research Dashboard
+    required: true
+    order: 1
+  - id: company_overview
+    title: Company Overview
+    required: true
+    order: 2
+  - id: historical_financial_performance
+    title: Historical Financial Performance
+    required: true
+    order: 3
+  - id: segment_and_kpi_analysis
+    title: Segment and KPI Analysis
+    required: true
+    order: 4
+  - id: management_commentary
+    title: Management Commentary
+    required: true
+    order: 5
+  - id: industry_and_competitive_position
+    title: Industry and Competitive Position
+    required: true
+    order: 6
+  - id: forecast_and_scenarios
+    title: Forecast and Scenarios
+    required: true
+    order: 7
+  - id: valuation
+    title: Valuation
+    required: true
+    order: 8
+  - id: catalysts_and_risks
+    title: Catalysts and Risks
+    required: true
+    order: 9
+  - id: appendix_and_sources
+    title: Appendix and Sources
+    required: true
+    order: 10
+required_metrics:
+  - revenue
+  - net_income
+  - operating_cash_flow
+  - free_cash_flow
+  - total_debt
+  - cash
+  - gross_margin
+  - operating_margin
+  - net_margin
+required_charts:
+  - revenue
+  - net_income
+  - margins
+  - cash_debt
+  - cash_flow
+required_tables:
+  - annual_financials
+  - quarterly_financials
+  - forecast_assumptions
+  - forecast_financials
+  - valuation_bridge
+  - sources
+missing_data_labels:
+  missing_fact: Data unavailable
+  not_disclosed: Not disclosed
+  insufficient_data: Insufficient public data
+  calculation_unavailable: Unable to calculate from available filings

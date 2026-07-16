@@ -1,0 +1,56 @@
+version: "2.0"
+sectors:
+  general_operating_company:
+    status: supported
+    sic_prefixes: []
+    kpis:
+      - revenue_growth
+      - gross_margin
+      - operating_margin
+      - free_cash_flow_margin
+      - return_on_invested_capital
+  software_saas:
+    status: limited
+    sic_prefixes: ["737", "738"]
+    kpis:
+      - annual_recurring_revenue
+      - remaining_performance_obligations
+      - subscription_revenue
+      - stock_based_compensation_intensity
+      - sales_efficiency
+      - deferred_revenue
+  semiconductor:
+    status: limited
+    sic_prefixes: ["3674"]
+    kpis:
+      - inventory
+      - gross_margin
+      - capex_intensity
+      - customer_concentration
+      - end_market_mix
+      - geographic_exposure
+  bank:
+    status: limited
+    sic_prefixes: ["60", "61", "62"]
+    kpis:
+      - net_interest_income
+      - net_interest_margin
+      - deposits
+      - loans
+      - provision_for_credit_losses
+      - cet1_ratio
+      - net_charge_offs
+      - allowance_for_credit_losses
+    warning: Bank-specific extraction and reconciliation remain limited; generic leverage ratios may be misleading.
+  reit:
+    status: limited
+    sic_prefixes: ["6798"]
+    kpis:
+      - occupancy
+      - rental_revenue
+      - net_operating_income
+      - funds_from_operations
+      - debt
+      - interest_coverage
+      - lease_maturities
+    warning: REIT-specific FFO, NOI, and lease metrics are only shown when explicitly disclosed and mapped.

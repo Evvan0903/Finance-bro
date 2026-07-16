@@ -1,0 +1,40 @@
+version: "2.0"
+source_hierarchy:
+  - SEC_XBRL
+  - SEC_FILING
+  - COMPANY_IR
+  - GOVERNMENT_DATA
+  - LICENSED_THIRD_PARTY
+  - PUBLIC_THIRD_PARTY
+  - USER_INPUT
+  - SYSTEM_CALCULATION
+  - AI_INTERPRETATION
+required_source_fields:
+  - source_id
+  - source_title
+  - source_type
+  - url
+  - retrieved_at
+filing_source_fields:
+  - filing_form
+  - filing_date
+  - reporting_period
+  - accession_number
+claim_policy:
+  material_fact_requires_citation: true
+  calculated_value_requires_input_provenance: true
+  user_input_requires_label: true
+  ai_interpretation_requires_supporting_sources: true
+  unsupported_claim_action: remove_or_limit
+allowed_assumption_sources:
+  - Company guidance
+  - Historical trend
+  - User assumption
+  - AI-suggested assumption
+  - System-calculated
+copyright:
+  permit_short_attributed_excerpts: true
+  prohibit_full_report_storage: true
+  prohibit_brand_imitation: true
+  prohibit_paywall_bypass: true
+  prohibit_proprietary_forecast_republication: true

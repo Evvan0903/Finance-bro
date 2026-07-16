@@ -1,0 +1,409 @@
+version: "1.0"
+rule: Complete only sections required by the selected archetype; mark a section incomplete when any completion condition lacks evidence.
+
+sections:
+  - section_id: research_dashboard
+    purpose: Give the reader the decision frame and current evidence state in one page.
+    decision_question: What matters now, what changed, and what could disconfirm the current view?
+    opening_conclusion_format: "State the current research view, evidence cutoff, confidence, and most material uncertainty."
+    required_evidence: [latest_actuals, source_freshness, thesis_evidence, risk_evidence]
+    required_calculations: [latest_kpis, scenario_range]
+    required_counterevidence: [strongest_disconfirming_fact]
+    required_charts: [CHART-001]
+    required_tables: [TABLE-007]
+    required_diligence_questions: ["Which material claim remains unresolved?"]
+    prohibited_claims: [unsupported_rating, hidden_target_price, certainty_language]
+    minimum_citations: 3
+    completion_conditions: [data_cutoff_visible, actuals_and_estimates_labeled, limitations_visible]
+
+  - section_id: company_overview
+    purpose: Establish issuer identity, reporting perimeter, products, segments, geographies, customers, and capital intensity.
+    decision_question: What entity and economic activities are being analyzed?
+    opening_conclusion_format: "Define the reporting entity and its principal economic exposures before interpretation."
+    required_evidence: [issuer_filings, reporting_segments, geographic_disclosures]
+    required_calculations: [revenue_mix_if_disclosed]
+    required_counterevidence: [discontinued_or_nonconsolidated_operations]
+    required_charts: []
+    required_tables: [TABLE-003]
+    required_diligence_questions: ["What material activity sits outside the reported perimeter?"]
+    prohibited_claims: [unsupported_market_share, inferred_customer_identity]
+    minimum_citations: 2
+    completion_conditions: [entity_scope_stated, fiscal_basis_stated, missing_dimensions_labeled]
+
+  - section_id: business_model
+    purpose: Explain how resources, customer value, pricing, costs, working capital, and reinvestment produce cash.
+    decision_question: Which operational links determine economic returns and cash conversion?
+    opening_conclusion_format: "State the primary value proposition and the two or three economic links that drive cash generation."
+    required_evidence: [filing_business_description, revenue_recognition_policy, major_cost_disclosures]
+    required_calculations: [gross_margin, capital_intensity, working_capital_intensity]
+    required_counterevidence: [loss_making_or_cash_consuming_components]
+    required_charts: []
+    required_tables: [TABLE-003]
+    required_diligence_questions: ["Where can accounting timing diverge from customer cash economics?"]
+    prohibited_claims: [unsupported_moat, unsupported_unit_economics]
+    minimum_citations: 3
+    completion_conditions: [driver_to_cash_chain_visible, source_and_inference_separated]
+
+  - section_id: revenue_drivers
+    purpose: Decompose growth into volume, price, mix, acquisition, currency, and timing where disclosed.
+    decision_question: What caused revenue to change, and is the cause durable?
+    opening_conclusion_format: "Quantify the principal disclosed driver and state whether durability is evidenced or uncertain."
+    required_evidence: [revenue_disaggregation, management_explanation, comparable_periods]
+    required_calculations: [revenue_growth, mix_change]
+    required_counterevidence: [contract_assets, receivable_growth, acquired_growth]
+    required_charts: [CHART-001, CHART-002]
+    required_tables: [TABLE-001, TABLE-003]
+    required_diligence_questions: ["How much growth is organic, cash-backed, recurring, and concentrated?"]
+    prohibited_claims: [invented_price_volume_bridge, unsupported_recurrence]
+    minimum_citations: 3
+    completion_conditions: [growth_components_labeled, unavailable_components_not_inferred]
+
+  - section_id: historical_performance
+    purpose: Establish comparable annual trends in growth, profitability, cash flow, returns, leverage, and dilution.
+    decision_question: What has the company demonstrated across a cycle or available history?
+    opening_conclusion_format: "State the dominant historical trend, its inflections, and the most material quality caveat."
+    required_evidence: [three_to_five_annual_periods, amended_fact_resolution]
+    required_calculations: [growth, margins, free_cash_flow, returns, leverage, dilution]
+    required_counterevidence: [restatements, nonrecurring_items, fiscal_calendar_changes]
+    required_charts: [CHART-001, CHART-003, CHART-004]
+    required_tables: [TABLE-001]
+    required_diligence_questions: ["Which trend is most sensitive to normalization choices?"]
+    prohibited_claims: [mixed_period_comparison, silent_missing_data]
+    minimum_citations: 3
+    completion_conditions: [periods_comparable, units_consistent, derived_values_reconciled]
+
+  - section_id: quarterly_performance
+    purpose: Detect recent operating inflections without confusing seasonal, year-to-date, and standalone facts.
+    decision_question: What changed sequentially and year over year in the latest discrete quarters?
+    opening_conclusion_format: "State the latest inflection and distinguish seasonal, temporary, and potentially structural explanations."
+    required_evidence: [discrete_quarters, derivation_provenance, comparable_season]
+    required_calculations: [sequential_growth, year_over_year_growth, quarterly_margins]
+    required_counterevidence: [seasonality, acquisition_timing, derived_quarter_uncertainty]
+    required_charts: [CHART-001, CHART-003, CHART-010]
+    required_tables: [TABLE-002]
+    required_diligence_questions: ["Does the latest quarter change the annual thesis or only timing?"]
+    prohibited_claims: [mixing_ytd_and_quarter, annualizing_without_label]
+    minimum_citations: 2
+    completion_conditions: [quarter_type_visible, derived_quarters_labeled, seasonality_considered]
+
+  - section_id: segment_analysis
+    purpose: Compare segment growth, profitability, capital needs, and contribution using issuer-defined measures.
+    decision_question: Which segments create, consume, or destabilize value?
+    opening_conclusion_format: "Identify the largest economic contributor and the segment with the most material uncertainty."
+    required_evidence: [segment_footnote, segment_definition, reconciliation]
+    required_calculations: [segment_mix, segment_growth, segment_margin_if_defined]
+    required_counterevidence: [definition_changes, unallocated_items, intersegment_eliminations]
+    required_charts: [CHART-002]
+    required_tables: [TABLE-003]
+    required_diligence_questions: ["Are segment definitions economically meaningful and stable?"]
+    prohibited_claims: [forced_peer_comparability, invented_segment_profit]
+    minimum_citations: 2
+    completion_conditions: [segment_total_reconciled, definitions_and_changes_disclosed]
+
+  - section_id: unit_economics
+    purpose: Test whether disclosed units, customers, contracts, stores, users, or capacity produce sustainable contribution economics.
+    decision_question: Do incremental units create attractive and cash-realizable economics?
+    opening_conclusion_format: "State the available unit, contribution measure, cohort limitation, and observed direction."
+    required_evidence: [issuer_defined_units, unit_count, revenue_or_profit_per_unit]
+    required_calculations: [per_unit_revenue, contribution_if_supported, payback_if_supported]
+    required_counterevidence: [mix_shift, cohort_change, allocation_assumptions]
+    required_charts: [CHART-002]
+    required_tables: [TABLE-003]
+    required_diligence_questions: ["Which costs or churn measures are omitted from the disclosed unit metric?"]
+    prohibited_claims: [invented_ltv, invented_cac, unsupported_cohort_curve]
+    minimum_citations: 2
+    completion_conditions: [unit_definition_stable, allocation_limits_visible]
+
+  - section_id: earnings_quality
+    purpose: Compare reported earnings with cash economics, balance-sheet movements, accounting policies, and repeated adjustments.
+    decision_question: How much of reported earnings appears cash-backed, recurring, and operational?
+    opening_conclusion_format: "Classify earnings quality as Normal, Monitor, Elevated, High concern, or Insufficient data and name the principal driver."
+    required_evidence: [income_statement, cash_flow_statement, balance_sheet, accounting_policies, adjustment_reconciliation]
+    required_calculations: [FA-001, FA-007, FA-008, FA-009, FA-012, FA-013]
+    required_counterevidence: [seasonality, business_model_working_capital, acquisition_effects, disclosed_one_time_events]
+    required_charts: [CHART-004, CHART-005, CHART-016]
+    required_tables: [TABLE-008]
+    required_diligence_questions: ["What benign explanation could produce the same signal?"]
+    prohibited_claims: [fraud_conclusion, dishonesty_claim, misconduct_from_screen]
+    minimum_citations: 4
+    completion_conditions: [thresholds_visible, alternatives_considered, warnings_not_treated_as_proof]
+
+  - section_id: cash_flow_quality
+    purpose: Explain conversion of earnings into operating and free cash flow and identify timing or financing effects.
+    decision_question: Are cash flows durable, operational, and available to stakeholders?
+    opening_conclusion_format: "State conversion quality, the largest bridge item, and whether it is recurring or timing-related."
+    required_evidence: [cash_flow_statement, working_capital_notes, financing_arrangements]
+    required_calculations: [ocf_to_net_income, free_cash_flow_conversion, working_capital_contribution]
+    required_counterevidence: [supplier_finance, factoring, tax_timing, customer_prepayments]
+    required_charts: [CHART-004, CHART-005, CHART-006]
+    required_tables: [TABLE-001, TABLE-008]
+    required_diligence_questions: ["Would conversion remain acceptable without favorable working-capital timing?"]
+    prohibited_claims: [cash_available_without_restriction_review]
+    minimum_citations: 3
+    completion_conditions: [cash_bridge_reconciled, financing_effects_disclosed]
+
+  - section_id: working_capital
+    purpose: Test receivables, inventory, contract balances, payables, and supplier finance against growth and seasonality.
+    decision_question: Does working capital support or contradict reported operating momentum?
+    opening_conclusion_format: "Identify the largest working-capital divergence and state the leading benign and adverse explanations."
+    required_evidence: [receivables, inventory, payables, contract_assets, deferred_revenue, supplier_finance]
+    required_calculations: [days_sales_outstanding, days_inventory, days_payables, cash_conversion_cycle]
+    required_counterevidence: [seasonality, acquisitions, commodity_costs, payment_term_changes]
+    required_charts: [CHART-005]
+    required_tables: [TABLE-008]
+    required_diligence_questions: ["Which balance could reverse into a cash outflow?"]
+    prohibited_claims: [channel_stuffing_as_fact]
+    minimum_citations: 3
+    completion_conditions: [growth_rates_compared, seasonality_controlled, missing_components_visible]
+
+  - section_id: balance_sheet
+    purpose: Assess liquidity, leverage, maturity, restricted cash, contingencies, goodwill, pensions, and off-balance-sheet commitments.
+    decision_question: Can the balance sheet absorb the downside scenario without forced financing?
+    opening_conclusion_format: "State net liquidity or leverage, nearest funding pressure, and the principal balance-sheet uncertainty."
+    required_evidence: [balance_sheet, debt_footnote, commitments, restricted_cash, pension_and_contingency_notes]
+    required_calculations: [net_debt, leverage, coverage, maturity_coverage]
+    required_counterevidence: [trapped_cash, seasonal_cash, revolver_conditions, covenant_limits]
+    required_charts: [CHART-007]
+    required_tables: [TABLE-009]
+    required_diligence_questions: ["Which apparent liquidity source may be unavailable under stress?"]
+    prohibited_claims: [all_cash_freely_available, covenant_compliance_without_source]
+    minimum_citations: 3
+    completion_conditions: [debt_reconciled, cash_availability_assessed, maturities_dated]
+
+  - section_id: capital_allocation
+    purpose: Evaluate reinvestment, acquisitions, dividends, repurchases, debt actions, and dilution against returns and balance-sheet capacity.
+    decision_question: Has capital allocation created value without weakening resilience?
+    opening_conclusion_format: "State the dominant use of capital, its observable return evidence, and its opportunity cost."
+    required_evidence: [cash_flow_statement, acquisition_notes, equity_rollforward, repurchase_authorizations]
+    required_calculations: [reinvestment_rate, acquisition_spend, shareholder_returns, dilution, return_on_invested_capital]
+    required_counterevidence: [cycle_timing, leverage_increase, goodwill_impairment, SBC_offset]
+    required_charts: [CHART-008, CHART-009]
+    required_tables: [TABLE-001]
+    required_diligence_questions: ["Did repurchases reduce shares after employee issuance and at what observable valuation?"]
+    prohibited_claims: [value_creation_from_spend_alone]
+    minimum_citations: 3
+    completion_conditions: [uses_reconcile_to_cash_flow, dilution_net_of_repurchases_visible]
+
+  - section_id: management_credibility
+    purpose: Compare dated guidance, stated priorities, and disclosed targets with subsequent outcomes.
+    decision_question: How consistently has management matched words, definitions, and outcomes?
+    opening_conclusion_format: "State the observed record, including both met and missed commitments, without inferring intent."
+    required_evidence: [dated_guidance, subsequent_actuals, metric_definitions, capital_allocation_statements]
+    required_calculations: [guidance_variance, target_completion_rate_if_comparable]
+    required_counterevidence: [macro_shocks, acquisitions, definition_changes]
+    required_charts: [CHART-010]
+    required_tables: [TABLE-003]
+    required_diligence_questions: ["Which misses were controllable, and which were externally driven?"]
+    prohibited_claims: [dishonesty_claim, motive_inference]
+    minimum_citations: 4
+    completion_conditions: [statement_and_outcome_dated, definitions_comparable, counterevidence_included]
+
+  - section_id: governance
+    purpose: Review board oversight, controls, related parties, auditor changes, executive turnover, incentives, and reporting history.
+    decision_question: Which governance features could affect evidence reliability or capital allocation?
+    opening_conclusion_format: "State the most decision-relevant governance strength and unresolved governance risk."
+    required_evidence: [proxy, auditor_reports, control_disclosures, related_party_notes, filing_history]
+    required_calculations: [executive_turnover_timeline, dilution_and_compensation_intensity]
+    required_counterevidence: [planned_succession, disclosed_remediation, independence_context]
+    required_charts: []
+    required_tables: [TABLE-008]
+    required_diligence_questions: ["Are oversight, incentives, and remediation outcomes evidenced?"]
+    prohibited_claims: [character_judgment, legal_conclusion]
+    minimum_citations: 4
+    completion_conditions: [auditor_and_controls_checked, related_parties_checked, language_nonaccusatory]
+
+  - section_id: industry_structure
+    purpose: Explain demand, supply, capacity, cyclicality, regulation, substitution, and value-chain bargaining power.
+    decision_question: Which industry forces determine returns and downside exposure?
+    opening_conclusion_format: "State the dominant structural force and the evidence that could change that assessment."
+    required_evidence: [government_or_licensed_industry_data, issuer_disclosures, peer_public_filings]
+    required_calculations: [capacity_or_demand_growth_if_sourced]
+    required_counterevidence: [substitution, regulatory_change, new_capacity, cycle_reversal]
+    required_charts: []
+    required_tables: [TABLE-003]
+    required_diligence_questions: ["Which external dataset is absent or rights-restricted?"]
+    prohibited_claims: [unsourced_market_size, copied_third_party_forecast]
+    minimum_citations: 4
+    completion_conditions: [external_sources_permitted, company_and_industry_evidence_separated]
+
+  - section_id: competitive_position
+    purpose: Test scale, cost, switching, network, distribution, IP, concentration, and capital-requirement claims against observable evidence.
+    decision_question: Which advantage or pressure is measurable and durable?
+    opening_conclusion_format: "State one evidenced advantage, one evidenced pressure, and one unresolved claim."
+    required_evidence: [company_disclosures, peer_filings, customer_or_regulator_data_if_permitted]
+    required_calculations: [relative_margin_or_growth_if_comparable]
+    required_counterevidence: [share_loss, price_pressure, concentration, substitute_adoption]
+    required_charts: [CHART-002]
+    required_tables: [TABLE-003]
+    required_diligence_questions: ["What observation would disconfirm the claimed advantage?"]
+    prohibited_claims: [unsupported_moat, unlicensed_market_share]
+    minimum_citations: 4
+    completion_conditions: [claims_falsifiable, peer_definitions_comparable, uncertainty_visible]
+
+  - section_id: forecast
+    purpose: Translate verified drivers into explicit, scenario-labeled financial estimates.
+    decision_question: Which assumptions explain the forecast, and what breaks it?
+    opening_conclusion_format: "State the base-case driver set, departure from history, and highest-sensitivity assumption."
+    required_evidence: [historical_driver_base, company_guidance_if_any, approved_user_assumptions]
+    required_calculations: [revenue, margins, tax, reinvestment, working_capital, shares, free_cash_flow]
+    required_counterevidence: [bear_case, historical_volatility, capacity_or_balance_sheet_constraints]
+    required_charts: [CHART-011, CHART-015]
+    required_tables: [TABLE-004]
+    required_diligence_questions: ["Which assumption lacks direct public support?"]
+    prohibited_claims: [consensus_without_license, hidden_ai_assumption, unlabeled_estimate]
+    minimum_citations: 3
+    completion_conditions: [assumption_source_visible, formulas_identical_across_scenarios, A_E_labels_present]
+
+  - section_id: valuation
+    purpose: Convert explicit cash-flow and market assumptions into reproducible valuation evidence.
+    decision_question: Which assumptions drive the model-implied range and how fragile is it?
+    opening_conclusion_format: "State the method, range, dominant sensitivity, and why no rating follows automatically."
+    required_evidence: [forecast, dated_net_debt, dated_shares, user_or_licensed_market_inputs_if_used]
+    required_calculations: [dcf_bridge, sensitivity, supported_multiples]
+    required_counterevidence: [terminal_value_share, cyclicality, alternative_method]
+    required_charts: [CHART-012, CHART-013, CHART-014, CHART-015]
+    required_tables: [TABLE-005, TABLE-006]
+    required_diligence_questions: ["Does discount rate exceed terminal growth and are peer criteria explicit?"]
+    prohibited_claims: [unsupported_target_price, hidden_peer_data, mechanical_average]
+    minimum_citations: 3
+    completion_conditions: [bridge_reconciled, sensitivity_visible, market_inputs_rights_checked]
+
+  - section_id: catalysts
+    purpose: Identify dated or observable events that could change evidence, operations, or valuation.
+    decision_question: What observable event could cause the thesis to be re-evaluated?
+    opening_conclusion_format: "State the event, expected transmission, timing range, and confirming indicator."
+    required_evidence: [dated_company_or_regulatory_event]
+    required_calculations: [financial_transmission_if_supported]
+    required_counterevidence: [delay, already_discounted_uncertainty, offsetting_effect]
+    required_charts: []
+    required_tables: [TABLE-007]
+    required_diligence_questions: ["Is this a specific event or merely a generic positive?"]
+    prohibited_claims: [guaranteed_event, unsourced_timing]
+    minimum_citations: 1
+    completion_conditions: [observable_trigger, transmission_chain, uncertainty_labeled]
+
+  - section_id: risks
+    purpose: Connect company, industry, macro, regulatory, accounting, liquidity, and valuation risks to monitored assumptions.
+    decision_question: Which risks are most likely to impair the thesis and how would they appear first?
+    opening_conclusion_format: "State the principal risk, threatened assumption, leading indicator, and potential consequence."
+    required_evidence: [risk_factors, financial_exposure, external_regulatory_source_if_needed]
+    required_calculations: [downside_sensitivity_if_supported]
+    required_counterevidence: [mitigants, liquidity_buffer, contractual_protection]
+    required_charts: [CHART-017]
+    required_tables: [TABLE-007]
+    required_diligence_questions: ["Which risk is not captured by the financial model?"]
+    prohibited_claims: [no_risk_exists, exhaustive_risk_claim]
+    minimum_citations: 3
+    completion_conditions: [risk_to_assumption_linked, leading_indicator_defined, mitigants_evidenced]
+
+  - section_id: public_side_diligence_findings
+    purpose: Record evidence quality, finding, alternative explanations, residual uncertainty, and further verification for each public question.
+    decision_question: What can and cannot be cleared using public evidence?
+    opening_conclusion_format: "State the conservative status, confidence, why it matters, and the unresolved verification step."
+    required_evidence: [primary_public_sources, source_rights_assessment]
+    required_calculations: [applicable_deterministic_tests]
+    required_counterevidence: [alternative_explanations]
+    required_charts: [CHART-017]
+    required_tables: [TABLE-007]
+    required_diligence_questions: ["What nonpublic evidence would be required to resolve this item?"]
+    prohibited_claims: [fully_verified, complete_due_diligence, fraud_confirmed, management_dishonest]
+    minimum_citations: 2
+    completion_conditions: [status_allowed, confidence_labeled, scope_limit_visible, sources_resolve]
+
+  - section_id: red_flags
+    purpose: Summarize triggered forensic or diligence screens without treating them as proof.
+    decision_question: Which signals require monitoring or deeper investigation?
+    opening_conclusion_format: "State the signal, deterministic test, severity, benign explanations, and verification need."
+    required_evidence: [screen_inputs, accounting_policy, comparable_periods]
+    required_calculations: [triggered_forensic_patterns]
+    required_counterevidence: [alternative_explanations, management_disclosure]
+    required_charts: [CHART-016]
+    required_tables: [TABLE-008]
+    required_diligence_questions: ["What evidence would clear or escalate the signal?"]
+    prohibited_claims: [misconduct_proof, fraud_label_from_ratio]
+    minimum_citations: 2
+    completion_conditions: [threshold_configured, severity_logic_visible, alternatives_listed]
+
+  - section_id: open_questions
+    purpose: Preserve unresolved questions rather than filling gaps with inference.
+    decision_question: Which uncertainty is material enough to affect the decision?
+    opening_conclusion_format: "State the question, why it matters, current evidence, and required next evidence."
+    required_evidence: [evidence_gap_record]
+    required_calculations: []
+    required_counterevidence: [current_partial_evidence]
+    required_charts: []
+    required_tables: [TABLE-007]
+    required_diligence_questions: ["Can public evidence resolve this question?"]
+    prohibited_claims: [gap_presented_as_fact]
+    minimum_citations: 1
+    completion_conditions: [owner_or_source_for_next_step, materiality_explained]
+
+  - section_id: thesis_breaking_conditions
+    purpose: Define falsifiable thresholds that would invalidate or materially weaken the thesis.
+    decision_question: What evidence would require changing the current judgment?
+    opening_conclusion_format: "State the condition, indicator, threshold or qualitative trigger, and valuation consequence."
+    required_evidence: [thesis_assumptions, historical_or_contractual_threshold_basis]
+    required_calculations: [scenario_impact_if_supported]
+    required_counterevidence: [temporary_breach_explanation, remediation_capacity]
+    required_charts: [CHART-015, CHART-017]
+    required_tables: [TABLE-007]
+    required_diligence_questions: ["Is the threshold observable before permanent impairment?"]
+    prohibited_claims: [arbitrary_hidden_threshold]
+    minimum_citations: 2
+    completion_conditions: [indicator_monitorable, consequence_explicit, source_or_assumption_label]
+
+  - section_id: evidence_for
+    purpose: Present the strongest sourced support for an investment committee decision without advocacy bias.
+    decision_question: What evidence supports the proposed action?
+    opening_conclusion_format: "State the evidence, causal chain, confidence, and dependence on assumptions."
+    required_evidence: [primary_sources, reconciled_calculations]
+    required_calculations: [relevant_driver_and_valuation_tests]
+    required_counterevidence: [strongest_opposing_evidence]
+    required_charts: []
+    required_tables: [TABLE-007]
+    required_diligence_questions: ["Which assumption converts this evidence into a decision?"]
+    prohibited_claims: [one_sided_advocacy]
+    minimum_citations: 3
+    completion_conditions: [assumptions_visible, evidence_quality_labeled]
+
+  - section_id: evidence_against
+    purpose: Present the strongest sourced contradiction, downside, and uncertainty for an investment committee decision.
+    decision_question: What evidence argues against or delays the proposed action?
+    opening_conclusion_format: "State the opposing evidence, potential consequence, confidence, and possible mitigation."
+    required_evidence: [contradictory_primary_sources, downside_calculations]
+    required_calculations: [downside_scenario]
+    required_counterevidence: [mitigants_and_clearance_evidence]
+    required_charts: []
+    required_tables: [TABLE-007]
+    required_diligence_questions: ["What new evidence would clear this objection?"]
+    prohibited_claims: [strawman_counterargument]
+    minimum_citations: 3
+    completion_conditions: [strongest_countercase_included, mitigation_not_assumed]
+
+  - section_id: appendix
+    purpose: Preserve reproducibility without overwhelming the decision narrative.
+    decision_question: What supporting detail must remain auditable but is not needed in the main flow?
+    opening_conclusion_format: "Label the calculation, source, definition, or reconciliation included."
+    required_evidence: [supporting_schedules, definitions, formula_registry]
+    required_calculations: [reconciliations]
+    required_counterevidence: [exceptions_and_unresolved_items]
+    required_charts: []
+    required_tables: [TABLE-001, TABLE-002, TABLE-008, TABLE-009]
+    required_diligence_questions: ["Can another analyst reproduce the result?"]
+    prohibited_claims: [new_uncited_conclusion]
+    minimum_citations: 1
+    completion_conditions: [cross_references_work, formulas_and_units_visible]
+
+  - section_id: sources_and_disclosures
+    purpose: Provide source, retrieval, rights, calculation, assumption, limitation, conflict, and distribution transparency.
+    decision_question: Can the reader trace every material claim and understand the report's permitted use?
+    opening_conclusion_format: "State report status, evidence cutoff, source classes, key limitations, and non-affiliation."
+    required_evidence: [source_ledger, rights_assessments, qa_results]
+    required_calculations: [citation_coverage]
+    required_counterevidence: [stale_or_unverified_sources]
+    required_charts: []
+    required_tables: [TABLE-010]
+    required_diligence_questions: ["Is any source missing rights or retrieval metadata?"]
+    prohibited_claims: [institutional_endorsement, complete_due_diligence, investment_advice]
+    minimum_citations: 0
+    completion_conditions: [all_markers_resolve, limitations_visible, rights_checked, disclosures_complete]
