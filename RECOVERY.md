@@ -24,11 +24,11 @@ Incrementally upgrade `skills/institutional_equity_research/SKILL.md` into a pub
 - Created and validated `research_corpus.yaml` with 34 public-source metadata entries, complete required fields, unique source IDs, conservative reuse boundaries, and no report-content storage.
 - Created and validated `patterns/forensic_patterns.yaml` with 38 deterministic public-filings screens, full required topic coverage, explicit alternative explanations, source routing, and non-accusatory signal labels.
 - Created and validated the six complementary pattern libraries: 17 chart patterns, 10 table patterns, 8 layout patterns, 7 writing patterns, 8 disclosure blocks, and 9 sector patterns; all existing referenced IDs resolve.
+- Created and validated `patterns/pattern_provenance.yaml`, covering all 166 adopted pattern, layout, visual, and motif IDs plus all 29 section-blueprint IDs through 24 rights-reviewed provenance sets.
 - Stopped all active implementation work at a completed patch boundary when the checkpoint was requested.
 
 ## Remaining tasks
 
-- Create `patterns/pattern_provenance.yaml` for every adopted pattern.
 - Create a deterministic resource-validation script under `scripts/`.
 - Incrementally extend the existing `SKILL.md` with concise resource routing, mandatory versus optional rules, the exact conflict hierarchy, forensic/diligence/credit/IC execution guidance, copyright supremacy, and publication-blocking QA.
 - Validate all YAML files and run the skill-creator `quick_validate.py` check.
@@ -38,7 +38,7 @@ Incrementally upgrade `skills/institutional_equity_research/SKILL.md` into a pub
 
 ## Current status
 
-Checkpointed mid-upgrade. The gap analysis, core archetype/blueprint layer, analytical patterns, diligence library, benchmark cases, design/asset resources, a 34-source rights-aware corpus, a 38-test forensic library, and the complete chart/table/layout/writing/disclosure/sector pattern layer exist on disk. All present YAML files parse successfully, and the design/asset layer semantically covers the requested layout archetypes, all 18 visual types, manifest gate, asset directories, and sector motifs. `SKILL.md` itself has deliberately not yet been changed, because the request requires supporting libraries to be created before the concise routing update. The skill remains usable in its original form, while the new support files are not yet wired into it.
+Checkpointed mid-upgrade. The gap analysis, core archetype/blueprint layer, analytical patterns, diligence library, benchmark cases, design/asset resources, a 34-source rights-aware corpus, a 38-test forensic library, the complete chart/table/layout/writing/disclosure/sector pattern layer, and full pattern provenance exist on disk. All present YAML files parse successfully, and the design/asset layer semantically covers the requested layout archetypes, all 18 visual types, manifest gate, asset directories, and sector motifs. `SKILL.md` itself has deliberately not yet been changed, because the request requires supporting libraries to be created before the concise routing update. The skill remains usable in its original form, while the new support files are not yet wired into it.
 
 No remote push has been performed. No full third-party reports, report pages, screenshots, branded visuals, proprietary ratings, forecasts, target prices, or copied layouts were added.
 
@@ -62,6 +62,7 @@ No remote push has been performed. No full third-party reports, report pages, sc
 - `skills/institutional_equity_research/patterns/writing_patterns.yaml`
 - `skills/institutional_equity_research/patterns/disclosure_patterns.yaml`
 - `skills/institutional_equity_research/patterns/sector_patterns.yaml`
+- `skills/institutional_equity_research/patterns/pattern_provenance.yaml`
 - `RECOVERY.md`
 - `TODO.md`
 
@@ -69,7 +70,7 @@ The existing `skills/institutional_equity_research/SKILL.md` was inspected but n
 
 ## Next recommended step
 
-Read this file and `TODO.md`, inspect the latest local commit, and compare the committed tree with these notes. Then create `patterns/pattern_provenance.yaml` that supports every adopted pattern with multiple-source observation or independent justification and confirms no distinctive expression was copied. Resume only the unchecked work; do not regenerate or overwrite the completed gap audit, archetypes, section blueprints, analytical patterns, diligence patterns, benchmarks, design/asset resources, corpus, forensic library, or complementary pattern libraries unless validation identifies a specific defect.
+Read this file and `TODO.md`, inspect the latest local commit, and compare the committed tree with these notes. Then create a deterministic resource-validation script under `scripts/` that parses every YAML resource and checks required files, source metadata, pattern provenance coverage, manifest gate, benchmark coverage, references, and prohibited wording. Resume only the unchecked work; do not regenerate or overwrite the completed resources unless validation identifies a specific defect.
 
 ## Assumptions and pending decisions
 

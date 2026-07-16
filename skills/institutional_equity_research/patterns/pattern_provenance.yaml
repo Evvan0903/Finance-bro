@@ -1,0 +1,262 @@
+version: "1.0"
+purpose: "Trace each adopted functional convention to independent public observations or a documented usability rationale. This ledger does not preserve, reproduce, or authorize reuse of any source's distinctive expression."
+
+adoption_criteria:
+  - "Adopt a pattern only when it is a common functional convention, appears in multiple independent sources, or is independently justified by analytical, accessibility, or reproducibility needs."
+  - "Record a source ID only as pattern provenance; public access is not a redistribution license."
+  - "Do not adopt a distinctive layout, typography, named framework, rating, chart, table, prose structure, color system, icon, or trade dress solely because an institution uses it."
+  - "Every grouped entry applies the same provenance, copyright review, and generalized rule to every listed ID."
+
+source_sets:
+  equity_research: &equity_research [SRC-001, SRC-002, SRC-003, SRC-004, SRC-006, SRC-007]
+  report_design: &report_design [SRC-001, SRC-005, SRC-007, SRC-008, SRC-009, SRC-015]
+  forensic_accounting: &forensic_accounting [SRC-016, SRC-017, SRC-018, SRC-019, SRC-021, SRC-022, SRC-023, SRC-025]
+  cash_and_credit: &cash_and_credit [SRC-010, SRC-011, SRC-012, SRC-020, SRC-023, SRC-024, SRC-027]
+  diligence_and_ic: &diligence_and_ic [SRC-010, SRC-011, SRC-012, SRC-013, SRC-014, SRC-015, SRC-026]
+
+provenance_sets:
+  - provenance_id: PRV-001
+    pattern_ids: [AR-001, AR-004, AR-005]
+    pattern_name: "Fundamental, earnings-update, and initiation report archetypes"
+    observed_in: *equity_research
+    adoption_basis: multi_source_observation
+    generalized_rule: "Organize source-backed company analysis from decision frame through business economics, financial history, forecast or valuation when permitted, risks, and disclosures."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-002
+    pattern_ids: [AR-002, AR-006]
+    pattern_name: "Public-side diligence and investment committee archetypes"
+    observed_in: *diligence_and_ic
+    adoption_basis: multi_source_observation
+    generalized_rule: "Place decision question, evidence for and against, scope limits, open questions, risk context, and follow-up ownership in a bounded memo or diligence structure."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-003
+    pattern_ids: [AR-003]
+    pattern_name: "Forensic accounting review archetype"
+    observed_in: *forensic_accounting
+    adoption_basis: multi_source_observation
+    generalized_rule: "Compare reported earnings, cash flow, balance-sheet movements, policies, controls, and history while retaining alternative explanations and non-accusatory labels."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-004
+    section_ids: [research_dashboard, company_overview, business_model, revenue_drivers, historical_performance, quarterly_performance, segment_analysis, unit_economics, earnings_quality, cash_flow_quality, working_capital, balance_sheet, capital_allocation, management_credibility, governance, industry_structure, competitive_position, forecast, valuation, catalysts, risks, public_side_diligence_findings, red_flags, open_questions, thesis_breaking_conditions, evidence_for, evidence_against, appendix, sources_and_disclosures]
+    pattern_name: "Section blueprint completion contracts"
+    observed_in: [SRC-001, SRC-003, SRC-006, SRC-013, SRC-015]
+    adoption_basis: multi_source_observation_and_independent_justification
+    generalized_rule: "For each decision section, require an answer, evidence, calculations where relevant, counterevidence, citations, limitations, and a completion gate rather than copying a publisher's exact headings."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-005
+    pattern_ids: [AP-001, AP-002, AP-003, AP-004, AP-007, AP-009, AP-010, AP-011]
+    pattern_name: "Core fundamental-analysis chains"
+    observed_in: [SRC-001, SRC-002, SRC-003, SRC-007, SRC-008, SRC-009]
+    adoption_basis: multi_source_observation
+    generalized_rule: "Connect a measured driver, causal mechanism, financial effect, valuation or decision implication, uncertainty, and monitorable disconfirming evidence."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-006
+    pattern_ids: [AP-005, AP-006]
+    pattern_name: "Public diligence and forensic reasoning chains"
+    observed_in: [SRC-012, SRC-016, SRC-017, SRC-018, SRC-021, SRC-023]
+    adoption_basis: multi_source_observation
+    generalized_rule: "Route a question through public evidence quality, alternative explanations, residual uncertainty, further work, and explicit non-proof limits."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-007
+    pattern_ids: [AP-008, AP-012]
+    pattern_name: "Credit-resilience and committee-decision chains"
+    observed_in: *diligence_and_ic
+    adoption_basis: multi_source_observation
+    generalized_rule: "Relate downside operating effects to liquidity, maturities, constraints, dissent, portfolio fit when supplied, decision ownership, and review dates."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-008
+    pattern_ids: [DD-CAT-001, DD-CAT-002, DD-CAT-003, DD-CAT-004, DD-CAT-005, DD-CAT-006, DD-CAT-007, DD-CAT-008, DD-CAT-009, DD-CAT-010, DD-CAT-011, DD-CAT-012, DD-CAT-013, DD-CAT-014, DD-CAT-015, DD-CAT-016, DD-CAT-017]
+    pattern_name: "Public-side diligence category library"
+    observed_in: *diligence_and_ic
+    adoption_basis: multi_source_observation_and_independent_justification
+    generalized_rule: "Use category-specific public questions, evidence, alternative explanations, bounded statuses, open questions, and outside-scope labels instead of asserting complete verification."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-009
+    pattern_ids: [FA-001, FA-002, FA-003, FA-004, FA-005, FA-006, FA-007, FA-008, FA-009, FA-010, FA-011, FA-012, FA-013, FA-014]
+    pattern_name: "Revenue and expense quality screens"
+    observed_in: [SRC-016, SRC-017, SRC-018, SRC-022, SRC-023, SRC-025]
+    adoption_basis: multi_source_observation_and_independent_justification
+    generalized_rule: "Use comparable, deterministic ratios or disclosure changes to prioritize a review, while retaining confounders and prohibiting a conclusion of misconduct."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-010
+    pattern_ids: [FA-015, FA-016, FA-017, FA-018, FA-019, FA-020, FA-021, FA-022, FA-023, FA-024, FA-025, FA-026, FA-027, FA-028, FA-029, FA-030]
+    pattern_name: "Cash-flow and balance-sheet risk screens"
+    observed_in: *cash_and_credit
+    adoption_basis: multi_source_observation_and_independent_justification
+    generalized_rule: "Reconcile cash conversion, working capital, commitments, liquidity, and balance-sheet exposures to cited filings with transparent threshold versions and limitations."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-011
+    pattern_ids: [FA-031, FA-032, FA-033, FA-034, FA-035, FA-036, FA-037, FA-038]
+    pattern_name: "Governance and reporting-risk screens"
+    observed_in: *forensic_accounting
+    adoption_basis: multi_source_observation_and_independent_justification
+    generalized_rule: "Use dated public disclosures about audit, controls, corrections, filing timing, related parties, leadership, insider activity, and metric changes to route further review without inferring intent."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-012
+    pattern_ids: [CHART-001, CHART-002, CHART-003, CHART-004, CHART-005, CHART-006]
+    pattern_name: "Operating, financial, and cash-flow chart patterns"
+    observed_in: *report_design
+    adoption_basis: multi_source_observation_and_independent_justification
+    generalized_rule: "Use a chart only for one analytical comparison, label sources, units, period basis, actuals versus estimates, and include a text or table equivalent."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-013
+    pattern_ids: [CHART-007, CHART-008, CHART-009]
+    pattern_name: "Capital structure and allocation chart patterns"
+    observed_in: *cash_and_credit
+    adoption_basis: multi_source_observation_and_independent_justification
+    generalized_rule: "Use transparent maturity, sources-and-uses, and share-count displays with direct labels and no unsupported liquidity or capital-return interpretation."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-014
+    pattern_ids: [CHART-010, CHART-011, CHART-012, CHART-013, CHART-014, CHART-015]
+    pattern_name: "Guidance, forecast, valuation, and scenario chart patterns"
+    observed_in: [SRC-001, SRC-002, SRC-003, SRC-006, SRC-007, SRC-008]
+    adoption_basis: multi_source_observation_and_independent_justification
+    generalized_rule: "Visibly separate actuals, issuer guidance, approved assumptions, and scenarios; disclose model version, date, rights constraints, and sensitivity limitations."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-015
+    pattern_ids: [CHART-016, CHART-017]
+    pattern_name: "Forensic-signal and risk-matrix chart patterns"
+    observed_in: [SRC-009, SRC-016, SRC-017, SRC-018, SRC-023]
+    adoption_basis: multi_source_observation_and_independent_justification
+    generalized_rule: "Show bounded signals or risks with definitions, sources, uncertainty, alternative explanations, and non-color-only accessibility encoding."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-016
+    pattern_ids: [TABLE-001, TABLE-002, TABLE-003, TABLE-004, TABLE-005, TABLE-006]
+    pattern_name: "Financial history, operating detail, forecast, and valuation tables"
+    observed_in: *equity_research
+    adoption_basis: multi_source_observation_and_independent_justification
+    generalized_rule: "Use consistent periods, units, actual/estimate labels, formulas, source notes, and reconciliation columns so the reader can reproduce material calculations."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-017
+    pattern_ids: [TABLE-007, TABLE-008, TABLE-009, TABLE-010]
+    pattern_name: "Diligence, forensic, liquidity, and provenance tables"
+    observed_in: [SRC-007, SRC-010, SRC-011, SRC-012, SRC-013, SRC-023]
+    adoption_basis: multi_source_observation_and_independent_justification
+    generalized_rule: "Keep evidence, counterevidence, source rights, formula inputs, limits, and unresolved questions visible in an auditable table rather than a generic bibliography."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-018
+    pattern_ids: [LP-001, LP-002, LP-003, LP-004, LP-005, LP-006, LP-007, LP-008]
+    pattern_name: "Segmentation and page-composition patterns"
+    observed_in: *report_design
+    adoption_basis: multi_source_observation_and_independent_justification
+    generalized_rule: "Lead with conclusion, keep evidence and source note with the display, use constrained callouts for material issues, and move auditable detail to an appendix when it impairs main-flow readability."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-019
+    pattern_ids: [WP-001, WP-002, WP-003, WP-004, WP-005, WP-006, WP-007]
+    pattern_name: "Evidence-led writing patterns"
+    observed_in: [SRC-001, SRC-003, SRC-008, SRC-013, SRC-015]
+    adoption_basis: multi_source_observation_and_independent_justification
+    generalized_rule: "Use concise, conclusion-first causal writing that states evidence, alternative explanations, financial implication, uncertainty, and an observable monitor without generic promotional filler."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-020
+    pattern_ids: [DISC-001, DISC-002, DISC-003, DISC-004, DISC-005, DISC-006, DISC-007, DISC-008]
+    pattern_name: "Disclosure and publication-gate patterns"
+    observed_in: [SRC-001, SRC-003, SRC-007, SRC-009, SRC-018, SRC-020]
+    adoption_basis: multi_source_observation_and_independent_justification
+    generalized_rule: "Separate advice, scope, sources, assumptions, freshness, valuation, forensic limits, and rights disclosures so analysis is traceable and not confused with institution-authored research."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-021
+    pattern_ids: [SP-001, SP-002, SP-003, SP-004, SP-005, SP-006, SP-007, SP-008, SP-009]
+    pattern_name: "Sector selection and KPI-routing patterns"
+    observed_in: [SRC-010, SRC-011, SRC-027, SRC-001, SRC-003]
+    adoption_basis: multi_source_observation_and_independent_justification
+    generalized_rule: "Select sector-specific KPIs, diligence questions, forensic tests, and visual patterns only when the issuer's disclosed economics support them; never fill absent sector data by inference."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-022
+    pattern_ids: [LA-001, LA-002, LA-003, LA-004, LA-005, LA-006, LA-007, LA-008]
+    pattern_name: "Original layout archetypes"
+    observed_in: *report_design
+    adoption_basis: independently_justified
+    generalized_rule: "Use neutral grids, readable type, object-level source notes, and purpose-specific page compositions that are original to this project rather than a visual reconstruction of any public report."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-023
+    pattern_ids: [VG-001, VG-002, VG-003, VG-004, VG-005, VG-006, VG-007, VG-008, VG-009, VG-010, VG-011, VG-012, VG-013, VG-014, VG-015, VG-016, VG-017, VG-018]
+    pattern_name: "Visual grammar object types"
+    observed_in: *report_design
+    adoption_basis: independently_justified
+    generalized_rule: "Use standard analytical object types with explicit inputs, appropriate and inappropriate uses, required provenance, accessible equivalents, and print-safe export rules."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+  - provenance_id: PRV-024
+    pattern_ids: [SVM-001, SVM-002, SVM-003, SVM-004, SVM-005, SVM-006, SVM-007, SVM-008]
+    pattern_name: "Original sector visual motifs"
+    observed_in: [SRC-001, SRC-007]
+    adoption_basis: independently_justified
+    generalized_rule: "Use restrained project-original geometric or vector motifs only as low-emphasis context, never as evidence, a logo, a proprietary interface, a source of data, or a publisher-style imitation."
+    distinctive_expression_copied: false
+    copyright_review: passed
+    approved_for_use: true
+
+coverage_assertion:
+  adopted_pattern_ids_are_grouped: true
+  section_blueprint_ids_are_grouped: true
+  distinctive_expression_copied: false
+  unlicensed_source_content_stored: false

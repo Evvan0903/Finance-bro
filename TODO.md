@@ -29,7 +29,7 @@
 - [x] Create `patterns/writing_patterns.yaml`.
 - [x] Create `patterns/disclosure_patterns.yaml`.
 - [x] Create `patterns/sector_patterns.yaml`.
-- [ ] Create `patterns/pattern_provenance.yaml` for every adopted pattern.
+- [x] Create `patterns/pattern_provenance.yaml` for every adopted pattern.
 - [ ] Create the deterministic support-resource validation script.
 - [ ] Incrementally update `SKILL.md` after all support libraries exist.
 - [ ] Add the exact ten-level conflict hierarchy and publication-blocking QA.
