@@ -60,13 +60,13 @@
 - [x] Add modular energy and semiconductor analyst packs.
 - [x] Separate the sector methodology store from the current evidence store.
 - [x] Add filter-first chunk retrieval, deterministic embeddings, and caches.
-- [ ] Upgrade the SEC report API to the market-sector-subindustry flow.
-- [ ] Remove the investing-cash-flow fallback and enforce strict FCF.
-- [ ] Add the 12-section sector-aware bilingual report and outlook-only refresh.
-- [ ] Simplify the hero and add the sector-aware request controls.
-- [ ] Improve PDF export, print layout, tables, charts, sources, and footer.
-- [ ] Add regression tests for source screening, FCF, SHEL, and NVDA.
-- [ ] Verify visibly different SHEL and NVDA research outputs.
-- [ ] Run lint, build, automated tests, browser QA, and PDF rendering QA.
-- [ ] Update recovery notes and create a local checkpoint commit.
+- [x] Upgrade the SEC report API to the market-sector-subindustry flow.
+- [x] Remove the investing-cash-flow fallback and enforce strict FCF.
+- [x] Add the 12-section sector-aware bilingual report and outlook-only refresh.
+- [x] Simplify the hero and add the sector-aware request controls.
+- [x] Improve PDF export, print layout, tables, charts, sources, and footer.
+- [x] Add regression tests for source screening, FCF, SHEL, and NVDA.
+- [x] Verify visibly different SHEL and NVDA research outputs.
+- [x] Run lint, build, automated tests, browser QA, and PDF rendering QA.
+- [x] Update recovery notes and create a local checkpoint commit.
 - [ ] Publish version 3 to the existing private ScopeLine Site and verify production.

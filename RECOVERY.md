@@ -48,20 +48,33 @@ The current objective is to incrementally upgrade the same private ScopeLine Sit
 - Verified Shell locally and in production in both languages; both versions returned five annual periods, 20-F and 6-K filing links, and the full scenario set. The English JSON had no Chinese-character residue.
 - Committed the bilingual Sites source as `a5e4f29`, published version 2 to the existing private URL, and reverified the production homepage plus Chinese and English report APIs with HTTP 200 responses.
 - Confirmed the access policy remains owner-only with no groups or additional users.
+- Added separate modular analyst packs for Energy / Integrated Oil & Gas and Technology / Semiconductors, including distinct KPIs, research questions, drivers, peers, valuation methods, risks, catalysts, and report guidance.
+- Separated reusable sector methodology from dated current evidence and added 2025+ publication-date screening, metadata, original summaries, filter-first retrieval, deterministic local embeddings, and reusable caches.
+- Integrated the market-sector-subindustry-options contract into the existing bilingual SEC pipeline without rebuilding the Site.
+- Replaced the old cash-flow proxy with strict `FCF = operating cash flow - cash capital expenditure`; missing cash capex now produces the required unavailable message.
+- Added a 12-section sector-aware report, company exposure table, sector KPIs, peer comparisons, investment debates, filing watchlist, categorized catalysts, thesis breakers, sector-specific scenarios, and transparent valuation formulas.
+- Added outlook-only refresh that updates sector evidence without refetching company filing data.
+- Simplified the hero and request interface, retained the ScopeLine brand, added disabled coming-soon sectors, and moved detailed explanations to the report methodology, sources, and limitations.
+- Replaced browser print export with an application-owned PDF generator that paginates report blocks, keeps scenarios together, prevents table clipping, renders populated charts, and adds a controlled per-page footer.
+- Found and fixed a Chromium canvas-taint issue during real PDF export by using a self-contained inline SVG data URL rather than an opaque Blob URL.
+- Passed lint, a production build, and all nine sector-aware regression tests.
+- Generated SHEL and NVDA locally from current SEC data and confirmed visibly different KPIs, drivers, peers, questions, risks, and valuation frameworks.
+- Verified SHEL uses the transparent EV / operating cash flow fallback only when strict FCF is unavailable; operating cash flow is never labeled as FCF.
+- Verified NVDA calculates strict FCF at USD 96.7 billion, gross margin at 71.1%, and uses 6x / 9x / 12x EV / Revenue scenarios.
+- Verified outlook-only refresh changed the sector timestamp while leaving the company-data retrieval timestamp unchanged.
+- Downloaded a real eight-page NVDA PDF, rendered every page, and confirmed populated charts, unclipped tables, readable sources, intact scenario cards, and the exact application footer without browser URLs.
+- Committed the completed version 3 implementation locally as `8d22cab` (`checkpoint: sector-aware research experience`); it has not yet been pushed or deployed.
 
 ## Remaining tasks
 
-- Implement modular energy and semiconductor analyst packs.
-- Separate sector methodology from dated 2025-2026 evidence and add filter-first retrieval with deterministic embeddings.
-- Upgrade the SEC report API, enforce strict FCF, and produce the requested 12-section sector-aware report.
-- Simplify the request UI and add market, sector, dynamic subindustry, options, and sector refresh.
-- Improve PDF generation and print layout.
-- Add and run SHEL/NVDA regression, browser, and PDF visual checks.
-- Create a new local checkpoint and deploy version 3 to the existing private Site.
+- Push the exact committed version 3 source to the existing ChatGPT Sites source repository.
+- Save and deploy version 3 to the existing owner-only ScopeLine Site.
+- Verify the production homepage, SHEL report, NVDA report, PDF control, and access policy.
+- Record the final deployment identifiers and checkpoint the updated recovery notes.
 
 ## Current status
 
-In progress. The repository, recovery notes, and version 2 checkpoint were reconciled before changes. The existing bilingual Site remains live and untouched in production. The current code audit confirmed that the old API incorrectly falls back to operating cash flow plus investing cash flow when cash capex is unavailable; version 3 will remove that fallback. Official, accessible, dated recent evidence has been selected for both supported sectors. Modular analyst packs, a separate methodology store, a screened evidence store, reusable caches, and filter-first deterministic embedding retrieval over summary/method chunks have been added and linted. The Sites repository checkpoint is `5933408` (`checkpoint: sector research architecture`); nothing was pushed or deployed.
+Implementation and local validation are complete. The existing bilingual version 2 Site remains live in production until the next deployment. Version 3 is committed in the independent Sites repository as `8d22cab`; lint, production build, all nine tests, SHEL/NVDA browser validation, outlook-only refresh, and eight-page PDF rendering QA have passed. No version 3 source has been pushed or deployed yet.
 
 ## Files modified
 
@@ -76,7 +89,7 @@ In progress. The repository, recovery notes, and version 2 checkpoint were recon
 
 ## Next recommended step
 
-Integrate the completed sector architecture into the existing SEC report route, enforce strict FCF, and expose outlook-only refresh without recreating the completed site.
+Push commit `8d22cab` to the existing Sites source repository, package that exact source state, save version 3, deploy it to the current owner-only URL, and verify production.
 
 ## Assumptions and pending decisions
 
@@ -92,9 +105,11 @@ Integrate the completed sector architecture into the existing SEC report route, 
 - `site/` is its own Git repository used by ChatGPT Sites; the parent repository must not recreate or flatten it.
 - Chinese remains the server-rendered default; the browser remembers a user's selected language under `scopeline-locale` and restores it after hydration.
 - Switching language after report generation refetches the same issuer in the selected language so the narrative and exported Markdown do not mix languages.
-- Version 3 will keep sector evidence as curated metadata and original summaries rather than storing or reproducing full third-party reports.
-- Sector retrieval will use local deterministic text embeddings after sector, subindustry, geography, and date filters; it does not require an external embedding API.
-- Browser print headers and URLs cannot be reliably controlled by CSS, so version 3 will add an application-owned PDF path with its own footer while retaining print styles as a fallback.
+- Version 3 keeps sector evidence as curated metadata and original summaries rather than storing or reproducing full third-party reports.
+- Sector retrieval uses local deterministic text embeddings after sector, subindustry, geography, and date filters; it does not require an external embedding API.
+- The application-owned PDF path controls pagination and footer metadata; print styles remain a fallback.
+- When strict FCF is unavailable for an energy issuer, the scenario framework may use explicitly labeled operating cash flow as an EV / OCF valuation input, but never relabels it as FCF.
+- Runtime retrieval timestamps use UTC, while the research date uses the current US/Pacific calendar date.
 
 ## Recovery procedure
 
