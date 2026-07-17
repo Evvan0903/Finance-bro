@@ -1,5 +1,16 @@
 # ScopeLine Metric Locator Worklog
 
+## Canonical Metric Upgrade — Phase 2
+
+- Objective: make the canonical Registry the only quantitative source used by report modules.
+- Changes: normalized annual SEC facts into the Registry; added definition-priority selectors and historical adapters; routed dashboard, historicals, sector KPIs, driver exposure, earnings quality, thesis, debates, risks, catalysts, peers, scenarios, and valuation through canonical keys.
+- Scenario controls: assumptions are explicit canonical objects; projected revenue, net income, operating cash flow, capex, FCF, valuation metric, and model-implied enterprise value are deterministic Registry calculations with input lineage.
+- Traceability: the report now publishes a canonical snapshot plus a `metricUsage` ledger by module. Peer metrics share the report data version and are merged into the same snapshot.
+- Files: `site/app/lib/financial-metrics.ts`, `site/app/lib/canonical-scenarios.ts`, canonical Registry, research API/types, metric definitions/locator, tests.
+- Tests: production build passed; targeted ESLint passed; 14/14 automated tests passed; 0 failed.
+- Network note: a direct Shell research smoke test from the restricted local sandbox reached the existing bilingual SEC-unavailable response (HTTP 502). No Registry exception occurred before the blocked external fetch; fixture-based reproducibility testing remains scheduled for Phases 3–4 and 8.
+- Next: implement the automated consistency and reproducibility auditor before running the full Shell acceptance gate.
+
 ## Canonical Metric Upgrade — Phase 1
 
 - Objective: establish one canonical Metric Object and Metric Registry before changing report modules.

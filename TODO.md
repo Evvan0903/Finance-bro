@@ -87,7 +87,7 @@
 ## ScopeLine Canonical Metric upgrade
 
 - [x] Phase 1: implement Canonical Metric Object, Metric Registry, canonical-key uniqueness, explicit definitions, full-precision formulas, and source lineage.
-- [ ] Phase 2: connect dashboard, historicals, KPIs, exposures, debates, risks, catalysts, peers, scenarios, and valuation to Registry selectors.
+- [x] Phase 2: connect dashboard, historicals, KPIs, exposures, debates, risks, catalysts, peers, scenarios, and valuation to Registry selectors.
 - [ ] Phase 3: add consistency and reproducibility auditor plus machine-readable comparison.
 - [ ] Phase 4: pass Shell consistency, double-run, and Web/PDF acceptance.
 - [ ] Phase 5: revalidate missing-data presentation and invalid-formula visibility.

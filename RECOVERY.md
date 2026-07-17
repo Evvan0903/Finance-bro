@@ -90,15 +90,20 @@ The current objective is a sequential canonical-metric upgrade: make Metric Obje
 - Completed Canonical Metric Phase 1: added the schema, registry, unique cache key, explicit-definition lookup, deterministic canonical formulas, source lineage, full-precision storage, and locator-to-registry publication.
 - Published 12 Shell FY2025 canonical objects, including operating cash flow as the hidden input to strict FCF; duplicate keys, ambiguous definitions, invalid schema values, and mixed-period formula inputs are rejected.
 - Passed the Phase 1 production build and all 13 automated tests.
+- Completed Canonical Metric Phase 2: standardized annual SEC facts and all derived ratios into the Registry, replaced report-local FCF/margin/growth/scenario arithmetic with Registry calculations, and added definition-priority adapters.
+- Routed dashboard, historicals, sector KPIs, driver exposure, earnings quality, thesis, debates, risks, catalysts, peers, scenarios, and valuation through canonical keys.
+- Added canonical scenario assumptions and deterministic projected revenue, net income, operating cash flow, cash capex, FCF, valuation-metric, and enterprise-value objects with full input lineage.
+- Added a report-level `metricUsage` ledger and merged peer canonical objects into the same versioned Registry snapshot.
+- Passed targeted ESLint, the production build, and all 14 automated tests for Phase 2. A direct research smoke test could not cross the restricted local sandbox to SEC and returned the existing HTTP 502 public-data-unavailable response.
 
 ## Remaining tasks
 
-- Resume at Phase 2: migrate every report module to Registry selectors/references.
-- Complete Phases 3–9 in the order recorded in `TODO.md`; do not expand sectors before the Shell gate passes.
+- Resume at Phase 3: implement the consistency and reproducibility auditor and its machine-readable comparison artifact.
+- Complete Phases 4–9 in the order recorded in `TODO.md`; do not expand sectors before the Shell gate passes.
 
 ## Current status
 
-In progress. Sites version 5 remains live and unchanged. Canonical Metric Phase 1 is complete with 13/13 tests passing; Phase 2 is the first unfinished task.
+In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases 1–2 are complete with 14/14 tests passing; Phase 3 is the first unfinished task.
 
 ## Files modified
 
@@ -123,10 +128,12 @@ In progress. Sites version 5 remains live and unchanged. Canonical Metric Phase 
 - `site/tests/rendered-html.test.mjs`
 - `WORKLOG.md`
 - `site/app/lib/canonical-metrics.ts`
+- `site/app/lib/financial-metrics.ts`
+- `site/app/lib/canonical-scenarios.ts`
 
 ## Next recommended step
 
-Migrate the existing report modules to explicit Metric Registry selectors without changing the Site design.
+Add the automated consistency and reproducibility auditor without changing the Site design.
 
 ## Assumptions and pending decisions
 
