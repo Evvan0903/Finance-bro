@@ -32,6 +32,27 @@ type SelectedFact = {
   durationDistance: number;
 };
 
+export type IssuerReportedMetric = {
+  metricId: string;
+  definitionId: string;
+  period: string;
+  periodStart: string | null;
+  periodEnd: string;
+  value: number;
+  unit: string;
+  currency: string | null;
+  sourceDocument: string;
+  sourceUrl: string;
+  sourceDate: string;
+  filingDate: string;
+  section: string;
+  table: string;
+  rowLabel: string;
+  rawValue: string;
+  extractionMethod: string;
+  confidence: number;
+};
+
 const FINANCIAL_METRICS: MetricConfig[] = [
   {
     metricId: "revenue",
@@ -40,6 +61,7 @@ const FINANCIAL_METRICS: MetricConfig[] = [
     concepts: [
       ["us-gaap", "RevenueFromContractWithCustomerExcludingAssessedTax"],
       ["us-gaap", "Revenues"],
+      ["us-gaap", "RevenuesNetOfInterestExpense"],
       ["us-gaap", "SalesRevenueNet"],
       ["ifrs-full", "Revenue"],
     ],
@@ -65,6 +87,28 @@ const FINANCIAL_METRICS: MetricConfig[] = [
       ["us-gaap", "ProfitLoss"],
       ["ifrs-full", "ProfitLossAttributableToOwnersOfParent"],
       ["ifrs-full", "ProfitLoss"],
+    ],
+  },
+  {
+    metricId: "net-interest-income",
+    definitionId: "reported-net-interest-income",
+    duration: true,
+    concepts: [["us-gaap", "InterestIncomeExpenseNet"]],
+  },
+  {
+    metricId: "noninterest-expense",
+    definitionId: "reported-noninterest-expense",
+    duration: true,
+    concepts: [["us-gaap", "NoninterestExpense"]],
+  },
+  {
+    metricId: "credit-loss-provision",
+    definitionId: "reported-credit-loss-provision",
+    duration: true,
+    concepts: [
+      ["us-gaap", "ProvisionForLoanLeaseAndOtherLosses"],
+      ["us-gaap", "ProvisionForLoanAndLeaseLosses"],
+      ["us-gaap", "ProvisionForLoanLossesExpensed"],
     ],
   },
   {
@@ -130,6 +174,47 @@ const FINANCIAL_METRICS: MetricConfig[] = [
     ],
   },
   {
+    metricId: "deposits",
+    definitionId: "reported-deposits",
+    duration: false,
+    concepts: [["us-gaap", "Deposits"]],
+  },
+  {
+    metricId: "loans",
+    definitionId: "reported-net-loans",
+    duration: false,
+    concepts: [
+      ["us-gaap", "LoansAndLeasesReceivableNetReportedAmount"],
+      ["us-gaap", "FinancingReceivableExcludingAccruedInterestAfterAllowanceForCreditLoss"],
+      ["us-gaap", "LoansReceivableNet"],
+    ],
+  },
+  {
+    metricId: "credit-loss-allowance",
+    definitionId: "reported-credit-loss-allowance",
+    duration: false,
+    concepts: [
+      ["us-gaap", "FinancingReceivableAllowanceForCreditLossExcludingAccruedInterest"],
+      ["us-gaap", "FinancingReceivableAllowanceForCreditLosses"],
+      ["us-gaap", "LoansAndLeasesReceivableAllowance"],
+    ],
+  },
+  {
+    metricId: "goodwill",
+    definitionId: "reported-goodwill",
+    duration: false,
+    concepts: [["us-gaap", "Goodwill"]],
+  },
+  {
+    metricId: "intangible-assets",
+    definitionId: "reported-finite-lived-intangible-assets",
+    duration: false,
+    concepts: [
+      ["us-gaap", "FiniteLivedIntangibleAssetsNet"],
+      ["us-gaap", "OtherIntangibleAssetsNet"],
+    ],
+  },
+  {
     metricId: "inventory",
     definitionId: "reported-inventory",
     duration: false,
@@ -177,6 +262,18 @@ const FINANCIAL_METRICS: MetricConfig[] = [
       ["ifrs-full", "NoncurrentBorrowings"],
     ],
   },
+  {
+    metricId: "dividends",
+    definitionId: "reported-cash-dividends",
+    duration: true,
+    concepts: [["us-gaap", "PaymentsOfDividends"]],
+  },
+  {
+    metricId: "share-buybacks",
+    definitionId: "reported-common-share-buybacks",
+    duration: true,
+    concepts: [["us-gaap", "PaymentsForRepurchaseOfCommonStock"]],
+  },
 ];
 
 export const FINANCIAL_DEFINITION_IDS = {
@@ -184,6 +281,9 @@ export const FINANCIAL_DEFINITION_IDS = {
   grossProfit: "reported-gross-profit",
   operatingIncome: "reported-operating-income",
   netIncome: "reported-net-income",
+  netInterestIncome: "reported-net-interest-income",
+  noninterestExpense: "reported-noninterest-expense",
+  creditLossProvision: "reported-credit-loss-provision",
   operatingCashFlow: "reported-operating-cash-flow",
   investingCashFlow: "reported-investing-cash-flow",
   cashCapex: "cash-purchases-property-plant-equipment",
@@ -193,6 +293,24 @@ export const FINANCIAL_DEFINITION_IDS = {
   liabilities: "reported-total-liabilities",
   equity: "reported-equity",
   cash: "reported-cash-and-equivalents",
+  deposits: "reported-deposits",
+  loans: "reported-net-loans",
+  creditLossAllowance: "reported-credit-loss-allowance",
+  goodwill: "reported-goodwill",
+  intangibleAssets: "reported-finite-lived-intangible-assets",
+  dividends: "reported-cash-dividends",
+  shareBuybacks: "reported-common-share-buybacks",
+  loanGrowth: "year-over-year-loan-growth",
+  allowanceCoverage: "allowance-over-loans",
+  efficiencyRatio: "noninterest-expense-over-net-revenue",
+  roeProxy: "net-income-over-period-end-equity",
+  equityLessGoodwill: "equity-less-goodwill",
+  tangibleBookValue: "equity-less-goodwill-and-intangibles",
+  capitalReturns: "dividends-plus-share-buybacks",
+  netInterestMargin: "firmwide-net-yield-on-average-interest-earning-assets-managed-basis",
+  cet1Ratio: "standardized-cet1-capital-ratio",
+  liquidityCoverageRatio: "firm-average-liquidity-coverage-ratio",
+  returnOnCommonEquity: "issuer-reported-return-on-common-equity",
   inventory: "reported-inventory",
   currentAssets: "reported-current-assets",
   currentLiabilities: "reported-current-liabilities",
@@ -293,6 +411,7 @@ export function buildFinancialMetricRegistry(input: {
   sector: string;
   dataVersion: string;
   retrievedAt: string;
+  issuerReportedMetrics?: IssuerReportedMetric[];
 }) {
   const registry = new MetricRegistry(input.dataVersion);
   for (const config of FINANCIAL_METRICS) {
@@ -328,6 +447,38 @@ export function buildFinancialMetricRegistry(input: {
         calculation_version: registry.calculationVersion,
       }));
     }
+  }
+  for (const metric of input.issuerReportedMetrics ?? []) {
+    registry.register(createCanonicalMetric({
+      metric_id: metric.metricId,
+      company_id: input.companyId,
+      sector: input.sector,
+      period: metric.period,
+      period_start: metric.periodStart,
+      period_end: metric.periodEnd,
+      value: metric.value,
+      unit: metric.unit,
+      currency: metric.currency,
+      status: "Reported",
+      definition_id: metric.definitionId,
+      formula_id: null,
+      formula: null,
+      input_metric_keys: [],
+      source_document: metric.sourceDocument,
+      source_url: metric.sourceUrl,
+      source_type: "filing",
+      source_date: metric.sourceDate,
+      filing_date: metric.filingDate,
+      section: metric.section,
+      table: metric.table,
+      row_label: metric.rowLabel,
+      raw_value: metric.rawValue,
+      extraction_method: metric.extractionMethod,
+      confidence: metric.confidence,
+      retrieved_at: input.retrievedAt,
+      data_version: input.dataVersion,
+      calculation_version: registry.calculationVersion,
+    }));
   }
   ensureCoreDerivedMetrics(registry, input.companyId);
   return registry;
@@ -416,6 +567,7 @@ export function ensureCoreDerivedMetrics(
   for (const periodEnd of periods) {
     const period = periodLabel(periodEnd);
     const sector = companyMetrics.find((metric) => metric.period_end === periodEnd)?.sector ?? "";
+    const isBank = sector === "banks";
     const revenue = firstDefinition(
       registry,
       companyId,
@@ -532,7 +684,63 @@ export function ensureCoreDerivedMetrics(
       periodEnd,
       [FINANCIAL_DEFINITION_IDS.currentLiabilities],
     );
-    const freeCashFlow = operatingCashFlow && cashCapex
+    const loans = firstDefinition(
+      registry,
+      companyId,
+      "loans",
+      periodEnd,
+      [FINANCIAL_DEFINITION_IDS.loans],
+    );
+    const creditLossAllowance = firstDefinition(
+      registry,
+      companyId,
+      "credit-loss-allowance",
+      periodEnd,
+      [FINANCIAL_DEFINITION_IDS.creditLossAllowance],
+    );
+    const noninterestExpense = firstDefinition(
+      registry,
+      companyId,
+      "noninterest-expense",
+      periodEnd,
+      [FINANCIAL_DEFINITION_IDS.noninterestExpense],
+    );
+    const equity = firstDefinition(
+      registry,
+      companyId,
+      "equity",
+      periodEnd,
+      [FINANCIAL_DEFINITION_IDS.equity],
+    );
+    const goodwill = firstDefinition(
+      registry,
+      companyId,
+      "goodwill",
+      periodEnd,
+      [FINANCIAL_DEFINITION_IDS.goodwill],
+    );
+    const intangibleAssets = firstDefinition(
+      registry,
+      companyId,
+      "intangible-assets",
+      periodEnd,
+      [FINANCIAL_DEFINITION_IDS.intangibleAssets],
+    );
+    const dividends = firstDefinition(
+      registry,
+      companyId,
+      "dividends",
+      periodEnd,
+      [FINANCIAL_DEFINITION_IDS.dividends],
+    );
+    const shareBuybacks = firstDefinition(
+      registry,
+      companyId,
+      "share-buybacks",
+      periodEnd,
+      [FINANCIAL_DEFINITION_IDS.shareBuybacks],
+    );
+    const freeCashFlow = !isBank && operatingCashFlow && cashCapex
       ? registerDerived(registry, {
           metricId: "fcf",
           companyId,
@@ -560,6 +768,51 @@ export function ensureCoreDerivedMetrics(
         inputs: [totalDebt, cash],
         unit: totalDebt.unit,
         currency: totalDebt.currency,
+      });
+    }
+    const equityLessGoodwill = equity && goodwill
+      ? registerDerived(registry, {
+          metricId: "equity-less-goodwill",
+          companyId,
+          sector,
+          period,
+          periodEnd,
+          definitionId: FINANCIAL_DEFINITION_IDS.equityLessGoodwill,
+          formulaId: "subtract",
+          formula: "stockholders_equity - goodwill",
+          inputs: [equity, goodwill],
+          unit: equity.unit,
+          currency: equity.currency,
+        })
+      : null;
+    if (equityLessGoodwill && intangibleAssets) {
+      registerDerived(registry, {
+        metricId: "tangible-book-value",
+        companyId,
+        sector,
+        period,
+        periodEnd,
+        definitionId: FINANCIAL_DEFINITION_IDS.tangibleBookValue,
+        formulaId: "subtract",
+        formula: "equity_less_goodwill - finite_lived_intangible_assets",
+        inputs: [equityLessGoodwill, intangibleAssets],
+        unit: equity.unit,
+        currency: equity.currency,
+      });
+    }
+    if (dividends && shareBuybacks) {
+      registerDerived(registry, {
+        metricId: "capital-returns",
+        companyId,
+        sector,
+        period,
+        periodEnd,
+        definitionId: FINANCIAL_DEFINITION_IDS.capitalReturns,
+        formulaId: "add",
+        formula: "cash_dividends + common_share_buybacks",
+        inputs: [dividends, shareBuybacks],
+        unit: dividends.unit,
+        currency: dividends.currency,
       });
     }
     for (const ratio of [
@@ -619,6 +872,27 @@ export function ensureCoreDerivedMetrics(
         denominator: assets,
         formula: "liabilities / assets",
       },
+      {
+        metricId: "allowance-coverage",
+        definitionId: FINANCIAL_DEFINITION_IDS.allowanceCoverage,
+        numerator: creditLossAllowance,
+        denominator: loans,
+        formula: "credit_loss_allowance / net_loans",
+      },
+      {
+        metricId: "efficiency-ratio",
+        definitionId: FINANCIAL_DEFINITION_IDS.efficiencyRatio,
+        numerator: noninterestExpense,
+        denominator: revenue,
+        formula: "noninterest_expense / net_revenue",
+      },
+      {
+        metricId: "roe-proxy",
+        definitionId: FINANCIAL_DEFINITION_IDS.roeProxy,
+        numerator: netIncome,
+        denominator: equity,
+        formula: "net_income / period_end_stockholders_equity",
+      },
     ]) {
       if (ratio.numerator && ratio.denominator && ratio.denominator.value !== 0) {
         registerDerived(registry, {
@@ -655,6 +929,28 @@ export function ensureCoreDerivedMetrics(
       definitionId: FINANCIAL_DEFINITION_IDS.revenueGrowth,
       formulaId: "growth-rate",
       formula: "current_revenue / prior_revenue - 1",
+      inputs: [current, prior],
+      unit: "ratio",
+      currency: null,
+    });
+  }
+  const loans = registry.getMetricHistory(
+    companyId,
+    "loans",
+    FINANCIAL_DEFINITION_IDS.loans,
+  );
+  for (let index = 1; index < loans.length; index += 1) {
+    const current = loans[index];
+    const prior = loans[index - 1];
+    registerDerived(registry, {
+      metricId: "loan-growth",
+      companyId,
+      sector: current.sector,
+      period: current.period,
+      periodEnd: current.period_end,
+      definitionId: FINANCIAL_DEFINITION_IDS.loanGrowth,
+      formulaId: "growth-rate",
+      formula: "current_net_loans / prior_net_loans - 1",
       inputs: [current, prior],
       unit: "ratio",
       currency: null,
@@ -726,6 +1022,17 @@ export function financialPeriodsFromRegistry(
       grossProfit: selectedMetric(registry, companyId, "gross-profit", periodEnd, [FINANCIAL_DEFINITION_IDS.grossProfit]),
       operatingIncome: selectedMetric(registry, companyId, "operating-income", periodEnd, [FINANCIAL_DEFINITION_IDS.operatingIncome]),
       netIncome: selectedMetric(registry, companyId, "net-income", periodEnd, [FINANCIAL_DEFINITION_IDS.netIncome]),
+      netInterestIncome: selectedMetric(registry, companyId, "net-interest-income", periodEnd, [FINANCIAL_DEFINITION_IDS.netInterestIncome]),
+      deposits: selectedMetric(registry, companyId, "deposits", periodEnd, [FINANCIAL_DEFINITION_IDS.deposits]),
+      loans: selectedMetric(registry, companyId, "loans", periodEnd, [FINANCIAL_DEFINITION_IDS.loans]),
+      loanGrowth: selectedMetric(registry, companyId, "loan-growth", periodEnd, [FINANCIAL_DEFINITION_IDS.loanGrowth]),
+      creditLossProvision: selectedMetric(registry, companyId, "credit-loss-provision", periodEnd, [FINANCIAL_DEFINITION_IDS.creditLossProvision]),
+      creditLossAllowance: selectedMetric(registry, companyId, "credit-loss-allowance", periodEnd, [FINANCIAL_DEFINITION_IDS.creditLossAllowance]),
+      allowanceCoverage: selectedMetric(registry, companyId, "allowance-coverage", periodEnd, [FINANCIAL_DEFINITION_IDS.allowanceCoverage]),
+      efficiencyRatio: selectedMetric(registry, companyId, "efficiency-ratio", periodEnd, [FINANCIAL_DEFINITION_IDS.efficiencyRatio]),
+      roeProxy: selectedMetric(registry, companyId, "roe-proxy", periodEnd, [FINANCIAL_DEFINITION_IDS.roeProxy]),
+      tangibleBookValue: selectedMetric(registry, companyId, "tangible-book-value", periodEnd, [FINANCIAL_DEFINITION_IDS.tangibleBookValue]),
+      capitalReturns: selectedMetric(registry, companyId, "capital-returns", periodEnd, [FINANCIAL_DEFINITION_IDS.capitalReturns]),
       operatingCashFlow: selectedMetric(registry, companyId, "operating-cash-flow", periodEnd, [FINANCIAL_DEFINITION_IDS.operatingCashFlow]),
       investingCashFlow: selectedMetric(registry, companyId, "investing-cash-flow", periodEnd, [FINANCIAL_DEFINITION_IDS.investingCashFlow]),
       cashCapex: selectedMetric(registry, companyId, "cash-capex", periodEnd, [FINANCIAL_DEFINITION_IDS.issuerCashCapex, FINANCIAL_DEFINITION_IDS.cashCapex]),
@@ -758,6 +1065,17 @@ export function financialPeriodsFromRegistry(
       grossProfit: value(selections.grossProfit),
       operatingIncome: value(selections.operatingIncome),
       netIncome: value(selections.netIncome),
+      netInterestIncome: value(selections.netInterestIncome),
+      deposits: value(selections.deposits),
+      loans: value(selections.loans),
+      loanGrowth: value(selections.loanGrowth),
+      creditLossProvision: value(selections.creditLossProvision),
+      creditLossAllowance: value(selections.creditLossAllowance),
+      allowanceCoverage: value(selections.allowanceCoverage),
+      efficiencyRatio: value(selections.efficiencyRatio),
+      roeProxy: value(selections.roeProxy),
+      tangibleBookValue: value(selections.tangibleBookValue),
+      capitalReturns: value(selections.capitalReturns),
       operatingCashFlow: value(selections.operatingCashFlow),
       investingCashFlow: value(selections.investingCashFlow),
       cashCapex: value(selections.cashCapex),

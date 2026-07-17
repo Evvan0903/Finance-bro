@@ -33,6 +33,17 @@ export type FinancialPeriod = {
   grossProfit: number | null;
   operatingIncome: number | null;
   netIncome: number | null;
+  netInterestIncome: number | null;
+  deposits: number | null;
+  loans: number | null;
+  loanGrowth: number | null;
+  creditLossProvision: number | null;
+  creditLossAllowance: number | null;
+  allowanceCoverage: number | null;
+  efficiencyRatio: number | null;
+  roeProxy: number | null;
+  tangibleBookValue: number | null;
+  capitalReturns: number | null;
   operatingCashFlow: number | null;
   investingCashFlow: number | null;
   cashCapex: number | null;
@@ -89,7 +100,7 @@ export type Scenario = {
   revenueGrowth: number | null;
   netMargin: number | null;
   operatingCashFlowMargin: number | null;
-  capexFactor: number;
+  capexFactor: number | null;
   projectedRevenue: number | null;
   projectedNetIncome: number | null;
   projectedFreeCashFlow: number | null;
@@ -98,6 +109,7 @@ export type Scenario = {
   valuationStartingPoint: number | null;
   valuationMetric: number | null;
   multipleLabel: string;
+  impliedValueLabel: string;
   modelImpliedEnterpriseValue: number | null;
   metricReferences: Record<string, string>;
 };
@@ -146,6 +158,12 @@ export type PeerComparisonItem = {
   netMargin: number | null;
   freeCashFlowMargin: number | null;
   periodEnd: string | null;
+  metrics: Array<{
+    id: string;
+    label: string;
+    value: number | null;
+    canonicalKey: string;
+  }>;
   metricReferences: Record<string, string>;
 };
 

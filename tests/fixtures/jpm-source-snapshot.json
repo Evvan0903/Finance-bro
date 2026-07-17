@@ -1,0 +1,2045 @@
+{
+  "fixtureSchemaVersion": "1.0",
+  "source": {
+    "companyFacts": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000019617.json",
+    "submissions": "https://data.sec.gov/submissions/CIK0000019617.json",
+    "originalPublicationCutoff": "2026-07-17"
+  },
+  "issuerReportedMetrics": [
+    {
+      "metricId": "net-interest-margin",
+      "definitionId": "firmwide-net-yield-on-average-interest-earning-assets-managed-basis",
+      "period": "FY2025",
+      "periodStart": "2025-01-01",
+      "periodEnd": "2025-12-31",
+      "value": 0.025,
+      "unit": "ratio",
+      "currency": null,
+      "sourceDocument": "JPMorgan Chase & Co. 2025 Form 10-K",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/19617/000162828026008131/jpm-20251231.htm",
+      "sourceDate": "2026-02-13",
+      "filingDate": "2026-02-13",
+      "section": "Management's discussion and analysis",
+      "table": "Net interest income, net yield, and noninterest revenue excluding Markets",
+      "rowLabel": "Net yield on average interest-earning assets – managed basis",
+      "rawValue": "2.50%",
+      "extractionMethod": "deterministic-filing-html-table",
+      "confidence": 0.97
+    },
+    {
+      "metricId": "cet1-ratio",
+      "definitionId": "standardized-cet1-capital-ratio",
+      "period": "FY2025",
+      "periodStart": null,
+      "periodEnd": "2025-12-31",
+      "value": 0.146,
+      "unit": "ratio",
+      "currency": null,
+      "sourceDocument": "JPMorgan Chase & Co. 2025 Form 10-K",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/19617/000162828026008131/jpm-20251231.htm",
+      "sourceDate": "2026-02-13",
+      "filingDate": "2026-02-13",
+      "section": "Capital risk management",
+      "table": "Risk-based capital metrics — Standardized",
+      "rowLabel": "CET1 capital ratio",
+      "rawValue": "14.6%",
+      "extractionMethod": "deterministic-filing-html-table",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "liquidity-coverage-ratio",
+      "definitionId": "firm-average-liquidity-coverage-ratio",
+      "period": "FY2025",
+      "periodStart": "2025-01-01",
+      "periodEnd": "2025-12-31",
+      "value": 1.11,
+      "unit": "ratio",
+      "currency": null,
+      "sourceDocument": "JPMorgan Chase & Co. 2025 Form 10-K",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/19617/000162828026008131/jpm-20251231.htm",
+      "sourceDate": "2026-02-13",
+      "filingDate": "2026-02-13",
+      "section": "Financial highlights",
+      "table": "Three-year summary of consolidated results",
+      "rowLabel": "Firm Liquidity coverage ratio (LCR) (average)",
+      "rawValue": "111%",
+      "extractionMethod": "deterministic-filing-html-table",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "return-on-common-equity",
+      "definitionId": "issuer-reported-return-on-common-equity",
+      "period": "FY2025",
+      "periodStart": "2025-01-01",
+      "periodEnd": "2025-12-31",
+      "value": 0.17,
+      "unit": "ratio",
+      "currency": null,
+      "sourceDocument": "JPMorgan Chase & Co. 2025 Form 10-K",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/19617/000162828026008131/jpm-20251231.htm",
+      "sourceDate": "2026-02-13",
+      "filingDate": "2026-02-13",
+      "section": "Financial highlights",
+      "table": "Three-year summary of consolidated results",
+      "rowLabel": "Return on common equity (ROE)",
+      "rawValue": "17%",
+      "extractionMethod": "deterministic-filing-html-table",
+      "confidence": 0.99
+    }
+  ],
+  "companyFacts": {
+    "cik": 19617,
+    "entityName": "JPMORGAN CHASE & CO",
+    "facts": {
+      "us-gaap": {
+        "Assets": {
+          "label": "Assets",
+          "description": "Sum of the carrying amounts as of the balance sheet date of all assets that are recognized. Assets are probable future economic benefits obtained or controlled by an entity as a result of past transactions or events.",
+          "units": {
+            "USD": [
+              {
+                "end": "2021-12-31",
+                "val": 3743567000000,
+                "form": "10-K",
+                "filed": "2022-02-22",
+                "accn": "0000019617-22-000272"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 3743567000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 3743567000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 3665743000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 3665743000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 3665743000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 3875393000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 3875393000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 3875393000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 4002814000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 4002814000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "end": "2025-12-31",
+                "val": 4424900000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              }
+            ]
+          }
+        },
+        "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents": {
+          "label": "Cash, Cash Equivalents, Restricted Cash and Restricted Cash Equivalents",
+          "description": "Amount of cash and cash equivalents, and cash and cash equivalents restricted to withdrawal or usage. Excludes amount for disposal group and discontinued operations. Cash includes, but is not limited to, currency on hand, demand deposits with banks or financial institutions, and other accounts with general characteristics of demand deposits. Cash equivalents include, but are not limited to, short-term, highly liquid investments that are both readily convertible to known amounts of cash and so near their maturity that they present insignificant risk of changes in value because of changes in interest rates.",
+          "units": {
+            "USD": [
+              {
+                "end": "2021-12-31",
+                "val": 740834000000,
+                "form": "10-K",
+                "filed": "2022-02-22",
+                "accn": "0000019617-22-000272"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 740834000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 740834000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 740834000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 567234000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 567234000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 567234000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 567234000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 624151000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 624151000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 624151000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 469317000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 469317000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "end": "2025-12-31",
+                "val": 343338000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              }
+            ]
+          }
+        },
+        "Deposits": {
+          "label": "Deposits",
+          "description": "The aggregate of all deposit liabilities held by the entity, including foreign and domestic, interest and noninterest bearing; may include demand deposits, saving deposits, Negotiable Order of Withdrawal (NOW) and time deposits among others.",
+          "units": {
+            "USD": [
+              {
+                "end": "2021-12-31",
+                "val": 2462303000000,
+                "form": "10-K",
+                "filed": "2022-02-22",
+                "accn": "0000019617-22-000272"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 2462303000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 2340179000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 2340179000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 2400688000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 2400688000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 2406032000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 2406032000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "end": "2025-12-31",
+                "val": 2559320000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              }
+            ]
+          }
+        },
+        "FinancingReceivableAllowanceForCreditLossExcludingAccruedInterest": {
+          "label": null,
+          "description": null,
+          "units": {
+            "USD": [
+              {
+                "end": "2021-12-31",
+                "val": 16386000000,
+                "form": "10-K",
+                "filed": "2022-02-22",
+                "accn": "0000019617-22-000272"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 16386000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 16386000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 16386000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 19726000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 19726000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 19726000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 19726000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 22420000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 22420000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 22420000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 24345000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 24345000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "end": "2025-12-31",
+                "val": 25765000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              }
+            ]
+          }
+        },
+        "FinancingReceivableExcludingAccruedInterestAfterAllowanceForCreditLoss": {
+          "label": null,
+          "description": null,
+          "units": {
+            "USD": [
+              {
+                "end": "2021-12-31",
+                "val": 1061328000000,
+                "form": "10-K",
+                "filed": "2022-02-22",
+                "accn": "0000019617-22-000272"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 1061328000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 1115921000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 1115921000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 1301286000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 1301286000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 1323643000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 1323643000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "end": "2025-12-31",
+                "val": 1467664000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              }
+            ]
+          }
+        },
+        "Goodwill": {
+          "label": "Goodwill",
+          "description": "Amount after accumulated impairment loss of an asset representing future economic benefits arising from other assets acquired in a business combination that are not individually identified and separately recognized.",
+          "units": {
+            "USD": [
+              {
+                "end": "2021-12-31",
+                "val": 50315000000,
+                "form": "10-K",
+                "filed": "2022-02-22",
+                "accn": "0000019617-22-000272"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 50315000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 50315000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 50315000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 51662000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 51662000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 51662000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 51662000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 52634000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 52634000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 52634000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 52565000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 52565000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "end": "2025-12-31",
+                "val": 52731000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              }
+            ]
+          }
+        },
+        "InterestIncomeExpenseNet": {
+          "label": "Interest Income (Expense), Net",
+          "description": "The net amount of operating interest income (expense).",
+          "units": {
+            "USD": [
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 52311000000,
+                "form": "10-K",
+                "filed": "2022-02-22",
+                "accn": "0000019617-22-000272"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 52311000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 52311000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 66710000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 66710000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 66710000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 89267000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 89267000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 89267000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 92583000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 92583000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "start": "2025-01-01",
+                "end": "2025-12-31",
+                "val": 95443000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              }
+            ]
+          }
+        },
+        "Liabilities": {
+          "label": "Liabilities",
+          "description": "Sum of the carrying amounts as of the balance sheet date of all liabilities that are recognized. Liabilities are probable future sacrifices of economic benefits arising from present obligations of an entity to transfer assets or provide services to other entities in the future.",
+          "units": {
+            "USD": [
+              {
+                "end": "2021-12-31",
+                "val": 3449440000000,
+                "form": "10-K",
+                "filed": "2022-02-22",
+                "accn": "0000019617-22-000272"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 3449440000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 3373411000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 3373411000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 3547515000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 3547515000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 3658056000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 3658056000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "end": "2025-12-31",
+                "val": 4062462000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              }
+            ]
+          }
+        },
+        "NetCashProvidedByUsedInInvestingActivities": {
+          "label": "Net Cash Provided by (Used in) Investing Activities",
+          "description": "Amount of cash inflow (outflow) from investing activities, including discontinued operations. Investing activity cash flows include making and collecting loans and acquiring and disposing of debt or equity instruments and property, plant, and equipment and other productive assets.",
+          "units": {
+            "USD": [
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": -129344000000,
+                "form": "10-K",
+                "filed": "2022-02-22",
+                "accn": "0000019617-22-000272"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": -129344000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": -129344000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": -137819000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": -137819000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": -137819000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 67643000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 67643000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 67643000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": -163403000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": -163403000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "start": "2025-01-01",
+                "end": "2025-12-31",
+                "val": -265565000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              }
+            ]
+          }
+        },
+        "NetCashProvidedByUsedInOperatingActivities": {
+          "label": "Net Cash Provided by (Used in) Operating Activities",
+          "description": "Amount of cash inflow (outflow) from operating activities, including discontinued operations. Operating activity cash flows include transactions, adjustments, and changes in value not defined as investing or financing activities.",
+          "units": {
+            "USD": [
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 78084000000,
+                "form": "10-K",
+                "filed": "2022-02-22",
+                "accn": "0000019617-22-000272"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 78084000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 78084000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 107119000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 107119000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 107119000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 12974000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 12974000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 12974000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": -42012000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": -42012000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "start": "2025-01-01",
+                "end": "2025-12-31",
+                "val": -147782000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              }
+            ]
+          }
+        },
+        "NetIncomeLoss": {
+          "label": "Net Income (Loss) Attributable to Parent",
+          "description": "The portion of profit or loss for the period, net of income taxes, which is attributable to the parent.",
+          "units": {
+            "USD": [
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 48334000000,
+                "form": "10-K",
+                "filed": "2022-02-22",
+                "accn": "0000019617-22-000272"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 48334000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 48334000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 37676000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 37676000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 37676000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 49552000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 49552000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 49552000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 58471000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 58471000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "start": "2025-01-01",
+                "end": "2025-12-31",
+                "val": 57048000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              }
+            ]
+          }
+        },
+        "NoninterestExpense": {
+          "label": "Noninterest Expense",
+          "description": "Total aggregate amount of all noninterest expense.",
+          "units": {
+            "USD": [
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 71343000000,
+                "form": "10-K",
+                "filed": "2022-02-22",
+                "accn": "0000019617-22-000272"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 71343000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 71343000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 76140000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 76140000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 76140000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 87172000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 87172000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 87172000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 91797000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 91797000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "start": "2025-01-01",
+                "end": "2025-12-31",
+                "val": 95640000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              }
+            ]
+          }
+        },
+        "PaymentsForRepurchaseOfCommonStock": {
+          "label": "Payments for Repurchase of Common Stock",
+          "description": "The cash outflow to reacquire common stock during the period.",
+          "units": {
+            "USD": [
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 18408000000,
+                "form": "10-K",
+                "filed": "2022-02-22",
+                "accn": "0000019617-22-000272"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 18408000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 18408000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 3162000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 3162000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 3162000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 9824000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 9824000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 9824000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 18830000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 18830000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "start": "2025-01-01",
+                "end": "2025-12-31",
+                "val": 31591000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              }
+            ]
+          }
+        },
+        "PaymentsOfDividends": {
+          "label": "Payments of Dividends",
+          "description": "Cash outflow in the form of capital distributions and dividends to common shareholders, preferred shareholders and noncontrolling interests.",
+          "units": {
+            "USD": [
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 12858000000,
+                "form": "10-K",
+                "filed": "2022-02-22",
+                "accn": "0000019617-22-000272"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 12858000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 12858000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 13562000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 13562000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 13562000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 13463000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 13463000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 13463000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 14783000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 14783000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "start": "2025-01-01",
+                "end": "2025-12-31",
+                "val": 16625000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              }
+            ]
+          }
+        },
+        "ProvisionForLoanLeaseAndOtherLosses": {
+          "label": "Provision for Loan, Lease, and Other Losses",
+          "description": "Amount of expense related loan transactions, lease transactions, credit loss from transactions other than loan and lease transactions, and other loss based on assessment of uncollectability from the counterparty to reduce the account to their net realizable value.",
+          "units": {
+            "USD": [
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": -9256000000,
+                "form": "10-K",
+                "filed": "2022-02-22",
+                "accn": "0000019617-22-000272"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": -9256000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": -9256000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 6389000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 6389000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 6389000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 9320000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 9320000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 9320000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 10678000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 10678000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "start": "2025-01-01",
+                "end": "2025-12-31",
+                "val": 14212000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              }
+            ]
+          }
+        },
+        "ProvisionForLoanLossesExpensed": {
+          "label": "Financing Receivable, Credit Loss, Expense (Reversal)",
+          "description": "Amount of credit loss expense (reversal of expense) for financing receivable.",
+          "units": {
+            "USD": [
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": -9071000000,
+                "form": "10-K",
+                "filed": "2022-02-22",
+                "accn": "0000019617-22-000272"
+              }
+            ]
+          }
+        },
+        "Revenues": {
+          "label": "Revenues",
+          "description": "Amount of revenue recognized from goods sold, services rendered, insurance premiums, or other activities that constitute an earning process. Includes, but is not limited to, investment and interest income before deduction of interest expense when recognized as a component of revenue, and sales and trading gain (loss).",
+          "units": {
+            "USD": [
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 121649000000,
+                "form": "10-K",
+                "filed": "2022-02-22",
+                "accn": "0000019617-22-000272"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 121649000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 121649000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 128695000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 128695000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 128695000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 158104000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 158104000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 158104000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 177556000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 177556000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "start": "2025-01-01",
+                "end": "2025-12-31",
+                "val": 182447000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              }
+            ]
+          }
+        },
+        "RevenuesNetOfInterestExpense": {
+          "label": "Revenues, Net of Interest Expense",
+          "description": "Amount of revenue recognized from goods sold, services rendered, insurance premiums, or other activities that constitute an earning process. Includes, but is not limited to, investment and interest income after deduction of interest expense when recognized as a component of revenue, and sales and trading gain (loss).",
+          "units": {
+            "USD": [
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 121649000000,
+                "form": "10-K",
+                "filed": "2022-02-22",
+                "accn": "0000019617-22-000272"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 121649000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 121649000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 128695000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 128695000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 128695000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 158104000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 158104000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 158104000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 177556000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 177556000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "start": "2025-01-01",
+                "end": "2025-12-31",
+                "val": 182447000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              }
+            ]
+          }
+        },
+        "ShortTermBorrowings": {
+          "label": "Short-term Debt",
+          "description": "Reflects the total carrying amount as of the balance sheet date of debt having initial terms less than one year or the normal operating cycle, if longer.",
+          "units": {
+            "USD": [
+              {
+                "end": "2021-12-31",
+                "val": 53594000000,
+                "form": "10-K",
+                "filed": "2022-02-22",
+                "accn": "0000019617-22-000272"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 53594000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 44027000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 44027000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 44712000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 44712000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 52893000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 52893000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "end": "2025-12-31",
+                "val": 64776000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              }
+            ]
+          }
+        },
+        "StockholdersEquity": {
+          "label": "Stockholders' Equity Attributable to Parent",
+          "description": "Total of all stockholders' equity (deficit) items, net of receivables from officers, directors, owners, and affiliates of the entity which are attributable to the parent. The amount of the economic entity's stockholders' equity attributable to the parent excludes the amount of stockholders' equity which is allocable to that ownership interest in subsidiary equity which is not attributable to the parent (noncontrolling interest, minority interest). This excludes temporary equity and is sometimes called permanent equity.",
+          "units": {
+            "USD": [
+              {
+                "end": "2021-12-31",
+                "val": 294127000000,
+                "form": "10-K",
+                "filed": "2022-02-22",
+                "accn": "0000019617-22-000272"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 294127000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 294127000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 292332000000,
+                "form": "10-K",
+                "filed": "2023-02-21",
+                "accn": "0000019617-23-000231"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 292332000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 292332000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 327878000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 327878000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 327878000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 344758000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 344758000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "end": "2025-12-31",
+                "val": 362438000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              }
+            ]
+          }
+        },
+        "FiniteLivedIntangibleAssetsNet": {
+          "label": "Finite-Lived Intangible Assets, Net",
+          "description": "Amount after amortization of assets, excluding financial assets and goodwill, lacking physical substance with a finite life.",
+          "units": {
+            "USD": [
+              {
+                "end": "2022-12-31",
+                "val": 707000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 2000000000,
+                "form": "10-K",
+                "filed": "2024-02-16",
+                "accn": "0000019617-24-000225"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 2000000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 1700000000,
+                "form": "10-K",
+                "filed": "2025-02-14",
+                "accn": "0000019617-25-000270"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 1700000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              },
+              {
+                "end": "2025-12-31",
+                "val": 1300000000,
+                "form": "10-K",
+                "filed": "2026-02-13",
+                "accn": "0001628280-26-008131"
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "submissions": {
+    "cik": "0000019617",
+    "name": "JPMORGAN CHASE & CO",
+    "sic": "6021",
+    "sicDescription": "National Commercial Banks",
+    "fiscalYearEnd": "1231",
+    "exchanges": [
+      "NYSE",
+      "NYSE",
+      "NYSE",
+      "NYSE",
+      "NYSE",
+      "NYSE",
+      "NYSE",
+      "NYSE",
+      "NYSE"
+    ],
+    "tickers": [
+      "JPM",
+      "JPM-PC",
+      "AMJB",
+      "JPM-PD",
+      "JPM-PJ",
+      "JPM-PK",
+      "JPM-PL",
+      "JPM-PM",
+      "VYLD"
+    ],
+    "entityType": "operating",
+    "category": "Large accelerated filer",
+    "filings": {
+      "recent": {
+        "form": [
+          "10-K",
+          "10-Q"
+        ],
+        "accessionNumber": [
+          "0001628280-26-008131",
+          "0001628280-26-029344"
+        ],
+        "filingDate": [
+          "2026-02-13",
+          "2026-05-01"
+        ],
+        "reportDate": [
+          "2025-12-31",
+          "2026-03-31"
+        ],
+        "primaryDocument": [
+          "jpm-20251231.htm",
+          "jpm-20260331.htm"
+        ]
+      }
+    }
+  }
+}

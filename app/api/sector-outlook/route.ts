@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     const subindustry = payload.subindustry ?? "integrated-oil-gas";
     if (
       !["US", "Europe", "Global"].includes(market) ||
-      !["integrated-oil-gas", "semiconductors"].includes(subindustry)
+      !["integrated-oil-gas", "semiconductors", "banks"].includes(subindustry)
     ) {
       return Response.json(
         {

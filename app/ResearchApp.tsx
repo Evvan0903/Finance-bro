@@ -46,6 +46,13 @@ const EXAMPLES: Array<{
     sector: "technology",
     subindustry: "semiconductors",
   },
+  {
+    label: { zh: "JPM · 银行", en: "JPM · Banks" },
+    company: "JPM",
+    market: "US",
+    sector: "financials",
+    subindustry: "banks",
+  },
 ];
 
 const EVIDENCE_LABELS: Record<Locale, Record<EvidenceKind, string>> = {
@@ -80,11 +87,12 @@ const COPY = {
     sector: "行业",
     subindustry: "子行业",
     ticker: "公司名或交易代码",
-    companyPlaceholder: "例如：SHEL 或 NVDA",
+    companyPlaceholder: "例如：SHEL、NVDA 或 JPM",
     energy: "能源",
     technology: "科技",
     integrated: "综合石油与天然气",
     semiconductors: "半导体",
+    banks: "银行",
     us: "美国",
     europe: "欧洲",
     global: "全球",
@@ -139,6 +147,14 @@ const COPY = {
     revenue: "营收",
     grossMargin: "毛利率",
     netIncome: "净利润",
+    netInterestIncome: "净利息收入",
+    deposits: "存款",
+    loans: "贷款",
+    loanGrowth: "贷款增长",
+    creditLossProvision: "信用损失拨备",
+    efficiencyRatio: "效率比率",
+    tangibleBookValue: "有形账面价值",
+    capitalReturns: "资本回报",
     operatingCashFlow: "经营现金流",
     cashCapex: "现金资本开支",
     freeCashFlow: "自由现金流",
@@ -187,6 +203,7 @@ const COPY = {
     base: "基准",
     bull: "乐观",
     revenueGrowthAssumption: "营收增长假设",
+    tangibleBookGrowthAssumption: "有形账面增长假设",
     netMarginAssumption: "净利率假设",
     reinvestmentFactor: "资本开支系数",
     valuationMetric: "估值指标",
@@ -219,11 +236,12 @@ const COPY = {
     sector: "Sector",
     subindustry: "Subindustry",
     ticker: "Company name or ticker",
-    companyPlaceholder: "e.g. SHEL or NVDA",
+    companyPlaceholder: "e.g. SHEL, NVDA, or JPM",
     energy: "Energy",
     technology: "Technology",
     integrated: "Integrated Oil & Gas",
     semiconductors: "Semiconductors",
+    banks: "Banks",
     us: "US",
     europe: "Europe",
     global: "Global",
@@ -278,6 +296,14 @@ const COPY = {
     revenue: "Revenue",
     grossMargin: "Gross margin",
     netIncome: "Net income",
+    netInterestIncome: "Net interest income",
+    deposits: "Deposits",
+    loans: "Loans",
+    loanGrowth: "Loan growth",
+    creditLossProvision: "Credit-loss provision",
+    efficiencyRatio: "Efficiency ratio",
+    tangibleBookValue: "Tangible book value",
+    capitalReturns: "Capital returns",
     operatingCashFlow: "Operating cash flow",
     cashCapex: "Cash capex",
     freeCashFlow: "Free cash flow",
@@ -326,6 +352,7 @@ const COPY = {
     base: "Base",
     bull: "Bull",
     revenueGrowthAssumption: "Revenue growth assumption",
+    tangibleBookGrowthAssumption: "Tangible-book growth assumption",
     netMarginAssumption: "Net margin assumption",
     reinvestmentFactor: "Capex factor",
     valuationMetric: "Valuation metric",
@@ -398,19 +425,24 @@ function TrendChart({
   periods,
   currency,
   locale,
+  bank = false,
 }: {
   periods: FinancialPeriod[];
   currency: string;
   locale: Locale;
+  bank?: boolean;
 }) {
   const copy = COPY[locale];
   const maxRevenue = Math.max(...periods.map((period) => Math.abs(period.revenue ?? 0)), 1);
-  const maxCash = Math.max(...periods.map((period) => Math.abs(period.operatingCashFlow ?? 0)), 1);
+  const secondMetric = (period: FinancialPeriod) =>
+    bank ? period.netInterestIncome : period.operatingCashFlow;
+  const maxCash = Math.max(...periods.map((period) => Math.abs(secondMetric(period) ?? 0)), 1);
+  const secondLabel = bank ? copy.netInterestIncome : copy.operatingCashFlow;
   return (
-    <div className="trend-chart" role="img" aria-label={`${copy.revenue} / ${copy.operatingCashFlow}`}>
+    <div className="trend-chart" role="img" aria-label={`${copy.revenue} / ${secondLabel}`}>
       <div className="chart-legend">
         <span><i className="legend-revenue" />{copy.revenue}</span>
-        <span><i className="legend-cash" />{copy.operatingCashFlow}</span>
+        <span><i className="legend-cash" />{secondLabel}</span>
       </div>
       <div className="chart-grid">
         {periods.map((period) => (
@@ -423,8 +455,8 @@ function TrendChart({
               />
               <div
                 className="bar cash-bar"
-                style={{ height: `${Math.max(5, (Math.abs(period.operatingCashFlow ?? 0) / maxCash) * 82)}%` }}
-                title={`${copy.operatingCashFlow} ${formatMoney(period.operatingCashFlow, currency, locale)}`}
+                style={{ height: `${Math.max(5, (Math.abs(secondMetric(period) ?? 0) / maxCash) * 82)}%` }}
+                title={`${secondLabel} ${formatMoney(secondMetric(period), currency, locale)}`}
               />
             </div>
             <span>{shortYear(period.periodEnd)}</span>
@@ -463,12 +495,23 @@ function reportToMarkdown(report: ResearchReport, locale: Locale) {
     report.segmentAnalysis,
     "",
     `## 5. ${copy.financials}`,
-    `| ${copy.year} | ${copy.revenue} | ${copy.netIncome} | ${copy.operatingCashFlow} | ${copy.cashCapex} | ${copy.freeCashFlow} |`,
-    "|---|---:|---:|---:|---:|---:|",
-    ...report.periods.map(
-      (period) =>
-        `| ${shortYear(period.periodEnd)}A | ${formatMoney(period.revenue, report.currency, locale)} | ${formatMoney(period.netIncome, report.currency, locale)} | ${formatMoney(period.operatingCashFlow, report.currency, locale)} | ${formatMoney(period.cashCapex, report.currency, locale)} | ${formatMoney(period.freeCashFlowProxy, report.currency, locale)} |`,
-    ),
+    ...(report.sectorPack.id === "banks"
+      ? [
+          `| ${copy.year} | ${copy.revenue} | ${copy.netInterestIncome} | ${copy.deposits} | ${copy.loanGrowth} | ${copy.creditLossProvision} | ${copy.efficiencyRatio} |`,
+          "|---|---:|---:|---:|---:|---:|---:|",
+          ...report.periods.map(
+            (period) =>
+              `| ${shortYear(period.periodEnd)}A | ${formatMoney(period.revenue, report.currency, locale)} | ${formatMoney(period.netInterestIncome, report.currency, locale)} | ${formatMoney(period.deposits, report.currency, locale)} | ${formatPercent(period.loanGrowth, locale)} | ${formatMoney(period.creditLossProvision, report.currency, locale)} | ${formatPercent(period.efficiencyRatio, locale)} |`,
+          ),
+        ]
+      : [
+          `| ${copy.year} | ${copy.revenue} | ${copy.netIncome} | ${copy.operatingCashFlow} | ${copy.cashCapex} | ${copy.freeCashFlow} |`,
+          "|---|---:|---:|---:|---:|---:|",
+          ...report.periods.map(
+            (period) =>
+              `| ${shortYear(period.periodEnd)}A | ${formatMoney(period.revenue, report.currency, locale)} | ${formatMoney(period.netIncome, report.currency, locale)} | ${formatMoney(period.operatingCashFlow, report.currency, locale)} | ${formatMoney(period.cashCapex, report.currency, locale)} | ${formatMoney(period.freeCashFlowProxy, report.currency, locale)} |`,
+          ),
+        ]),
     "",
     `## 6. ${copy.sectorKpis}`,
     ...report.sectorKpis.map(
@@ -488,7 +531,7 @@ function reportToMarkdown(report: ResearchReport, locale: Locale) {
     "",
     `## 8. ${copy.peerComparison}`,
     ...report.peerComparison.map(
-      (item) => `- **${item.ticker}** — ${item.rationale}; ${copy.revenueGrowth} ${formatPercent(item.revenueGrowth, locale)}; ${copy.netMargin} ${formatPercent(item.netMargin, locale)}; ${copy.fcfMargin} ${formatPercent(item.freeCashFlowMargin, locale)}`,
+      (item) => `- **${item.ticker}** — ${item.rationale}; ${item.metrics.map((metric) => `${metric.label} ${formatPercent(metric.value, locale)}`).join("; ")}`,
     ),
     "",
     `## 9. ${copy.debates}`,
@@ -728,7 +771,13 @@ export function ResearchApp() {
 
   function changeSector(next: SupportedSector) {
     setSector(next);
-    setSubindustry(next === "energy" ? "integrated-oil-gas" : "semiconductors");
+    setSubindustry(
+      next === "energy"
+        ? "integrated-oil-gas"
+        : next === "technology"
+          ? "semiconductors"
+          : "banks",
+    );
     setReport(null);
     setError("");
   }
@@ -850,7 +899,7 @@ export function ResearchApp() {
                 <select value={sector} onChange={(event) => changeSector(event.target.value as SupportedSector)} disabled={loading}>
                   <option value="energy">{copy.energy}</option>
                   <option value="technology">{copy.technology}</option>
-                  <option disabled>{copy.financialSector} · {copy.comingSoon}</option>
+                  <option value="financials">{copy.financialSector}</option>
                   <option disabled>{copy.healthcare} · {copy.comingSoon}</option>
                   <option disabled>{copy.industrials} · {copy.comingSoon}</option>
                   <option disabled>{copy.consumer} · {copy.comingSoon}</option>
@@ -861,7 +910,9 @@ export function ResearchApp() {
                 <select value={subindustry} onChange={(event) => setSubindustry(event.target.value as SupportedSubindustry)} disabled={loading}>
                   {sector === "energy"
                     ? <option value="integrated-oil-gas">{copy.integrated}</option>
-                    : <option value="semiconductors">{copy.semiconductors}</option>}
+                    : sector === "technology"
+                      ? <option value="semiconductors">{copy.semiconductors}</option>
+                      : <option value="banks">{copy.banks}</option>}
                 </select>
               </label>
               <label className="ticker-field">
@@ -1044,34 +1095,66 @@ export function ResearchApp() {
               title={copy.financials}
               note={<><EvidenceBadge kind="Reported fact" locale={locale} /> {copy.financialNote}</>}
             />
-            <TrendChart periods={report.periods} currency={report.currency} locale={locale} />
+            <TrendChart
+              periods={report.periods}
+              currency={report.currency}
+              locale={locale}
+              bank={report.sectorPack.id === "banks"}
+            />
             <div className="table-wrap">
               <table className="financial-table">
                 <caption>{copy.actualKey} · {report.currency}</caption>
                 <thead>
-                  <tr>
-                    <th>{copy.year}</th><th>{copy.revenue}</th><th>{copy.grossMargin}</th>
-                    <th>{copy.netIncome}</th><th>{copy.operatingCashFlow}</th>
-                    <th>{copy.cashCapex}</th><th>{copy.freeCashFlow}</th><th>{copy.netMargin}</th>
-                  </tr>
+                  {report.sectorPack.id === "banks" ? (
+                    <tr>
+                      <th>{copy.year}</th><th>{copy.revenue}</th><th>{copy.netInterestIncome}</th>
+                      <th>{copy.deposits}</th><th>{copy.loans}</th><th>{copy.loanGrowth}</th>
+                      <th>{copy.creditLossProvision}</th><th>{copy.efficiencyRatio}</th>
+                    </tr>
+                  ) : (
+                    <tr>
+                      <th>{copy.year}</th><th>{copy.revenue}</th><th>{copy.grossMargin}</th>
+                      <th>{copy.netIncome}</th><th>{copy.operatingCashFlow}</th>
+                      <th>{copy.cashCapex}</th><th>{copy.freeCashFlow}</th><th>{copy.netMargin}</th>
+                    </tr>
+                  )}
                 </thead>
                 <tbody>
                   {report.periods.map((period) => (
                     <tr key={period.periodEnd}>
                       <th>{shortYear(period.periodEnd)}A</th>
-                      <td>{formatMoney(period.revenue, report.currency, locale)}</td>
-                      <td>{formatPercent(period.grossMargin, locale)}</td>
-                      <td>{formatMoney(period.netIncome, report.currency, locale)}</td>
-                      <td>{formatMoney(period.operatingCashFlow, report.currency, locale)}</td>
-                      <td>{formatMoney(period.cashCapex, report.currency, locale)}</td>
-                      <td>{formatMoney(period.freeCashFlowProxy, report.currency, locale)}</td>
-                      <td>{formatPercent(period.netMargin, locale)}</td>
+                      {report.sectorPack.id === "banks" ? (
+                        <>
+                          <td>{formatMoney(period.revenue, report.currency, locale)}</td>
+                          <td>{formatMoney(period.netInterestIncome, report.currency, locale)}</td>
+                          <td>{formatMoney(period.deposits, report.currency, locale)}</td>
+                          <td>{formatMoney(period.loans, report.currency, locale)}</td>
+                          <td>{formatPercent(period.loanGrowth, locale)}</td>
+                          <td>{formatMoney(period.creditLossProvision, report.currency, locale)}</td>
+                          <td>{formatPercent(period.efficiencyRatio, locale)}</td>
+                        </>
+                      ) : (
+                        <>
+                          <td>{formatMoney(period.revenue, report.currency, locale)}</td>
+                          <td>{formatPercent(period.grossMargin, locale)}</td>
+                          <td>{formatMoney(period.netIncome, report.currency, locale)}</td>
+                          <td>{formatMoney(period.operatingCashFlow, report.currency, locale)}</td>
+                          <td>{formatMoney(period.cashCapex, report.currency, locale)}</td>
+                          <td>{formatMoney(period.freeCashFlowProxy, report.currency, locale)}</td>
+                          <td>{formatPercent(period.netMargin, locale)}</td>
+                        </>
+                      )}
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <p className="formula-note"><EvidenceBadge kind="Derived calculation" locale={locale} /> {report.cashFlowProxyFormula}; {locale === "zh" ? "净利率 = 净利润 ÷ 营收；毛利率 = 毛利润 ÷ 营收。" : "Net margin = net income / revenue; gross margin = gross profit / revenue."}</p>
+            <p className="formula-note">
+              <EvidenceBadge kind="Derived calculation" locale={locale} /> {report.cashFlowProxyFormula}
+              {report.sectorPack.id === "banks"
+                ? `; ${locale === "zh" ? "效率比率 = 非利息费用 ÷ 净收入。" : "Efficiency ratio = noninterest expense / net revenue."}`
+                : `; ${locale === "zh" ? "净利率 = 净利润 ÷ 营收；毛利率 = 毛利润 ÷ 营收。" : "Net margin = net income / revenue; gross margin = gross profit / revenue."}`}
+            </p>
           </section>
 
           <section className="report-section" data-pdf-block>
@@ -1103,14 +1186,24 @@ export function ResearchApp() {
             <SectionHeading number="07" title={copy.cashCapital} />
             <div className="balance-panel">
               <div className="balance-grid">
-                {[
-                  { label: copy.cash, value: latestPeriod.cash, formatted: formatMoney(latestPeriod.cash, report.currency, locale) },
-                  { label: copy.totalDebt, value: latestPeriod.totalDebt, formatted: formatMoney(latestPeriod.totalDebt, report.currency, locale) },
-                  { label: copy.netDebt, value: latestPeriod.netDebt, formatted: formatMoney(latestPeriod.netDebt, report.currency, locale) },
-                  { label: copy.inventory, value: latestPeriod.inventory, formatted: formatMoney(latestPeriod.inventory, report.currency, locale) },
-                  { label: copy.cashCapex, value: latestPeriod.cashCapex, formatted: formatMoney(latestPeriod.cashCapex, report.currency, locale) },
-                  { label: copy.currentRatio, value: latestPeriod.currentRatio, formatted: latestPeriod.currentRatio === null ? "—" : `${latestPeriod.currentRatio.toFixed(2)}x` },
-                ].filter((item) => item.value !== null).map((item) => (
+                {(report.sectorPack.id === "banks"
+                  ? [
+                      { label: copy.cash, value: latestPeriod.cash, formatted: formatMoney(latestPeriod.cash, report.currency, locale) },
+                      { label: copy.deposits, value: latestPeriod.deposits, formatted: formatMoney(latestPeriod.deposits, report.currency, locale) },
+                      { label: copy.loans, value: latestPeriod.loans, formatted: formatMoney(latestPeriod.loans, report.currency, locale) },
+                      { label: copy.tangibleBookValue, value: latestPeriod.tangibleBookValue, formatted: formatMoney(latestPeriod.tangibleBookValue, report.currency, locale) },
+                      { label: copy.capitalReturns, value: latestPeriod.capitalReturns, formatted: formatMoney(latestPeriod.capitalReturns, report.currency, locale) },
+                      { label: copy.efficiencyRatio, value: latestPeriod.efficiencyRatio, formatted: formatPercent(latestPeriod.efficiencyRatio, locale) },
+                    ]
+                  : [
+                      { label: copy.cash, value: latestPeriod.cash, formatted: formatMoney(latestPeriod.cash, report.currency, locale) },
+                      { label: copy.totalDebt, value: latestPeriod.totalDebt, formatted: formatMoney(latestPeriod.totalDebt, report.currency, locale) },
+                      { label: copy.netDebt, value: latestPeriod.netDebt, formatted: formatMoney(latestPeriod.netDebt, report.currency, locale) },
+                      { label: copy.inventory, value: latestPeriod.inventory, formatted: formatMoney(latestPeriod.inventory, report.currency, locale) },
+                      { label: copy.cashCapex, value: latestPeriod.cashCapex, formatted: formatMoney(latestPeriod.cashCapex, report.currency, locale) },
+                      { label: copy.currentRatio, value: latestPeriod.currentRatio, formatted: latestPeriod.currentRatio === null ? "—" : `${latestPeriod.currentRatio.toFixed(2)}x` },
+                    ]
+                ).filter((item) => item.value !== null).map((item) => (
                   <div key={item.label}><span>{item.label}</span><strong>{item.formatted}</strong></div>
                 ))}
               </div>
@@ -1127,16 +1220,23 @@ export function ResearchApp() {
             {report.peerComparison.length ? (
               <div className="table-wrap">
                 <table className="peer-table">
-                  <thead><tr><th>{copy.peer}</th><th>{copy.rationale}</th><th>{copy.period}</th><th>{copy.revenueGrowth}</th><th>{copy.netMargin}</th><th>{copy.fcfMargin}</th></tr></thead>
+                  <thead>
+                    <tr>
+                      <th>{copy.peer}</th><th>{copy.rationale}</th><th>{copy.period}</th>
+                      {report.peerComparison[0].metrics.map((metric) => (
+                        <th key={metric.id}>{metric.label}</th>
+                      ))}
+                    </tr>
+                  </thead>
                   <tbody>
                     {report.peerComparison.map((peer) => (
                       <tr key={peer.ticker}>
                         <th>{peer.ticker}<small>{peer.name}</small></th>
                         <td>{peer.rationale}</td>
                         <td>{peer.periodEnd ?? "—"}</td>
-                        <td>{formatPercent(peer.revenueGrowth, locale)}</td>
-                        <td>{formatPercent(peer.netMargin, locale)}</td>
-                        <td>{formatPercent(peer.freeCashFlowMargin, locale)}</td>
+                        {peer.metrics.map((metric) => (
+                          <td key={metric.id}>{formatPercent(metric.value, locale)}</td>
+                        ))}
                       </tr>
                     ))}
                   </tbody>
@@ -1197,9 +1297,16 @@ export function ResearchApp() {
                       <strong>{scenario.enterpriseValueMultiple.toFixed(0)}x {scenario.multipleLabel}</strong>
                     </div>
                     <dl>
-                      <div><dt>{copy.revenueGrowthAssumption}</dt><dd>{formatPercent(scenario.revenueGrowth, locale)}</dd></div>
-                      <div><dt>{copy.netMarginAssumption}</dt><dd>{formatPercent(scenario.netMargin, locale)}</dd></div>
-                      <div><dt>{copy.reinvestmentFactor}</dt><dd>{scenario.capexFactor.toFixed(2)}x</dd></div>
+                      <div>
+                        <dt>{report.sectorPack.id === "banks" ? copy.tangibleBookGrowthAssumption : copy.revenueGrowthAssumption}</dt>
+                        <dd>{formatPercent(scenario.revenueGrowth, locale)}</dd>
+                      </div>
+                      {scenario.netMargin !== null && (
+                        <div><dt>{copy.netMarginAssumption}</dt><dd>{formatPercent(scenario.netMargin, locale)}</dd></div>
+                      )}
+                      {report.sectorPack.id !== "banks" && scenario.capexFactor !== null && (
+                        <div><dt>{copy.reinvestmentFactor}</dt><dd>{scenario.capexFactor.toFixed(2)}x</dd></div>
+                      )}
                       {scenario.projectedFreeCashFlow !== null && (
                         <div><dt>{copy.freeCashFlow}</dt><dd>{formatMoney(scenario.projectedFreeCashFlow, report.currency, locale)}</dd></div>
                       )}
@@ -1207,7 +1314,7 @@ export function ResearchApp() {
                         <div><dt>{copy.valuationMetric}</dt><dd>{formatMoney(scenario.valuationMetric, report.currency, locale)}</dd></div>
                       )}
                     </dl>
-                    <p>{copy.impliedEv}</p>
+                    <p>{scenario.impliedValueLabel}</p>
                     {scenario.modelImpliedEnterpriseValue !== null && (
                       <strong className="scenario-value">{formatMoney(scenario.modelImpliedEnterpriseValue, report.currency, locale)}</strong>
                     )}

@@ -137,8 +137,9 @@ test("returns distinct screened outlooks without regenerating company data", asy
   const requests = [
     { market: "Europe", subindustry: "integrated-oil-gas", locale: "en", refresh: true },
     { market: "US", subindustry: "semiconductors", locale: "en", refresh: true },
+    { market: "US", subindustry: "banks", locale: "en", refresh: true },
   ];
-  const [energyResponse, semiResponse] = await Promise.all(
+  const [energyResponse, semiResponse, bankResponse] = await Promise.all(
     requests.map((body) =>
       builtWorker.fetch(
         new Request("http://localhost/api/sector-outlook", {
@@ -153,22 +154,31 @@ test("returns distinct screened outlooks without regenerating company data", asy
   );
   assert.equal(energyResponse.status, 200);
   assert.equal(semiResponse.status, 200);
+  assert.equal(bankResponse.status, 200);
   const energy = (await energyResponse.json()).outlook;
   const semis = (await semiResponse.json()).outlook;
+  const banks = (await bankResponse.json()).outlook;
   assert.equal(energy.subindustry, "integrated-oil-gas");
   assert.equal(semis.subindustry, "semiconductors");
+  assert.equal(banks.subindustry, "banks");
   assert.ok(energy.claims.length >= 2);
   assert.ok(semis.claims.length >= 2);
+  assert.ok(banks.claims.length >= 2);
   assert.ok(energy.claims.every((claim) =>
     claim.publicationDate >= "2025-01-01" && claim.publisher && claim.title && claim.url
   ));
   assert.ok(semis.claims.every((claim) =>
     claim.publicationDate >= "2025-01-01" && claim.publisher && claim.title && claim.url
   ));
+  assert.ok(banks.claims.every((claim) =>
+    claim.publicationDate >= "2025-01-01" && claim.publisher && claim.title && claim.url
+  ));
   assert.ok(energy.learningAudit.acceptedSources >= 2);
   assert.ok(semis.learningAudit.acceptedSources >= 2);
+  assert.ok(banks.learningAudit.acceptedSources >= 2);
   assert.equal(energy.learningAudit.publicationWindowStart, "2025-01-01");
   assert.equal(semis.learningAudit.publicationWindowStart, "2025-01-01");
+  assert.equal(banks.learningAudit.publicationWindowStart, "2025-01-01");
   assert.notDeepEqual(
     energy.claims.map((claim) => claim.publisher),
     semis.claims.map((claim) => claim.publisher),
@@ -226,9 +236,21 @@ test("enforces strict FCF and sector-specific analyst packs", async () => {
     "Gross margin",
     "Customer concentration",
     "Market share",
+    "Net interest income",
+    "Net interest margin",
+    "Deposits",
+    "Loan growth",
+    "Credit-loss provision",
+    "Allowance coverage",
+    "CET1 ratio",
+    "Efficiency ratio",
+    "Tangible book value",
+    "Capital returns",
   ]) assert.match(packs, new RegExp(required.replace("/", "\\/"), "i"));
   assert.match(packs, /EV \/ FCF/);
   assert.match(packs, /EV \/ Revenue/);
+  assert.match(packs, /P \/ TBV/);
+  assert.match(packs, /Do not apply industrial-company revenue, capex, or FCF templates to banks/);
   assert.match(packs, /XOM/);
   assert.match(packs, /AMD/);
 
@@ -558,6 +580,17 @@ test("audits exact canonical values, shared Web/PDF surfaces, and reproducibilit
     "grossProfit",
     "operatingIncome",
     "netIncome",
+    "netInterestIncome",
+    "deposits",
+    "loans",
+    "loanGrowth",
+    "creditLossProvision",
+    "creditLossAllowance",
+    "allowanceCoverage",
+    "efficiencyRatio",
+    "roeProxy",
+    "tangibleBookValue",
+    "capitalReturns",
     "operatingCashFlow",
     "investingCashFlow",
     "cashCapex",
@@ -894,6 +927,139 @@ test("passes the Semiconductors and NVDA canonical acceptance gate before unlock
     "inventory",
     "fcf",
   ]) assert.ok(referencedIds.has(id), `NVDA cross-report references missing ${id}`);
+
+  const { compareResearchReports } = await consistencyAuditorModule();
+  const comparison = compareResearchReports(first.report, second.report);
+  assert.equal(comparison.passed, true);
+  assert.equal(comparison.mismatchedObjects.length, 0);
+  assert.equal(comparison.missingObjects.length, 0);
+  assert.equal(
+    comparison.matchedObjects.length,
+    report.metricRegistry.metrics.length,
+  );
+});
+
+test("passes the Banks and JPM acceptance gate without an industrial FCF template", async () => {
+  const builtWorker = await worker();
+  const requestBody = {
+    company: "JPM",
+    locale: "en",
+    market: "US",
+    sector: "financials",
+    subindustry: "banks",
+    fixture: true,
+    options: {
+      sectorOutlook: true,
+      peerComparison: false,
+      valuation: true,
+      dueDiligence: true,
+      pdfExport: true,
+    },
+  };
+  const run = async () => {
+    const response = await builtWorker.fetch(
+      new Request("http://localhost/api/research", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(requestBody),
+      }),
+      environment,
+      context,
+    );
+    assert.equal(response.status, 200);
+    return response.json();
+  };
+  const [first, second] = await Promise.all([run(), run()]);
+  const report = first.report;
+  const latest = report.periods.at(-1);
+  const registry = new Map(
+    report.metricRegistry.metrics.map((metric) => [metric.canonical_key, metric]),
+  );
+  assert.equal(first.consistencyAudit.passed, true);
+  assert.equal(first.consistencyAudit.issues.length, 0);
+  assert.equal(latest.periodEnd, "2025-12-31");
+  assert.equal(latest.revenue, 182_447_000_000);
+  assert.equal(latest.netInterestIncome, 95_443_000_000);
+  assert.equal(latest.deposits, 2_559_320_000_000);
+  assert.equal(latest.loans, 1_467_664_000_000);
+  assert.equal(latest.creditLossProvision, 14_212_000_000);
+  assert.equal(latest.creditLossAllowance, 25_765_000_000);
+  assert.equal(latest.efficiencyRatio, 95_640_000_000 / 182_447_000_000);
+  assert.equal(latest.allowanceCoverage, 25_765_000_000 / 1_467_664_000_000);
+  assert.equal(latest.tangibleBookValue, 362_438_000_000 - 52_731_000_000 - 1_300_000_000);
+  assert.equal(latest.capitalReturns, 16_625_000_000 + 31_591_000_000);
+  assert.ok(report.periods.every((period) => period.freeCashFlowProxy === null));
+  assert.ok(
+    report.metricRegistry.metrics.every((metric) => metric.metric_id !== "fcf"),
+  );
+
+  const kpis = new Map(report.sectorKpis.map((item) => [item.id, item]));
+  for (const id of [
+    "net-interest-income",
+    "net-interest-margin",
+    "deposits",
+    "loan-growth",
+    "credit-losses",
+    "allowance-coverage",
+    "cet1",
+    "liquidity",
+    "efficiency-ratio",
+    "roe",
+    "tangible-book-value",
+    "capital-returns",
+  ]) assert.ok(kpis.get(id)?.canonicalKey, `missing JPM canonical KPI: ${id}`);
+  const metricById = (metricId) =>
+    report.metricRegistry.metrics.find(
+      (metric) => metric.metric_id === metricId && metric.period_end === "2025-12-31",
+    );
+  assert.equal(metricById("net-interest-margin").value, 0.025);
+  assert.equal(metricById("net-interest-margin").raw_value, "2.50%");
+  assert.equal(
+    metricById("net-interest-margin").definition_id,
+    "firmwide-net-yield-on-average-interest-earning-assets-managed-basis",
+  );
+  assert.equal(metricById("cet1-ratio").value, 0.146);
+  assert.equal(metricById("liquidity-coverage-ratio").value, 1.11);
+  assert.equal(metricById("return-on-common-equity").value, 0.17);
+  assert.match(metricById("cet1-ratio").source_url, /sec\.gov\/Archives/);
+  assert.match(report.cashFlowProxyFormula, /no industrial-company FCF/i);
+  assert.match(report.valuationFormula, /tangible book value.*P\/TBV/i);
+  assert.ok(
+    report.scenarios.every(
+      (scenario) =>
+        scenario.projectedFreeCashFlow === null &&
+        scenario.capexFactor === null &&
+        scenario.valuationStartingPoint === latest.tangibleBookValue &&
+        scenario.metricReferences.valuationStartingPoint === latest.metricKeys.tangibleBookValue &&
+        /equity value/i.test(scenario.impliedValueLabel),
+    ),
+  );
+  const referencedIds = new Set(
+    [
+      ...report.driverExposure.flatMap((item) => item.metricReferences),
+      ...report.investmentDebates.flatMap((item) => item.metricReferences),
+      ...report.risks.flatMap((item) => item.metricReferences),
+    ].map((key) => registry.get(key)?.metric_id),
+  );
+  for (const id of [
+    "net-interest-income",
+    "net-interest-margin",
+    "deposits",
+    "loan-growth",
+    "credit-loss-provision",
+    "allowance-coverage",
+    "cet1-ratio",
+    "liquidity-coverage-ratio",
+    "efficiency-ratio",
+    "return-on-common-equity",
+    "tangible-book-value",
+    "capital-returns",
+  ]) assert.ok(referencedIds.has(id), `JPM cross-report references missing ${id}`);
+  assert.ok(
+    report.sectorOutlook.claims.every(
+      (claim) => claim.publisher && claim.publicationDate >= "2025-01-01",
+    ),
+  );
 
   const { compareResearchReports } = await consistencyAuditorModule();
   const comparison = compareResearchReports(first.report, second.report);

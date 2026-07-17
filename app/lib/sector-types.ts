@@ -6,8 +6,8 @@ export type LocalizedText = {
 };
 
 export type ResearchMarket = "US" | "Europe" | "Global";
-export type SupportedSector = "energy" | "technology";
-export type SupportedSubindustry = "integrated-oil-gas" | "semiconductors";
+export type SupportedSector = "energy" | "technology" | "financials";
+export type SupportedSubindustry = "integrated-oil-gas" | "semiconductors" | "banks";
 
 export type ResearchOptions = {
   sectorOutlook: boolean;
@@ -28,6 +28,8 @@ export type SectorKpiDefinition = {
   id: string;
   label: LocalizedText;
   description: LocalizedText;
+  canonicalMetricId?: string;
+  definitionIds?: string[];
   availability:
     | "revenue"
     | "grossMargin"
@@ -63,7 +65,7 @@ export type SectorValuationFramework = {
     base: number;
     bull: number;
   };
-  metric: "freeCashFlow" | "revenue";
+  metric: "freeCashFlow" | "revenue" | "tangibleBook";
   fallback?: {
     method: LocalizedText;
     formula: LocalizedText;

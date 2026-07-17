@@ -14,6 +14,7 @@ import {
   financialPeriodsFromRegistry,
   FINANCIAL_DEFINITION_IDS,
 } from "../../lib/financial-metrics";
+import type { IssuerReportedMetric } from "../../lib/financial-metrics";
 import { getSectorMethods } from "../../lib/sector-methodology";
 import { getSectorPack } from "../../lib/sector-packs";
 import { getSectorOutlook, sectorEvidenceSources } from "../../lib/sector-retrieval";
@@ -51,6 +52,7 @@ import type {
 } from "../../lib/research-types";
 import shellSourceSnapshot from "../../../tests/fixtures/shel-source-snapshot.json";
 import nvdaSourceSnapshot from "../../../tests/fixtures/nvda-source-snapshot.json";
+import jpmSourceSnapshot from "../../../tests/fixtures/jpm-source-snapshot.json";
 
 export const dynamic = "force-dynamic";
 
@@ -93,6 +95,7 @@ type ReportSourceSnapshot = {
   companyFacts: CompanyFactsPayload;
   submissions: Submissions;
   retrievedAt: string;
+  issuerReportedMetrics?: IssuerReportedMetric[];
 };
 
 const COPY = {
@@ -128,6 +131,8 @@ const ALIASES: Record<string, string> = {
   meta: "META",
   shell: "SHEL",
   nvidia: "NVDA",
+  jpmorgan: "JPM",
+  "jp morgan": "JPM",
   amazon: "AMZN",
   berkshire: "BRK-B",
 };
@@ -146,6 +151,11 @@ const SUPPORTED_TICKER_RECORDS: TickerRecord[] = [
   { cik_str: 1730168, ticker: "AVGO", title: "Broadcom Inc" },
   { cik_str: 50863, ticker: "INTC", title: "Intel Corp" },
   { cik_str: 1046179, ticker: "TSM", title: "Taiwan Semiconductor Manufacturing Co Ltd" },
+  { cik_str: 19617, ticker: "JPM", title: "JPMorgan Chase & Co" },
+  { cik_str: 70858, ticker: "BAC", title: "Bank of America Corp" },
+  { cik_str: 831001, ticker: "C", title: "Citigroup Inc" },
+  { cik_str: 72971, ticker: "WFC", title: "Wells Fargo & Co" },
+  { cik_str: 886982, ticker: "GS", title: "Goldman Sachs Group Inc" },
 ];
 
 const secCache = new MemoryCache<unknown>(SEC_CACHE_TTL_MS);
@@ -366,6 +376,59 @@ function buildSectorKpis(
     metricAudit?.results.map((result) => [result.metricId, result]) ?? [],
   );
   return pack.coreKpis.map((definition): SectorKpiResult => {
+    if (definition.canonicalMetricId) {
+      const candidates = metricRegistry.findMetrics({
+        company_id: companyId,
+        metric_id: definition.canonicalMetricId,
+        period_end: latest.periodEnd,
+      }).filter((metric) =>
+        metric.value !== null &&
+        ["Reported", "Derived"].includes(metric.status) &&
+        (
+          !definition.definitionIds?.length ||
+          definition.definitionIds.includes(metric.definition_id)
+        )
+      );
+      const canonicalMetric = candidates.sort((left, right) => {
+        const leftPriority =
+          definition.definitionIds?.indexOf(left.definition_id) ?? 0;
+        const rightPriority =
+          definition.definitionIds?.indexOf(right.definition_id) ?? 0;
+        return leftPriority - rightPriority || right.confidence - left.confidence;
+      })[0];
+      if (canonicalMetric) {
+        return {
+          id: definition.id,
+          label: definition.label[locale],
+          value: formatMetricForDisplay(canonicalMetric, locale),
+          usable: true,
+          status: canonicalMetric.status,
+          period: canonicalMetric.period_end,
+          definition: definition.description[locale],
+          classification:
+            canonicalMetric.status === "Derived"
+              ? "Derived calculation"
+              : "Reported fact",
+          sourceNote: [
+            canonicalMetric.source_document,
+            canonicalMetric.source_date,
+            canonicalMetric.formula,
+          ].filter(Boolean).join(" · "),
+          sourceUrl: canonicalMetric.source_url,
+          confidence: canonicalMetric.confidence,
+          extractionMethod: canonicalMetric.extraction_method,
+          canonicalKey: canonicalMetric.canonical_key,
+          whyItMatters:
+            locale === "zh"
+              ? `该指标用于回答：${pack.researchQuestions[
+                  pack.coreKpis.indexOf(definition) % pack.researchQuestions.length
+                ].zh}`
+              : `This metric helps answer: ${pack.researchQuestions[
+                  pack.coreKpis.indexOf(definition) % pack.researchQuestions.length
+                ].en}`,
+        };
+      }
+    }
     const locatorResult = located.get(definition.id);
     if (locatorResult) {
       const canonicalMetric = metricRegistry.getMetric({
@@ -484,6 +547,17 @@ const PERIOD_FIELD_BY_METRIC_ID: Record<string, string> = {
   "revenue-cagr": "revenueCagr",
   "gross-profit": "grossProfit",
   "net-income": "netIncome",
+  "net-interest-income": "netInterestIncome",
+  deposits: "deposits",
+  loans: "loans",
+  "loan-growth": "loanGrowth",
+  "credit-loss-provision": "creditLossProvision",
+  "credit-loss-allowance": "creditLossAllowance",
+  "allowance-coverage": "allowanceCoverage",
+  "efficiency-ratio": "efficiencyRatio",
+  "roe-proxy": "roeProxy",
+  "tangible-book-value": "tangibleBookValue",
+  "capital-returns": "capitalReturns",
   "net-margin": "netMargin",
   "net-margin-change": "netMarginChange",
   "gross-margin": "grossMargin",
@@ -511,6 +585,10 @@ const DRIVER_METRIC_IDS: Record<string, string[]> = {
   capacity: ["gross-margin", "operating-margin", "inventory", "cash-capex"],
   "product-cycle": ["revenue-growth", "gross-margin", "operating-margin", "inventory"],
   "export-controls": ["revenue", "revenue-growth", "inventory"],
+  "rates-deposits": ["net-interest-income", "net-interest-margin", "deposits", "loans", "loan-growth"],
+  "credit-cycle": ["credit-loss-provision", "credit-loss-allowance", "allowance-coverage", "loans"],
+  "capital-liquidity": ["cet1-ratio", "liquidity-coverage-ratio", "tangible-book-value", "capital-returns"],
+  "operating-leverage": ["revenue", "net-interest-income", "net-interest-margin", "efficiency-ratio", "return-on-common-equity"],
 };
 
 function selectedCanonicalMetrics(
@@ -615,6 +693,17 @@ function buildNarrative(
           metricKey: latest.metricKeys.grossMargin ?? "",
           classification: "Derived calculation" as const,
         }
+      : pack.id === "banks"
+        ? {
+            label: locale === "zh" ? "有形账面价值" : "Tangible book value",
+            value: compactMoney(latest.tangibleBookValue, currency, locale),
+            detail:
+              locale === "zh"
+                ? "股东权益减商誉和有限寿命无形资产；P/TBV 情景的规范起点。"
+                : "Stockholders' equity less goodwill and finite-lived intangibles; the canonical P/TBV starting point.",
+            metricKey: latest.metricKeys.tangibleBookValue ?? "",
+            classification: "Derived calculation" as const,
+          }
       : {
           label: locale === "zh" ? "净债务" : "Net debt",
           value: compactMoney(latest.netDebt, currency, locale),
@@ -696,12 +785,30 @@ function buildNarrative(
     latest.revenue !== null,
     latest.netMargin !== null,
     latest.freeCashFlowProxy !== null,
-    pack.id === "semiconductors" ? latest.grossMargin !== null : latest.netDebt !== null,
+    pack.id === "semiconductors"
+      ? latest.grossMargin !== null
+      : pack.id === "banks"
+        ? latest.tangibleBookValue !== null
+        : latest.netDebt !== null,
     liabilityRatio !== null,
   ][index]);
 
   const earningsQuality =
-    locale === "zh"
+    pack.id === "banks"
+      ? locale === "zh"
+        ? [
+            `${companyName} 最新年度净收入为 ${compactMoney(latest.revenue, currency, locale)}，其中净利息收入为 ${compactMoney(latest.netInterestIncome, currency, locale)}。`,
+            `信用损失拨备为 ${compactMoney(latest.creditLossProvision, currency, locale)}；准备金覆盖代理为 ${percentage(latest.allowanceCoverage, locale)}。`,
+            `效率比率为 ${percentage(latest.efficiencyRatio, locale)}，期末权益回报率代理为 ${percentage(latest.roeProxy, locale)}；后者不是平均权益 ROE。`,
+            `有形账面价值为 ${compactMoney(latest.tangibleBookValue, currency, locale)}，资本回报为 ${compactMoney(latest.capitalReturns, currency, locale)}；银行不使用工业公司 FCF 模板。`,
+          ]
+        : [
+            `${companyName}'s latest annual net revenue was ${compactMoney(latest.revenue, currency, locale)}, including net interest income of ${compactMoney(latest.netInterestIncome, currency, locale)}.`,
+            `Credit-loss provision was ${compactMoney(latest.creditLossProvision, currency, locale)}; the allowance-coverage proxy was ${percentage(latest.allowanceCoverage, locale)}.`,
+            `The efficiency ratio was ${percentage(latest.efficiencyRatio, locale)} and the period-end equity return proxy was ${percentage(latest.roeProxy, locale)}; the latter is not average-equity ROE.`,
+            `Tangible book value was ${compactMoney(latest.tangibleBookValue, currency, locale)} and capital returns were ${compactMoney(latest.capitalReturns, currency, locale)}; no industrial-company FCF template is used.`,
+          ]
+      : locale === "zh"
       ? [
           `${companyName} 最新年度净利润为 ${compactMoney(latest.netIncome, currency, locale)}，经营现金流为 ${compactMoney(latest.operatingCashFlow, currency, locale)}。`,
           latest.freeCashFlowProxy === null
@@ -824,6 +931,18 @@ async function buildPeerComparison(
   dataVersion: string,
   retrievedAt: string,
 ): Promise<PeerComparisonItem[]> {
+  const metricSpecs =
+    pack.id === "banks"
+      ? [
+          { id: "loanGrowth", label: locale === "zh" ? "贷款增长" : "Loan growth" },
+          { id: "roeProxy", label: locale === "zh" ? "期末权益回报代理" : "Period-end equity return proxy" },
+          { id: "efficiencyRatio", label: locale === "zh" ? "效率比率" : "Efficiency ratio" },
+        ]
+      : [
+          { id: "revenueGrowth", label: locale === "zh" ? "营收增长" : "Revenue growth" },
+          { id: "netMargin", label: locale === "zh" ? "净利率" : "Net margin" },
+          { id: "freeCashFlowMargin", label: locale === "zh" ? "FCF 利润率" : "FCF margin" },
+        ];
   return Promise.all(
     pack.peers.map(async (peer) => {
       try {
@@ -842,6 +961,16 @@ async function buildPeerComparison(
         }
         const { periods } = financialPeriodsFromRegistry(peerRegistry, peer.ticker);
         const latest = periods.at(-1);
+        const metrics = metricSpecs.map((spec) => {
+          const value = latest?.[spec.id as keyof FinancialPeriod];
+          const canonicalKey = latest?.metricKeys[spec.id] ?? "";
+          return {
+            id: spec.id,
+            label: spec.label,
+            value: typeof value === "number" ? value : null,
+            canonicalKey,
+          };
+        });
         return {
           ticker: peer.ticker,
           name: peer.name,
@@ -850,17 +979,12 @@ async function buildPeerComparison(
           netMargin: latest?.netMargin ?? null,
           freeCashFlowMargin: latest?.freeCashFlowMargin ?? null,
           periodEnd: latest?.periodEnd ?? null,
-          metricReferences: {
-            ...(latest?.metricKeys.revenueGrowth
-              ? { revenueGrowth: latest.metricKeys.revenueGrowth }
-              : {}),
-            ...(latest?.metricKeys.netMargin
-              ? { netMargin: latest.metricKeys.netMargin }
-              : {}),
-            ...(latest?.metricKeys.freeCashFlowMargin
-              ? { freeCashFlowMargin: latest.metricKeys.freeCashFlowMargin }
-              : {}),
-          },
+          metrics,
+          metricReferences: Object.fromEntries(
+            metrics
+              .filter((metric) => metric.canonicalKey)
+              .map((metric) => [metric.id, metric.canonicalKey]),
+          ),
         };
       } catch {
         return {
@@ -871,6 +995,11 @@ async function buildPeerComparison(
           netMargin: null,
           freeCashFlowMargin: null,
           periodEnd: null,
+          metrics: metricSpecs.map((spec) => ({
+            ...spec,
+            value: null,
+            canonicalKey: "",
+          })),
           metricReferences: {},
         };
       }
@@ -908,11 +1037,12 @@ function selectionFromPayload(payload: ResearchPayload): ResearchSelection | nul
   const sector = payload.sector ?? "energy";
   const subindustry = payload.subindustry ?? "integrated-oil-gas";
   if (!["US", "Europe", "Global"].includes(market)) return null;
-  if (!["energy", "technology"].includes(sector)) return null;
-  if (!["integrated-oil-gas", "semiconductors"].includes(subindustry)) return null;
+  if (!["energy", "technology", "financials"].includes(sector)) return null;
+  if (!["integrated-oil-gas", "semiconductors", "banks"].includes(subindustry)) return null;
   if (
     (sector === "energy" && subindustry !== "integrated-oil-gas") ||
-    (sector === "technology" && subindustry !== "semiconductors")
+    (sector === "technology" && subindustry !== "semiconductors") ||
+    (sector === "financials" && subindustry !== "banks")
   ) return null;
   return {
     market,
@@ -960,6 +1090,7 @@ async function buildReport(
     sector: pack.id,
     dataVersion,
     retrievedAt: companyDataRetrievedAt,
+    issuerReportedMetrics: sourceSnapshot?.issuerReportedMetrics,
   });
   const metricAudit = await shellMetricAudit(record, facts, Boolean(sourceSnapshot));
   if (metricAudit) {
@@ -1036,7 +1167,9 @@ async function buildReport(
     metricRegistry,
     record.ticker,
     latest,
-    ["revenue", "net-income", "operating-cash-flow", "fcf"],
+    pack.id === "banks"
+      ? ["revenue", "net-interest-income", "net-interest-margin", "deposits", "loans", "cet1-ratio", "liquidity-coverage-ratio", "tangible-book-value"]
+      : ["revenue", "net-income", "operating-cash-flow", "fcf"],
   ).map((metric) => metric.canonical_key);
   const filingWatchlist: CatalystPoint[] = [
     ...(latestAnnual
@@ -1068,13 +1201,17 @@ async function buildReport(
     latest,
     pack.id === "integrated-oil-gas"
       ? ["production", "lng", "refining-margin", "major-projects"]
-      : ["revenue-growth", "gross-margin", "inventory"],
+      : pack.id === "banks"
+        ? ["net-interest-income", "net-interest-margin", "deposits", "loan-growth", "efficiency-ratio"]
+        : ["revenue-growth", "gross-margin", "inventory"],
   ).map((metric) => metric.canonical_key);
   const financialCatalystReferences = selectedCanonicalMetrics(
     metricRegistry,
     record.ticker,
     latest,
-    ["cash-capex", "fcf", "net-debt", "dividends", "share-buybacks"],
+    pack.id === "banks"
+      ? ["credit-loss-provision", "allowance-coverage", "cet1-ratio", "tangible-book-value", "capital-returns"]
+      : ["cash-capex", "fcf", "net-debt", "dividends", "share-buybacks"],
   ).map((metric) => metric.canonical_key);
   const regulatoryCatalystReferences = selectedCanonicalMetrics(
     metricRegistry,
@@ -1082,7 +1219,9 @@ async function buildReport(
     latest,
     pack.id === "integrated-oil-gas"
       ? ["major-projects", "cash-capex"]
-      : ["revenue", "inventory"],
+      : pack.id === "banks"
+        ? ["credit-loss-provision", "cet1-ratio", "liquidity-coverage-ratio", "tangible-book-value"]
+        : ["revenue", "inventory"],
   ).map((metric) => metric.canonical_key);
   const catalysts = {
     operating: catalystPoints(pack.catalysts.operating, locale, operatingCatalystReferences),
@@ -1101,7 +1240,10 @@ async function buildReport(
     (latest.cashCapex === null || latest.operatingCashFlow === null) &&
     pack.valuation.fallback !== undefined;
   const effectiveValuation = useValuationFallback ? pack.valuation.fallback! : pack.valuation;
-  const valuationFormula = `${effectiveValuation.formula[locale]}; ${strictFcfFormula}.`;
+  const valuationFormula =
+    pack.id === "banks"
+      ? effectiveValuation.formula[locale]
+      : `${effectiveValuation.formula[locale]}; ${strictFcfFormula}.`;
   const displayedOutlook = selection.options.sectorOutlook
     ? sectorOutlook
     : { ...sectorOutlook, claims: [] };
@@ -1109,7 +1251,12 @@ async function buildReport(
     ? ["cash-capex", "fcf", "net-debt"].filter(
         (id) => !metricAudit.results.find((result) => result.metricId === id)?.found,
       )
-    : [
+    : pack.id === "banks"
+      ? [
+          ...(latest.tangibleBookValue === null ? ["tangible-book-value"] : []),
+          ...(latest.creditLossProvision === null ? ["credit-loss-provision"] : []),
+        ]
+      : [
         ...(latest.cashCapex === null ? ["cash-capex"] : []),
         ...(latest.freeCashFlowProxy === null ? ["fcf"] : []),
         ...(pack.valuation.metric === "freeCashFlow" && latest.netDebt === null
@@ -1125,7 +1272,9 @@ async function buildReport(
       module: `trend-chart:${period.periodEnd}`,
       keys: [
         period.metricKeys.revenue,
-        period.metricKeys.operatingCashFlow,
+        pack.id === "banks"
+          ? period.metricKeys.netInterestIncome
+          : period.metricKeys.operatingCashFlow,
       ].filter(Boolean),
     })),
     { module: "dashboard", keys: narrative.dashboard.map((metric) => metric.metricKey) },
@@ -1135,7 +1284,9 @@ async function buildReport(
         metricRegistry,
         record.ticker,
         latest,
-        ["net-income", "operating-cash-flow", "cash-capex", "fcf", "cash-conversion", "net-debt"],
+        pack.id === "banks"
+          ? ["net-interest-income", "net-interest-margin", "credit-loss-provision", "allowance-coverage", "cet1-ratio", "liquidity-coverage-ratio", "efficiency-ratio", "return-on-common-equity", "tangible-book-value", "capital-returns"]
+          : ["net-income", "operating-cash-flow", "cash-capex", "fcf", "cash-conversion", "net-debt"],
       ).map((metric) => metric.canonical_key),
     },
     ...narrative.thesis.map((item) => ({ module: "investment-thesis", keys: item.metricReferences })),
@@ -1229,8 +1380,8 @@ async function buildReport(
         ...(criticalMetricIds.length
           ? [
               locale === "zh"
-                ? `影响 FCF 或估值的关键输入尚未可用：${criticalMetricIds.join(", ")}。`
-                : `Critical FCF or valuation inputs remain unavailable: ${criticalMetricIds.join(", ")}.`,
+                ? `${pack.id === "banks" ? "影响银行盈利或估值" : "影响 FCF 或估值"}的关键输入尚未可用：${criticalMetricIds.join(", ")}。`
+                : `Critical ${pack.id === "banks" ? "bank earnings or valuation" : "FCF or valuation"} inputs remain unavailable: ${criticalMetricIds.join(", ")}.`,
             ]
           : []),
       ],
@@ -1259,10 +1410,14 @@ async function buildReport(
       !selection.options.valuation
         ? locale === "zh" ? "本次未选择估值模块。" : "Valuation was not selected for this run."
         : locale === "zh"
-          ? `采用${effectiveValuation.method.zh}，不使用未注明日期的实时股价，不输出评级或目标价。${useValuationFallback ? "由于现金资本开支不可取得，经营现金流仅作为估值指标，未被表述为 FCF。" : ""}倍数为分析假设，企业价值用于敏感性而非价格预测。`
-          : `Uses ${effectiveValuation.method.en} without an undated real-time share price, rating, or price target. ${useValuationFallback ? "Because cash capex is unavailable, operating cash flow is used only as the valuation metric and is not presented as FCF. " : ""}Multiples are analyst assumptions and enterprise values are sensitivities, not forecasts.`,
+          ? `采用${effectiveValuation.method.zh}，不使用未注明日期的实时股价，不输出评级或目标价。${useValuationFallback ? "由于现金资本开支不可取得，经营现金流仅作为估值指标，未被表述为 FCF。" : ""}倍数为分析假设，${pack.id === "banks" ? "股权价值" : "企业价值"}用于敏感性而非价格预测。`
+          : `Uses ${effectiveValuation.method.en} without an undated real-time share price, rating, or price target. ${useValuationFallback ? "Because cash capex is unavailable, operating cash flow is used only as the valuation metric and is not presented as FCF. " : ""}Multiples are analyst assumptions and ${pack.id === "banks" ? "equity values" : "enterprise values"} are sensitivities, not forecasts.`,
     cashFlowProxyFormula:
-      latest.cashCapex === null || latest.operatingCashFlow === null
+      pack.id === "banks"
+        ? locale === "zh"
+          ? "银行盈利桥接使用净利息收入、信用损失拨备和非利息费用；不使用工业公司 FCF。"
+          : "The bank earnings bridge uses net interest income, credit-loss provision, and noninterest expense; no industrial-company FCF is used."
+        : latest.cashCapex === null || latest.operatingCashFlow === null
         ? COPY[locale].unableFcf
         : strictFcfFormula,
     valuationFormula,
@@ -1314,9 +1469,13 @@ async function buildReport(
         ? ["Insufficient recent sector research available for 2025–2026."]
         : []),
       locale === "zh"
-        ? "标准化 SEC XBRL 不足以稳定提取全部分部、产量、实现价格、终端市场、客户集中度、市场份额和发行人自定义 KPI；缺失值保持为未披露。"
-        : "Standardized SEC XBRL does not consistently expose every segment, production, realization, end-market, customer-concentration, market-share, or issuer-defined KPI; missing values remain not disclosed.",
-      latest.cashCapex === null || latest.operatingCashFlow === null
+        ? "标准化 SEC XBRL 不足以稳定提取全部发行人自定义分部和 KPI，包括净息差、CET1、HQLA、利用率、客户集中度和市场份额；缺失值保持为未提取。"
+        : "Standardized SEC XBRL does not consistently expose every issuer-defined segment and KPI, including NIM, CET1, HQLA, utilization, customer concentration, and market share; missing values remain not yet extracted.",
+      pack.id === "banks"
+        ? locale === "zh"
+          ? "银行不使用工业公司 FCF；ROE 为净利润除以期末权益的透明代理，不等于平均权益 ROE。"
+          : "Banks do not use industrial-company FCF; the ROE measure is a transparent net-income / period-end-equity proxy, not average-equity ROE."
+        : latest.cashCapex === null || latest.operatingCashFlow === null
         ? COPY[locale].unableFcf
         : locale === "zh"
           ? "FCF 严格按经营现金流减现金资本开支计算，可能不同于发行人自定义口径。"
@@ -1328,8 +1487,8 @@ async function buildReport(
         ? "行业证据仅包含发布日期在 2025-01-01 至研究日之间、可公开访问且通过去重和相关性筛选的来源。"
         : "Sector evidence includes only accessible, deduplicated, relevant sources published from 2025-01-01 through the research date.",
       locale === "zh"
-        ? "未使用实时股价，因此不提供评级、目标价或股权价值。"
-        : "No real-time share price is used, so the report does not provide a rating, price target, or equity value.",
+        ? "未使用实时股价，因此不提供评级、目标价或每股价值；情景价值仅为透明敏感度。"
+        : "No real-time share price is used, so the report does not provide a rating, price target, or per-share value; scenario values are transparent sensitivities only.",
     ],
   };
 }
@@ -1381,6 +1540,7 @@ export async function POST(request: Request) {
     const fixtureByTicker = {
       SHEL: shellSourceSnapshot,
       NVDA: nvdaSourceSnapshot,
+      JPM: jpmSourceSnapshot,
     } as const;
     const selectedFixture =
       payload.fixture && localFixtureAllowed
@@ -1393,6 +1553,10 @@ export async function POST(request: Request) {
           submissions:
             selectedFixture.submissions as unknown as Submissions,
           retrievedAt: "2026-07-17T00:00:00.000Z",
+          issuerReportedMetrics:
+            "issuerReportedMetrics" in selectedFixture
+              ? selectedFixture.issuerReportedMetrics as IssuerReportedMetric[]
+              : undefined,
         }
       : undefined;
     const report = await buildReport(record, selection, locale, sourceSnapshot);

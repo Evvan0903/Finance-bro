@@ -73,6 +73,42 @@ const METHODS: SectorMethod[] = [
       { zh: "用产品延期、客户集中和出口限制定义论点破坏条件。", en: "Define thesis breakers around product delay, concentration, and export controls." },
     ],
   },
+  {
+    id: "banks-earnings-bridge",
+    sector: "financials",
+    subindustry: "banks",
+    name: { zh: "银行盈利桥接", en: "Bank earnings bridge" },
+    purpose: { zh: "把净利息收入、费用收入、信用成本和运营费用分开。", en: "Separate net interest income, fee revenue, credit costs, and operating expense." },
+    steps: [
+      { zh: "桥接生息资产、收益率、融资成本与净息差。", en: "Bridge earning assets, yields, funding cost, and net interest margin." },
+      { zh: "按贷款组合分析增长、拖欠、净核销和拨备。", en: "Analyze growth, delinquencies, net charge-offs, and provisions by loan portfolio." },
+      { zh: "用效率比率和拨备前利润判断经营杠杆。", en: "Use the efficiency ratio and pre-provision earnings to assess operating leverage." },
+    ],
+  },
+  {
+    id: "banks-capital-waterfall",
+    sector: "financials",
+    subindustry: "banks",
+    name: { zh: "资本与流动性瀑布", en: "Capital and liquidity waterfall" },
+    purpose: { zh: "判断股息和回购是否受盈利、RWA、压力损失和监管缓冲覆盖。", en: "Test whether earnings, RWA, stress losses, and regulatory buffers cover dividends and buybacks." },
+    steps: [
+      { zh: "从期初 CET1 加留存收益并扣 RWA 增长和资本扣减。", en: "Bridge beginning CET1 through retained earnings, RWA growth, and capital deductions." },
+      { zh: "比较流动资产、存款稳定性、批发融资和未实现损失。", en: "Compare liquid assets, deposit stability, wholesale funding, and unrealized losses." },
+      { zh: "将压力期最低 CET1 作为分配约束。", en: "Use trough stressed CET1 as the distribution constraint." },
+    ],
+  },
+  {
+    id: "banks-book-value",
+    sector: "financials",
+    subindustry: "banks",
+    name: { zh: "有形账面价值估值", en: "Tangible-book valuation" },
+    purpose: { zh: "用盈利能力、资本质量和信用周期解释 P/TBV 差异。", en: "Explain P/TBV differences through profitability, capital quality, and the credit cycle." },
+    steps: [
+      { zh: "统一普通股权益、商誉和无形资产口径。", en: "Normalize common equity, goodwill, and intangible-asset definitions." },
+      { zh: "把 ROE、资本成本和有形账面增长与 P/TBV 情景连接。", en: "Connect ROE, cost of capital, and tangible-book growth to P/TBV scenarios." },
+      { zh: "以信用损失和监管资本情景定义下行。", en: "Define downside through credit-loss and regulatory-capital scenarios." },
+    ],
+  },
 ];
 
 export function getSectorMethods(subindustry: SupportedSubindustry) {

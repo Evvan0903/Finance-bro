@@ -22,6 +22,7 @@ const SCENARIO_DEFINITIONS = {
   projectedFreeCashFlow: "scenario-projected-free-cash-flow",
   valuationMetric: "scenario-valuation-metric",
   enterpriseValue: "scenario-model-implied-enterprise-value",
+  equityValue: "scenario-model-implied-equity-value",
 } as const;
 
 function clamp(value: number, minimum: number, maximum: number) {
@@ -139,6 +140,115 @@ function calculate(input: {
   });
 }
 
+function buildBankScenarios(input: {
+  registry: MetricRegistry;
+  companyId: string;
+  latest: FinancialPeriod;
+  pack: SectorPack;
+  locale: ResearchLocale;
+}) {
+  const tangibleBook = optionalMetric(
+    input.registry,
+    input.companyId,
+    "tangible-book-value",
+    input.latest.periodEnd,
+    FINANCIAL_DEFINITION_IDS.tangibleBookValue,
+  );
+  if (!tangibleBook) return [];
+  const nextYear = Number(input.latest.periodEnd.slice(0, 4)) + 1;
+  const forecastEnd = `${nextYear}-12-31`;
+  const scenarioContext = {
+    registry: input.registry,
+    companyId: input.companyId,
+    sector: input.pack.id,
+  };
+  const assumptions = [
+    { name: "Bear" as const, growth: -0.05, multiple: input.pack.valuation.multiples.bear },
+    { name: "Base" as const, growth: 0.03, multiple: input.pack.valuation.multiples.base },
+    { name: "Bull" as const, growth: 0.08, multiple: input.pack.valuation.multiples.bull },
+  ];
+  return assumptions.map((assumption): Scenario => {
+    const period = `FY${nextYear}E-${assumption.name}`;
+    const tangibleBookGrowth = registerAssumption({
+      ...scenarioContext,
+      scenario: assumption.name,
+      period,
+      periodEnd: forecastEnd,
+      metricId: "scenario-tangible-book-growth",
+      definitionId: "scenario-tangible-book-growth-assumption",
+      value: assumption.growth,
+      unit: "ratio",
+      currency: null,
+      formula: "Explicit tangible-book growth assumption constrained by earnings and capital risk",
+      inputs: [tangibleBook],
+    });
+    const valuationMultiple = registerAssumption({
+      ...scenarioContext,
+      scenario: assumption.name,
+      period,
+      periodEnd: forecastEnd,
+      metricId: "scenario-valuation-multiple",
+      definitionId: SCENARIO_DEFINITIONS.valuationMultiple,
+      value: assumption.multiple,
+      unit: input.pack.valuation.multipleLabel,
+      currency: null,
+      formula: `Explicit ${input.pack.valuation.multipleLabel} scenario multiple`,
+      inputs: [tangibleBook],
+    });
+    const projectedTangibleBook = calculate({
+      ...scenarioContext,
+      scenario: assumption.name,
+      period,
+      periodEnd: forecastEnd,
+      metricId: "scenario-tangible-book-value",
+      definitionId: SCENARIO_DEFINITIONS.valuationMetric,
+      formulaId: "growth-projection",
+      formula: "latest_tangible_book_value * (1 + scenario_tangible_book_growth)",
+      inputs: [tangibleBook, tangibleBookGrowth],
+      unit: tangibleBook.unit,
+      currency: tangibleBook.currency,
+    });
+    const equityValue = calculate({
+      ...scenarioContext,
+      scenario: assumption.name,
+      period,
+      periodEnd: forecastEnd,
+      metricId: "model-implied-equity-value",
+      definitionId: SCENARIO_DEFINITIONS.equityValue,
+      formulaId: "scale",
+      formula: "scenario_tangible_book_value * assumed_price_to_tangible_book_multiple",
+      inputs: [projectedTangibleBook, valuationMultiple],
+      unit: tangibleBook.unit,
+      currency: tangibleBook.currency,
+    });
+    return {
+      name: assumption.name,
+      revenueGrowth: tangibleBookGrowth.value,
+      netMargin: null,
+      operatingCashFlowMargin: null,
+      capexFactor: null,
+      projectedRevenue: null,
+      projectedNetIncome: null,
+      projectedFreeCashFlow: null,
+      enterpriseValueMultiple: valuationMultiple.value!,
+      valuationMethod: input.pack.valuation.method[input.locale],
+      valuationStartingPoint: tangibleBook.value,
+      valuationMetric: projectedTangibleBook.value,
+      multipleLabel: input.pack.valuation.multipleLabel,
+      impliedValueLabel:
+        input.locale === "zh" ? "模型隐含股权价值" : "Model-implied equity value",
+      modelImpliedEnterpriseValue: equityValue.value,
+      metricReferences: {
+        revenueGrowth: tangibleBookGrowth.canonical_key,
+        enterpriseValueMultiple: valuationMultiple.canonical_key,
+        valuationStartingPoint: tangibleBook.canonical_key,
+        valuationMetric: projectedTangibleBook.canonical_key,
+        modelImpliedEnterpriseValue: equityValue.canonical_key,
+      },
+    };
+  });
+}
+
 export function buildCanonicalScenarios(input: {
   registry: MetricRegistry;
   companyId: string;
@@ -148,6 +258,12 @@ export function buildCanonicalScenarios(input: {
 }): Scenario[] {
   const latest = input.periods.at(-1);
   if (!latest) return [];
+  if (input.pack.id === "banks") {
+    return buildBankScenarios({
+      ...input,
+      latest,
+    });
+  }
   const latestRevenue = optionalMetric(
     input.registry,
     input.companyId,
@@ -431,6 +547,8 @@ export function buildCanonicalScenarios(input: {
       valuationStartingPoint: valuationStartingMetric?.value ?? null,
       valuationMetric: valuationMetric?.value ?? null,
       multipleLabel: framework.multipleLabel,
+      impliedValueLabel:
+        input.locale === "zh" ? "模型隐含企业价值" : "Model-implied enterprise value",
       modelImpliedEnterpriseValue: enterpriseValue?.value ?? null,
       metricReferences: Object.fromEntries(
         [
