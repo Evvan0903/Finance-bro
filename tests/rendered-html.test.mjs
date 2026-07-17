@@ -138,8 +138,9 @@ test("returns distinct screened outlooks without regenerating company data", asy
     { market: "Europe", subindustry: "integrated-oil-gas", locale: "en", refresh: true },
     { market: "US", subindustry: "semiconductors", locale: "en", refresh: true },
     { market: "US", subindustry: "banks", locale: "en", refresh: true },
+    { market: "US", subindustry: "biopharma", locale: "en", refresh: true },
   ];
-  const [energyResponse, semiResponse, bankResponse] = await Promise.all(
+  const [energyResponse, semiResponse, bankResponse, biopharmaResponse] = await Promise.all(
     requests.map((body) =>
       builtWorker.fetch(
         new Request("http://localhost/api/sector-outlook", {
@@ -155,15 +156,19 @@ test("returns distinct screened outlooks without regenerating company data", asy
   assert.equal(energyResponse.status, 200);
   assert.equal(semiResponse.status, 200);
   assert.equal(bankResponse.status, 200);
+  assert.equal(biopharmaResponse.status, 200);
   const energy = (await energyResponse.json()).outlook;
   const semis = (await semiResponse.json()).outlook;
   const banks = (await bankResponse.json()).outlook;
+  const biopharma = (await biopharmaResponse.json()).outlook;
   assert.equal(energy.subindustry, "integrated-oil-gas");
   assert.equal(semis.subindustry, "semiconductors");
   assert.equal(banks.subindustry, "banks");
+  assert.equal(biopharma.subindustry, "biopharma");
   assert.ok(energy.claims.length >= 2);
   assert.ok(semis.claims.length >= 2);
   assert.ok(banks.claims.length >= 2);
+  assert.ok(biopharma.claims.length >= 2);
   assert.ok(energy.claims.every((claim) =>
     claim.publicationDate >= "2025-01-01" && claim.publisher && claim.title && claim.url
   ));
@@ -173,12 +178,17 @@ test("returns distinct screened outlooks without regenerating company data", asy
   assert.ok(banks.claims.every((claim) =>
     claim.publicationDate >= "2025-01-01" && claim.publisher && claim.title && claim.url
   ));
+  assert.ok(biopharma.claims.every((claim) =>
+    claim.publicationDate >= "2025-01-01" && claim.publisher && claim.title && claim.url
+  ));
   assert.ok(energy.learningAudit.acceptedSources >= 2);
   assert.ok(semis.learningAudit.acceptedSources >= 2);
   assert.ok(banks.learningAudit.acceptedSources >= 2);
+  assert.ok(biopharma.learningAudit.acceptedSources >= 2);
   assert.equal(energy.learningAudit.publicationWindowStart, "2025-01-01");
   assert.equal(semis.learningAudit.publicationWindowStart, "2025-01-01");
   assert.equal(banks.learningAudit.publicationWindowStart, "2025-01-01");
+  assert.equal(biopharma.learningAudit.publicationWindowStart, "2025-01-01");
   assert.notDeepEqual(
     energy.claims.map((claim) => claim.publisher),
     semis.claims.map((claim) => claim.publisher),
@@ -246,11 +256,21 @@ test("enforces strict FCF and sector-specific analyst packs", async () => {
     "Efficiency ratio",
     "Tangible book value",
     "Capital returns",
+    "Largest-product revenue",
+    "Pipeline stage",
+    "Clinical milestones",
+    "Regulatory dates",
+    "R&D expense",
+    "Cash runway",
+    "compound-patent expiry",
+    "Risk-adjusted pipeline value",
   ]) assert.match(packs, new RegExp(required.replace("/", "\\/"), "i"));
   assert.match(packs, /EV \/ FCF/);
   assert.match(packs, /EV \/ Revenue/);
   assert.match(packs, /P \/ TBV/);
+  assert.match(packs, /no unverified rNPV is included/);
   assert.match(packs, /Do not apply industrial-company revenue, capex, or FCF templates to banks/);
+  assert.match(packs, /Do not calculate risk-adjusted pipeline value from insufficient public inputs/);
   assert.match(packs, /XOM/);
   assert.match(packs, /AMD/);
 
@@ -1066,6 +1086,166 @@ test("passes the Banks and JPM acceptance gate without an industrial FCF templat
   assert.equal(comparison.passed, true);
   assert.equal(comparison.mismatchedObjects.length, 0);
   assert.equal(comparison.missingObjects.length, 0);
+  assert.equal(
+    comparison.matchedObjects.length,
+    report.metricRegistry.metrics.length,
+  );
+});
+
+test("passes the Biopharma and LLY acceptance gate without fabricated pipeline precision", async () => {
+  const builtWorker = await worker();
+  const requestBody = {
+    company: "LLY",
+    locale: "en",
+    market: "US",
+    sector: "healthcare",
+    subindustry: "biopharma",
+    fixture: true,
+    options: {
+      sectorOutlook: true,
+      peerComparison: false,
+      valuation: true,
+      dueDiligence: true,
+      pdfExport: true,
+    },
+  };
+  const run = async () => {
+    const response = await builtWorker.fetch(
+      new Request("http://localhost/api/research", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(requestBody),
+      }),
+      environment,
+      context,
+    );
+    assert.equal(response.status, 200);
+    return response.json();
+  };
+  const [first, second] = await Promise.all([run(), run()]);
+  const report = first.report;
+  const latest = report.periods.at(-1);
+  const registry = new Map(
+    report.metricRegistry.metrics.map((metric) => [metric.canonical_key, metric]),
+  );
+  const metricByDefinition = (metricId, definitionId) =>
+    report.metricRegistry.metrics.find(
+      (metric) =>
+        metric.metric_id === metricId &&
+        metric.definition_id === definitionId &&
+        metric.period_end === "2025-12-31",
+    );
+
+  assert.equal(first.consistencyAudit.passed, true);
+  assert.equal(first.consistencyAudit.issues.length, 0);
+  assert.equal(latest.periodEnd, "2025-12-31");
+  assert.equal(latest.revenue, 65_179_000_000);
+  assert.equal(latest.grossProfit, 65_179_000_000 - 11_052_000_000);
+  assert.equal(latest.researchAndDevelopment, 13_337_000_000);
+  assert.equal(latest.grossMargin, latest.grossProfit / latest.revenue);
+  assert.equal(latest.cashCapex, null);
+  assert.equal(latest.freeCashFlowProxy, null);
+
+  const mounjaro = metricByDefinition(
+    "product-revenue",
+    "issuer-reported-mounjaro-total-revenue",
+  );
+  const zepbound = metricByDefinition(
+    "product-revenue",
+    "issuer-reported-zepbound-total-revenue",
+  );
+  const concentration = metricByDefinition(
+    "product-concentration",
+    "issuer-reported-mounjaro-zepbound-share-of-total-revenue",
+  );
+  const patentExpiry = metricByDefinition(
+    "patent-expiry-year",
+    "issuer-estimated-us-compound-patent-expiry-mounjaro-zepbound",
+  );
+  assert.equal(mounjaro.value, 22_965_000_000);
+  assert.equal(zepbound.value, 13_542_000_000);
+  assert.equal(concentration.value, 0.56);
+  assert.equal(concentration.raw_value, "56 percent");
+  assert.equal(patentExpiry.value, 2036);
+  assert.equal(patentExpiry.unit, "year");
+  for (const metric of [mounjaro, zepbound, concentration, patentExpiry]) {
+    assert.equal(metric.status, "Reported");
+    assert.match(metric.source_url, /sec\.gov\/Archives/);
+  }
+
+  const kpis = new Map(report.sectorKpis.map((item) => [item.id, item]));
+  for (const id of [
+    "product-revenue",
+    "product-concentration",
+    "research-and-development",
+    "gross-margin",
+    "patent-expiry",
+  ]) assert.ok(kpis.get(id)?.canonicalKey, `missing LLY canonical KPI: ${id}`);
+  for (const id of [
+    "pipeline-stage",
+    "clinical-milestones",
+    "regulatory-dates",
+    "cash-runway",
+    "risk-adjusted-pipeline-value",
+  ]) assert.equal(kpis.has(id), false, `LLY must hide unresolved KPI: ${id}`);
+
+  assert.equal(report.dataCoverage.limited, false);
+  assert.deepEqual(report.dataCoverage.criticalMetricIds, []);
+  assert.match(report.dataCoverage.notes.join(" "), /no risk-adjusted pipeline value/i);
+  assert.match(report.valuationFormula, /no unverified rNPV is included/i);
+  assert.match(report.valuationAssessment, /exclude unverified risk-adjusted pipeline value/i);
+  assert.ok(
+    report.metricRegistry.metrics.every(
+      (metric) => metric.metric_id !== "risk-adjusted-pipeline-value",
+    ),
+  );
+  assert.ok(
+    report.scenarios.every(
+      (scenario) =>
+        scenario.projectedFreeCashFlow === null &&
+        scenario.valuationStartingPoint === latest.revenue &&
+        scenario.metricReferences.valuationStartingPoint === latest.metricKeys.revenue &&
+        scenario.valuationMetric === scenario.projectedRevenue &&
+        scenario.modelImpliedEnterpriseValue ===
+          scenario.valuationMetric * scenario.enterpriseValueMultiple,
+    ),
+  );
+  assert.deepEqual(
+    report.scenarios.map((scenario) => scenario.enterpriseValueMultiple),
+    [4, 7, 10],
+  );
+
+  const referencedIds = new Set(
+    [
+      ...report.driverExposure.flatMap((item) => item.metricReferences),
+      ...report.investmentDebates.flatMap((item) => item.metricReferences),
+      ...report.risks.flatMap((item) => item.metricReferences),
+    ].map((key) => registry.get(key)?.metric_id),
+  );
+  for (const id of [
+    "product-revenue",
+    "product-concentration",
+    "research-and-development",
+    "gross-margin",
+    "patent-expiry-year",
+  ]) assert.ok(referencedIds.has(id), `LLY cross-report references missing ${id}`);
+  assert.ok(
+    report.sectorOutlook.claims.every(
+      (claim) => claim.publisher && claim.publicationDate >= "2025-01-01",
+    ),
+  );
+  assert.equal(report.sectorPack.researchQuestions.length, 5);
+  assert.equal(report.sectorPack.reportGuidance.length, 3);
+
+  const { compareResearchReports } = await consistencyAuditorModule();
+  const comparison = compareResearchReports(first.report, second.report);
+  assert.equal(comparison.passed, true);
+  assert.equal(comparison.mismatchedObjects.length, 0);
+  assert.equal(comparison.missingObjects.length, 0);
+  assert.equal(comparison.changedDefinitions.length, 0);
+  assert.equal(comparison.changedFormulas.length, 0);
+  assert.equal(comparison.changedSources.length, 0);
+  assert.equal(comparison.changedOutputs.length, 0);
   assert.equal(
     comparison.matchedObjects.length,
     report.metricRegistry.metrics.length,

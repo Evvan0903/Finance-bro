@@ -1,6 +1,12 @@
 import { readFile, writeFile } from "node:fs/promises";
 
-const [factsPath, submissionsPath, outputPath, publicationCutoff] = process.argv.slice(2);
+const [
+  factsPath,
+  submissionsPath,
+  outputPath,
+  publicationCutoff,
+  issuerMetricsPath,
+] = process.argv.slice(2);
 if (!factsPath || !submissionsPath || !outputPath) {
   throw new Error(
     "Usage: node scripts/create-company-fixture.mjs <companyfacts.json> <submissions.json> <output.json> [publication-cutoff]",
@@ -12,6 +18,9 @@ const [companyFacts, submissions] = await Promise.all(
     JSON.parse(await readFile(path, "utf8"))
   ),
 );
+const issuerReportedMetrics = issuerMetricsPath
+  ? JSON.parse(await readFile(issuerMetricsPath, "utf8"))
+  : [];
 
 const concepts = new Set([
   "RevenueFromContractWithCustomerExcludingAssessedTax",
@@ -20,8 +29,11 @@ const concepts = new Set([
   "Revenue",
   "RevenuesNetOfInterestExpense",
   "GrossProfit",
+  "CostOfGoodsAndServicesSold",
+  "CostOfGoodsSold",
   "OperatingIncomeLoss",
   "ResearchAndDevelopmentExpense",
+  "ResearchAndDevelopmentExpenseExcludingAcquiredInProcessCost",
   "InterestIncomeExpenseNet",
   "NoninterestExpense",
   "ProvisionForLoanLeaseAndOtherLosses",
@@ -136,6 +148,7 @@ const fixture = {
       `https://data.sec.gov/submissions/CIK${String(companyFacts.cik).padStart(10, "0")}.json`,
     originalPublicationCutoff: cutoff,
   },
+  ...(issuerReportedMetrics.length ? { issuerReportedMetrics } : {}),
   companyFacts: {
     cik: companyFacts.cik,
     entityName: companyFacts.entityName,

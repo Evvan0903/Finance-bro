@@ -109,6 +109,54 @@ const METHODS: SectorMethod[] = [
       { zh: "以信用损失和监管资本情景定义下行。", en: "Define downside through credit-loss and regulatory-capital scenarios." },
     ],
   },
+  {
+    id: "biopharma-commercial-bridge",
+    sector: "healthcare",
+    subindustry: "biopharma",
+    name: { zh: "产品商业化桥接", en: "Product commercialization bridge" },
+    purpose: { zh: "把总营收增长拆分为产品、销量、价格、地区和合作收入。", en: "Decompose total growth by product, volume, price, geography, and collaboration revenue." },
+    steps: [
+      { zh: "从年报产品表重建主要产品收入。", en: "Rebuild major-product revenue from the annual-filing product table." },
+      { zh: "计算产品与治疗领域集中度，并保留净收入定义。", en: "Calculate product and therapeutic-area concentration while preserving net-revenue definitions." },
+      { zh: "桥接销量、实现价格、渠道、报销和供应约束。", en: "Bridge volume, realized price, channel, reimbursement, and supply constraints." },
+    ],
+  },
+  {
+    id: "biopharma-pipeline-gates",
+    sector: "healthcare",
+    subindustry: "biopharma",
+    name: { zh: "管线阶段闸门", en: "Pipeline stage gates" },
+    purpose: { zh: "把临床阶段、里程碑、监管状态和概率假设分开。", en: "Separate clinical stage, milestone, regulatory status, and probability assumptions." },
+    steps: [
+      { zh: "按候选药和适应症记录阶段、试验设计、状态和来源日期。", en: "Record stage, trial design, status, and source date by candidate and indication." },
+      { zh: "只把监管机构确认的批准或提交状态作为事实。", en: "Treat only regulator-confirmed approval or submission status as fact." },
+      { zh: "成功概率、时间、峰值销售和利润率均作为可见假设。", en: "Keep success probability, timing, peak sales, and margin as visible assumptions." },
+    ],
+  },
+  {
+    id: "biopharma-rd-quality",
+    sector: "healthcare",
+    subindustry: "biopharma",
+    name: { zh: "研发质量与周期", en: "R&D quality and cycle" },
+    purpose: { zh: "判断研发支出是否转化为高质量里程碑和组合更新。", en: "Assess whether R&D spending converts into high-quality milestones and portfolio renewal." },
+    steps: [
+      { zh: "比较研发支出、营收、毛利和经营现金流趋势。", en: "Compare R&D expense with revenue, gross profit, and operating cash flow trends." },
+      { zh: "跟踪分期成功、入组、项目间隔和终止。", en: "Track phase success, enrollment, inter-trial intervals, and discontinuations." },
+      { zh: "区分内生研发、许可、收购和在研资产减值。", en: "Separate internal R&D, licensing, acquisitions, and in-process R&D impairment." },
+    ],
+  },
+  {
+    id: "biopharma-lifecycle-valuation",
+    sector: "healthcare",
+    subindustry: "biopharma",
+    name: { zh: "生命周期与估值", en: "Lifecycle and valuation" },
+    purpose: { zh: "把现有商业价值与风险调整管线价值分开。", en: "Separate current commercial value from risk-adjusted pipeline value." },
+    steps: [
+      { zh: "按产品映射收入、专利或数据保护、定价和竞争。", en: "Map revenue, patent or data protection, pricing, and competition by product." },
+      { zh: "仅在候选药概率、时间、经济性和成本均可见时计算 rNPV。", en: "Calculate rNPV only when candidate probability, timing, economics, and cost are visible." },
+      { zh: "数据不足时使用透明营收情景，并明确不输出伪精确管线价值。", en: "When data are insufficient, use transparent revenue scenarios and do not publish false-precision pipeline value." },
+    ],
+  },
 ];
 
 export function getSectorMethods(subindustry: SupportedSubindustry) {

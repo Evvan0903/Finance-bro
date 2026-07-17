@@ -53,6 +53,7 @@ import type {
 import shellSourceSnapshot from "../../../tests/fixtures/shel-source-snapshot.json";
 import nvdaSourceSnapshot from "../../../tests/fixtures/nvda-source-snapshot.json";
 import jpmSourceSnapshot from "../../../tests/fixtures/jpm-source-snapshot.json";
+import llySourceSnapshot from "../../../tests/fixtures/lly-source-snapshot.json";
 
 export const dynamic = "force-dynamic";
 
@@ -133,6 +134,8 @@ const ALIASES: Record<string, string> = {
   nvidia: "NVDA",
   jpmorgan: "JPM",
   "jp morgan": "JPM",
+  lilly: "LLY",
+  "eli lilly": "LLY",
   amazon: "AMZN",
   berkshire: "BRK-B",
 };
@@ -156,6 +159,11 @@ const SUPPORTED_TICKER_RECORDS: TickerRecord[] = [
   { cik_str: 831001, ticker: "C", title: "Citigroup Inc" },
   { cik_str: 72971, ticker: "WFC", title: "Wells Fargo & Co" },
   { cik_str: 886982, ticker: "GS", title: "Goldman Sachs Group Inc" },
+  { cik_str: 59478, ticker: "LLY", title: "Eli Lilly and Co" },
+  { cik_str: 310158, ticker: "MRK", title: "Merck & Co Inc" },
+  { cik_str: 78003, ticker: "PFE", title: "Pfizer Inc" },
+  { cik_str: 1551152, ticker: "ABBV", title: "AbbVie Inc" },
+  { cik_str: 14272, ticker: "BMY", title: "Bristol-Myers Squibb Co" },
 ];
 
 const secCache = new MemoryCache<unknown>(SEC_CACHE_TTL_MS);
@@ -548,6 +556,7 @@ const PERIOD_FIELD_BY_METRIC_ID: Record<string, string> = {
   "gross-profit": "grossProfit",
   "net-income": "netIncome",
   "net-interest-income": "netInterestIncome",
+  "research-and-development": "researchAndDevelopment",
   deposits: "deposits",
   loans: "loans",
   "loan-growth": "loanGrowth",
@@ -589,6 +598,10 @@ const DRIVER_METRIC_IDS: Record<string, string[]> = {
   "credit-cycle": ["credit-loss-provision", "credit-loss-allowance", "allowance-coverage", "loans"],
   "capital-liquidity": ["cet1-ratio", "liquidity-coverage-ratio", "tangible-book-value", "capital-returns"],
   "operating-leverage": ["revenue", "net-interest-income", "net-interest-margin", "efficiency-ratio", "return-on-common-equity"],
+  "biopharma-product-cycle": ["product-revenue", "product-concentration", "revenue-growth", "gross-margin"],
+  "biopharma-pipeline-execution": ["research-and-development", "gross-margin", "operating-cash-flow"],
+  "biopharma-pricing-access": ["product-revenue", "product-concentration", "revenue-growth"],
+  "biopharma-patent-cycle": ["patent-expiry-year", "product-concentration", "product-revenue"],
 };
 
 function selectedCanonicalMetrics(
@@ -678,6 +691,25 @@ function buildNarrative(
   const marginDelta = latest.netMarginChange;
   const liabilityRatio = latest.liabilitiesAssets;
   const cashConversion = latest.cashConversion;
+  const biopharmaMetrics = pack.id === "biopharma"
+    ? selectedCanonicalMetrics(
+        registry,
+        companyId,
+        latest,
+        [
+          "product-revenue",
+          "product-concentration",
+          "research-and-development",
+          "patent-expiry-year",
+        ],
+      )
+    : [];
+  const biopharmaMetric = (metricId: string) =>
+    biopharmaMetrics.find((metric) => metric.metric_id === metricId) ?? null;
+  const largestProductRevenue = biopharmaMetric("product-revenue");
+  const productConcentration = biopharmaMetric("product-concentration");
+  const researchAndDevelopment = biopharmaMetric("research-and-development");
+  const patentExpiry = biopharmaMetric("patent-expiry-year");
   const primaryNetDebtMetric = latest.metricKeys.netDebt
     ? registry.getByKey(latest.metricKeys.netDebt)
     : null;
@@ -703,6 +735,19 @@ function buildNarrative(
                 : "Stockholders' equity less goodwill and finite-lived intangibles; the canonical P/TBV starting point.",
             metricKey: latest.metricKeys.tangibleBookValue ?? "",
             classification: "Derived calculation" as const,
+          }
+      : pack.id === "biopharma"
+        ? {
+            label: locale === "zh" ? "主要产品集中度" : "Major-product concentration",
+            value: productConcentration
+              ? formatMetricForDisplay(productConcentration, locale)
+              : "—",
+            detail:
+              locale === "zh"
+                ? "发行人披露的 Mounjaro 与 Zepbound 合计占总营收比例；用于衡量产品集中风险。"
+                : "Issuer-reported combined share of revenue from Mounjaro and Zepbound; a measure of product-concentration risk.",
+            metricKey: productConcentration?.canonical_key ?? "",
+            classification: "Reported fact" as const,
           }
       : {
           label: locale === "zh" ? "净债务" : "Net debt",
@@ -789,12 +834,28 @@ function buildNarrative(
       ? latest.grossMargin !== null
       : pack.id === "banks"
         ? latest.tangibleBookValue !== null
+        : pack.id === "biopharma"
+          ? productConcentration !== null
         : latest.netDebt !== null,
     liabilityRatio !== null,
   ][index]);
 
   const earningsQuality =
-    pack.id === "banks"
+    pack.id === "biopharma"
+      ? locale === "zh"
+        ? [
+            `${companyName} 最新年度营收为 ${compactMoney(latest.revenue, currency, locale)}，其中最大产品收入为 ${largestProductRevenue ? formatMetricForDisplay(largestProductRevenue, locale) : "—"}。`,
+            `Mounjaro 与 Zepbound 合计占总营收 ${productConcentration ? formatMetricForDisplay(productConcentration, locale) : "—"}；产品集中放大供应、价格、安全和竞争风险。`,
+            `研发支出为 ${researchAndDevelopment ? formatMetricForDisplay(researchAndDevelopment, locale) : "—"}，毛利率为 ${percentage(latest.grossMargin, locale)}；研发支出与临床阶段、里程碑和批准必须分别核对。`,
+            `Mounjaro / Zepbound 美国化合物专利预计到期年份为 ${patentExpiry ? formatMetricForDisplay(patentExpiry, locale) : "—"}；公开输入不足以支持候选药级 rNPV，因此不计算风险调整管线价值。`,
+          ]
+        : [
+            `${companyName}'s latest annual revenue was ${compactMoney(latest.revenue, currency, locale)}, including largest-product revenue of ${largestProductRevenue ? formatMetricForDisplay(largestProductRevenue, locale) : "—"}.`,
+            `Mounjaro and Zepbound represented ${productConcentration ? formatMetricForDisplay(productConcentration, locale) : "—"} of total revenue; concentration magnifies supply, pricing, safety, and competition risk.`,
+            `R&D expense was ${researchAndDevelopment ? formatMetricForDisplay(researchAndDevelopment, locale) : "—"} and gross margin was ${percentage(latest.grossMargin, locale)}; R&D spending must be reconciled separately to stages, milestones, and approvals.`,
+            `The issuer-estimated U.S. compound-patent expiry year for Mounjaro / Zepbound was ${patentExpiry ? formatMetricForDisplay(patentExpiry, locale) : "—"}; public inputs are insufficient for candidate-level rNPV, so no risk-adjusted pipeline value is calculated.`,
+          ]
+      : pack.id === "banks"
       ? locale === "zh"
         ? [
             `${companyName} 最新年度净收入为 ${compactMoney(latest.revenue, currency, locale)}，其中净利息收入为 ${compactMoney(latest.netInterestIncome, currency, locale)}。`,
@@ -860,7 +921,9 @@ function buildNarrative(
     registry,
     companyId,
     latest,
-    ["revenue-growth", "net-margin", "fcf", "net-debt"],
+    pack.id === "biopharma"
+      ? ["product-revenue", "product-concentration", "research-and-development", "gross-margin", "patent-expiry-year", "fcf"]
+      : ["revenue-growth", "net-margin", "fcf", "net-debt"],
   ).map((metric) => metric.canonical_key);
   const risks: RiskPoint[] = pack.risks.map((risk, index) => ({
     title: risk[locale],
@@ -1037,12 +1100,13 @@ function selectionFromPayload(payload: ResearchPayload): ResearchSelection | nul
   const sector = payload.sector ?? "energy";
   const subindustry = payload.subindustry ?? "integrated-oil-gas";
   if (!["US", "Europe", "Global"].includes(market)) return null;
-  if (!["energy", "technology", "financials"].includes(sector)) return null;
-  if (!["integrated-oil-gas", "semiconductors", "banks"].includes(subindustry)) return null;
+  if (!["energy", "technology", "financials", "healthcare"].includes(sector)) return null;
+  if (!["integrated-oil-gas", "semiconductors", "banks", "biopharma"].includes(subindustry)) return null;
   if (
     (sector === "energy" && subindustry !== "integrated-oil-gas") ||
     (sector === "technology" && subindustry !== "semiconductors") ||
-    (sector === "financials" && subindustry !== "banks")
+    (sector === "financials" && subindustry !== "banks") ||
+    (sector === "healthcare" && subindustry !== "biopharma")
   ) return null;
   return {
     market,
@@ -1050,6 +1114,21 @@ function selectionFromPayload(payload: ResearchPayload): ResearchSelection | nul
     subindustry,
     options: { ...DEFAULT_OPTIONS, ...payload.options },
   };
+}
+
+function verifiedIssuerMetrics(
+  ticker: string,
+  latestAnnual: FilingSource | null,
+): IssuerReportedMetric[] | undefined {
+  if (
+    ticker === "LLY" &&
+    latestAnnual?.form === "10-K" &&
+    latestAnnual.reportDate === "2025-12-31" &&
+    latestAnnual.filed === "2026-02-12"
+  ) {
+    return llySourceSnapshot.issuerReportedMetrics as IssuerReportedMetric[];
+  }
+  return undefined;
 }
 
 async function buildReport(
@@ -1090,7 +1169,9 @@ async function buildReport(
     sector: pack.id,
     dataVersion,
     retrievedAt: companyDataRetrievedAt,
-    issuerReportedMetrics: sourceSnapshot?.issuerReportedMetrics,
+    issuerReportedMetrics:
+      sourceSnapshot?.issuerReportedMetrics ??
+      verifiedIssuerMetrics(record.ticker, latestAnnual),
   });
   const metricAudit = await shellMetricAudit(record, facts, Boolean(sourceSnapshot));
   if (metricAudit) {
@@ -1169,6 +1250,8 @@ async function buildReport(
     latest,
     pack.id === "banks"
       ? ["revenue", "net-interest-income", "net-interest-margin", "deposits", "loans", "cet1-ratio", "liquidity-coverage-ratio", "tangible-book-value"]
+      : pack.id === "biopharma"
+        ? ["revenue", "product-revenue", "product-concentration", "research-and-development", "gross-margin", "patent-expiry-year"]
       : ["revenue", "net-income", "operating-cash-flow", "fcf"],
   ).map((metric) => metric.canonical_key);
   const filingWatchlist: CatalystPoint[] = [
@@ -1203,6 +1286,8 @@ async function buildReport(
       ? ["production", "lng", "refining-margin", "major-projects"]
       : pack.id === "banks"
         ? ["net-interest-income", "net-interest-margin", "deposits", "loan-growth", "efficiency-ratio"]
+        : pack.id === "biopharma"
+          ? ["product-revenue", "product-concentration", "research-and-development", "gross-margin"]
         : ["revenue-growth", "gross-margin", "inventory"],
   ).map((metric) => metric.canonical_key);
   const financialCatalystReferences = selectedCanonicalMetrics(
@@ -1211,6 +1296,8 @@ async function buildReport(
     latest,
     pack.id === "banks"
       ? ["credit-loss-provision", "allowance-coverage", "cet1-ratio", "tangible-book-value", "capital-returns"]
+      : pack.id === "biopharma"
+        ? ["research-and-development", "gross-margin", "operating-cash-flow", "fcf"]
       : ["cash-capex", "fcf", "net-debt", "dividends", "share-buybacks"],
   ).map((metric) => metric.canonical_key);
   const regulatoryCatalystReferences = selectedCanonicalMetrics(
@@ -1221,6 +1308,8 @@ async function buildReport(
       ? ["major-projects", "cash-capex"]
       : pack.id === "banks"
         ? ["credit-loss-provision", "cet1-ratio", "liquidity-coverage-ratio", "tangible-book-value"]
+        : pack.id === "biopharma"
+          ? ["product-revenue", "product-concentration", "patent-expiry-year"]
         : ["revenue", "inventory"],
   ).map((metric) => metric.canonical_key);
   const catalysts = {
@@ -1256,6 +1345,16 @@ async function buildReport(
           ...(latest.tangibleBookValue === null ? ["tangible-book-value"] : []),
           ...(latest.creditLossProvision === null ? ["credit-loss-provision"] : []),
         ]
+      : pack.id === "biopharma"
+        ? [
+            ...(!metricRegistry.findMetrics({
+              company_id: record.ticker,
+              metric_id: "product-revenue",
+              period_end: latest.periodEnd,
+            }).some((metric) => metric.value !== null) ? ["product-revenue"] : []),
+            ...(latest.researchAndDevelopment === null ? ["research-and-development"] : []),
+            ...(latest.grossMargin === null ? ["gross-margin"] : []),
+          ]
       : [
         ...(latest.cashCapex === null ? ["cash-capex"] : []),
         ...(latest.freeCashFlowProxy === null ? ["fcf"] : []),
@@ -1286,6 +1385,8 @@ async function buildReport(
         latest,
         pack.id === "banks"
           ? ["net-interest-income", "net-interest-margin", "credit-loss-provision", "allowance-coverage", "cet1-ratio", "liquidity-coverage-ratio", "efficiency-ratio", "return-on-common-equity", "tangible-book-value", "capital-returns"]
+          : pack.id === "biopharma"
+            ? ["product-revenue", "product-concentration", "research-and-development", "gross-margin", "patent-expiry-year", "operating-cash-flow", "fcf"]
           : ["net-income", "operating-cash-flow", "cash-capex", "fcf", "cash-conversion", "net-debt"],
       ).map((metric) => metric.canonical_key),
     },
@@ -1380,8 +1481,15 @@ async function buildReport(
         ...(criticalMetricIds.length
           ? [
               locale === "zh"
-                ? `${pack.id === "banks" ? "影响银行盈利或估值" : "影响 FCF 或估值"}的关键输入尚未可用：${criticalMetricIds.join(", ")}。`
-                : `Critical ${pack.id === "banks" ? "bank earnings or valuation" : "FCF or valuation"} inputs remain unavailable: ${criticalMetricIds.join(", ")}.`,
+                ? `${pack.id === "banks" ? "影响银行盈利或估值" : pack.id === "biopharma" ? "影响商业分析或估值" : "影响 FCF 或估值"}的关键输入尚未可用：${criticalMetricIds.join(", ")}。`
+                : `Critical ${pack.id === "banks" ? "bank earnings or valuation" : pack.id === "biopharma" ? "commercial analysis or valuation" : "FCF or valuation"} inputs remain unavailable: ${criticalMetricIds.join(", ")}.`,
+            ]
+          : []),
+        ...(pack.id === "biopharma"
+          ? [
+              locale === "zh"
+                ? "管线阶段、临床里程碑和监管状态保留为带日期的文本证据；因候选药级概率、时间、经济性和成本输入不足，不计算风险调整管线价值。"
+                : "Pipeline stage, clinical milestones, and regulatory status remain dated text evidence; no risk-adjusted pipeline value is calculated because candidate-level probability, timing, economics, and cost inputs are insufficient.",
             ]
           : []),
       ],
@@ -1410,8 +1518,8 @@ async function buildReport(
       !selection.options.valuation
         ? locale === "zh" ? "本次未选择估值模块。" : "Valuation was not selected for this run."
         : locale === "zh"
-          ? `采用${effectiveValuation.method.zh}，不使用未注明日期的实时股价，不输出评级或目标价。${useValuationFallback ? "由于现金资本开支不可取得，经营现金流仅作为估值指标，未被表述为 FCF。" : ""}倍数为分析假设，${pack.id === "banks" ? "股权价值" : "企业价值"}用于敏感性而非价格预测。`
-          : `Uses ${effectiveValuation.method.en} without an undated real-time share price, rating, or price target. ${useValuationFallback ? "Because cash capex is unavailable, operating cash flow is used only as the valuation metric and is not presented as FCF. " : ""}Multiples are analyst assumptions and ${pack.id === "banks" ? "equity values" : "enterprise values"} are sensitivities, not forecasts.`,
+          ? `采用${effectiveValuation.method.zh}，不使用未注明日期的实时股价，不输出评级或目标价。${useValuationFallback ? "由于现金资本开支不可取得，经营现金流仅作为估值指标，未被表述为 FCF。" : ""}${pack.id === "biopharma" ? "商业收入情景不包含未验证的风险调整管线价值。" : ""}倍数为分析假设，${pack.id === "banks" ? "股权价值" : "企业价值"}用于敏感性而非价格预测。`
+          : `Uses ${effectiveValuation.method.en} without an undated real-time share price, rating, or price target. ${useValuationFallback ? "Because cash capex is unavailable, operating cash flow is used only as the valuation metric and is not presented as FCF. " : ""}${pack.id === "biopharma" ? "The commercial-revenue scenarios exclude unverified risk-adjusted pipeline value. " : ""}Multiples are analyst assumptions and ${pack.id === "banks" ? "equity values" : "enterprise values"} are sensitivities, not forecasts.`,
     cashFlowProxyFormula:
       pack.id === "banks"
         ? locale === "zh"
@@ -1469,12 +1577,16 @@ async function buildReport(
         ? ["Insufficient recent sector research available for 2025–2026."]
         : []),
       locale === "zh"
-        ? "标准化 SEC XBRL 不足以稳定提取全部发行人自定义分部和 KPI，包括净息差、CET1、HQLA、利用率、客户集中度和市场份额；缺失值保持为未提取。"
-        : "Standardized SEC XBRL does not consistently expose every issuer-defined segment and KPI, including NIM, CET1, HQLA, utilization, customer concentration, and market share; missing values remain not yet extracted.",
+        ? "标准化 SEC XBRL 不足以稳定提取全部发行人自定义分部和 KPI，包括净息差、CET1、HQLA、利用率、产品收入、管线阶段、客户集中度和市场份额；缺失值保持为未提取。"
+        : "Standardized SEC XBRL does not consistently expose every issuer-defined segment and KPI, including NIM, CET1, HQLA, utilization, product revenue, pipeline stage, customer concentration, and market share; missing values remain not yet extracted.",
       pack.id === "banks"
         ? locale === "zh"
           ? "银行不使用工业公司 FCF；ROE 为净利润除以期末权益的透明代理，不等于平均权益 ROE。"
           : "Banks do not use industrial-company FCF; the ROE measure is a transparent net-income / period-end-equity proxy, not average-equity ROE."
+        : pack.id === "biopharma"
+          ? locale === "zh"
+            ? "商业指标来自申报事实；管线概率、时间和价值未作为事实。公开输入不足以支持候选药级 rNPV，因此未计算风险调整管线价值或现金跑道。"
+            : "Commercial metrics use filing facts; pipeline probability, timing, and value are not treated as facts. Public inputs are insufficient for candidate-level rNPV, so no risk-adjusted pipeline value or cash runway is calculated."
         : latest.cashCapex === null || latest.operatingCashFlow === null
         ? COPY[locale].unableFcf
         : locale === "zh"
@@ -1541,6 +1653,7 @@ export async function POST(request: Request) {
       SHEL: shellSourceSnapshot,
       NVDA: nvdaSourceSnapshot,
       JPM: jpmSourceSnapshot,
+      LLY: llySourceSnapshot,
     } as const;
     const selectedFixture =
       payload.fixture && localFixtureAllowed

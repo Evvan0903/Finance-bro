@@ -505,10 +505,166 @@ const bankPack: SectorPack = {
   ],
 };
 
+const biopharmaPack: SectorPack = {
+  id: "biopharma",
+  sector: "healthcare",
+  sectorLabel: { zh: "医疗保健", en: "Healthcare" },
+  subindustryLabel: { zh: "生物制药", en: "Biopharma" },
+  sicCodes: ["2834"],
+  coreKpis: [
+    {
+      id: "product-revenue",
+      label: { zh: "最大产品收入", en: "Largest-product revenue" },
+      description: { zh: "年报产品表中收入最高的单一产品；本次为 Mounjaro。", en: "The largest single product in the annual-filing product table; Mounjaro for this validation." },
+      canonicalMetricId: "product-revenue",
+      definitionIds: ["issuer-reported-mounjaro-total-revenue"],
+      availability: "notStandardized",
+    },
+    {
+      id: "product-concentration",
+      label: { zh: "Mounjaro / Zepbound 收入集中度", en: "Mounjaro / Zepbound revenue concentration" },
+      description: { zh: "发行人披露的两项产品占总营收比例。", en: "Issuer-reported share of total revenue represented by the two products." },
+      canonicalMetricId: "product-concentration",
+      definitionIds: ["issuer-reported-mounjaro-zepbound-share-of-total-revenue"],
+      availability: "notStandardized",
+    },
+    {
+      id: "pipeline-stage",
+      label: { zh: "管线阶段", en: "Pipeline stage" },
+      description: { zh: "按候选药与适应症记录临床或监管阶段；阶段为文本证据，不转成伪数字。", en: "Clinical or regulatory stage by candidate and indication; text evidence is not converted into a false numeric metric." },
+      availability: "notStandardized",
+    },
+    {
+      id: "clinical-milestones",
+      label: { zh: "临床里程碑", en: "Clinical milestones" },
+      description: { zh: "试验启动、读出、提交、批准或终止，需保留候选药、适应症和日期。", en: "Trial start, readout, submission, approval, or discontinuation with candidate, indication, and date." },
+      availability: "notStandardized",
+    },
+    {
+      id: "regulatory-dates",
+      label: { zh: "监管日期", en: "Regulatory dates" },
+      description: { zh: "监管机构确认的提交或批准日期；公司预计日期只能作为管理层陈述。", en: "Regulator-confirmed submission or approval dates; company-expected dates remain management statements." },
+      availability: "notStandardized",
+    },
+    {
+      id: "research-and-development",
+      label: { zh: "研发支出", en: "R&D expense" },
+      description: { zh: "不含收购在研资产成本的年度研发支出。", en: "Annual research and development expense excluding acquired in-process research cost." },
+      canonicalMetricId: "research-and-development",
+      definitionIds: ["reported-research-and-development-expense"],
+      availability: "notStandardized",
+    },
+    {
+      id: "gross-margin",
+      label: { zh: "毛利率", en: "Gross margin" },
+      description: { zh: "毛利润除以营收；毛利润可由营收减销售成本推导。", en: "Gross profit divided by revenue; gross profit may be derived as revenue less cost of sales." },
+      canonicalMetricId: "gross-margin",
+      definitionIds: ["gross-profit-over-revenue"],
+      availability: "grossMargin",
+    },
+    {
+      id: "cash-runway",
+      label: { zh: "现金跑道", en: "Cash runway" },
+      description: { zh: "只有在净现金消耗和可用流动性口径可验证时计算；盈利制药公司不使用现金除以研发的伪跑道。", en: "Calculated only with a verified net-cash-burn and available-liquidity definition; a profitable pharma company does not use cash divided by R&D as false runway." },
+      availability: "notStandardized",
+    },
+    {
+      id: "patent-expiry",
+      label: { zh: "Mounjaro / Zepbound 美国化合物专利到期", en: "Mounjaro / Zepbound U.S. compound-patent expiry" },
+      description: { zh: "发行人估计的美国化合物专利到期年份，不保证独占期持续至该年。", en: "Issuer-estimated U.S. compound-patent expiry year; exclusivity is not guaranteed through that date." },
+      canonicalMetricId: "patent-expiry-year",
+      definitionIds: ["issuer-estimated-us-compound-patent-expiry-mounjaro-zepbound"],
+      availability: "notStandardized",
+    },
+    {
+      id: "risk-adjusted-pipeline-value",
+      label: { zh: "风险调整管线价值", en: "Risk-adjusted pipeline value" },
+      description: { zh: "需要候选药级成功概率、时间、峰值销售、利润率、成本和折现率；输入不足时不计算。", en: "Requires candidate-level success probability, timing, peak sales, margin, cost, and discount rate; no value is calculated when inputs are insufficient." },
+      availability: "notStandardized",
+    },
+  ],
+  researchQuestions: [
+    { zh: "主要产品增长来自销量、价格、地区、渠道还是供应改善？", en: "Is major-product growth driven by volume, price, geography, channel, or supply?" },
+    { zh: "产品和治疗领域集中度是否由新上市产品和管线逐步分散？", en: "Are new launches and pipeline assets reducing product and therapeutic-area concentration?" },
+    { zh: "研发支出是否转化为高质量 III 期、提交和批准里程碑？", en: "Is R&D spending converting into high-quality Phase III, submission, and approval milestones?" },
+    { zh: "专利、医保谈判、竞争与安全风险如何改变产品生命周期？", en: "How do patents, Medicare negotiation, competition, and safety risk alter product lifecycles?" },
+    { zh: "哪些候选药具备足够公开输入支持风险调整估值？", en: "Which candidates have enough public inputs to support risk-adjusted valuation?" },
+  ],
+  marketDrivers: [
+    {
+      id: "biopharma-product-cycle",
+      name: { zh: "产品组合与放量", en: "Product mix and uptake" },
+      companyExposure: { zh: "主要产品收入、销量、实现价格、渠道和供应。", en: "Major-product revenue, volume, realized price, channel, and supply." },
+      implication: { zh: "高增长只有在价格、渠道和供应后仍转化为毛利和现金流才具质量。", en: "Growth is high quality only if it converts to margin and cash flow after pricing, channel, and supply effects." },
+      query: "biopharma product revenue launches medicine use gross margin",
+    },
+    {
+      id: "biopharma-pipeline-execution",
+      name: { zh: "管线执行", en: "Pipeline execution" },
+      companyExposure: { zh: "临床阶段、入组、里程碑、提交、批准和研发效率。", en: "Clinical stage, enrollment, milestones, submissions, approvals, and R&D productivity." },
+      implication: { zh: "阶段成功、时间和适应症质量共同决定替代现有产品的能力。", en: "Phase success, timing, and indication quality determine replacement capacity for current products." },
+      query: "biopharma clinical trials phase success cycle time FDA approvals",
+    },
+    {
+      id: "biopharma-pricing-access",
+      name: { zh: "定价与准入", en: "Pricing and access" },
+      companyExposure: { zh: "净价格、医保谈判、报销、患者自付和处方可及性。", en: "Net price, Medicare negotiation, reimbursement, patient out-of-pocket cost, and prescription access." },
+      implication: { zh: "销量增长可能被实现价格和准入限制抵消。", en: "Volume growth can be offset by realized-price and access pressure." },
+      query: "CMS Medicare negotiation drug prices access reimbursement",
+    },
+    {
+      id: "biopharma-patent-cycle",
+      name: { zh: "专利与生命周期", en: "Patent and lifecycle" },
+      companyExposure: { zh: "主要产品专利、数据保护、仿制或生物类似药竞争。", en: "Major-product patents, data protection, generic or biosimilar competition." },
+      implication: { zh: "集中度越高，生命周期到期前的新产品替代要求越高。", en: "Higher concentration raises the replacement requirement ahead of lifecycle expiry." },
+      query: "biopharma patent expiry product concentration lifecycle competition",
+    },
+  ],
+  peers: [
+    { ticker: "MRK", cik: "0000310158", name: "Merck & Co.", rationale: { zh: "大型创新药与集中产品组合可比。", en: "Large innovative-pharma and concentrated-product comparator." } },
+    { ticker: "PFE", cik: "0000078003", name: "Pfizer", rationale: { zh: "全球商业化与研发组合可比。", en: "Global commercialization and R&D-portfolio comparator." } },
+    { ticker: "ABBV", cik: "0001551152", name: "AbbVie", rationale: { zh: "产品生命周期与管线替代可比。", en: "Product lifecycle and pipeline-replacement comparator." } },
+    { ticker: "BMY", cik: "0000014272", name: "Bristol Myers Squibb", rationale: { zh: "专利到期与新产品放量可比。", en: "Patent-expiry and new-product-ramp comparator." } },
+  ],
+  valuation: {
+    method: { zh: "商业收入情景 EV / 营收", en: "Commercial-revenue scenario EV / revenue" },
+    formula: { zh: "模型隐含企业价值 = 情景营收 × 假设 EV/营收倍数；不包含未验证的 rNPV", en: "Model-implied enterprise value = scenario revenue × assumed EV/revenue multiple; no unverified rNPV is included" },
+    multipleLabel: "EV / Revenue",
+    multiples: { bear: 4, base: 7, bull: 10 },
+    metric: "revenue",
+  },
+  risks: [
+    { zh: "Mounjaro 和 Zepbound 集中度使供应、价格、安全或竞争冲击放大。", en: "Mounjaro and Zepbound concentration magnifies supply, pricing, safety, or competition shocks." },
+    { zh: "临床失败、入组延误或监管拒绝削弱管线替代。", en: "Clinical failure, enrollment delay, or regulatory rejection weakens pipeline replacement." },
+    { zh: "医保谈判、报销和渠道变化压低实现价格或准入。", en: "Medicare negotiation, reimbursement, and channel changes reduce realized price or access." },
+    { zh: "专利挑战、到期或仿制与生物类似药竞争提前侵蚀收入。", en: "Patent challenge, expiry, or generic and biosimilar competition erodes revenue earlier than expected." },
+  ],
+  catalysts: {
+    operating: [
+      { zh: "主要产品放量同时改善毛利和经营现金流。", en: "Major-product uptake improves both gross margin and operating cash flow." },
+      { zh: "供应扩张解除需求约束且不造成库存失衡。", en: "Supply expansion relieves demand constraints without inventory imbalance." },
+    ],
+    financial: [
+      { zh: "研发效率改善并形成高质量提交或批准。", en: "Improved R&D productivity produces high-quality submissions or approvals." },
+      { zh: "新产品收入降低单一产品集中度。", en: "New-product revenue reduces single-product concentration." },
+    ],
+    regulatory: [
+      { zh: "监管批准扩大适应症或患者覆盖。", en: "Regulatory approval expands indications or patient coverage." },
+      { zh: "定价与报销结果优于保守情景。", en: "Pricing and reimbursement outcomes exceed conservative scenarios." },
+    ],
+  },
+  reportGuidance: [
+    { zh: "把产品收入、集中度、价格、销量和供应分别桥接。", en: "Bridge product revenue, concentration, price, volume, and supply separately." },
+    { zh: "商业指标使用报告事实；管线概率、时间和价值必须明确标为假设。", en: "Use reported facts for commercial metrics; label pipeline probability, timing, and value explicitly as assumptions." },
+    { zh: "公开输入不足时不计算风险调整管线价值，不用候选药数量替代。", en: "Do not calculate risk-adjusted pipeline value from insufficient public inputs or substitute candidate count." },
+  ],
+};
+
 const PACKS: Record<SupportedSubindustry, SectorPack> = {
   "integrated-oil-gas": energyPack,
   semiconductors: semiconductorPack,
   banks: bankPack,
+  biopharma: biopharmaPack,
 };
 
 export function getSectorPack(id: SupportedSubindustry) {

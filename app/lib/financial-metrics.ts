@@ -73,6 +73,26 @@ const FINANCIAL_METRICS: MetricConfig[] = [
     concepts: [["us-gaap", "GrossProfit"], ["ifrs-full", "GrossProfit"]],
   },
   {
+    metricId: "cost-of-revenue",
+    definitionId: "reported-cost-of-revenue",
+    duration: true,
+    concepts: [
+      ["us-gaap", "CostOfGoodsAndServicesSold"],
+      ["us-gaap", "CostOfGoodsSold"],
+      ["ifrs-full", "CostOfSales"],
+    ],
+  },
+  {
+    metricId: "research-and-development",
+    definitionId: "reported-research-and-development-expense",
+    duration: true,
+    concepts: [
+      ["us-gaap", "ResearchAndDevelopmentExpenseExcludingAcquiredInProcessCost"],
+      ["us-gaap", "ResearchAndDevelopmentExpense"],
+      ["ifrs-full", "ResearchAndDevelopmentExpense"],
+    ],
+  },
+  {
     metricId: "operating-income",
     definitionId: "reported-operating-income",
     duration: true,
@@ -279,6 +299,9 @@ const FINANCIAL_METRICS: MetricConfig[] = [
 export const FINANCIAL_DEFINITION_IDS = {
   revenue: "reported-revenue",
   grossProfit: "reported-gross-profit",
+  derivedGrossProfit: "revenue-less-cost-of-revenue",
+  costOfRevenue: "reported-cost-of-revenue",
+  researchAndDevelopment: "reported-research-and-development-expense",
   operatingIncome: "reported-operating-income",
   netIncome: "reported-net-income",
   netInterestIncome: "reported-net-interest-income",
@@ -575,13 +598,35 @@ export function ensureCoreDerivedMetrics(
       periodEnd,
       [FINANCIAL_DEFINITION_IDS.revenue],
     );
-    const grossProfit = firstDefinition(
+    let grossProfit = firstDefinition(
       registry,
       companyId,
       "gross-profit",
       periodEnd,
       [FINANCIAL_DEFINITION_IDS.grossProfit],
     );
+    const costOfRevenue = firstDefinition(
+      registry,
+      companyId,
+      "cost-of-revenue",
+      periodEnd,
+      [FINANCIAL_DEFINITION_IDS.costOfRevenue],
+    );
+    if (!grossProfit && revenue && costOfRevenue) {
+      grossProfit = registerDerived(registry, {
+        metricId: "gross-profit",
+        companyId,
+        sector,
+        period,
+        periodEnd,
+        definitionId: FINANCIAL_DEFINITION_IDS.derivedGrossProfit,
+        formulaId: "subtract",
+        formula: "revenue - cost_of_revenue",
+        inputs: [revenue, costOfRevenue],
+        unit: revenue.unit,
+        currency: revenue.currency,
+      });
+    }
     const operatingIncome = firstDefinition(
       registry,
       companyId,
@@ -1019,7 +1064,8 @@ export function financialPeriodsFromRegistry(
   const periods: FinancialPeriod[] = anchorDates.map((periodEnd) => {
     const selections = {
       revenue: selectedMetric(registry, companyId, "revenue", periodEnd, [FINANCIAL_DEFINITION_IDS.revenue]),
-      grossProfit: selectedMetric(registry, companyId, "gross-profit", periodEnd, [FINANCIAL_DEFINITION_IDS.grossProfit]),
+      grossProfit: selectedMetric(registry, companyId, "gross-profit", periodEnd, [FINANCIAL_DEFINITION_IDS.grossProfit, FINANCIAL_DEFINITION_IDS.derivedGrossProfit]),
+      researchAndDevelopment: selectedMetric(registry, companyId, "research-and-development", periodEnd, [FINANCIAL_DEFINITION_IDS.researchAndDevelopment]),
       operatingIncome: selectedMetric(registry, companyId, "operating-income", periodEnd, [FINANCIAL_DEFINITION_IDS.operatingIncome]),
       netIncome: selectedMetric(registry, companyId, "net-income", periodEnd, [FINANCIAL_DEFINITION_IDS.netIncome]),
       netInterestIncome: selectedMetric(registry, companyId, "net-interest-income", periodEnd, [FINANCIAL_DEFINITION_IDS.netInterestIncome]),
@@ -1063,6 +1109,7 @@ export function financialPeriodsFromRegistry(
       periodEnd,
       revenue: value(selections.revenue),
       grossProfit: value(selections.grossProfit),
+      researchAndDevelopment: value(selections.researchAndDevelopment),
       operatingIncome: value(selections.operatingIncome),
       netIncome: value(selections.netIncome),
       netInterestIncome: value(selections.netInterestIncome),

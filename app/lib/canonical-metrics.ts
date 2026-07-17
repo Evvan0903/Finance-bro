@@ -682,6 +682,12 @@ export function formatMetricForDisplay(
       maximumFractionDigits: 1,
     }).format(metric.value);
   }
+  if (metric.unit === "year") {
+    return new Intl.NumberFormat(numberLocale, {
+      useGrouping: false,
+      maximumFractionDigits: 0,
+    }).format(metric.value);
+  }
   if (
     metric.currency &&
     metric.unit.startsWith(`${metric.currency}/`)

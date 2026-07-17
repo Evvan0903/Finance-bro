@@ -31,6 +31,7 @@ export type FinancialPeriod = {
   periodEnd: string;
   revenue: number | null;
   grossProfit: number | null;
+  researchAndDevelopment: number | null;
   operatingIncome: number | null;
   netIncome: number | null;
   netInterestIncome: number | null;

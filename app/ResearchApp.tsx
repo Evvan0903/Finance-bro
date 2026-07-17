@@ -53,6 +53,13 @@ const EXAMPLES: Array<{
     sector: "financials",
     subindustry: "banks",
   },
+  {
+    label: { zh: "LLY · 生物制药", en: "LLY · Biopharma" },
+    company: "LLY",
+    market: "US",
+    sector: "healthcare",
+    subindustry: "biopharma",
+  },
 ];
 
 const EVIDENCE_LABELS: Record<Locale, Record<EvidenceKind, string>> = {
@@ -87,12 +94,13 @@ const COPY = {
     sector: "行业",
     subindustry: "子行业",
     ticker: "公司名或交易代码",
-    companyPlaceholder: "例如：SHEL、NVDA 或 JPM",
+    companyPlaceholder: "例如：SHEL、NVDA、JPM 或 LLY",
     energy: "能源",
     technology: "科技",
     integrated: "综合石油与天然气",
     semiconductors: "半导体",
     banks: "银行",
+    biopharma: "生物制药",
     us: "美国",
     europe: "欧洲",
     global: "全球",
@@ -147,6 +155,7 @@ const COPY = {
     revenue: "营收",
     grossMargin: "毛利率",
     netIncome: "净利润",
+    researchAndDevelopment: "研发支出",
     netInterestIncome: "净利息收入",
     deposits: "存款",
     loans: "贷款",
@@ -236,12 +245,13 @@ const COPY = {
     sector: "Sector",
     subindustry: "Subindustry",
     ticker: "Company name or ticker",
-    companyPlaceholder: "e.g. SHEL, NVDA, or JPM",
+    companyPlaceholder: "e.g. SHEL, NVDA, JPM, or LLY",
     energy: "Energy",
     technology: "Technology",
     integrated: "Integrated Oil & Gas",
     semiconductors: "Semiconductors",
     banks: "Banks",
+    biopharma: "Biopharma",
     us: "US",
     europe: "Europe",
     global: "Global",
@@ -296,6 +306,7 @@ const COPY = {
     revenue: "Revenue",
     grossMargin: "Gross margin",
     netIncome: "Net income",
+    researchAndDevelopment: "R&D expense",
     netInterestIncome: "Net interest income",
     deposits: "Deposits",
     loans: "Loans",
@@ -504,6 +515,15 @@ function reportToMarkdown(report: ResearchReport, locale: Locale) {
               `| ${shortYear(period.periodEnd)}A | ${formatMoney(period.revenue, report.currency, locale)} | ${formatMoney(period.netInterestIncome, report.currency, locale)} | ${formatMoney(period.deposits, report.currency, locale)} | ${formatPercent(period.loanGrowth, locale)} | ${formatMoney(period.creditLossProvision, report.currency, locale)} | ${formatPercent(period.efficiencyRatio, locale)} |`,
           ),
         ]
+      : report.sectorPack.id === "biopharma"
+        ? [
+            `| ${copy.year} | ${copy.revenue} | ${copy.grossMargin} | ${copy.researchAndDevelopment} | ${copy.netIncome} | ${copy.freeCashFlow} |`,
+            "|---|---:|---:|---:|---:|---:|",
+            ...report.periods.map(
+              (period) =>
+                `| ${shortYear(period.periodEnd)}A | ${formatMoney(period.revenue, report.currency, locale)} | ${formatPercent(period.grossMargin, locale)} | ${formatMoney(period.researchAndDevelopment, report.currency, locale)} | ${formatMoney(period.netIncome, report.currency, locale)} | ${formatMoney(period.freeCashFlowProxy, report.currency, locale)} |`,
+            ),
+          ]
       : [
           `| ${copy.year} | ${copy.revenue} | ${copy.netIncome} | ${copy.operatingCashFlow} | ${copy.cashCapex} | ${copy.freeCashFlow} |`,
           "|---|---:|---:|---:|---:|---:|",
@@ -776,7 +796,9 @@ export function ResearchApp() {
         ? "integrated-oil-gas"
         : next === "technology"
           ? "semiconductors"
-          : "banks",
+          : next === "financials"
+            ? "banks"
+            : "biopharma",
     );
     setReport(null);
     setError("");
@@ -900,7 +922,7 @@ export function ResearchApp() {
                   <option value="energy">{copy.energy}</option>
                   <option value="technology">{copy.technology}</option>
                   <option value="financials">{copy.financialSector}</option>
-                  <option disabled>{copy.healthcare} · {copy.comingSoon}</option>
+                  <option value="healthcare">{copy.healthcare}</option>
                   <option disabled>{copy.industrials} · {copy.comingSoon}</option>
                   <option disabled>{copy.consumer} · {copy.comingSoon}</option>
                 </select>
@@ -912,7 +934,9 @@ export function ResearchApp() {
                     ? <option value="integrated-oil-gas">{copy.integrated}</option>
                     : sector === "technology"
                       ? <option value="semiconductors">{copy.semiconductors}</option>
-                      : <option value="banks">{copy.banks}</option>}
+                      : sector === "financials"
+                        ? <option value="banks">{copy.banks}</option>
+                        : <option value="biopharma">{copy.biopharma}</option>}
                 </select>
               </label>
               <label className="ticker-field">
@@ -1111,6 +1135,12 @@ export function ResearchApp() {
                       <th>{copy.deposits}</th><th>{copy.loans}</th><th>{copy.loanGrowth}</th>
                       <th>{copy.creditLossProvision}</th><th>{copy.efficiencyRatio}</th>
                     </tr>
+                  ) : report.sectorPack.id === "biopharma" ? (
+                    <tr>
+                      <th>{copy.year}</th><th>{copy.revenue}</th><th>{copy.grossMargin}</th>
+                      <th>{copy.researchAndDevelopment}</th><th>{copy.netIncome}</th>
+                      <th>{copy.operatingCashFlow}</th><th>{copy.freeCashFlow}</th>
+                    </tr>
                   ) : (
                     <tr>
                       <th>{copy.year}</th><th>{copy.revenue}</th><th>{copy.grossMargin}</th>
@@ -1132,6 +1162,15 @@ export function ResearchApp() {
                           <td>{formatPercent(period.loanGrowth, locale)}</td>
                           <td>{formatMoney(period.creditLossProvision, report.currency, locale)}</td>
                           <td>{formatPercent(period.efficiencyRatio, locale)}</td>
+                        </>
+                      ) : report.sectorPack.id === "biopharma" ? (
+                        <>
+                          <td>{formatMoney(period.revenue, report.currency, locale)}</td>
+                          <td>{formatPercent(period.grossMargin, locale)}</td>
+                          <td>{formatMoney(period.researchAndDevelopment, report.currency, locale)}</td>
+                          <td>{formatMoney(period.netIncome, report.currency, locale)}</td>
+                          <td>{formatMoney(period.operatingCashFlow, report.currency, locale)}</td>
+                          <td>{formatMoney(period.freeCashFlowProxy, report.currency, locale)}</td>
                         </>
                       ) : (
                         <>
@@ -1195,6 +1234,15 @@ export function ResearchApp() {
                       { label: copy.capitalReturns, value: latestPeriod.capitalReturns, formatted: formatMoney(latestPeriod.capitalReturns, report.currency, locale) },
                       { label: copy.efficiencyRatio, value: latestPeriod.efficiencyRatio, formatted: formatPercent(latestPeriod.efficiencyRatio, locale) },
                     ]
+                  : report.sectorPack.id === "biopharma"
+                    ? [
+                        { label: copy.cash, value: latestPeriod.cash, formatted: formatMoney(latestPeriod.cash, report.currency, locale) },
+                        { label: copy.researchAndDevelopment, value: latestPeriod.researchAndDevelopment, formatted: formatMoney(latestPeriod.researchAndDevelopment, report.currency, locale) },
+                        { label: copy.totalDebt, value: latestPeriod.totalDebt, formatted: formatMoney(latestPeriod.totalDebt, report.currency, locale) },
+                        { label: copy.netDebt, value: latestPeriod.netDebt, formatted: formatMoney(latestPeriod.netDebt, report.currency, locale) },
+                        { label: copy.cashCapex, value: latestPeriod.cashCapex, formatted: formatMoney(latestPeriod.cashCapex, report.currency, locale) },
+                        { label: copy.freeCashFlow, value: latestPeriod.freeCashFlowProxy, formatted: formatMoney(latestPeriod.freeCashFlowProxy, report.currency, locale) },
+                      ]
                   : [
                       { label: copy.cash, value: latestPeriod.cash, formatted: formatMoney(latestPeriod.cash, report.currency, locale) },
                       { label: copy.totalDebt, value: latestPeriod.totalDebt, formatted: formatMoney(latestPeriod.totalDebt, report.currency, locale) },
