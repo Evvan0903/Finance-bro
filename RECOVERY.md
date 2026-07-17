@@ -99,15 +99,21 @@ The current objective is a sequential canonical-metric upgrade: make Metric Obje
 - Added explicit checks for duplicate keys, conflicting values, definition/formula changes, missing dependencies, rounded calculation inputs, annual/quarterly mixing, stale versions, source changes, raw surface mismatches, scenario/valuation replay, and Web/PDF key parity.
 - Versioned the shared Web/PDF rendering model; PDF export now rejects a report DOM that is not the audited shared model.
 - Integrated `consistencyAudit` into research API responses and passed targeted ESLint, the production build, and all 15 automated tests.
+- Completed Canonical Metric Phase 4 using a compact saved Shell snapshot derived from official SEC Company Facts and Submissions plus the existing verified FY2025 filing excerpt.
+- Passed all 14 required Shell metrics, exact FCF reconciliation, one explicit issuer net-debt definition, capital-allocation/debate/exposure consistency, 142/142-object double-run reproducibility, and zero auditor issues across 642 report-surface references.
+- Found and fixed a definition-label inconsistency: Shell's issuer-reported net debt includes debt-hedging derivative and collateral adjustments and is no longer described or classified as a simple derived debt-less-cash value.
+- Generated an eight-page application PDF, rendered and visually inspected every page, and confirmed Web/PDF agreement through the shared audited DOM model.
+- Added `site/artifacts/metric_consistency_report.json` and saved the verified PDF at `site/output/pdf/shell-phase4-consistency.pdf`.
+- Passed targeted ESLint, the production build, and all 16 automated tests.
 
 ## Remaining tasks
 
-- Resume at Phase 4: run the full Shell saved-snapshot consistency, double-run, and Web/PDF acceptance gate.
-- Complete Phases 5–9 in the order recorded in `TODO.md`; do not expand sectors before the Shell gate passes.
+- Resume at Phase 5: revalidate compact missing-data behavior and visible invalid-formula handling.
+- Complete Phases 6–9 in the order recorded in `TODO.md`.
 
 ## Current status
 
-In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases 1–3 are complete with 15/15 tests passing; Phase 4 is the first unfinished task.
+In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases 1–4 are complete with 16/16 tests passing; Phase 5 is the first unfinished task.
 
 ## Files modified
 
@@ -136,10 +142,14 @@ In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases
 - `site/app/lib/canonical-scenarios.ts`
 - `site/app/lib/metric-consistency-auditor.ts`
 - `site/app/lib/report-rendering-model.ts`
+- `site/tests/fixtures/shel-source-snapshot.json`
+- `site/scripts/create-company-fixture.mjs`
+- `site/artifacts/metric_consistency_report.json`
+- `site/output/pdf/shell-phase4-consistency.pdf`
 
 ## Next recommended step
 
-Run the Shell acceptance gate twice from one saved source snapshot and verify Web/PDF agreement.
+Revalidate missing-data presentation and ensure invalid formulas cannot be hidden by compact UI behavior.
 
 ## Assumptions and pending decisions
 

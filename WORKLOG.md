@@ -1,5 +1,18 @@
 # ScopeLine Metric Locator Worklog
 
+## Canonical Metric Upgrade — Phase 4
+
+- Objective: pass the Shell 14-metric, cross-section, double-run, and Web/PDF acceptance gate before sector expansion.
+- Snapshot: saved a compact official SEC Company Facts/Submissions fixture dated through 2026-07-17; the existing verified Form 20-F excerpt supplies filing-level custom XBRL and KPI text without storing the full filing.
+- Results: 14/14 required metrics found; 142 canonical objects and 642 surface references audited with zero issues; two runs matched 142/142 objects with zero missing, definition, formula, source, status, scenario, valuation, citation, or output changes.
+- FCF: USD 42.863bn OCF − USD 20.915bn cash capex = USD 21.948bn. Dashboard, FY2025 history, KPI, and valuation starting point use the same canonical key.
+- Capital allocation: one issuer-reported net-debt definition; FCF, dividends, buybacks, and net debt agree across KPIs, company exposure, debates, risks, and valuation references.
+- Inconsistency found/resolved: dashboard and KPI copy described issuer-reported Shell net debt as simple normalized debt less cash. Both now disclose derivative/collateral adjustments and classify the metric as reported.
+- Web/PDF: both use `shared-research-report-dom-v1`; generated an eight-page PDF, rendered every page, and found no clipping, overlap, empty charts, broken tables, or footer errors.
+- Files: Shell source fixture/generator, scenario starting-point lineage, canonical display formatting, research API/UI, tests, `site/artifacts/metric_consistency_report.json`, and `site/output/pdf/shell-phase4-consistency.pdf`.
+- Tests: targeted ESLint passed; production build passed; 16/16 automated tests passed; 0 failed.
+- Next: revalidate missing-data behavior and invalid-formula visibility.
+
 ## Canonical Metric Upgrade — Phase 3
 
 - Objective: automate cross-surface consistency and same-snapshot reproducibility checks.
