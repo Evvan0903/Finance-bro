@@ -1,25 +1,24 @@
 {
   "schema_version": "1.0",
-  "generated_for_phase": 4,
-  "data_version": "SHEL-2025-12-31-2026-03-12-canonical-v1",
-  "total_canonical_metrics": 142,
-  "total_surface_references": 642,
+  "generated_for_phase": 9,
+  "research_date": "2026-07-17",
+  "source_mode": "verified official-source regression snapshots",
+  "test_suite": {
+    "passed": 24,
+    "failed": 0
+  },
+  "total_canonical_metrics": 921,
+  "total_surface_references": 3562,
   "duplicate_keys": 0,
   "conflicting_values": 0,
   "formula_mismatches": 0,
   "cross_section_mismatches": 0,
   "reproducibility_mismatches": 0,
-  "reproducibility": {
-    "matched_objects": 142,
-    "mismatched_objects": 0,
-    "missing_objects": 0,
-    "changed_definitions": 0,
-    "changed_formulas": 0,
-    "changed_sources": 0,
-    "changed_outputs": 0
-  },
+  "web_pdf_shared_model": "shared-research-report-dom-v1",
   "shell_acceptance": {
     "passed": true,
+    "canonical_metrics": 152,
+    "surface_references": 682,
     "required_metrics_found": 14,
     "required_metrics_total": 14,
     "free_cash_flow": {
@@ -34,14 +33,99 @@
     "capital_allocation_references_match": true,
     "investment_debate_references_match": true,
     "company_exposure_coverage_passed": true,
-    "web_pdf_shared_model": "shared-research-report-dom-v1",
+    "double_run_reproducible": true,
     "pdf_pages_visually_verified": 8
   },
   "sector_acceptance": {
-    "integrated-oil-gas": "passed",
-    "semiconductors": "pending",
-    "banks": "pending",
-    "biopharma": "pending",
-    "industrials": "pending"
-  }
+    "integrated-oil-gas": {
+      "ticker": "SHEL",
+      "status": "passed",
+      "canonical_metrics": 152,
+      "surface_references": 682,
+      "consistency_issues": 0,
+      "duplicate_keys": 0,
+      "double_run_reproducible": true,
+      "critical_missing_metrics": []
+    },
+    "semiconductors": {
+      "ticker": "NVDA",
+      "status": "passed",
+      "canonical_metrics": 204,
+      "surface_references": 766,
+      "consistency_issues": 0,
+      "duplicate_keys": 0,
+      "double_run_reproducible": true,
+      "verified_kpis": 5,
+      "critical_missing_metrics": []
+    },
+    "banks": {
+      "ticker": "JPM",
+      "status": "passed",
+      "canonical_metrics": 167,
+      "surface_references": 642,
+      "consistency_issues": 0,
+      "duplicate_keys": 0,
+      "double_run_reproducible": true,
+      "verified_kpis": 12,
+      "critical_missing_metrics": []
+    },
+    "biopharma": {
+      "ticker": "LLY",
+      "status": "passed",
+      "canonical_metrics": 171,
+      "surface_references": 614,
+      "consistency_issues": 0,
+      "duplicate_keys": 0,
+      "double_run_reproducible": true,
+      "verified_numeric_kpis": 5,
+      "unresolved_numeric_kpis": [
+        "pipeline-stage",
+        "clinical-milestones",
+        "regulatory-dates",
+        "cash-runway",
+        "risk-adjusted-pipeline-value"
+      ],
+      "critical_missing_metrics": []
+    },
+    "industrial-machinery": {
+      "ticker": "CAT",
+      "status": "passed",
+      "canonical_metrics": 227,
+      "surface_references": 858,
+      "consistency_issues": 0,
+      "duplicate_keys": 0,
+      "double_run_reproducible": true,
+      "verified_numeric_kpis": 7,
+      "unresolved_numeric_kpis": [
+        "orders",
+        "organic-growth",
+        "utilization"
+      ],
+      "critical_missing_metrics": []
+    }
+  },
+  "runtime_resilience": {
+    "live_sec_first": true,
+    "verified_snapshot_fallback_tickers": [
+      "SHEL",
+      "NVDA",
+      "JPM",
+      "LLY",
+      "CAT"
+    ],
+    "fallback_is_disclosed": true,
+    "arbitrary_issuer_generic_fallback": false,
+    "cat_outage_simulation_http_status": 200,
+    "cat_outage_simulation_consistency_passed": true
+  },
+  "industries_unlocked": [
+    "integrated-oil-gas",
+    "semiconductors",
+    "banks",
+    "biopharma",
+    "industrial-machinery"
+  ],
+  "industries_in_preview": [
+    "consumer"
+  ]
 }

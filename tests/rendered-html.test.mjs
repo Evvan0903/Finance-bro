@@ -1601,6 +1601,48 @@ test("owns PDF pagination and footer instead of browser print metadata", async (
   assert.match(css, /\.source-columns small \{ color: #526878;.*font-size: 10px/s);
 });
 
+test("publishes a complete machine-readable Phase 9 consistency artifact", async () => {
+  const artifact = JSON.parse(
+    await readFile(
+      new URL("../artifacts/metric_consistency_report.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  assert.equal(artifact.schema_version, "1.0");
+  assert.equal(artifact.generated_for_phase, 9);
+  assert.deepEqual(artifact.test_suite, { passed: 24, failed: 0 });
+  assert.equal(
+    artifact.total_canonical_metrics,
+    Object.values(artifact.sector_acceptance).reduce(
+      (sum, sector) => sum + sector.canonical_metrics,
+      0,
+    ),
+  );
+  assert.equal(
+    artifact.total_surface_references,
+    Object.values(artifact.sector_acceptance).reduce(
+      (sum, sector) => sum + sector.surface_references,
+      0,
+    ),
+  );
+  for (const field of [
+    "duplicate_keys",
+    "conflicting_values",
+    "formula_mismatches",
+    "cross_section_mismatches",
+    "reproducibility_mismatches",
+  ]) assert.equal(artifact[field], 0);
+  assert.ok(
+    Object.values(artifact.sector_acceptance).every(
+      (sector) =>
+        sector.status === "passed" &&
+        sector.consistency_issues === 0 &&
+        sector.double_run_reproducible === true,
+    ),
+  );
+  assert.deepEqual(artifact.industries_in_preview, ["consumer"]);
+});
+
 test("removes disposable starter assets and keeps private Sites metadata", async () => {
   const [page, layout, packageJson, hosting] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
