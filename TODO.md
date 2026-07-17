@@ -88,7 +88,7 @@
 
 - [x] Phase 1: implement Canonical Metric Object, Metric Registry, canonical-key uniqueness, explicit definitions, full-precision formulas, and source lineage.
 - [x] Phase 2: connect dashboard, historicals, KPIs, exposures, debates, risks, catalysts, peers, scenarios, and valuation to Registry selectors.
-- [ ] Phase 3: add consistency and reproducibility auditor plus machine-readable comparison.
+- [x] Phase 3: add consistency and reproducibility auditor plus machine-readable comparison.
 - [ ] Phase 4: pass Shell consistency, double-run, and Web/PDF acceptance.
 - [ ] Phase 5: revalidate missing-data presentation and invalid-formula visibility.
 - [ ] Phase 6: implement the 2025-current sector research learning pipeline.

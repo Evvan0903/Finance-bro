@@ -1,5 +1,15 @@
 # ScopeLine Metric Locator Worklog
 
+## Canonical Metric Upgrade — Phase 3
+
+- Objective: automate cross-surface consistency and same-snapshot reproducibility checks.
+- Changes: added a Metric Consistency Auditor covering Registry schema/duplicates/conflicts, cache identity, period/unit/currency controls, source lineage, exact formula replay, rounded-input detection, module references, historical tables, chart inputs, narratives, peer data, scenarios, valuation, and shared Web/PDF data-model keys.
+- Reproducibility: added a machine-readable comparator for matched, mismatched, missing, definition-changed, formula-changed, source-changed, status-changed, scenario-changed, valuation-changed, and citation-changed outputs; retrieval timestamps are the only excluded fields.
+- Integration: `/api/research` now returns `consistencyAudit` beside the report. Web and PDF use one versioned rendering-model constant, and PDF export rejects an unaudited DOM model.
+- Files: `site/app/lib/metric-consistency-auditor.ts`, `site/app/lib/report-rendering-model.ts`, research API/types, Web report, PDF exporter, tests.
+- Tests: targeted ESLint passed; production build passed; 15/15 automated tests passed; 0 failed. A deliberate historical-value mutation was detected, while two identical snapshots with different retrieval timestamps reproduced successfully.
+- Next: run the full Shell acceptance and double-run comparison from saved source snapshots, then compare Web/PDF values.
+
 ## Canonical Metric Upgrade — Phase 2
 
 - Objective: make the canonical Registry the only quantitative source used by report modules.

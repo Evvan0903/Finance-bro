@@ -95,15 +95,19 @@ The current objective is a sequential canonical-metric upgrade: make Metric Obje
 - Added canonical scenario assumptions and deterministic projected revenue, net income, operating cash flow, cash capex, FCF, valuation-metric, and enterprise-value objects with full input lineage.
 - Added a report-level `metricUsage` ledger and merged peer canonical objects into the same versioned Registry snapshot.
 - Passed targeted ESLint, the production build, and all 14 automated tests for Phase 2. A direct research smoke test could not cross the restricted local sandbox to SEC and returned the existing HTTP 502 public-data-unavailable response.
+- Completed Canonical Metric Phase 3: added exact Registry/formula/source/cache/surface auditing and a machine-readable same-snapshot reproducibility comparator.
+- Added explicit checks for duplicate keys, conflicting values, definition/formula changes, missing dependencies, rounded calculation inputs, annual/quarterly mixing, stale versions, source changes, raw surface mismatches, scenario/valuation replay, and Web/PDF key parity.
+- Versioned the shared Web/PDF rendering model; PDF export now rejects a report DOM that is not the audited shared model.
+- Integrated `consistencyAudit` into research API responses and passed targeted ESLint, the production build, and all 15 automated tests.
 
 ## Remaining tasks
 
-- Resume at Phase 3: implement the consistency and reproducibility auditor and its machine-readable comparison artifact.
-- Complete Phases 4–9 in the order recorded in `TODO.md`; do not expand sectors before the Shell gate passes.
+- Resume at Phase 4: run the full Shell saved-snapshot consistency, double-run, and Web/PDF acceptance gate.
+- Complete Phases 5–9 in the order recorded in `TODO.md`; do not expand sectors before the Shell gate passes.
 
 ## Current status
 
-In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases 1–2 are complete with 14/14 tests passing; Phase 3 is the first unfinished task.
+In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases 1–3 are complete with 15/15 tests passing; Phase 4 is the first unfinished task.
 
 ## Files modified
 
@@ -130,10 +134,12 @@ In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases
 - `site/app/lib/canonical-metrics.ts`
 - `site/app/lib/financial-metrics.ts`
 - `site/app/lib/canonical-scenarios.ts`
+- `site/app/lib/metric-consistency-auditor.ts`
+- `site/app/lib/report-rendering-model.ts`
 
 ## Next recommended step
 
-Add the automated consistency and reproducibility auditor without changing the Site design.
+Run the Shell acceptance gate twice from one saved source snapshot and verify Web/PDF agreement.
 
 ## Assumptions and pending decisions
 
