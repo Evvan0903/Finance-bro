@@ -1,5 +1,15 @@
 # ScopeLine Metric Locator Worklog
 
+## Canonical Metric Upgrade — Phase 5
+
+- Objective: confirm that compact missing-data presentation never conceals an invalid calculation or inconsistent report.
+- Changes: scenario cards now omit unusable FCF, valuation-input, and implied-EV rows instead of repeating empty values; remaining rows reflow naturally. The existing one-time `Limited data coverage` label and expandable `Data Coverage` audit remain the detailed disclosure path.
+- Publication control: `/api/research` now hard-blocks a report when the canonical consistency audit fails and returns the machine-readable audit instead of publishing potentially inconsistent values.
+- Visibility: unresolved critical inputs remain recorded in `dataCoverage`; formulas and rejected candidates remain visible in the audit panel even when their empty metric cards are hidden.
+- Files: `site/app/ResearchApp.tsx`, `site/app/api/research/route.ts`, and `site/tests/rendered-html.test.mjs`.
+- Tests: targeted ESLint passed; production build passed; 16/16 automated tests passed; 0 failed.
+- Next: build the dated, reusable sector research learning pipeline.
+
 ## Canonical Metric Upgrade — Phase 4
 
 - Objective: pass the Shell 14-metric, cross-section, double-run, and Web/PDF acceptance gate before sector expansion.

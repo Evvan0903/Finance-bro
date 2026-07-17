@@ -105,15 +105,18 @@ The current objective is a sequential canonical-metric upgrade: make Metric Obje
 - Generated an eight-page application PDF, rendered and visually inspected every page, and confirmed Web/PDF agreement through the shared audited DOM model.
 - Added `site/artifacts/metric_consistency_report.json` and saved the verified PDF at `site/output/pdf/shell-phase4-consistency.pdf`.
 - Passed targeted ESLint, the production build, and all 16 automated tests.
+- Completed Canonical Metric Phase 5: scenario cards now hide unusable FCF, valuation-input, and implied-EV rows while preserving critical missing-input details in the one-time `Limited data coverage` indicator and expandable `Data Coverage` audit.
+- Added a server-side publication block: a failed canonical consistency audit returns HTTP 500 with the machine-readable audit and does not publish the report.
+- Re-ran targeted ESLint, the production build, and all 16 automated tests successfully.
 
 ## Remaining tasks
 
-- Resume at Phase 5: revalidate compact missing-data behavior and visible invalid-formula handling.
+- Resume at Phase 6: implement the dated, reusable sector research learning pipeline.
 - Complete Phases 6–9 in the order recorded in `TODO.md`.
 
 ## Current status
 
-In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases 1–4 are complete with 16/16 tests passing; Phase 5 is the first unfinished task.
+In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases 1–5 are complete with 16/16 tests passing; Phase 6 is the first unfinished task.
 
 ## Files modified
 
@@ -149,7 +152,7 @@ In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases
 
 ## Next recommended step
 
-Revalidate missing-data presentation and ensure invalid formulas cannot be hidden by compact UI behavior.
+Build the 2025-current sector research learning pipeline without storing full third-party reports in the runtime.
 
 ## Assumptions and pending decisions
 

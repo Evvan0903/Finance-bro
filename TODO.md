@@ -90,7 +90,7 @@
 - [x] Phase 2: connect dashboard, historicals, KPIs, exposures, debates, risks, catalysts, peers, scenarios, and valuation to Registry selectors.
 - [x] Phase 3: add consistency and reproducibility auditor plus machine-readable comparison.
 - [x] Phase 4: pass Shell consistency, double-run, and Web/PDF acceptance.
-- [ ] Phase 5: revalidate missing-data presentation and invalid-formula visibility.
+- [x] Phase 5: revalidate missing-data presentation and invalid-formula visibility.
 - [ ] Phase 6: implement the 2025-current sector research learning pipeline.
 - [ ] Phase 7: sequentially validate Semiconductors/NVDA, Banks/JPM, Biopharma/LLY, and Industrials/CAT.
 - [ ] Phase 8: add five-company snapshots and complete automated regression coverage.
