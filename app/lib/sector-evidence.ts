@@ -6,7 +6,7 @@ import {
 
 export type EvidenceCandidate = SectorResearchCandidate;
 
-const RETRIEVAL_DATE = "2026-07-16";
+const RETRIEVAL_DATE = "2026-07-17";
 export const MIN_PUBLICATION_DATE = SECTOR_RESEARCH_START_DATE;
 
 const EVIDENCE_CANDIDATES: EvidenceCandidate[] = [
@@ -398,6 +398,118 @@ const EVIDENCE_CANDIDATES: EvidenceCandidate[] = [
     investorImplication: {
       zh: "产品层定价风险应与专利到期、收入集中度和新产品替代能力共同评估。",
       en: "Product-level pricing risk should be assessed with patent expiry, revenue concentration, and replacement capacity from new products.",
+    },
+    relevant: true,
+    accessible: true,
+  },
+  {
+    id: "census-m3-may-2026",
+    title: "Manufacturers' Shipments, Inventories, & Orders — May 2026",
+    publisher: "U.S. Census Bureau",
+    publicationDate: "2026-07-02",
+    retrievalDate: RETRIEVAL_DATE,
+    sourceType: "industry-statistics",
+    access: "public",
+    sector: "industrials",
+    subindustry: "industrial-machinery",
+    geography: ["US"],
+    topic: "Manufacturing orders, unfilled orders, shipments, inventories, and backlog conversion",
+    url: "https://www.census.gov/manufacturing/m3/current/index.html",
+    currentEvidence: {
+      zh: "美国人口普查局报告，2026 年 5 月制造业新订单环比下降 1.3% 至 6,574 亿美元，但未完成订单连续 23 个月中的第 22 个月上升，增至 1.5795 万亿美元；库存升至 9,620 亿美元。",
+      en: "The Census Bureau reported that May 2026 manufacturing new orders fell 1.3% to $657.4 billion, while unfilled orders rose for the twenty-second time in twenty-three months to $1.5795 trillion and inventories increased to $962.0 billion.",
+    },
+    generalizedMethods: [{
+      zh: "用期初积压、净新增订单、确认收入和取消订单构建积压瀑布，并将库存与出货和积压转化交叉核对。",
+      en: "Build a backlog waterfall from beginning backlog, net new orders, recognized revenue, and cancellations, then cross-check inventory against shipments and backlog conversion.",
+    }],
+    investorImplication: {
+      zh: "订单动能减弱与积压继续增长可以同时发生；投资者必须区分需求、交付能力和收入确认节奏。",
+      en: "Order momentum can weaken while backlog still grows, so investors must separate demand, delivery capacity, and revenue-recognition timing.",
+    },
+    relevant: true,
+    accessible: true,
+  },
+  {
+    id: "fed-g17-june-2026",
+    title: "Industrial Production and Capacity Utilization — May 2026",
+    publisher: "Board of Governors of the Federal Reserve System",
+    publicationDate: "2026-06-15",
+    retrievalDate: RETRIEVAL_DATE,
+    sourceType: "government-outlook",
+    access: "public",
+    sector: "industrials",
+    subindustry: "industrial-machinery",
+    geography: ["US"],
+    topic: "Manufacturing output, capacity, and utilization",
+    url: "https://www.federalreserve.gov/releases/g17/20260615/default.htm",
+    currentEvidence: {
+      zh: "美联储 2026 年 6 月 G.17 显示，5 月制造业产出环比持平、同比增长 1.4%，制造业产能利用率为 75.7%，仍低于 1972–2025 年 78.2% 的长期均值。",
+      en: "The Federal Reserve's June 2026 G.17 release showed May manufacturing output unchanged sequentially and up 1.4% year over year, with manufacturing utilization at 75.7%, below the 78.2% 1972–2025 average.",
+    },
+    generalizedMethods: [{
+      zh: "把产量指数除以可持续产能得到利用率，并按终端市场和行业比较当前利用率、长期均值与增量产能。",
+      en: "Measure utilization as output relative to sustainable capacity and compare current rates, long-run averages, and incremental capacity by market and industry.",
+    }],
+    investorImplication: {
+      zh: "低于长期均值的行业利用率限制普遍定价权，但公司积压、产品组合和产能瓶颈仍可能造成显著个股差异。",
+      en: "Below-average industry utilization limits broad pricing power, but company backlog, mix, and bottlenecks can still create large issuer differences.",
+    },
+    relevant: true,
+    accessible: true,
+  },
+  {
+    id: "bls-ppi-june-2026",
+    title: "Producer Price Indexes — June 2026",
+    publisher: "U.S. Bureau of Labor Statistics",
+    publicationDate: "2026-07-15",
+    retrievalDate: RETRIEVAL_DATE,
+    sourceType: "industry-statistics",
+    access: "public",
+    sector: "industrials",
+    subindustry: "industrial-machinery",
+    geography: ["US"],
+    topic: "Producer prices, input costs, and price-cost spread",
+    url: "https://www.bls.gov/news.release/archives/ppi_07152026.htm",
+    currentEvidence: {
+      zh: "BLS 报告 2026 年 6 月最终需求 PPI 环比下降 0.3%，但同比仍上涨 5.5%；最终需求商品价格下降 1.4%，而剔除食品、能源和贸易服务后的指数环比上涨 0.1%。",
+      en: "BLS reported that June 2026 final-demand producer prices fell 0.3% sequentially but remained 5.5% higher year over year; final-demand goods fell 1.4%, while the index excluding food, energy, and trade services rose 0.1%.",
+    },
+    generalizedMethods: [{
+      zh: "把价格实现、材料、人工、运费、关税和组合分别桥接至利润率，而不是用单一总 PPI 代替公司成本。",
+      en: "Bridge price realization, materials, labor, freight, tariffs, and mix separately to margin rather than treating one aggregate PPI as company cost.",
+    }],
+    investorImplication: {
+      zh: "总商品通胀放缓不保证制造成本改善；CAT 的价格成本分析必须继续使用发行人桥接并单列关税。",
+      en: "Slower aggregate goods inflation does not guarantee manufacturing-cost relief; CAT's price-cost analysis must retain the issuer bridge and isolate tariffs.",
+    },
+    relevant: true,
+    accessible: true,
+  },
+  {
+    id: "cat-q1-2026-results",
+    title: "Caterpillar Reports First-Quarter 2026 Results",
+    publisher: "Caterpillar Inc.",
+    publicationDate: "2026-04-30",
+    retrievalDate: RETRIEVAL_DATE,
+    sourceType: "industry-outlook",
+    access: "public",
+    sector: "industrials",
+    subindustry: "industrial-machinery",
+    geography: ["Global", "US", "International"],
+    topic: "Industrial machinery backlog, order activity, price realization, manufacturing cost, and execution",
+    url: "https://www.caterpillar.com/content/dam/caterpillarDotCom/releases/1q26/1q26-caterpillar-inc-financial-results.pdf",
+    currentEvidence: {
+      zh: "Caterpillar 报告 2026 年第一季度销售和收入增长 22% 至 174.15 亿美元，其中销量贡献 23.18 亿美元、价格实现贡献 4.26 亿美元；制造成本带来 7.10 亿美元不利影响，公司称积压订单创纪录。",
+      en: "Caterpillar reported first-quarter 2026 sales and revenues up 22% to $17.415 billion, including $2.318 billion from volume and $426 million from price realization; manufacturing costs were a $710 million headwind and management described backlog as a record.",
+    },
+    generalizedMethods: [{
+      zh: "用销量、价格、汇率、制造成本、费用和分部组合重建销售与利润桥，并将积压与实际交付相互验证。",
+      en: "Rebuild sales and profit through volume, price, currency, manufacturing cost, expense, and segment mix, then validate backlog against actual delivery.",
+    }],
+    investorImplication: {
+      zh: "强劲订单与销量并不自动带来利润率扩张；关税、制造成本和分部组合决定积压兑现的盈利质量。",
+      en: "Strong orders and volume do not automatically expand margin; tariffs, manufacturing cost, and segment mix determine the earnings quality of backlog conversion.",
     },
     relevant: true,
     accessible: true,

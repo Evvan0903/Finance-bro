@@ -660,11 +660,171 @@ const biopharmaPack: SectorPack = {
   ],
 };
 
+const industrialMachineryPack: SectorPack = {
+  id: "industrial-machinery",
+  sector: "industrials",
+  sectorLabel: { zh: "工业", en: "Industrials" },
+  subindustryLabel: { zh: "工业机械", en: "Industrial Machinery" },
+  sicCodes: ["3519", "3523", "3531", "3711"],
+  coreKpis: [
+    {
+      id: "orders",
+      label: { zh: "新增订单", en: "New orders" },
+      description: { zh: "扣除取消后的期内新增订单；只有发行人口径和期间可验证时才数值化。", en: "Orders received during the period net of cancellations; numeric only when issuer definition and period are verifiable." },
+      availability: "notStandardized",
+    },
+    {
+      id: "backlog",
+      label: { zh: "公司认定的确定积压订单", en: "Firm order backlog" },
+      description: { zh: "发行人认为确定、截至年末仍未履约的订单金额；不等同已确认营收。", en: "Orders the issuer believes to be firm and unfulfilled at year-end; not recognized revenue." },
+      canonicalMetricId: "backlog",
+      definitionIds: ["issuer-reported-firm-order-backlog"],
+      availability: "notStandardized",
+    },
+    {
+      id: "organic-growth",
+      label: { zh: "内生增长", en: "Organic growth" },
+      description: { zh: "剔除并购和汇率后的可比增长；CAT 未提供统一 FY2025 内生增长数值，因此不以营收增长替代。", en: "Comparable growth excluding acquisitions and currency; CAT did not provide one uniform FY2025 organic-growth value, so revenue growth is not substituted." },
+      availability: "notStandardized",
+    },
+    {
+      id: "price-cost",
+      label: { zh: "价格 / 制造成本利润影响", en: "Price / manufacturing-cost profit impact" },
+      description: { zh: "全年价格实现影响加制造成本影响；两个输入均保留发行人利润桥定义和符号。", en: "Full-year price-realization impact plus manufacturing-cost impact, preserving issuer bridge definitions and signs." },
+      canonicalMetricId: "price-cost-impact",
+      definitionIds: ["price-realization-plus-manufacturing-cost-impact"],
+      availability: "notStandardized",
+    },
+    {
+      id: "segment-margin",
+      label: { zh: "Power & Energy 分部利润率", en: "Power & Energy segment profit margin" },
+      description: { zh: "分部利润占分部总销售额比例；与合并营业利润率口径不同。", en: "Segment profit as a percentage of total segment sales; distinct from consolidated operating margin." },
+      canonicalMetricId: "segment-margin",
+      definitionIds: ["issuer-reported-power-energy-segment-profit-margin"],
+      availability: "notStandardized",
+    },
+    {
+      id: "cash-capex",
+      label: { zh: "现金资本开支", en: "Cash capex" },
+      description: { zh: "购置物业、厂房及设备的现金支出，不含租赁设备购置。", en: "Cash purchases of property, plant, and equipment, excluding equipment acquired for lease." },
+      canonicalMetricId: "cash-capex",
+      definitionIds: ["cash-purchases-property-plant-equipment"],
+      availability: "cashCapex",
+    },
+    {
+      id: "working-capital",
+      label: { zh: "营运资本", en: "Working capital" },
+      description: { zh: "流动资产减流动负债；需结合金融产品业务和客户预付款解释。", en: "Current assets less current liabilities; interpret with Financial Products and customer advances." },
+      canonicalMetricId: "working-capital",
+      definitionIds: ["current-assets-less-current-liabilities"],
+      availability: "notStandardized",
+    },
+    {
+      id: "fcf-conversion",
+      label: { zh: "FCF 转化率", en: "FCF conversion" },
+      description: { zh: "严格自由现金流除以净利润，其中 FCF = 合并经营现金流减现金资本开支。", en: "Strict free cash flow divided by net income, where FCF = consolidated operating cash flow less cash capex." },
+      canonicalMetricId: "cash-conversion",
+      definitionIds: ["free-cash-flow-over-net-income"],
+      availability: "notStandardized",
+    },
+    {
+      id: "utilization",
+      label: { zh: "产能利用率", en: "Capacity utilization" },
+      description: { zh: "公司产出相对可持续产能；行业利用率只用于背景，不冒充 CAT 公司指标。", en: "Company output relative to sustainable capacity; industry utilization is context and is not substituted for a CAT metric." },
+      availability: "notStandardized",
+    },
+    {
+      id: "project-execution",
+      label: { zh: "一年内预计履约积压占比", en: "Backlog expected within one year" },
+      description: { zh: "预计下一年度履约的积压占确定积压比例；表示交付义务，不是完工率。", en: "Backlog expected to be fulfilled in the next year as a share of firm backlog; a delivery obligation, not a completion rate." },
+      canonicalMetricId: "near-term-backlog-share",
+      definitionIds: ["near-term-backlog-over-total-backlog"],
+      availability: "notStandardized",
+    },
+  ],
+  researchQuestions: [
+    { zh: "订单、取消和积压转化是否支持下一阶段收入，而非仅推迟交付？", en: "Do orders, cancellations, and backlog conversion support the next revenue phase rather than merely deferring delivery?" },
+    { zh: "销量与价格能否覆盖制造成本、关税和分部组合压力？", en: "Can volume and price offset manufacturing cost, tariffs, and segment-mix pressure?" },
+    { zh: "利润增长是否通过库存、应收、预付款和资本开支转化为 FCF？", en: "Does profit growth convert into FCF through inventory, receivables, advances, and capex?" },
+    { zh: "产能、供应链和项目节点是否足以兑现近期待履约积压？", en: "Can capacity, supply chain, and project milestones support near-term backlog delivery?" },
+    { zh: "跨周期 FCF 与执行风险是否支持当前估值假设？", en: "Do through-cycle FCF and execution risk support the valuation assumptions?" },
+  ],
+  marketDrivers: [
+    {
+      id: "industrial-order-cycle",
+      name: { zh: "订单与积压周期", en: "Order and backlog cycle" },
+      companyExposure: { zh: "新增订单、取消、确定积压、预计履约期和设备终端销售。", en: "New orders, cancellations, firm backlog, expected fulfillment, and equipment sales to end users." },
+      implication: { zh: "积压只有在取消受控且按计划转化为收入和现金时才具有质量。", en: "Backlog is high quality only when cancellations remain controlled and conversion produces revenue and cash on schedule." },
+      query: "manufacturing orders unfilled orders backlog shipments inventories",
+    },
+    {
+      id: "industrial-price-cost",
+      name: { zh: "价格、成本与关税", en: "Price, cost, and tariffs" },
+      companyExposure: { zh: "价格实现、材料与人工、运费、关税、制造成本和分部组合。", en: "Price realization, materials and labor, freight, tariffs, manufacturing cost, and segment mix." },
+      implication: { zh: "收入增长若不能覆盖成本和关税，则积压兑现仍可能稀释利润率。", en: "If growth does not cover cost and tariffs, backlog conversion can still dilute margin." },
+      query: "producer prices manufacturing costs tariffs price realization margin",
+    },
+    {
+      id: "industrial-capacity",
+      name: { zh: "产能与利用率", en: "Capacity and utilization" },
+      companyExposure: { zh: "工厂能力、供应商瓶颈、在制品、交期和资本开支。", en: "Plant capacity, supplier bottlenecks, work in process, lead times, and capex." },
+      implication: { zh: "低行业利用率不排除局部瓶颈；公司级交付和库存数据更关键。", en: "Low industry utilization does not preclude local bottlenecks; company delivery and inventory data matter more." },
+      query: "manufacturing output capacity utilization capital expenditures",
+    },
+    {
+      id: "industrial-cash-execution",
+      name: { zh: "现金转化与执行", en: "Cash conversion and execution" },
+      companyExposure: { zh: "营运资本、客户预付款、资本开支、FCF 转化和近期待履约积压。", en: "Working capital, customer advances, capex, FCF conversion, and near-term backlog obligations." },
+      implication: { zh: "强劲利润只有在营运资本和交付后转化为现金才支持资本回报。", en: "Strong profit supports capital returns only after working-capital and delivery demands convert into cash." },
+      query: "backlog conversion working capital inventory shipments execution cash flow",
+    },
+  ],
+  peers: [
+    { ticker: "DE", cik: "0000315189", name: "Deere & Co.", rationale: { zh: "大型周期性设备、经销商与融资模式可比。", en: "Large cyclical equipment, dealer, and captive-finance comparator." } },
+    { ticker: "CMI", cik: "0000026172", name: "Cummins", rationale: { zh: "发动机、动力系统与工业终端市场可比。", en: "Engine, power-system, and industrial end-market comparator." } },
+    { ticker: "PCAR", cik: "0000075362", name: "PACCAR", rationale: { zh: "重型设备、零部件、经销与金融产品可比。", en: "Heavy equipment, parts, distribution, and financial-products comparator." } },
+    { ticker: "TEX", cik: "0000097216", name: "Terex", rationale: { zh: "建筑和物料处理设备周期可比。", en: "Construction and materials-processing equipment cycle comparator." } },
+  ],
+  valuation: {
+    method: { zh: "跨周期 EV / FCF 情景", en: "Through-cycle EV / FCF scenarios" },
+    formula: { zh: "模型隐含企业价值 = 情景 FCF × 假设 EV/FCF 倍数", en: "Model-implied enterprise value = scenario FCF × assumed EV/FCF multiple" },
+    multipleLabel: "EV / FCF",
+    multiples: { bear: 10, base: 14, bull: 18 },
+    metric: "freeCashFlow",
+  },
+  risks: [
+    { zh: "订单放缓、取消上升或积压转化延期削弱收入可见性。", en: "Order slowing, rising cancellations, or delayed backlog conversion weakens revenue visibility." },
+    { zh: "价格实现不足以覆盖材料、人工、运费和关税，压缩分部利润率。", en: "Price realization fails to cover material, labor, freight, and tariffs, compressing segment margin." },
+    { zh: "库存、应收和资本开支占用现金，使利润增长不能转化为 FCF。", en: "Inventory, receivables, and capex consume cash, preventing profit growth from converting into FCF." },
+    { zh: "供应链、产能或项目执行失误导致成本超支、质保和客户流失。", en: "Supply-chain, capacity, or project-execution failures cause overruns, warranty costs, and customer loss." },
+  ],
+  catalysts: {
+    operating: [
+      { zh: "订单和设备终端销售改善，同时保持取消率和库存受控。", en: "Orders and equipment sales to end users improve while cancellations and inventory remain controlled." },
+      { zh: "近期待履约积压按计划转化，且不牺牲分部利润率。", en: "Near-term backlog converts on schedule without sacrificing segment margin." },
+    ],
+    financial: [
+      { zh: "价格成本差改善并带动营业利润率恢复。", en: "The price-cost spread improves and supports operating-margin recovery." },
+      { zh: "库存与应收释放推动 FCF 转化高于利润增长。", en: "Inventory and receivable release drives FCF conversion above profit growth." },
+    ],
+    regulatory: [
+      { zh: "关税或贸易成本低于保守情景，改善制造成本。", en: "Tariff or trade costs come in below the conservative case and improve manufacturing cost." },
+      { zh: "基础设施、矿业或数据中心项目批准支持设备需求。", en: "Infrastructure, mining, or data-center project approvals support equipment demand." },
+    ],
+  },
+  reportGuidance: [
+    { zh: "订单、积压和收入必须分开；积压不是已确认营收。", en: "Keep orders, backlog, and revenue separate; backlog is not recognized revenue." },
+    { zh: "价格、销量、汇率、制造成本、关税和分部组合分别桥接。", en: "Bridge price, volume, currency, manufacturing cost, tariffs, and segment mix separately." },
+    { zh: "FCF 使用规范经营现金流减现金资本开支，并明确营运资本影响。", en: "Use canonical operating cash flow less cash capex for FCF and disclose working-capital effects." },
+  ],
+};
+
 const PACKS: Record<SupportedSubindustry, SectorPack> = {
   "integrated-oil-gas": energyPack,
   semiconductors: semiconductorPack,
   banks: bankPack,
   biopharma: biopharmaPack,
+  "industrial-machinery": industrialMachineryPack,
 };
 
 export function getSectorPack(id: SupportedSubindustry) {

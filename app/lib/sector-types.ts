@@ -6,12 +6,18 @@ export type LocalizedText = {
 };
 
 export type ResearchMarket = "US" | "Europe" | "Global";
-export type SupportedSector = "energy" | "technology" | "financials" | "healthcare";
+export type SupportedSector =
+  | "energy"
+  | "technology"
+  | "financials"
+  | "healthcare"
+  | "industrials";
 export type SupportedSubindustry =
   | "integrated-oil-gas"
   | "semiconductors"
   | "banks"
-  | "biopharma";
+  | "biopharma"
+  | "industrial-machinery";
 
 export type ResearchOptions = {
   sectorOutlook: boolean;

@@ -69,6 +69,8 @@ test("server-renders the bilingual sector-aware research request", async () => {
   assert.match(html, /生成行业感知研究/);
   assert.match(html, /综合石油与天然气/);
   assert.match(html, /半导体/);
+  assert.match(html, /工业机械/);
+  assert.match(html, /CAT/);
   assert.match(html, /即将推出/);
   assert.match(html, />中文</);
   assert.match(html, />EN</);
@@ -139,8 +141,9 @@ test("returns distinct screened outlooks without regenerating company data", asy
     { market: "US", subindustry: "semiconductors", locale: "en", refresh: true },
     { market: "US", subindustry: "banks", locale: "en", refresh: true },
     { market: "US", subindustry: "biopharma", locale: "en", refresh: true },
+    { market: "US", subindustry: "industrial-machinery", locale: "en", refresh: true },
   ];
-  const [energyResponse, semiResponse, bankResponse, biopharmaResponse] = await Promise.all(
+  const [energyResponse, semiResponse, bankResponse, biopharmaResponse, industrialResponse] = await Promise.all(
     requests.map((body) =>
       builtWorker.fetch(
         new Request("http://localhost/api/sector-outlook", {
@@ -157,18 +160,22 @@ test("returns distinct screened outlooks without regenerating company data", asy
   assert.equal(semiResponse.status, 200);
   assert.equal(bankResponse.status, 200);
   assert.equal(biopharmaResponse.status, 200);
+  assert.equal(industrialResponse.status, 200);
   const energy = (await energyResponse.json()).outlook;
   const semis = (await semiResponse.json()).outlook;
   const banks = (await bankResponse.json()).outlook;
   const biopharma = (await biopharmaResponse.json()).outlook;
+  const industrials = (await industrialResponse.json()).outlook;
   assert.equal(energy.subindustry, "integrated-oil-gas");
   assert.equal(semis.subindustry, "semiconductors");
   assert.equal(banks.subindustry, "banks");
   assert.equal(biopharma.subindustry, "biopharma");
+  assert.equal(industrials.subindustry, "industrial-machinery");
   assert.ok(energy.claims.length >= 2);
   assert.ok(semis.claims.length >= 2);
   assert.ok(banks.claims.length >= 2);
   assert.ok(biopharma.claims.length >= 2);
+  assert.ok(industrials.claims.length >= 2);
   assert.ok(energy.claims.every((claim) =>
     claim.publicationDate >= "2025-01-01" && claim.publisher && claim.title && claim.url
   ));
@@ -181,14 +188,19 @@ test("returns distinct screened outlooks without regenerating company data", asy
   assert.ok(biopharma.claims.every((claim) =>
     claim.publicationDate >= "2025-01-01" && claim.publisher && claim.title && claim.url
   ));
+  assert.ok(industrials.claims.every((claim) =>
+    claim.publicationDate >= "2025-01-01" && claim.publisher && claim.title && claim.url
+  ));
   assert.ok(energy.learningAudit.acceptedSources >= 2);
   assert.ok(semis.learningAudit.acceptedSources >= 2);
   assert.ok(banks.learningAudit.acceptedSources >= 2);
   assert.ok(biopharma.learningAudit.acceptedSources >= 2);
+  assert.ok(industrials.learningAudit.acceptedSources >= 2);
   assert.equal(energy.learningAudit.publicationWindowStart, "2025-01-01");
   assert.equal(semis.learningAudit.publicationWindowStart, "2025-01-01");
   assert.equal(banks.learningAudit.publicationWindowStart, "2025-01-01");
   assert.equal(biopharma.learningAudit.publicationWindowStart, "2025-01-01");
+  assert.equal(industrials.learningAudit.publicationWindowStart, "2025-01-01");
   assert.notDeepEqual(
     energy.claims.map((claim) => claim.publisher),
     semis.claims.map((claim) => claim.publisher),
@@ -264,6 +276,15 @@ test("enforces strict FCF and sector-specific analyst packs", async () => {
     "Cash runway",
     "compound-patent expiry",
     "Risk-adjusted pipeline value",
+    "New orders",
+    "Firm order backlog",
+    "Organic growth",
+    "Price / manufacturing-cost profit impact",
+    "Power & Energy segment profit margin",
+    "Working capital",
+    "FCF conversion",
+    "Capacity utilization",
+    "Backlog expected within one year",
   ]) assert.match(packs, new RegExp(required.replace("/", "\\/"), "i"));
   assert.match(packs, /EV \/ FCF/);
   assert.match(packs, /EV \/ Revenue/);
@@ -622,6 +643,7 @@ test("audits exact canonical values, shared Web/PDF surfaces, and reproducibilit
     "inventory",
     "currentAssets",
     "currentLiabilities",
+    "workingCapital",
     "totalDebt",
     "netDebt",
     "revenueGrowth",
@@ -1229,6 +1251,174 @@ test("passes the Biopharma and LLY acceptance gate without fabricated pipeline p
     "gross-margin",
     "patent-expiry-year",
   ]) assert.ok(referencedIds.has(id), `LLY cross-report references missing ${id}`);
+  assert.ok(
+    report.sectorOutlook.claims.every(
+      (claim) => claim.publisher && claim.publicationDate >= "2025-01-01",
+    ),
+  );
+  assert.equal(report.sectorPack.researchQuestions.length, 5);
+  assert.equal(report.sectorPack.reportGuidance.length, 3);
+
+  const { compareResearchReports } = await consistencyAuditorModule();
+  const comparison = compareResearchReports(first.report, second.report);
+  assert.equal(comparison.passed, true);
+  assert.equal(comparison.mismatchedObjects.length, 0);
+  assert.equal(comparison.missingObjects.length, 0);
+  assert.equal(comparison.changedDefinitions.length, 0);
+  assert.equal(comparison.changedFormulas.length, 0);
+  assert.equal(comparison.changedSources.length, 0);
+  assert.equal(comparison.changedOutputs.length, 0);
+  assert.equal(
+    comparison.matchedObjects.length,
+    report.metricRegistry.metrics.length,
+  );
+});
+
+test("passes the Industrials and CAT acceptance gate with backlog, price-cost, and cash conversion", async () => {
+  const builtWorker = await worker();
+  const requestBody = {
+    company: "CAT",
+    locale: "en",
+    market: "US",
+    sector: "industrials",
+    subindustry: "industrial-machinery",
+    fixture: true,
+    options: {
+      sectorOutlook: true,
+      peerComparison: false,
+      valuation: true,
+      dueDiligence: true,
+      pdfExport: true,
+    },
+  };
+  const run = async () => {
+    const response = await builtWorker.fetch(
+      new Request("http://localhost/api/research", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(requestBody),
+      }),
+      environment,
+      context,
+    );
+    assert.equal(response.status, 200);
+    return response.json();
+  };
+  const [first, second] = await Promise.all([run(), run()]);
+  const report = first.report;
+  const latest = report.periods.at(-1);
+  const registry = new Map(
+    report.metricRegistry.metrics.map((metric) => [metric.canonical_key, metric]),
+  );
+  const metricById = (metricId) =>
+    report.metricRegistry.metrics.find(
+      (metric) =>
+        metric.metric_id === metricId &&
+        metric.period_end === "2025-12-31",
+    );
+
+  assert.equal(first.consistencyAudit.passed, true);
+  assert.equal(first.consistencyAudit.issues.length, 0);
+  assert.equal(latest.periodEnd, "2025-12-31");
+  assert.equal(latest.revenue, 67_589_000_000);
+  assert.equal(latest.operatingIncome, 11_151_000_000);
+  assert.equal(latest.netIncome, 8_882_000_000);
+  assert.equal(latest.operatingCashFlow, 11_739_000_000);
+  assert.equal(latest.cashCapex, 2_821_000_000);
+  assert.equal(latest.freeCashFlowProxy, 8_918_000_000);
+  assert.equal(latest.freeCashFlowProxy, latest.operatingCashFlow - latest.cashCapex);
+  assert.equal(latest.cashConversion, latest.freeCashFlowProxy / latest.netIncome);
+  assert.equal(latest.currentAssets, 52_485_000_000);
+  assert.equal(latest.currentLiabilities, 36_558_000_000);
+  assert.equal(latest.workingCapital, 15_927_000_000);
+  assert.equal(latest.workingCapital, latest.currentAssets - latest.currentLiabilities);
+  assert.equal(latest.inventory, 18_135_000_000);
+
+  const backlog = metricById("backlog");
+  const nearTermBacklog = metricById("near-term-backlog");
+  const price = metricById("price-realization-impact");
+  const manufacturingCost = metricById("manufacturing-cost-impact");
+  const priceCost = metricById("price-cost-impact");
+  const segmentMargin = metricById("segment-margin");
+  const nearTermShare = metricById("near-term-backlog-share");
+  assert.equal(backlog.value, 51_200_000_000);
+  assert.equal(nearTermBacklog.value, 19_300_000_000);
+  assert.equal(price.value, -817_000_000);
+  assert.equal(manufacturingCost.value, -2_148_000_000);
+  assert.equal(segmentMargin.value, 0.199);
+  assert.equal(priceCost.value, -2_965_000_000);
+  assert.equal(priceCost.value, price.value + manufacturingCost.value);
+  assert.equal(priceCost.formula, "price_realization_impact + manufacturing_cost_impact");
+  assert.deepEqual(
+    priceCost.input_metric_keys,
+    [price.canonical_key, manufacturingCost.canonical_key],
+  );
+  assert.equal(nearTermShare.value, 19_300_000_000 / 51_200_000_000);
+  assert.equal(nearTermShare.formula, "near_term_backlog / total_firm_backlog");
+  for (const metric of [backlog, nearTermBacklog, price, manufacturingCost, segmentMargin]) {
+    assert.equal(metric.status, "Reported");
+    assert.equal(metric.source_date, "2026-02-13");
+    assert.match(metric.source_url, /sec\.gov\/Archives/);
+  }
+
+  const kpis = new Map(report.sectorKpis.map((item) => [item.id, item]));
+  for (const id of [
+    "backlog",
+    "price-cost",
+    "segment-margin",
+    "cash-capex",
+    "working-capital",
+    "fcf-conversion",
+    "project-execution",
+  ]) assert.ok(kpis.get(id)?.canonicalKey, `missing CAT canonical KPI: ${id}`);
+  for (const id of ["orders", "organic-growth", "utilization"]) {
+    assert.equal(kpis.has(id), false, `CAT must hide unresolved KPI: ${id}`);
+  }
+  assert.equal(report.dataCoverage.limited, false);
+  assert.deepEqual(report.dataCoverage.criticalMetricIds, []);
+  assert.match(report.dataCoverage.notes.join(" "), /delivery obligation, not a project completion rate/i);
+  assert.ok(
+    report.metricRegistry.metrics.every(
+      (metric) => !["orders", "organic-growth", "capacity-utilization"].includes(metric.metric_id),
+    ),
+  );
+
+  assert.deepEqual(
+    report.scenarios.map((scenario) => scenario.enterpriseValueMultiple),
+    [10, 14, 18],
+  );
+  assert.ok(
+    report.scenarios.every(
+      (scenario) =>
+        scenario.valuationStartingPoint === latest.freeCashFlowProxy &&
+        scenario.metricReferences.valuationStartingPoint === latest.metricKeys.freeCashFlowProxy &&
+        scenario.valuationMetric === scenario.projectedFreeCashFlow &&
+        scenario.modelImpliedEnterpriseValue ===
+          scenario.valuationMetric * scenario.enterpriseValueMultiple,
+    ),
+  );
+
+  const referencedIds = new Set(
+    [
+      ...report.driverExposure.flatMap((item) => item.metricReferences),
+      ...report.investmentDebates.flatMap((item) => item.metricReferences),
+      ...report.risks.flatMap((item) => item.metricReferences),
+      ...report.filingWatchlist.flatMap((item) => item.metricReferences),
+      ...Object.values(report.catalysts).flatMap((items) =>
+        items.flatMap((item) => item.metricReferences)
+      ),
+    ].map((key) => registry.get(key)?.metric_id),
+  );
+  for (const id of [
+    "backlog",
+    "price-cost-impact",
+    "segment-margin",
+    "cash-capex",
+    "working-capital",
+    "cash-conversion",
+    "near-term-backlog-share",
+    "fcf",
+  ]) assert.ok(referencedIds.has(id), `CAT cross-report references missing ${id}`);
   assert.ok(
     report.sectorOutlook.claims.every(
       (claim) => claim.publisher && claim.publicationDate >= "2025-01-01",

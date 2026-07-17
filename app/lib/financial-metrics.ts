@@ -337,6 +337,7 @@ export const FINANCIAL_DEFINITION_IDS = {
   inventory: "reported-inventory",
   currentAssets: "reported-current-assets",
   currentLiabilities: "reported-current-liabilities",
+  workingCapital: "current-assets-less-current-liabilities",
   totalDebt: "reported-total-debt",
   derivedTotalDebt: "current-plus-noncurrent-debt",
   issuerNetDebt: "issuer-reported-net-debt",
@@ -352,6 +353,8 @@ export const FINANCIAL_DEFINITION_IDS = {
   cashConversion: "free-cash-flow-over-net-income",
   currentRatio: "current-assets-over-current-liabilities",
   liabilitiesAssets: "liabilities-over-assets",
+  priceCostImpact: "price-realization-plus-manufacturing-cost-impact",
+  nearTermBacklogShare: "near-term-backlog-over-total-backlog",
 } as const;
 
 function selectFacts(
@@ -729,6 +732,34 @@ export function ensureCoreDerivedMetrics(
       periodEnd,
       [FINANCIAL_DEFINITION_IDS.currentLiabilities],
     );
+    const backlog = firstDefinition(
+      registry,
+      companyId,
+      "backlog",
+      periodEnd,
+      ["issuer-reported-firm-order-backlog"],
+    );
+    const nearTermBacklog = firstDefinition(
+      registry,
+      companyId,
+      "near-term-backlog",
+      periodEnd,
+      ["issuer-reported-backlog-expected-within-one-year"],
+    );
+    const priceRealizationImpact = firstDefinition(
+      registry,
+      companyId,
+      "price-realization-impact",
+      periodEnd,
+      ["issuer-reported-full-year-price-realization-impact"],
+    );
+    const manufacturingCostImpact = firstDefinition(
+      registry,
+      companyId,
+      "manufacturing-cost-impact",
+      periodEnd,
+      ["issuer-reported-full-year-manufacturing-cost-impact"],
+    );
     const loans = firstDefinition(
       registry,
       companyId,
@@ -800,6 +831,51 @@ export function ensureCoreDerivedMetrics(
           currency: operatingCashFlow.currency,
         })
       : null;
+    if (currentAssets && currentLiabilities) {
+      registerDerived(registry, {
+        metricId: "working-capital",
+        companyId,
+        sector,
+        period,
+        periodEnd,
+        definitionId: FINANCIAL_DEFINITION_IDS.workingCapital,
+        formulaId: "subtract",
+        formula: "current_assets - current_liabilities",
+        inputs: [currentAssets, currentLiabilities],
+        unit: currentAssets.unit,
+        currency: currentAssets.currency,
+      });
+    }
+    if (priceRealizationImpact && manufacturingCostImpact) {
+      registerDerived(registry, {
+        metricId: "price-cost-impact",
+        companyId,
+        sector,
+        period,
+        periodEnd,
+        definitionId: FINANCIAL_DEFINITION_IDS.priceCostImpact,
+        formulaId: "add",
+        formula: "price_realization_impact + manufacturing_cost_impact",
+        inputs: [priceRealizationImpact, manufacturingCostImpact],
+        unit: priceRealizationImpact.unit,
+        currency: priceRealizationImpact.currency,
+      });
+    }
+    if (nearTermBacklog && backlog && backlog.value !== 0) {
+      registerDerived(registry, {
+        metricId: "near-term-backlog-share",
+        companyId,
+        sector,
+        period,
+        periodEnd,
+        definitionId: FINANCIAL_DEFINITION_IDS.nearTermBacklogShare,
+        formulaId: "divide",
+        formula: "near_term_backlog / total_firm_backlog",
+        inputs: [nearTermBacklog, backlog],
+        unit: "ratio",
+        currency: null,
+      });
+    }
     if (totalDebt && cash) {
       registerDerived(registry, {
         metricId: "net-debt",
@@ -1090,6 +1166,7 @@ export function financialPeriodsFromRegistry(
       inventory: selectedMetric(registry, companyId, "inventory", periodEnd, [FINANCIAL_DEFINITION_IDS.inventory]),
       currentAssets: selectedMetric(registry, companyId, "current-assets", periodEnd, [FINANCIAL_DEFINITION_IDS.currentAssets]),
       currentLiabilities: selectedMetric(registry, companyId, "current-liabilities", periodEnd, [FINANCIAL_DEFINITION_IDS.currentLiabilities]),
+      workingCapital: selectedMetric(registry, companyId, "working-capital", periodEnd, [FINANCIAL_DEFINITION_IDS.workingCapital]),
       totalDebt: selectedMetric(registry, companyId, "total-debt", periodEnd, [FINANCIAL_DEFINITION_IDS.totalDebt, FINANCIAL_DEFINITION_IDS.derivedTotalDebt]),
       netDebt: selectedMetric(registry, companyId, "net-debt", periodEnd, [FINANCIAL_DEFINITION_IDS.issuerNetDebt, FINANCIAL_DEFINITION_IDS.normalizedNetDebt]),
       revenueGrowth: selectedMetric(registry, companyId, "revenue-growth", periodEnd, [FINANCIAL_DEFINITION_IDS.revenueGrowth]),
@@ -1134,6 +1211,7 @@ export function financialPeriodsFromRegistry(
       inventory: value(selections.inventory),
       currentAssets: value(selections.currentAssets),
       currentLiabilities: value(selections.currentLiabilities),
+      workingCapital: value(selections.workingCapital),
       totalDebt: value(selections.totalDebt),
       netDebt: value(selections.netDebt),
       revenueGrowth: value(selections.revenueGrowth),

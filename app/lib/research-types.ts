@@ -56,6 +56,7 @@ export type FinancialPeriod = {
   inventory: number | null;
   currentAssets: number | null;
   currentLiabilities: number | null;
+  workingCapital: number | null;
   totalDebt: number | null;
   netDebt: number | null;
   revenueGrowth: number | null;

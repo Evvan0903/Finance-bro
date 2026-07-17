@@ -157,6 +157,54 @@ const METHODS: SectorMethod[] = [
       { zh: "数据不足时使用透明营收情景，并明确不输出伪精确管线价值。", en: "When data are insufficient, use transparent revenue scenarios and do not publish false-precision pipeline value." },
     ],
   },
+  {
+    id: "industrials-order-backlog",
+    sector: "industrials",
+    subindustry: "industrial-machinery",
+    name: { zh: "订单与积压瀑布", en: "Order and backlog waterfall" },
+    purpose: { zh: "区分需求、取消、交付和收入确认。", en: "Separate demand, cancellations, delivery, and revenue recognition." },
+    steps: [
+      { zh: "记录期初积压、新增订单、取消订单、收入确认和期末积压。", en: "Record beginning backlog, new orders, cancellations, recognized revenue, and ending backlog." },
+      { zh: "按分部、地区和预计履约期分析积压质量。", en: "Analyze backlog quality by segment, geography, and expected fulfillment window." },
+      { zh: "将积压转化与库存、产能、供应链和客户融资交叉核对。", en: "Cross-check backlog conversion against inventory, capacity, supply chain, and customer financing." },
+    ],
+  },
+  {
+    id: "industrials-price-cost",
+    sector: "industrials",
+    subindustry: "industrial-machinery",
+    name: { zh: "销量价格成本桥接", en: "Volume-price-cost bridge" },
+    purpose: { zh: "解释销售增长是否转化为分部利润率和经营杠杆。", en: "Explain whether sales growth converts into segment margin and operating leverage." },
+    steps: [
+      { zh: "分别记录销量、价格实现、汇率和分部组合。", en: "Record volume, price realization, currency, and segment mix separately." },
+      { zh: "拆分材料、人工、运费、关税与期间制造成本。", en: "Separate material, labor, freight, tariffs, and period manufacturing costs." },
+      { zh: "用报告利润桥而非收入增速推断价格成本差。", en: "Use reported profit bridges rather than inferring price-cost spread from revenue growth." },
+    ],
+  },
+  {
+    id: "industrials-cash-conversion",
+    sector: "industrials",
+    subindustry: "industrial-machinery",
+    name: { zh: "营运资本与 FCF 转化", en: "Working-capital and FCF conversion" },
+    purpose: { zh: "判断利润、积压和库存是否转化为现金。", en: "Test whether profit, backlog, and inventory convert into cash." },
+    steps: [
+      { zh: "FCF = 经营现金流 - 现金资本开支。", en: "FCF = operating cash flow - cash capital expenditure." },
+      { zh: "桥接应收、库存、应付、客户预付款与其他营运资本。", en: "Bridge receivables, inventory, payables, customer advances, and other working capital." },
+      { zh: "以 FCF ÷ 净利润衡量转化，并解释周期性预付款或库存影响。", en: "Measure conversion as FCF / net income and explain cyclical advances or inventory effects." },
+    ],
+  },
+  {
+    id: "industrials-execution-valuation",
+    sector: "industrials",
+    subindustry: "industrial-machinery",
+    name: { zh: "执行风险与周期估值", en: "Execution-risk and cycle valuation" },
+    purpose: { zh: "把积压履约、利用率、利润率和再投资纳入估值。", en: "Connect backlog fulfillment, utilization, margin, and reinvestment to valuation." },
+    steps: [
+      { zh: "把近期待履约积压视为交付义务，不视为已实现收入。", en: "Treat near-term backlog as a delivery obligation, not recognized revenue." },
+      { zh: "用产能、供应链、成本和项目节点定义执行压力。", en: "Define execution pressure through capacity, supply chain, cost, and project milestones." },
+      { zh: "以跨周期 FCF 情景和透明 EV/FCF 倍数测试估值。", en: "Test valuation with through-cycle FCF scenarios and transparent EV/FCF multiples." },
+    ],
+  },
 ];
 
 export function getSectorMethods(subindustry: SupportedSubindustry) {

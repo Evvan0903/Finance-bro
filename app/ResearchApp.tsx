@@ -60,6 +60,13 @@ const EXAMPLES: Array<{
     sector: "healthcare",
     subindustry: "biopharma",
   },
+  {
+    label: { zh: "CAT · 工业机械", en: "CAT · Industrial Machinery" },
+    company: "CAT",
+    market: "US",
+    sector: "industrials",
+    subindustry: "industrial-machinery",
+  },
 ];
 
 const EVIDENCE_LABELS: Record<Locale, Record<EvidenceKind, string>> = {
@@ -94,13 +101,14 @@ const COPY = {
     sector: "行业",
     subindustry: "子行业",
     ticker: "公司名或交易代码",
-    companyPlaceholder: "例如：SHEL、NVDA、JPM 或 LLY",
+    companyPlaceholder: "例如：SHEL、NVDA、JPM、LLY 或 CAT",
     energy: "能源",
     technology: "科技",
     integrated: "综合石油与天然气",
     semiconductors: "半导体",
     banks: "银行",
     biopharma: "生物制药",
+    industrialMachinery: "工业机械",
     us: "美国",
     europe: "欧洲",
     global: "全球",
@@ -167,6 +175,9 @@ const COPY = {
     operatingCashFlow: "经营现金流",
     cashCapex: "现金资本开支",
     freeCashFlow: "自由现金流",
+    operatingMargin: "营业利润率",
+    workingCapital: "营运资本",
+    fcfConversion: "FCF 转化率",
     netMargin: "净利率",
     sectorKpis: "行业 KPI",
     kpiDefinition: "定义",
@@ -245,13 +256,14 @@ const COPY = {
     sector: "Sector",
     subindustry: "Subindustry",
     ticker: "Company name or ticker",
-    companyPlaceholder: "e.g. SHEL, NVDA, JPM, or LLY",
+    companyPlaceholder: "e.g. SHEL, NVDA, JPM, LLY, or CAT",
     energy: "Energy",
     technology: "Technology",
     integrated: "Integrated Oil & Gas",
     semiconductors: "Semiconductors",
     banks: "Banks",
     biopharma: "Biopharma",
+    industrialMachinery: "Industrial Machinery",
     us: "US",
     europe: "Europe",
     global: "Global",
@@ -318,6 +330,9 @@ const COPY = {
     operatingCashFlow: "Operating cash flow",
     cashCapex: "Cash capex",
     freeCashFlow: "Free cash flow",
+    operatingMargin: "Operating margin",
+    workingCapital: "Working capital",
+    fcfConversion: "FCF conversion",
     netMargin: "Net margin",
     sectorKpis: "Sector KPIs",
     kpiDefinition: "Definition",
@@ -522,6 +537,15 @@ function reportToMarkdown(report: ResearchReport, locale: Locale) {
             ...report.periods.map(
               (period) =>
                 `| ${shortYear(period.periodEnd)}A | ${formatMoney(period.revenue, report.currency, locale)} | ${formatPercent(period.grossMargin, locale)} | ${formatMoney(period.researchAndDevelopment, report.currency, locale)} | ${formatMoney(period.netIncome, report.currency, locale)} | ${formatMoney(period.freeCashFlowProxy, report.currency, locale)} |`,
+            ),
+          ]
+      : report.sectorPack.id === "industrial-machinery"
+        ? [
+            `| ${copy.year} | ${copy.revenue} | ${copy.operatingMargin} | ${copy.inventory} | ${copy.cashCapex} | ${copy.freeCashFlow} | ${copy.fcfConversion} |`,
+            "|---|---:|---:|---:|---:|---:|---:|",
+            ...report.periods.map(
+              (period) =>
+                `| ${shortYear(period.periodEnd)}A | ${formatMoney(period.revenue, report.currency, locale)} | ${formatPercent(period.operatingMargin, locale)} | ${formatMoney(period.inventory, report.currency, locale)} | ${formatMoney(period.cashCapex, report.currency, locale)} | ${formatMoney(period.freeCashFlowProxy, report.currency, locale)} | ${formatPercent(period.cashConversion, locale)} |`,
             ),
           ]
       : [
@@ -798,7 +822,9 @@ export function ResearchApp() {
           ? "semiconductors"
           : next === "financials"
             ? "banks"
-            : "biopharma",
+            : next === "healthcare"
+              ? "biopharma"
+              : "industrial-machinery",
     );
     setReport(null);
     setError("");
@@ -923,7 +949,7 @@ export function ResearchApp() {
                   <option value="technology">{copy.technology}</option>
                   <option value="financials">{copy.financialSector}</option>
                   <option value="healthcare">{copy.healthcare}</option>
-                  <option disabled>{copy.industrials} · {copy.comingSoon}</option>
+                  <option value="industrials">{copy.industrials}</option>
                   <option disabled>{copy.consumer} · {copy.comingSoon}</option>
                 </select>
               </label>
@@ -936,7 +962,9 @@ export function ResearchApp() {
                       ? <option value="semiconductors">{copy.semiconductors}</option>
                       : sector === "financials"
                         ? <option value="banks">{copy.banks}</option>
-                        : <option value="biopharma">{copy.biopharma}</option>}
+                        : sector === "healthcare"
+                          ? <option value="biopharma">{copy.biopharma}</option>
+                          : <option value="industrial-machinery">{copy.industrialMachinery}</option>}
                 </select>
               </label>
               <label className="ticker-field">
@@ -1141,6 +1169,12 @@ export function ResearchApp() {
                       <th>{copy.researchAndDevelopment}</th><th>{copy.netIncome}</th>
                       <th>{copy.operatingCashFlow}</th><th>{copy.freeCashFlow}</th>
                     </tr>
+                  ) : report.sectorPack.id === "industrial-machinery" ? (
+                    <tr>
+                      <th>{copy.year}</th><th>{copy.revenue}</th><th>{copy.operatingMargin}</th>
+                      <th>{copy.inventory}</th><th>{copy.workingCapital}</th>
+                      <th>{copy.cashCapex}</th><th>{copy.freeCashFlow}</th><th>{copy.fcfConversion}</th>
+                    </tr>
                   ) : (
                     <tr>
                       <th>{copy.year}</th><th>{copy.revenue}</th><th>{copy.grossMargin}</th>
@@ -1171,6 +1205,16 @@ export function ResearchApp() {
                           <td>{formatMoney(period.netIncome, report.currency, locale)}</td>
                           <td>{formatMoney(period.operatingCashFlow, report.currency, locale)}</td>
                           <td>{formatMoney(period.freeCashFlowProxy, report.currency, locale)}</td>
+                        </>
+                      ) : report.sectorPack.id === "industrial-machinery" ? (
+                        <>
+                          <td>{formatMoney(period.revenue, report.currency, locale)}</td>
+                          <td>{formatPercent(period.operatingMargin, locale)}</td>
+                          <td>{formatMoney(period.inventory, report.currency, locale)}</td>
+                          <td>{formatMoney(period.workingCapital, report.currency, locale)}</td>
+                          <td>{formatMoney(period.cashCapex, report.currency, locale)}</td>
+                          <td>{formatMoney(period.freeCashFlowProxy, report.currency, locale)}</td>
+                          <td>{formatPercent(period.cashConversion, locale)}</td>
                         </>
                       ) : (
                         <>
@@ -1242,6 +1286,15 @@ export function ResearchApp() {
                         { label: copy.netDebt, value: latestPeriod.netDebt, formatted: formatMoney(latestPeriod.netDebt, report.currency, locale) },
                         { label: copy.cashCapex, value: latestPeriod.cashCapex, formatted: formatMoney(latestPeriod.cashCapex, report.currency, locale) },
                         { label: copy.freeCashFlow, value: latestPeriod.freeCashFlowProxy, formatted: formatMoney(latestPeriod.freeCashFlowProxy, report.currency, locale) },
+                      ]
+                  : report.sectorPack.id === "industrial-machinery"
+                    ? [
+                        { label: copy.workingCapital, value: latestPeriod.workingCapital, formatted: formatMoney(latestPeriod.workingCapital, report.currency, locale) },
+                        { label: copy.inventory, value: latestPeriod.inventory, formatted: formatMoney(latestPeriod.inventory, report.currency, locale) },
+                        { label: copy.cashCapex, value: latestPeriod.cashCapex, formatted: formatMoney(latestPeriod.cashCapex, report.currency, locale) },
+                        { label: copy.freeCashFlow, value: latestPeriod.freeCashFlowProxy, formatted: formatMoney(latestPeriod.freeCashFlowProxy, report.currency, locale) },
+                        { label: copy.fcfConversion, value: latestPeriod.cashConversion, formatted: formatPercent(latestPeriod.cashConversion, locale) },
+                        { label: copy.operatingMargin, value: latestPeriod.operatingMargin, formatted: formatPercent(latestPeriod.operatingMargin, locale) },
                       ]
                   : [
                       { label: copy.cash, value: latestPeriod.cash, formatted: formatMoney(latestPeriod.cash, report.currency, locale) },
