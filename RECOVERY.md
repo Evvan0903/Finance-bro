@@ -123,15 +123,22 @@ The current objective is a sequential canonical-metric upgrade: make Metric Obje
 - JPM produced five annual periods, 167 canonical metrics, 642 audited surface references, and zero consistency issues. Two runs reproduced every canonical object and output.
 - Verified FY2025 tangible book value of USD 308.407bn, capital returns of USD 48.216bn, and Bear/Base/Bull model-implied equity values of USD 351.584bn / USD 540.021bn / USD 732.775bn.
 - Passed targeted ESLint, production build, and 18/18 automated tests; Banks is validated, while Biopharma remains preview.
+- Completed Phase 7.3 Healthcare / Biopharma acceptance using LLY's official SEC Company Facts/Submissions snapshot and exact FY2025 Form 10-K product, concentration, and patent evidence.
+- Added the biopharma ontology, four recent IQVIA/FDA/CMS evidence sources, research methods, drivers, peers, bilingual report paths, and commercial-revenue EV/revenue scenarios.
+- Populated five verified KPI cards: Mounjaro revenue USD 22.965bn, Mounjaro/Zepbound revenue concentration 56%, R&D expense USD 13.337bn, derived gross margin 83.04%, and issuer-estimated U.S. compound-patent expiry in 2036.
+- Kept pipeline stage, clinical milestones, regulatory dates, cash runway, and risk-adjusted pipeline value as explicit ontology concepts without fabricating numeric values. No rNPV is calculated from candidate counts or incomplete inputs.
+- LLY produced five annual periods, 166 canonical metrics, 594 audited surface references, and zero consistency issues. Two runs reproduced every canonical object and output.
+- Fixed a live-report gap found in browser QA by reusing the verified FY2025 10-K evidence only when LLY's current annual filing identity matches; Chinese and English live reports now agree with the acceptance snapshot without a false coverage warning.
+- Passed targeted ESLint, production build, 19/19 automated tests, and bilingual live browser acceptance; Biopharma is validated, while Industrials remains coming soon.
 
 ## Remaining tasks
 
-- Resume at Phase 7.3: implement and validate Healthcare / Biopharma with LLY.
+- Resume at Phase 7.4: implement and validate Industrials with CAT.
 - Complete Phases 7–9 in the order recorded in `TODO.md`.
 
 ## Current status
 
-In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases 1–6 and Phases 7.1–7.2 are complete with 18/18 tests passing; Phase 7.3 is the first unfinished task.
+In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases 1–6 and Phases 7.1–7.3 are complete with 19/19 tests passing; Phase 7.4 is the first unfinished task.
 
 ## Files modified
 
@@ -164,13 +171,14 @@ In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases
 - `site/tests/fixtures/shel-source-snapshot.json`
 - `site/tests/fixtures/nvda-source-snapshot.json`
 - `site/tests/fixtures/jpm-source-snapshot.json`
+- `site/tests/fixtures/lly-source-snapshot.json`
 - `site/scripts/create-company-fixture.mjs`
 - `site/artifacts/metric_consistency_report.json`
 - `site/output/pdf/shell-phase4-consistency.pdf`
 
 ## Next recommended step
 
-Implement the Healthcare / Biopharma / LLY pack and acceptance gate, separating reported commercial metrics from pipeline assumptions and avoiding unsupported risk-adjusted pipeline precision.
+Implement the Industrials / CAT pack and acceptance gate, including orders, backlog, price/cost, segment margin, working capital, FCF conversion, utilization, and project execution.
 
 ## Assumptions and pending decisions
 

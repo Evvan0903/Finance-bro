@@ -1,5 +1,21 @@
 # ScopeLine Metric Locator Worklog
 
+## Canonical Metric Upgrade — Phase 7.3
+
+- Objective: validate Healthcare / Biopharma with LLY before beginning Industrials.
+- Research: ingested four dated public sources from IQVIA, FDA, and CMS covering R&D productivity, novel approvals, clinical-trial participation, and the 2028 Medicare negotiation cycle.
+- Changes: added the biopharma KPI ontology, source priorities, research methods, drivers, peers, bilingual UI/report paths, and transparent commercial-revenue EV/revenue scenarios.
+- Filing extraction: captured LLY FY2025 Mounjaro revenue (USD 22.965bn), Zepbound revenue (USD 13.542bn), combined revenue concentration (56%), and issuer-estimated U.S. compound-patent expiry (2036) with exact 10-K section/table/row provenance. The verified filing evidence is reused only when the live latest annual filing matches FY2025 and its February 12, 2026 filing date.
+- Acceptance: 5/10 KPI cards have verified numeric objects: largest-product revenue, product concentration, R&D expense (USD 13.337bn), derived gross margin (83.04%), and patent-expiry year. Pipeline stage, clinical milestones, regulatory dates, cash runway, and risk-adjusted pipeline value remain explicit ontology concepts but are hidden as numeric cards because public inputs do not support deterministic values.
+- Valuation: Bear/Base/Bull use explicit commercial-revenue and 4x/7x/10x EV/revenue assumptions. No pipeline count, clinical stage, probability, or unsupported rNPV is converted into a fabricated value.
+- Consistency and reproducibility: 166 canonical metrics and 594 surface references passed with zero issues; two identical runs matched all canonical objects, definitions, formulas, sources, statuses, scenarios, valuation values, citations, and outputs.
+- UI validation: live Chinese and English LLY reports showed USD 22.965bn, 56%, and 2036 from the verified filing objects, did not show an incorrect coverage warning, and produced no browser errors.
+- Known limitations: candidate-level stages and milestones remain dated text evidence, not canonical numeric metrics; profitable LLY is not assigned a false cash-runway ratio; cash capex is unavailable from the selected standardized definition, so strict FCF remains uncalculated.
+- Files: biopharma sector types/methods/evidence/pack, research API/UI, canonical display/financial normalization, LLY fixture/generator, and tests.
+- Tests: targeted ESLint passed; production build passed; 19/19 automated tests passed; bilingual live browser acceptance passed; 0 failed.
+- Industry status: Biopharma validated/unlocked; Industrials remains coming soon.
+- Next: implement and validate Industrials with CAT.
+
 ## Canonical Metric Upgrade — Phase 7.2
 
 - Objective: validate Financials / Banks with JPM before beginning Biopharma.
