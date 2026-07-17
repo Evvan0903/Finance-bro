@@ -1,5 +1,16 @@
 # ScopeLine Metric Locator Worklog
 
+## Canonical Metric Upgrade — Phase 6
+
+- Objective: make recent sector-research learning reusable, dated, concise, and separate from company filings and canonical metrics.
+- Changes: added a typed ingestion pipeline that validates public accessibility, relevance, original publication date, retrieval sequence, HTTPS URL, deduplication, required metadata, and concise bilingual method/evidence content.
+- Stored fields: title, publisher, original publication date, retrieval date, sector, subindustry, geography, topic, URL, source type, generalized analytical methods, current evidence, and investor implication.
+- Runtime discipline: only original concise patterns and evidence enter retrieval; no full report text is stored or loaded. Deterministic vector retrieval still runs only after sector/subindustry/geography/date filtering.
+- Coverage: 3 integrated-oil-and-gas sources/methods and 4 semiconductor sources/methods accepted; 0 rejected. Every outlook claim carries publisher, publication date, title, and URL.
+- Files: `site/app/lib/sector-learning-pipeline.ts`, sector evidence/types/retrieval, and tests.
+- Tests: official source URLs reviewed; targeted ESLint passed; production build passed; 16/16 automated tests passed; 0 failed.
+- Next: validate and unlock industries sequentially, beginning with Semiconductors / NVDA.
+
 ## Canonical Metric Upgrade — Phase 5
 
 - Objective: confirm that compact missing-data presentation never conceals an invalid calculation or inconsistent report.

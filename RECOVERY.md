@@ -108,15 +108,19 @@ The current objective is a sequential canonical-metric upgrade: make Metric Obje
 - Completed Canonical Metric Phase 5: scenario cards now hide unusable FCF, valuation-input, and implied-EV rows while preserving critical missing-input details in the one-time `Limited data coverage` indicator and expandable `Data Coverage` audit.
 - Added a server-side publication block: a failed canonical consistency audit returns HTTP 500 with the machine-readable audit and does not publish the report.
 - Re-ran targeted ESLint, the production build, and all 16 automated tests successfully.
+- Completed Canonical Metric Phase 6: added a reusable recent-sector-research ingestion pipeline with publication-window, retrieval-sequence, source-metadata, accessibility, deduplication, and concise-content validation.
+- Stored source type, generalized analytical methods, and current evidence separately; runtime retrieval uses concise bilingual chunks and never loads full reports.
+- Accepted 3 integrated-oil-and-gas and 4 semiconductor sources/methods from 2025-01-01 through 2026-07-17 with no rejected sources; every current claim retains publisher and original publication date.
+- Reviewed the official source URLs and passed targeted ESLint, the production build, and all 16 automated tests.
 
 ## Remaining tasks
 
-- Resume at Phase 6: implement the dated, reusable sector research learning pipeline.
-- Complete Phases 6–9 in the order recorded in `TODO.md`.
+- Resume at Phase 7.1: validate Semiconductors / NVDA before adding Banks.
+- Complete Phases 7–9 in the order recorded in `TODO.md`.
 
 ## Current status
 
-In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases 1–5 are complete with 16/16 tests passing; Phase 6 is the first unfinished task.
+In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases 1–6 are complete with 16/16 tests passing; Phase 7.1 is the first unfinished task.
 
 ## Files modified
 
@@ -145,6 +149,7 @@ In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases
 - `site/app/lib/canonical-scenarios.ts`
 - `site/app/lib/metric-consistency-auditor.ts`
 - `site/app/lib/report-rendering-model.ts`
+- `site/app/lib/sector-learning-pipeline.ts`
 - `site/tests/fixtures/shel-source-snapshot.json`
 - `site/scripts/create-company-fixture.mjs`
 - `site/artifacts/metric_consistency_report.json`
@@ -152,7 +157,7 @@ In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases
 
 ## Next recommended step
 
-Build the 2025-current sector research learning pipeline without storing full third-party reports in the runtime.
+Run the complete Semiconductors / NVDA acceptance gate and keep later industries in preview until their own gates pass.
 
 ## Assumptions and pending decisions
 
