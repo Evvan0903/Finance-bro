@@ -70,3 +70,16 @@
 - [x] Run lint, build, automated tests, browser QA, and PDF rendering QA.
 - [x] Update recovery notes and create a local checkpoint commit.
 - [x] Publish the sector-aware release to the existing private ScopeLine Site and verify production.
+
+## ScopeLine Metric Locator iteration
+
+- [x] Recover and inspect the latest version 3 checkpoint.
+- [x] Define reusable metric metadata, source order, statuses, and audit records.
+- [x] Implement deterministic standard XBRL, custom XBRL, HTML-table, text, derivation, and validation logic.
+- [x] Add a Shell-only validation endpoint with official-source and verified-snapshot modes.
+- [x] Test all 11 Shell metrics against the full official 2025 filing and Company Facts (11/11 found).
+- [x] Integrate the passing Shell locator results into the existing research response.
+- [x] Hide unusable cards, reflow grids, and replace repeated missing strings with compact display.
+- [x] Add the `Limited data coverage` indicator and expandable `Data Coverage` audit.
+- [x] Add and pass regression tests for source order, strict FCF, custom XBRL, and missing-data UI.
+- [ ] Create the final local checkpoint and deploy the owner-only Site.

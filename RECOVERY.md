@@ -8,7 +8,7 @@ The subsequent objective was to turn that research approach into a one-input MVP
 
 The latest completed objective was to upgrade that existing private Site to a complete Chinese/English experience without changing its URL or access policy.
 
-The current objective is to incrementally upgrade the same private ScopeLine Site into a sector-aware research platform, initially supporting Energy / Integrated Oil & Gas and Technology / Semiconductors, while preserving the brand, SEC pipeline, citations, bilingual experience, PDF export, URL, and owner-only access.
+The current objective is to improve the existing ScopeLine Site without adding sectors: build a reusable, source-ordered Metric Locator Engine; validate it against 11 Shell metrics; and replace repeated missing-value UI with hidden unusable cards plus a compact Data Coverage audit.
 
 ## Completed tasks
 
@@ -74,14 +74,24 @@ The current objective is to incrementally upgrade the same private ScopeLine Sit
 - Verified production NVDA has five annual periods, nine semiconductor KPIs, AMD/AVGO/INTC/TSM peers, 71.1% latest gross margin, USD 96.7 billion strict FCF, and EV / Revenue valuation.
 - Updated the Site display title to `ScopeLine 行业感知研究 · Sector-Aware Research`.
 - Reconfirmed access remains owner-only with one owner, no additional users, and no allowed groups.
+- Added reusable metric definitions with aliases, accepted units, period rules, preferred sources, derivations, required inputs, validation rules, and exact internal statuses.
+- Added deterministic extraction for standard SEC Company Facts, filing-level custom inline XBRL, filing HTML tables, and filing text, plus ordered source-ledger handling for exhibits and existing presentations.
+- Added company, period, duration, unit/currency, filing date, section/row, definition, dimensional-context, and numeric-range validation.
+- Added selected-value provenance, formulas, confidence, and rejected-candidate reasons; Company Facts absence no longer implies issuer non-disclosure.
+- Added the Shell-only `/api/metric-locator` validation endpoint with official SEC inputs and an explicitly labeled verified-snapshot fallback.
+- Tested the locator against the full official Shell 2025 Form 20-F and Company Facts: all 11 requested metrics were extracted (100%); strict FCF is USD 21.948 billion and Shell's differently defined USD 26.052 billion FCF is retained as a rejected definition-mismatch candidate.
+- Integrated the Shell locator audit into the existing research API and updated FY2025 cash capex, strict FCF, net debt, ratios, scenarios, dashboard, and energy KPI cards.
+- Hid unusable KPI and balance cards, allowed CSS grids to reflow, and replaced repeated table gaps with a short em dash.
+- Added a one-time `Limited data coverage` chip for critical FCF/valuation gaps and an expandable bilingual `Data Coverage` panel with sources, locations, methods, confidence, formulas, unresolved reasons, and rejected candidates.
+- Added `WORKLOG.md`; passed ESLint, production build, 12/12 automated tests, a full-official-document Shell locator test, and an integrated Shell research-response test.
 
 ## Remaining tasks
 
-- None for the requested version 3 upgrade.
+- Create the final local checkpoint, publish a new version of the existing private Site, and verify production.
 
 ## Current status
 
-Complete. Sites version 4 is live at `https://scopeline-research.evvan.chatgpt.site` from source commit `6d6b671`. Lint, production build, all nine tests, local SHEL/NVDA browser validation, outlook-only refresh, eight-page PDF rendering QA, and authenticated production homepage/SHEL/NVDA/outlook checks all passed. The Site remains owner-only.
+In progress. Engine, Shell validation, report integration, missing-data UI, worklog, and final local QA are complete. Shell returns 11/11 metrics with no unresolved items; final checkpoint and deployment remain.
 
 ## Files modified
 
@@ -93,10 +103,22 @@ Complete. Sites version 4 is live at `https://scopeline-research.evvan.chatgpt.s
 - `RECOVERY.md`
 - `TODO.md`
 - `site/` (independent Sites repository; implementation, tests, assets, hosting metadata, and local checkpoint commit)
+- `site/app/lib/metric-locator-types.ts`
+- `site/app/lib/metric-definitions.ts`
+- `site/app/lib/metric-locator.ts`
+- `site/app/lib/shell-metric-validation.ts`
+- `site/app/api/metric-locator/route.ts`
+- `site/app/api/research/route.ts`
+- `site/app/lib/research-types.ts`
+- `site/app/lib/sector-packs.ts`
+- `site/app/ResearchApp.tsx`
+- `site/app/globals.css`
+- `site/tests/rendered-html.test.mjs`
+- `WORKLOG.md`
 
 ## Next recommended step
 
-Open the private production Site while signed into the owner ChatGPT account and use the SHEL / NVDA examples or enter another company in the currently supported universe.
+Commit the completed UI and integration milestone, then publish and verify a new owner-only Sites version.
 
 ## Assumptions and pending decisions
 
@@ -119,6 +141,8 @@ Open the private production Site while signed into the owner ChatGPT account and
 - Runtime retrieval timestamps use UTC, while the research date uses the current US/Pacific calendar date.
 - Production Sites uses a compliant `SEC_USER_AGENT` runtime variable stored as a secret; it is not committed to source.
 - Direct SEC ticker-directory calls can still be rate-limited from shared cloud egress. Supported energy, semiconductor, and peer tickers use the bundled public CIK resolver before falling back to the live directory.
+- Shell validation uses FY2025 consistently across all 11 metrics. The realized-price result is explicitly scoped to Europe / Shell subsidiaries / crude oil and NGL, not presented as a group-wide blended realization.
+- The latest Shell 2025 Form 20-F was filed March 12, 2026. The validation endpoint falls back to a compact verified excerpt only when official requests fail and discloses that source mode.
 
 ## Recovery procedure
 
