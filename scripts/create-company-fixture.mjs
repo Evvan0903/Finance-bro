@@ -1,9 +1,9 @@
 import { readFile, writeFile } from "node:fs/promises";
 
-const [factsPath, submissionsPath, outputPath] = process.argv.slice(2);
+const [factsPath, submissionsPath, outputPath, publicationCutoff] = process.argv.slice(2);
 if (!factsPath || !submissionsPath || !outputPath) {
   throw new Error(
-    "Usage: node scripts/create-company-fixture.mjs <companyfacts.json> <submissions.json> <output.json>",
+    "Usage: node scripts/create-company-fixture.mjs <companyfacts.json> <submissions.json> <output.json> [publication-cutoff]",
   );
 }
 
@@ -19,6 +19,8 @@ const concepts = new Set([
   "SalesRevenueNet",
   "Revenue",
   "GrossProfit",
+  "OperatingIncomeLoss",
+  "ResearchAndDevelopmentExpense",
   "NetIncomeLoss",
   "ProfitLoss",
   "ProfitLossAttributableToOwnersOfParent",
@@ -60,6 +62,7 @@ const concepts = new Set([
 ]);
 
 const annualForms = new Set(["10-K", "10-K/A", "20-F", "20-F/A", "40-F", "40-F/A"]);
+const cutoff = publicationCutoff ?? new Date().toISOString().slice(0, 10);
 const compactFacts = {};
 for (const [taxonomy, taxonomyFacts] of Object.entries(companyFacts.facts)) {
   for (const [concept, fact] of Object.entries(taxonomyFacts)) {
@@ -70,7 +73,8 @@ for (const [taxonomy, taxonomyFacts] of Object.entries(companyFacts.facts)) {
         .filter((entry) =>
           annualForms.has(entry.form) &&
           entry.end >= "2021-01-01" &&
-          entry.end <= "2025-12-31"
+          entry.end <= cutoff &&
+          (entry.filed ?? "") <= cutoff
         )
         .map(({ start, end, val, form, filed, accn }) => ({
           ...(start ? { start } : {}),
@@ -109,10 +113,10 @@ const fixture = {
   fixtureSchemaVersion: "1.0",
   source: {
     companyFacts:
-      "https://data.sec.gov/api/xbrl/companyfacts/CIK0001306965.json",
+      `https://data.sec.gov/api/xbrl/companyfacts/CIK${String(companyFacts.cik).padStart(10, "0")}.json`,
     submissions:
-      "https://data.sec.gov/submissions/CIK0001306965.json",
-    originalPublicationCutoff: "2026-07-17",
+      `https://data.sec.gov/submissions/CIK${String(companyFacts.cik).padStart(10, "0")}.json`,
+    originalPublicationCutoff: cutoff,
   },
   companyFacts: {
     cik: companyFacts.cik,

@@ -556,6 +556,7 @@ test("audits exact canonical values, shared Web/PDF surfaces, and reproducibilit
   registry.register(revenue);
   const emptyPeriod = Object.fromEntries([
     "grossProfit",
+    "operatingIncome",
     "netIncome",
     "operatingCashFlow",
     "investingCashFlow",
@@ -575,6 +576,7 @@ test("audits exact canonical values, shared Web/PDF surfaces, and reproducibilit
     "netMargin",
     "netMarginChange",
     "grossMargin",
+    "operatingMargin",
     "operatingCashFlowMargin",
     "freeCashFlowMargin",
     "cashConversion",
@@ -793,6 +795,111 @@ test("passes the full Shell canonical consistency and double-run acceptance gate
   assert.equal(comparison.changedFormulas.length, 0);
   assert.equal(comparison.changedSources.length, 0);
   assert.equal(comparison.changedOutputs.length, 0);
+  assert.equal(
+    comparison.matchedObjects.length,
+    report.metricRegistry.metrics.length,
+  );
+});
+
+test("passes the Semiconductors and NVDA canonical acceptance gate before unlocking", async () => {
+  const builtWorker = await worker();
+  const requestBody = {
+    company: "NVDA",
+    locale: "en",
+    market: "US",
+    sector: "technology",
+    subindustry: "semiconductors",
+    fixture: true,
+    options: {
+      sectorOutlook: true,
+      peerComparison: false,
+      valuation: true,
+      dueDiligence: true,
+      pdfExport: true,
+    },
+  };
+  const run = async () => {
+    const response = await builtWorker.fetch(
+      new Request("http://localhost/api/research", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(requestBody),
+      }),
+      environment,
+      context,
+    );
+    assert.equal(response.status, 200);
+    return response.json();
+  };
+  const [first, second] = await Promise.all([run(), run()]);
+  const report = first.report;
+  const latest = report.periods.at(-1);
+  const registry = new Map(
+    report.metricRegistry.metrics.map((metric) => [metric.canonical_key, metric]),
+  );
+  assert.equal(first.consistencyAudit.passed, true);
+  assert.equal(first.consistencyAudit.issues.length, 0);
+  assert.equal(latest.periodEnd, "2026-01-25");
+  assert.equal(latest.revenue, 215_938_000_000);
+  assert.equal(latest.grossProfit, 153_463_000_000);
+  assert.equal(latest.operatingIncome, 130_387_000_000);
+  assert.equal(latest.inventory, 21_403_000_000);
+  assert.equal(latest.cashCapex, 6_042_000_000);
+  assert.equal(latest.freeCashFlowProxy, 96_676_000_000);
+  assert.equal(latest.grossMargin, latest.grossProfit / latest.revenue);
+  assert.equal(latest.operatingMargin, latest.operatingIncome / latest.revenue);
+  assert.equal(
+    latest.freeCashFlowProxy,
+    latest.operatingCashFlow - latest.cashCapex,
+  );
+
+  const kpis = new Map(report.sectorKpis.map((item) => [item.id, item]));
+  for (const id of [
+    "gross-margin",
+    "operating-margin",
+    "inventory",
+    "cash-capex",
+    "fcf",
+  ]) {
+    assert.ok(kpis.get(id)?.canonicalKey, `missing NVDA canonical KPI: ${id}`);
+  }
+  assert.equal(
+    kpis.get("gross-margin").canonicalKey,
+    latest.metricKeys.grossMargin,
+  );
+  assert.equal(
+    kpis.get("operating-margin").canonicalKey,
+    latest.metricKeys.operatingMargin,
+  );
+  assert.equal(kpis.get("inventory").canonicalKey, latest.metricKeys.inventory);
+  assert.equal(kpis.get("fcf").canonicalKey, latest.metricKeys.freeCashFlowProxy);
+  assert.ok(
+    report.scenarios.every(
+      (scenario) =>
+        scenario.valuationStartingPoint === latest.revenue &&
+        scenario.metricReferences.valuationStartingPoint === latest.metricKeys.revenue,
+    ),
+  );
+  const referencedIds = new Set(
+    [
+      ...report.driverExposure.flatMap((item) => item.metricReferences),
+      ...report.investmentDebates.flatMap((item) => item.metricReferences),
+      ...report.risks.flatMap((item) => item.metricReferences),
+    ].map((key) => registry.get(key)?.metric_id),
+  );
+  for (const id of [
+    "revenue-growth",
+    "gross-margin",
+    "operating-margin",
+    "inventory",
+    "fcf",
+  ]) assert.ok(referencedIds.has(id), `NVDA cross-report references missing ${id}`);
+
+  const { compareResearchReports } = await consistencyAuditorModule();
+  const comparison = compareResearchReports(first.report, second.report);
+  assert.equal(comparison.passed, true);
+  assert.equal(comparison.mismatchedObjects.length, 0);
+  assert.equal(comparison.missingObjects.length, 0);
   assert.equal(
     comparison.matchedObjects.length,
     report.metricRegistry.metrics.length,

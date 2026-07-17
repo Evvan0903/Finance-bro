@@ -31,6 +31,7 @@ export type SectorKpiDefinition = {
   availability:
     | "revenue"
     | "grossMargin"
+    | "operatingMargin"
     | "inventory"
     | "cashCapex"
     | "freeCashFlow"

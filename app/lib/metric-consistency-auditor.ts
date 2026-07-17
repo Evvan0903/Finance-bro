@@ -83,6 +83,7 @@ export type ReproducibilityComparison = {
 const PERIOD_VALUE_FIELDS: Array<keyof FinancialPeriod> = [
   "revenue",
   "grossProfit",
+  "operatingIncome",
   "netIncome",
   "operatingCashFlow",
   "investingCashFlow",
@@ -102,6 +103,7 @@ const PERIOD_VALUE_FIELDS: Array<keyof FinancialPeriod> = [
   "netMargin",
   "netMarginChange",
   "grossMargin",
+  "operatingMargin",
   "operatingCashFlowMargin",
   "freeCashFlowMargin",
   "cashConversion",

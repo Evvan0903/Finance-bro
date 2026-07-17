@@ -51,6 +51,12 @@ const FINANCIAL_METRICS: MetricConfig[] = [
     concepts: [["us-gaap", "GrossProfit"], ["ifrs-full", "GrossProfit"]],
   },
   {
+    metricId: "operating-income",
+    definitionId: "reported-operating-income",
+    duration: true,
+    concepts: [["us-gaap", "OperatingIncomeLoss"], ["ifrs-full", "ProfitLossFromOperatingActivities"]],
+  },
+  {
     metricId: "net-income",
     definitionId: "reported-net-income",
     duration: true,
@@ -176,6 +182,7 @@ const FINANCIAL_METRICS: MetricConfig[] = [
 export const FINANCIAL_DEFINITION_IDS = {
   revenue: "reported-revenue",
   grossProfit: "reported-gross-profit",
+  operatingIncome: "reported-operating-income",
   netIncome: "reported-net-income",
   operatingCashFlow: "reported-operating-cash-flow",
   investingCashFlow: "reported-investing-cash-flow",
@@ -198,6 +205,7 @@ export const FINANCIAL_DEFINITION_IDS = {
   netMargin: "net-income-over-revenue",
   netMarginChange: "year-over-year-net-margin-change",
   grossMargin: "gross-profit-over-revenue",
+  operatingMargin: "operating-income-over-revenue",
   operatingCashFlowMargin: "operating-cash-flow-over-revenue",
   freeCashFlowMargin: "free-cash-flow-over-revenue",
   cashConversion: "free-cash-flow-over-net-income",
@@ -422,6 +430,13 @@ export function ensureCoreDerivedMetrics(
       periodEnd,
       [FINANCIAL_DEFINITION_IDS.grossProfit],
     );
+    const operatingIncome = firstDefinition(
+      registry,
+      companyId,
+      "operating-income",
+      periodEnd,
+      [FINANCIAL_DEFINITION_IDS.operatingIncome],
+    );
     const netIncome = firstDefinition(
       registry,
       companyId,
@@ -563,6 +578,13 @@ export function ensureCoreDerivedMetrics(
         formula: "gross_profit / revenue",
       },
       {
+        metricId: "operating-margin",
+        definitionId: FINANCIAL_DEFINITION_IDS.operatingMargin,
+        numerator: operatingIncome,
+        denominator: revenue,
+        formula: "operating_income / revenue",
+      },
+      {
         metricId: "operating-cash-flow-margin",
         definitionId: FINANCIAL_DEFINITION_IDS.operatingCashFlowMargin,
         numerator: operatingCashFlow,
@@ -702,6 +724,7 @@ export function financialPeriodsFromRegistry(
     const selections = {
       revenue: selectedMetric(registry, companyId, "revenue", periodEnd, [FINANCIAL_DEFINITION_IDS.revenue]),
       grossProfit: selectedMetric(registry, companyId, "gross-profit", periodEnd, [FINANCIAL_DEFINITION_IDS.grossProfit]),
+      operatingIncome: selectedMetric(registry, companyId, "operating-income", periodEnd, [FINANCIAL_DEFINITION_IDS.operatingIncome]),
       netIncome: selectedMetric(registry, companyId, "net-income", periodEnd, [FINANCIAL_DEFINITION_IDS.netIncome]),
       operatingCashFlow: selectedMetric(registry, companyId, "operating-cash-flow", periodEnd, [FINANCIAL_DEFINITION_IDS.operatingCashFlow]),
       investingCashFlow: selectedMetric(registry, companyId, "investing-cash-flow", periodEnd, [FINANCIAL_DEFINITION_IDS.investingCashFlow]),
@@ -721,6 +744,7 @@ export function financialPeriodsFromRegistry(
       netMargin: selectedMetric(registry, companyId, "net-margin", periodEnd, [FINANCIAL_DEFINITION_IDS.netMargin]),
       netMarginChange: selectedMetric(registry, companyId, "net-margin-change", periodEnd, [FINANCIAL_DEFINITION_IDS.netMarginChange]),
       grossMargin: selectedMetric(registry, companyId, "gross-margin", periodEnd, [FINANCIAL_DEFINITION_IDS.grossMargin]),
+      operatingMargin: selectedMetric(registry, companyId, "operating-margin", periodEnd, [FINANCIAL_DEFINITION_IDS.operatingMargin]),
       operatingCashFlowMargin: selectedMetric(registry, companyId, "operating-cash-flow-margin", periodEnd, [FINANCIAL_DEFINITION_IDS.operatingCashFlowMargin]),
       freeCashFlowMargin: selectedMetric(registry, companyId, "fcf-margin", periodEnd, [FINANCIAL_DEFINITION_IDS.freeCashFlowMargin]),
       cashConversion: selectedMetric(registry, companyId, "cash-conversion", periodEnd, [FINANCIAL_DEFINITION_IDS.cashConversion]),
@@ -732,6 +756,7 @@ export function financialPeriodsFromRegistry(
       periodEnd,
       revenue: value(selections.revenue),
       grossProfit: value(selections.grossProfit),
+      operatingIncome: value(selections.operatingIncome),
       netIncome: value(selections.netIncome),
       operatingCashFlow: value(selections.operatingCashFlow),
       investingCashFlow: value(selections.investingCashFlow),
@@ -751,6 +776,7 @@ export function financialPeriodsFromRegistry(
       netMargin: value(selections.netMargin),
       netMarginChange: value(selections.netMarginChange),
       grossMargin: value(selections.grossMargin),
+      operatingMargin: value(selections.operatingMargin),
       operatingCashFlowMargin: value(selections.operatingCashFlowMargin),
       freeCashFlowMargin: value(selections.freeCashFlowMargin),
       cashConversion: value(selections.cashConversion),

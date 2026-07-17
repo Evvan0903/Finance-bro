@@ -31,6 +31,7 @@ export type FinancialPeriod = {
   periodEnd: string;
   revenue: number | null;
   grossProfit: number | null;
+  operatingIncome: number | null;
   netIncome: number | null;
   operatingCashFlow: number | null;
   investingCashFlow: number | null;
@@ -50,6 +51,7 @@ export type FinancialPeriod = {
   netMargin: number | null;
   netMarginChange: number | null;
   grossMargin: number | null;
+  operatingMargin: number | null;
   operatingCashFlowMargin: number | null;
   freeCashFlowMargin: number | null;
   cashConversion: number | null;

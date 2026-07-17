@@ -196,10 +196,22 @@ const semiconductorPack: SectorPack = {
       availability: "grossMargin",
     },
     {
+      id: "operating-margin",
+      label: { zh: "营业利润率", en: "Operating margin" },
+      description: { zh: "营业利润占营收比例。", en: "Operating income divided by revenue." },
+      availability: "operatingMargin",
+    },
+    {
       id: "inventory",
       label: { zh: "库存", en: "Inventory" },
       description: { zh: "产品周期、供需与减值风险的资产负债表信号。", en: "Balance-sheet signal for product cycles, supply-demand, and write-down risk." },
       availability: "inventory",
+    },
+    {
+      id: "utilization",
+      label: { zh: "产能利用率", en: "Utilization" },
+      description: { zh: "自有或供应链产能利用程度及周期信号。", en: "Utilization of owned or supply-chain capacity as a cycle signal." },
+      availability: "notStandardized",
     },
     {
       id: "cash-capex",

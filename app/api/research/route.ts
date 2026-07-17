@@ -50,6 +50,7 @@ import type {
   ThesisPoint,
 } from "../../lib/research-types";
 import shellSourceSnapshot from "../../../tests/fixtures/shel-source-snapshot.json";
+import nvdaSourceSnapshot from "../../../tests/fixtures/nvda-source-snapshot.json";
 
 export const dynamic = "force-dynamic";
 
@@ -314,6 +315,8 @@ function kpiValue(
       return compactMoney(latest.revenue, currency, locale);
     case "grossMargin":
       return percentage(latest.grossMargin, locale);
+    case "operatingMargin":
+      return percentage(latest.operatingMargin, locale);
     case "inventory":
       return compactMoney(latest.inventory, currency, locale);
     case "cashCapex":
@@ -335,6 +338,8 @@ function kpiHasValue(definition: SectorKpiDefinition, latest: FinancialPeriod) {
       return latest.revenue !== null;
     case "grossMargin":
       return latest.grossMargin !== null;
+    case "operatingMargin":
+      return latest.operatingMargin !== null;
     case "inventory":
       return latest.inventory !== null;
     case "cashCapex":
@@ -405,11 +410,12 @@ function buildSectorKpis(
               ].en}`,
       } satisfies SectorKpiResult;
     }
-    const derived = ["grossMargin", "freeCashFlow", "netDebt"].includes(definition.availability);
+    const derived = ["grossMargin", "operatingMargin", "freeCashFlow", "netDebt"].includes(definition.availability);
     const available = kpiHasValue(definition, latest);
     const metricField = {
       revenue: "revenue",
       grossMargin: "grossMargin",
+      operatingMargin: "operatingMargin",
       inventory: "inventory",
       cashCapex: "cashCapex",
       freeCashFlow: "freeCashFlowProxy",
@@ -481,6 +487,7 @@ const PERIOD_FIELD_BY_METRIC_ID: Record<string, string> = {
   "net-margin": "netMargin",
   "net-margin-change": "netMarginChange",
   "gross-margin": "grossMargin",
+  "operating-margin": "operatingMargin",
   "operating-cash-flow": "operatingCashFlow",
   "operating-cash-flow-margin": "operatingCashFlowMargin",
   "cash-capex": "cashCapex",
@@ -500,9 +507,9 @@ const DRIVER_METRIC_IDS: Record<string, string[]> = {
   "lng-cycle": ["lng", "segment-earnings", "operating-cash-flow"],
   "refining-cycle": ["refining-margin", "segment-earnings", "operating-cash-flow"],
   "capital-discipline": ["cash-capex", "fcf", "net-debt", "dividends", "share-buybacks"],
-  "ai-demand": ["revenue", "revenue-growth", "gross-margin", "fcf"],
-  capacity: ["gross-margin", "inventory", "cash-capex"],
-  "product-cycle": ["revenue-growth", "gross-margin", "inventory"],
+  "ai-demand": ["revenue", "revenue-growth", "gross-margin", "operating-margin", "fcf"],
+  capacity: ["gross-margin", "operating-margin", "inventory", "cash-capex"],
+  "product-cycle": ["revenue-growth", "gross-margin", "operating-margin", "inventory"],
   "export-controls": ["revenue", "revenue-growth", "inventory"],
 };
 
@@ -1371,16 +1378,23 @@ export async function POST(request: Request) {
     const requestHostname = new URL(request.url).hostname;
     const localFixtureAllowed =
       ["localhost", "127.0.0.1"].includes(requestHostname);
-    const sourceSnapshot =
-      payload.fixture && localFixtureAllowed && record.ticker === "SHEL"
-        ? {
-            companyFacts:
-              shellSourceSnapshot.companyFacts as CompanyFactsPayload,
-            submissions:
-              shellSourceSnapshot.submissions as unknown as Submissions,
-            retrievedAt: "2026-07-17T00:00:00.000Z",
-          }
+    const fixtureByTicker = {
+      SHEL: shellSourceSnapshot,
+      NVDA: nvdaSourceSnapshot,
+    } as const;
+    const selectedFixture =
+      payload.fixture && localFixtureAllowed
+        ? fixtureByTicker[record.ticker as keyof typeof fixtureByTicker]
         : undefined;
+    const sourceSnapshot = selectedFixture
+      ? {
+          companyFacts:
+            selectedFixture.companyFacts as CompanyFactsPayload,
+          submissions:
+            selectedFixture.submissions as unknown as Submissions,
+          retrievedAt: "2026-07-17T00:00:00.000Z",
+        }
+      : undefined;
     const report = await buildReport(record, selection, locale, sourceSnapshot);
     const consistencyAudit = auditResearchReport(report);
     if (!consistencyAudit.passed) {
