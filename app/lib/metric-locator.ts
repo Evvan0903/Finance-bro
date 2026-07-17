@@ -580,7 +580,7 @@ export function locateMetrics(input: {
         confidence: Math.min(inputs[0]!.confidence, inputs[1]!.confidence),
         extractionMethod: "Deterministic arithmetic using two validated inputs",
         accountingDefinition: definition.derivationFormula!,
-        definitionKey: "strict-ocf-minus-cash-capex",
+        definitionKey: "ocf-less-cash-capex",
         context: `${input.company}; ${input.reportingPeriod}; matching currency and fiscal period`,
       };
       const selected = selectedResult(definition, derived, rejected);

@@ -174,16 +174,18 @@ test("keeps the full client-to-API sector and locale contract explicit", async (
 });
 
 test("enforces strict FCF and sector-specific analyst packs", async () => {
-  const [route, packs, evidence, retrieval] = await Promise.all([
+  const [route, financialMetrics, packs, evidence, retrieval] = await Promise.all([
     readFile(new URL("../app/api/research/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/financial-metrics.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/sector-packs.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/sector-evidence.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/sector-retrieval.ts", import.meta.url), "utf8"),
   ]);
 
   assert.match(route, /Free cash flow = operating cash flow - cash capital expenditure/);
-  assert.match(route, /safeSubtract\(operatingCashFlow,\s*cashCapex\)/);
-  assert.doesNotMatch(route, /safeAdd\(operatingCashFlow(?:Value)?,\s*investingCashFlow/);
+  assert.match(financialMetrics, /formula:\s*"operating_cash_flow - cash_capex"/);
+  assert.match(financialMetrics, /formulaId:\s*"subtract"/);
+  assert.doesNotMatch(route + financialMetrics, /operatingCashFlow(?:Value)?\s*\+\s*investingCashFlow/);
   assert.match(route, /Unable to calculate free cash flow from available filings\./);
   assert.match(route, /SUPPORTED_TICKER_RECORDS/);
   assert.match(route, /if \(supportedRecord\) return supportedRecord/);
@@ -273,7 +275,7 @@ test("locates all 11 Shell metrics with ordered, auditable source selection", as
   assert.ok(registry.metrics.every((metric) => !("displayValue" in metric)));
   const canonicalFcf = registry.metrics.find((metric) => metric.metric_id === "fcf");
   assert.equal(canonicalFcf.value, 21_948_000_000);
-  assert.equal(canonicalFcf.definition_id, "strict-ocf-minus-cash-capex");
+  assert.equal(canonicalFcf.definition_id, "ocf-less-cash-capex");
   assert.equal(canonicalFcf.formula_id, "subtract");
   assert.equal(canonicalFcf.input_metric_keys.length, 2);
 });
@@ -421,10 +423,45 @@ test("hides unusable cards and moves missing detail into Data Coverage", async (
   assert.match(client, /metric\.rejectedCandidates/);
   assert.match(client, /metric\.extractionMethod/);
   assert.doesNotMatch(client, /latestPeriod\.currentRatio === null \? copy\.unavailable/);
-  assert.match(route, /\.filter\(\(result\) => result\.usable\)/);
+  assert.match(route, /\.filter\(\(result\) => result\.usable && result\.canonicalKey\)/);
   assert.match(route, /criticalMetricIds/);
   assert.match(route, /shellMetricAudit/);
   assert.match(types, /dataCoverage:\s*DataCoverage/);
+});
+
+test("routes every quantitative report module through the canonical registry", async () => {
+  const [route, registry, financials, scenarios, types] = await Promise.all([
+    readFile(new URL("../app/api/research/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/canonical-metrics.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/financial-metrics.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/canonical-scenarios.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/research-types.ts", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(route, /buildFinancialMetricRegistry/);
+  assert.match(route, /financialPeriodsFromRegistry/);
+  assert.match(route, /buildCanonicalScenarios/);
+  assert.match(route, /buildMetricUsage/);
+  assert.match(route, /metricRegistry:\s*metricRegistry\.snapshot\(\)/);
+  assert.match(route, /module:\s*"dashboard"/);
+  assert.match(route, /module:\s*"earnings-quality"/);
+  assert.match(route, /module:\s*"driver-exposure"/);
+  assert.match(route, /module:\s*"sector-kpis"/);
+  assert.match(route, /module:\s*"investment-debates"/);
+  assert.match(route, /module:\s*"scenarios-and-valuation"/);
+  assert.match(route, /module:\s*"peer-comparison"/);
+  assert.doesNotMatch(route, /function (safeDivide|safeAdd|safeSubtract|cagr|buildScenarios)\b/);
+
+  assert.match(financials, /ensureCoreDerivedMetrics/);
+  assert.match(financials, /issuer-reported-net-debt/);
+  assert.match(financials, /ocf-less-cash-capex/);
+  assert.match(scenarios, /registerAssumption/);
+  assert.match(scenarios, /calculate\(\{/);
+  assert.match(scenarios, /projected_operating_cash_flow - projected_cash_capex/);
+  assert.match(registry, /registerOrVerify/);
+  assert.match(registry, /input_metric_keys/);
+  assert.match(types, /metricUsage:\s*MetricUsage\[\]/);
+  assert.match(types, /metricReferences:/);
 });
 
 test("owns PDF pagination and footer instead of browser print metadata", async () => {

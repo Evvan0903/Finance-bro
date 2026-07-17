@@ -17,6 +17,7 @@ import type {
   MetricSourceTier,
   MetricStatus,
 } from "./metric-locator-types";
+import type { MetricRegistrySnapshot } from "./canonical-metrics";
 
 export type FilingSource = {
   title: string;
@@ -45,14 +46,20 @@ export type FinancialPeriod = {
   totalDebt: number | null;
   netDebt: number | null;
   revenueGrowth: number | null;
+  revenueCagr: number | null;
   netMargin: number | null;
+  netMarginChange: number | null;
   grossMargin: number | null;
+  operatingCashFlowMargin: number | null;
   freeCashFlowMargin: number | null;
   cashConversion: number | null;
   currentRatio: number | null;
+  liabilitiesAssets: number | null;
+  metricKeys: Record<string, string>;
 };
 
 export type DashboardMetric = {
+  metricKey: string;
   label: string;
   value: string;
   detail: string;
@@ -65,12 +72,14 @@ export type ThesisPoint = {
   view: string;
   counterEvidence: string;
   monitor: string;
+  metricReferences: string[];
 };
 
 export type RiskPoint = {
   title: string;
   evidence: string;
   thesisBreaker: string;
+  metricReferences: string[];
 };
 
 export type Scenario = {
@@ -87,6 +96,7 @@ export type Scenario = {
   valuationMetric: number | null;
   multipleLabel: string;
   modelImpliedEnterpriseValue: number | null;
+  metricReferences: Record<string, string>;
 };
 
 export type SectorKpiResult = {
@@ -102,6 +112,7 @@ export type SectorKpiResult = {
   sourceUrl: string | null;
   confidence: number;
   extractionMethod: string | null;
+  canonicalKey: string;
   whyItMatters: string;
 };
 
@@ -121,6 +132,7 @@ export type SectorDriverExposure = {
   evidenceDate: string;
   evidenceUrl: string;
   investmentImplication: string;
+  metricReferences: string[];
 };
 
 export type PeerComparisonItem = {
@@ -131,6 +143,7 @@ export type PeerComparisonItem = {
   netMargin: number | null;
   freeCashFlowMargin: number | null;
   periodEnd: string | null;
+  metricReferences: Record<string, string>;
 };
 
 export type InvestmentDebate = {
@@ -138,12 +151,21 @@ export type InvestmentDebate = {
   evidenceFor: string;
   evidenceAgainst: string;
   monitor: string;
+  metricReferences: string[];
 };
 
 export type CatalystPoint = {
   timing: string;
   event: string;
   investorRelevance: string;
+  metricReferences: string[];
+};
+
+export type MetricUsage = {
+  module: string;
+  canonicalKey: string;
+  canonicalValue: number | null;
+  displayedValue: string | null;
 };
 
 export type ResearchSource = {
@@ -176,6 +198,8 @@ export type ResearchReport = {
   currency: string;
   latestAnnual: FilingSource | null;
   latestInterim: FilingSource | null;
+  metricRegistry: MetricRegistrySnapshot;
+  metricUsage: MetricUsage[];
   periods: FinancialPeriod[];
   dashboard: DashboardMetric[];
   sectorPack: {

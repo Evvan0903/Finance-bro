@@ -84,13 +84,34 @@ export type DerivedMetricRequest = {
   confidence?: number;
 };
 
+export type AnalystAssumptionRequest = {
+  metric_id: string;
+  company_id: string;
+  sector: string;
+  period: string;
+  period_start?: string | null;
+  period_end: string;
+  definition_id: string;
+  value: number;
+  formula: string;
+  input_metric_keys?: string[];
+  unit: string;
+  currency?: string | null;
+  confidence?: number;
+};
+
 export type CanonicalFormulaId =
   | "add"
   | "subtract"
   | "multiply"
+  | "scale"
   | "divide"
   | "growth-rate"
-  | "average";
+  | "growth-projection"
+  | "period-change"
+  | "cagr"
+  | "average"
+  | "analyst-assumption";
 
 export class CanonicalMetricError extends Error {
   constructor(
@@ -163,7 +184,10 @@ export function validateCanonicalMetric(metric: CanonicalMetricObject) {
     if (!metric.formula_id || !metric.formula) {
       errors.push("Derived metrics require formula_id and formula");
     }
-    if (!metric.input_metric_keys.length) {
+    if (
+      metric.formula_id !== "analyst-assumption" &&
+      !metric.input_metric_keys.length
+    ) {
       errors.push("Derived metrics require canonical input_metric_keys");
     }
   }
@@ -207,7 +231,38 @@ export function calculateFromCanonicalInputs(
   formulaId: CanonicalFormulaId,
   inputs: CanonicalMetricObject[],
 ) {
-  assertCompatibleInputs(inputs);
+  if (["growth-rate", "period-change", "cagr", "average", "scale", "growth-projection"].includes(formulaId)) {
+    if (["growth-rate", "period-change", "cagr", "scale", "growth-projection"].includes(formulaId) && inputs.length !== 2) {
+      throw new CanonicalMetricError("FORMULA_DEPENDENCY", `${formulaId} requires two inputs`);
+    }
+    if (formulaId === "average" && !inputs.length) {
+      throw new CanonicalMetricError("FORMULA_DEPENDENCY", "Average requires at least one input");
+    }
+    if (inputs.some((input) => input.company_id !== inputs[0].company_id)) {
+      throw new CanonicalMetricError("FORMULA_DEPENDENCY", "Canonical inputs mix companies");
+    }
+    if (
+      inputs.some((input) =>
+        input.value === null || !["Reported", "Derived"].includes(input.status)
+      )
+    ) {
+      throw new CanonicalMetricError("FORMULA_DEPENDENCY", "Growth inputs must have usable values");
+    }
+    if (
+      ["growth-rate", "period-change", "cagr", "average"].includes(formulaId) &&
+      inputs.some((input) => input.unit !== inputs[0].unit)
+    ) {
+      throw new CanonicalMetricError("UNIT_MISMATCH", "Growth inputs mix units");
+    }
+    if (
+      ["growth-rate", "period-change", "cagr", "average"].includes(formulaId) &&
+      inputs.some((input) => input.currency !== inputs[0].currency)
+    ) {
+      throw new CanonicalMetricError("CURRENCY_MISMATCH", "Growth inputs mix currencies");
+    }
+  } else {
+    assertCompatibleInputs(inputs);
+  }
   const values = inputs.map((input) => input.value!);
   if (["add", "subtract", "average"].includes(formulaId)) {
     const unit = inputs[0].unit;
@@ -229,6 +284,8 @@ export function calculateFromCanonicalInputs(
       return values[0] - values[1];
     case "multiply":
       return values.reduce((product, value) => product * value, 1);
+    case "scale":
+      return values[0] * values[1];
     case "divide":
       if (values.length !== 2 || values[1] === 0) {
         throw new CanonicalMetricError("FORMULA_DEPENDENCY", "Divide requires two inputs and a non-zero denominator");
@@ -239,8 +296,32 @@ export function calculateFromCanonicalInputs(
         throw new CanonicalMetricError("FORMULA_DEPENDENCY", "Growth rate requires current and non-zero prior values");
       }
       return values[0] / values[1] - 1;
+    case "growth-projection":
+      return values[0] * (1 + values[1]);
+    case "period-change":
+      if (values.length !== 2) {
+        throw new CanonicalMetricError("FORMULA_DEPENDENCY", "Period change requires current and prior values");
+      }
+      return values[0] - values[1];
+    case "cagr": {
+      if (values.length !== 2 || values[1] <= 0 || values[0] <= 0) {
+        throw new CanonicalMetricError("FORMULA_DEPENDENCY", "CAGR requires positive latest and earliest values");
+      }
+      const years =
+        (Date.parse(inputs[0].period_end) - Date.parse(inputs[1].period_end)) /
+        31_557_600_000;
+      if (!Number.isFinite(years) || years <= 0) {
+        throw new CanonicalMetricError("PERIOD_MISMATCH", "CAGR requires ordered annual periods");
+      }
+      return Math.pow(values[0] / values[1], 1 / years) - 1;
+    }
     case "average":
       return values.reduce((sum, value) => sum + value, 0) / values.length;
+    case "analyst-assumption":
+      throw new CanonicalMetricError(
+        "FORMULA_DEPENDENCY",
+        "Analyst assumptions must be registered with registerAssumption",
+      );
   }
 }
 
@@ -280,6 +361,23 @@ export class MetricRegistry {
       input_metric_keys: Object.freeze([...metric.input_metric_keys]) as unknown as string[],
     }));
     return metric;
+  }
+
+  registerOrVerify(metric: CanonicalMetricObject) {
+    const existing = this.metrics.get(metric.canonical_key);
+    if (!existing) return this.register(metric);
+    if (
+      existing.value !== metric.value ||
+      existing.status !== metric.status ||
+      existing.formula_id !== metric.formula_id ||
+      existing.formula !== metric.formula
+    ) {
+      throw new CanonicalMetricError(
+        "DUPLICATE_CANONICAL_KEY",
+        `Conflicting values or formulas for canonical key: ${metric.canonical_key}`,
+      );
+    }
+    return existing;
   }
 
   getByKey(canonicalKey: string) {
@@ -363,8 +461,54 @@ export class MetricRegistry {
     return metric;
   }
 
+  registerAssumption(request: AnalystAssumptionRequest) {
+    const inputs = (request.input_metric_keys ?? []).map((key) => this.getByKey(key));
+    if (inputs.some((input) => input.company_id !== request.company_id)) {
+      throw new CanonicalMetricError(
+        "FORMULA_DEPENDENCY",
+        "Analyst-assumption inputs mix companies",
+      );
+    }
+    const metric = createCanonicalMetric({
+      ...request,
+      period_start: request.period_start ?? null,
+      currency: request.currency ?? null,
+      status: "Derived",
+      formula_id: "analyst-assumption",
+      input_metric_keys: request.input_metric_keys ?? [],
+      source_type: "analyst-assumption",
+      source_document: "ScopeLine scenario assumptions",
+      source_url: null,
+      source_date: null,
+      filing_date: null,
+      section: "Scenario framework",
+      table: null,
+      row_label: request.metric_id,
+      raw_value: String(request.value),
+      extraction_method: "deterministic-scenario-assumption",
+      confidence: request.confidence ?? 0.5,
+      retrieved_at: new Date().toISOString(),
+      data_version: this.dataVersion,
+      calculation_version: this.calculationVersion,
+    });
+    this.register(metric);
+    return metric;
+  }
+
   values() {
     return [...this.metrics.values()];
+  }
+
+  findMetrics(query: Partial<MetricQuery>) {
+    return this.values().filter((metric) =>
+      (query.company_id === undefined || metric.company_id === query.company_id) &&
+      (query.metric_id === undefined || metric.metric_id === query.metric_id) &&
+      (query.period === undefined || metric.period === query.period) &&
+      (query.period_end === undefined || metric.period_end === query.period_end) &&
+      (query.definition_id === undefined || metric.definition_id === query.definition_id) &&
+      (query.currency === undefined || metric.currency === query.currency) &&
+      (query.unit === undefined || metric.unit === query.unit)
+    );
   }
 
   snapshot(): MetricRegistrySnapshot {
@@ -406,15 +550,18 @@ function canonicalFromLocatorResult(input: {
   calculationVersion: string;
   retrievedAt: string;
   inputMetricKeys: string[];
+  reportingPeriod: string;
 }) {
   const { result } = input;
-  const periodEnd = result.period ?? "";
+  const periodEnd = result.period ?? input.reportingPeriod;
   return createCanonicalMetric({
     metric_id: result.metricId,
     company_id: input.companyId,
     sector: input.sector,
     period: periodLabel(periodEnd),
-    period_start: periodEnd ? `${periodEnd.slice(0, 4)}-01-01` : null,
+    period_start: result.status === "Reported" && result.metricId === "net-debt"
+      ? null
+      : `${periodEnd.slice(0, 4)}-01-01`,
     period_end: periodEnd,
     value: result.selectedValue,
     unit: result.unit ?? "unresolved",
@@ -452,41 +599,67 @@ export function registryFromLocatorAudit(input: {
   const calculationVersion = input.calculationVersion ?? DEFAULT_CALCULATION_VERSION;
   const retrievedAt = input.retrievedAt ?? input.audit.generatedAt;
   const registry = new MetricRegistry(input.dataVersion, calculationVersion);
+  publishLocatorAuditToRegistry({
+    registry,
+    audit: input.audit,
+    companyId: input.companyId,
+    sector: input.sector,
+    retrievedAt,
+  });
+  return registry;
+}
+
+export function publishLocatorAuditToRegistry(input: {
+  registry: MetricRegistry;
+  audit: MetricLocatorAudit;
+  companyId: string;
+  sector: string;
+  retrievedAt?: string;
+}) {
+  const calculationVersion = input.registry.calculationVersion;
+  const retrievedAt = input.retrievedAt ?? input.audit.generatedAt;
   const deferred: MetricLocatorResult[] = [];
   for (const result of input.audit.allResults) {
     if (result.status === "Derived") {
       deferred.push(result);
       continue;
     }
-    registry.register(canonicalFromLocatorResult({
+    input.registry.registerOrVerify(canonicalFromLocatorResult({
       result,
       companyId: input.companyId,
       sector: input.sector,
-      dataVersion: input.dataVersion,
+      dataVersion: input.registry.dataVersion,
       calculationVersion,
       retrievedAt,
       inputMetricKeys: [],
+      reportingPeriod: input.audit.reportingPeriod,
     }));
   }
   for (const result of deferred) {
-    const inputMetricKeys = ["operating-cash-flow", "cash-capex"].map((metricId) =>
-      registry.getMetric({
+    const resultById = new Map(
+      input.audit.allResults.map((auditResult) => [auditResult.metricId, auditResult]),
+    );
+    const inputMetricKeys = ["operating-cash-flow", "cash-capex"].map((metricId) => {
+      const inputResult = resultById.get(metricId);
+      return input.registry.getMetric({
         company_id: input.companyId,
         metric_id: metricId,
         period_end: result.period ?? undefined,
-      }).canonical_key
-    );
-    registry.register(canonicalFromLocatorResult({
+        definition_id: inputResult?.definitionId,
+      }).canonical_key;
+    });
+    input.registry.registerOrVerify(canonicalFromLocatorResult({
       result,
       companyId: input.companyId,
       sector: input.sector,
-      dataVersion: input.dataVersion,
+      dataVersion: input.registry.dataVersion,
       calculationVersion,
       retrievedAt,
       inputMetricKeys,
+      reportingPeriod: input.audit.reportingPeriod,
     }));
   }
-  return registry;
+  return input.registry;
 }
 
 export function formatMetricForDisplay(

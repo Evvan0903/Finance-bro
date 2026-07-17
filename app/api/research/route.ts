@@ -1,4 +1,16 @@
 import { MemoryCache } from "../../lib/cache";
+import {
+  MetricRegistry,
+  formatMetricForDisplay,
+  publishLocatorAuditToRegistry,
+} from "../../lib/canonical-metrics";
+import type { CanonicalMetricObject } from "../../lib/canonical-metrics";
+import { buildCanonicalScenarios } from "../../lib/canonical-scenarios";
+import {
+  buildFinancialMetricRegistry,
+  ensureCoreDerivedMetrics,
+  financialPeriodsFromRegistry,
+} from "../../lib/financial-metrics";
 import { getSectorMethods } from "../../lib/sector-methodology";
 import { getSectorPack } from "../../lib/sector-packs";
 import { getSectorOutlook, sectorEvidenceSources } from "../../lib/sector-retrieval";
@@ -25,11 +37,11 @@ import type {
   FilingSource,
   FinancialPeriod,
   InvestmentDebate,
+  MetricUsage,
   PeerComparisonItem,
   ResearchLocale,
   ResearchReport,
   RiskPoint,
-  Scenario,
   SectorDriverExposure,
   SectorKpiResult,
   ThesisPoint,
@@ -50,21 +62,7 @@ const RESEARCH_DATE = "2026-07-16";
 const FREE_CASH_FLOW_UNAVAILABLE = "Unable to calculate free cash flow from available filings.";
 
 type TickerRecord = { cik_str: number; ticker: string; title: string };
-type SecFact = {
-  start?: string;
-  end?: string;
-  val?: number;
-  form?: string;
-  filed?: string;
-};
-type CompanyFacts = {
-  cik: number;
-  entityName: string;
-  facts: Record<
-    string,
-    Record<string, { units?: Record<string, SecFact[]> }>
-  >;
-};
+type CompanyFacts = CompanyFactsPayload;
 type Submissions = {
   cik: string;
   name: string;
@@ -77,7 +75,6 @@ type Submissions = {
   category?: string;
   filings?: { recent?: Record<string, Array<string | number | null>> };
 };
-type Series = { unit: string; values: Map<string, number> };
 type ResearchPayload = {
   company?: string;
   locale?: ResearchLocale;
@@ -113,73 +110,6 @@ const DEFAULT_OPTIONS: ResearchOptions = {
   dueDiligence: true,
   pdfExport: true,
 };
-
-const METRICS = {
-  revenue: [
-    ["us-gaap", "RevenueFromContractWithCustomerExcludingAssessedTax"],
-    ["us-gaap", "Revenues"],
-    ["us-gaap", "SalesRevenueNet"],
-    ["ifrs-full", "Revenue"],
-  ],
-  grossProfit: [
-    ["us-gaap", "GrossProfit"],
-    ["ifrs-full", "GrossProfit"],
-  ],
-  netIncome: [
-    ["us-gaap", "NetIncomeLoss"],
-    ["us-gaap", "ProfitLoss"],
-    ["ifrs-full", "ProfitLossAttributableToOwnersOfParent"],
-    ["ifrs-full", "ProfitLoss"],
-  ],
-  operatingCashFlow: [
-    ["us-gaap", "NetCashProvidedByUsedInOperatingActivities"],
-    ["us-gaap", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"],
-    ["ifrs-full", "CashFlowsFromUsedInOperatingActivities"],
-  ],
-  investingCashFlow: [
-    ["us-gaap", "NetCashProvidedByUsedInInvestingActivities"],
-    ["ifrs-full", "CashFlowsFromUsedInInvestingActivities"],
-  ],
-  cashCapex: [
-    ["us-gaap", "PaymentsToAcquirePropertyPlantAndEquipment"],
-    ["us-gaap", "PaymentsToAcquireProductiveAssets"],
-    ["ifrs-full", "PurchaseOfPropertyPlantAndEquipment"],
-  ],
-  assets: [["us-gaap", "Assets"], ["ifrs-full", "Assets"]],
-  liabilities: [["us-gaap", "Liabilities"], ["ifrs-full", "Liabilities"]],
-  equity: [
-    ["us-gaap", "StockholdersEquity"],
-    ["us-gaap", "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"],
-    ["ifrs-full", "Equity"],
-    ["ifrs-full", "EquityAttributableToOwnersOfParent"],
-  ],
-  cash: [
-    ["us-gaap", "CashAndCashEquivalentsAtCarryingValue"],
-    ["us-gaap", "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents"],
-    ["ifrs-full", "CashAndCashEquivalents"],
-  ],
-  inventory: [
-    ["us-gaap", "InventoryNet"],
-    ["ifrs-full", "Inventories"],
-  ],
-  currentAssets: [["us-gaap", "AssetsCurrent"], ["ifrs-full", "CurrentAssets"]],
-  currentLiabilities: [["us-gaap", "LiabilitiesCurrent"], ["ifrs-full", "CurrentLiabilities"]],
-  totalDebt: [
-    ["us-gaap", "LongTermDebtAndFinanceLeaseObligations"],
-    ["us-gaap", "LongTermDebtAndCapitalLeaseObligations"],
-    ["ifrs-full", "Borrowings"],
-  ],
-  currentDebt: [
-    ["us-gaap", "LongTermDebtAndFinanceLeaseObligationsCurrent"],
-    ["us-gaap", "ShortTermBorrowings"],
-    ["ifrs-full", "CurrentBorrowings"],
-  ],
-  nonCurrentDebt: [
-    ["us-gaap", "LongTermDebtAndFinanceLeaseObligationsNoncurrent"],
-    ["us-gaap", "LongTermDebtNoncurrent"],
-    ["ifrs-full", "NoncurrentBorrowings"],
-  ],
-} satisfies Record<string, Array<[string, string]>>;
 
 const ALIASES: Record<string, string> = {
   google: "GOOGL",
@@ -284,104 +214,6 @@ async function resolveCompany(query: string) {
     .sort((a, b) => a.score - b.score || a.titleLength - b.titleLength)[0]?.record ?? null;
 }
 
-function chooseUnit(units: Record<string, SecFact[]> | undefined) {
-  if (!units) return null;
-  const keys = Object.keys(units);
-  return keys.find((key) => key === "USD") ?? keys.find((key) => /^[A-Z]{3}$/.test(key)) ?? null;
-}
-
-function annualSeries(
-  facts: CompanyFacts,
-  candidates: Array<[string, string]>,
-  duration: boolean,
-): Series {
-  const selected = new Map<
-    string,
-    { value: number; filed: string; priority: number; unit: string; durationDistance: number }
-  >();
-
-  candidates.forEach(([taxonomy, concept], priority) => {
-    const fact = facts.facts?.[taxonomy]?.[concept];
-    const unit = chooseUnit(fact?.units);
-    if (!fact || !unit) return;
-    for (const entry of fact.units?.[unit] ?? []) {
-      if (
-        !entry.end ||
-        typeof entry.val !== "number" ||
-        !Number.isFinite(entry.val) ||
-        !entry.form ||
-        !ANNUAL_FORMS.has(entry.form)
-      ) continue;
-
-      let durationDistance = 0;
-      if (duration) {
-        if (!entry.start) continue;
-        const days = (Date.parse(entry.end) - Date.parse(entry.start)) / 86_400_000;
-        if (!Number.isFinite(days) || days < 280 || days > 430) continue;
-        durationDistance = Math.abs(365 - days);
-      } else if (entry.start) {
-        continue;
-      }
-
-      const filed = entry.filed ?? "";
-      const existing = selected.get(entry.end);
-      if (
-        !existing ||
-        priority < existing.priority ||
-        (priority === existing.priority && durationDistance < existing.durationDistance) ||
-        (priority === existing.priority &&
-          durationDistance === existing.durationDistance &&
-          filed > existing.filed)
-      ) {
-        selected.set(entry.end, { value: entry.val, filed, priority, unit, durationDistance });
-      }
-    }
-  });
-
-  return {
-    unit: [...selected.values()][0]?.unit ?? "USD",
-    values: new Map(
-      [...selected.entries()]
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([periodEnd, entry]) => [periodEnd, entry.value]),
-    ),
-  };
-}
-
-function safeDivide(numerator: number | null, denominator: number | null) {
-  if (numerator === null || denominator === null || denominator === 0) return null;
-  return numerator / denominator;
-}
-
-function safeSubtract(a: number | null, b: number | null) {
-  if (a === null || b === null) return null;
-  return a - Math.abs(b);
-}
-
-function safeAdd(a: number | null, b: number | null) {
-  if (a === null || b === null) return null;
-  return a + b;
-}
-
-function average(values: Array<number | null>) {
-  const usable = values.filter((value): value is number => value !== null && Number.isFinite(value));
-  return usable.length ? usable.reduce((sum, value) => sum + value, 0) / usable.length : null;
-}
-
-function clamp(value: number, minimum: number, maximum: number) {
-  return Math.min(maximum, Math.max(minimum, value));
-}
-
-function cagr(periods: FinancialPeriod[]) {
-  const usable = periods.filter((period) => period.revenue !== null && period.revenue > 0);
-  if (usable.length < 2) return null;
-  const first = usable[0];
-  const last = usable.at(-1)!;
-  const years = (Date.parse(last.periodEnd) - Date.parse(first.periodEnd)) / 31_557_600_000;
-  if (years <= 0 || first.revenue === null || last.revenue === null) return null;
-  return Math.pow(last.revenue / first.revenue, 1 / years) - 1;
-}
-
 function compactMoney(value: number | null, currency: string, locale: ResearchLocale) {
   if (value === null) return "—";
   const absolute = Math.abs(value);
@@ -434,82 +266,6 @@ function filingSource(
   };
 }
 
-function normalizedPeriods(facts: CompanyFacts) {
-  const series = {
-    revenue: annualSeries(facts, METRICS.revenue, true),
-    grossProfit: annualSeries(facts, METRICS.grossProfit, true),
-    netIncome: annualSeries(facts, METRICS.netIncome, true),
-    operatingCashFlow: annualSeries(facts, METRICS.operatingCashFlow, true),
-    investingCashFlow: annualSeries(facts, METRICS.investingCashFlow, true),
-    cashCapex: annualSeries(facts, METRICS.cashCapex, true),
-    assets: annualSeries(facts, METRICS.assets, false),
-    liabilities: annualSeries(facts, METRICS.liabilities, false),
-    equity: annualSeries(facts, METRICS.equity, false),
-    cash: annualSeries(facts, METRICS.cash, false),
-    inventory: annualSeries(facts, METRICS.inventory, false),
-    currentAssets: annualSeries(facts, METRICS.currentAssets, false),
-    currentLiabilities: annualSeries(facts, METRICS.currentLiabilities, false),
-    totalDebt: annualSeries(facts, METRICS.totalDebt, false),
-    currentDebt: annualSeries(facts, METRICS.currentDebt, false),
-    nonCurrentDebt: annualSeries(facts, METRICS.nonCurrentDebt, false),
-  };
-  const anchorDates = [...new Set([
-    ...series.revenue.values.keys(),
-    ...series.netIncome.values.keys(),
-    ...series.operatingCashFlow.values.keys(),
-  ])].sort().slice(-5);
-
-  const periods: FinancialPeriod[] = anchorDates.map((periodEnd, index) => {
-    const revenue = series.revenue.values.get(periodEnd) ?? null;
-    const priorRevenue = index ? series.revenue.values.get(anchorDates[index - 1]) ?? null : null;
-    const netIncome = series.netIncome.values.get(periodEnd) ?? null;
-    const operatingCashFlow = series.operatingCashFlow.values.get(periodEnd) ?? null;
-    const capexRaw = series.cashCapex.values.get(periodEnd) ?? null;
-    const cashCapex = capexRaw === null ? null : Math.abs(capexRaw);
-    const freeCashFlow = safeSubtract(operatingCashFlow, cashCapex);
-    const totalDebt =
-      series.totalDebt.values.get(periodEnd) ??
-      safeAdd(
-        series.currentDebt.values.get(periodEnd) ?? null,
-        series.nonCurrentDebt.values.get(periodEnd) ?? null,
-      );
-    const cash = series.cash.values.get(periodEnd) ?? null;
-    const grossProfit = series.grossProfit.values.get(periodEnd) ?? null;
-    return {
-      periodEnd,
-      revenue,
-      grossProfit,
-      netIncome,
-      operatingCashFlow,
-      investingCashFlow: series.investingCashFlow.values.get(periodEnd) ?? null,
-      cashCapex,
-      freeCashFlowProxy: freeCashFlow,
-      assets: series.assets.values.get(periodEnd) ?? null,
-      liabilities: series.liabilities.values.get(periodEnd) ?? null,
-      equity: series.equity.values.get(periodEnd) ?? null,
-      cash,
-      inventory: series.inventory.values.get(periodEnd) ?? null,
-      currentAssets: series.currentAssets.values.get(periodEnd) ?? null,
-      currentLiabilities: series.currentLiabilities.values.get(periodEnd) ?? null,
-      totalDebt,
-      netDebt: totalDebt === null || cash === null ? null : totalDebt - cash,
-      revenueGrowth: safeDivide(
-        revenue === null || priorRevenue === null ? null : revenue - priorRevenue,
-        priorRevenue,
-      ),
-      netMargin: safeDivide(netIncome, revenue),
-      grossMargin: safeDivide(grossProfit, revenue),
-      freeCashFlowMargin: safeDivide(freeCashFlow, revenue),
-      cashConversion: safeDivide(freeCashFlow, netIncome),
-      currentRatio: safeDivide(
-        series.currentAssets.values.get(periodEnd) ?? null,
-        series.currentLiabilities.values.get(periodEnd) ?? null,
-      ),
-    };
-  });
-  return { periods, currency: series.revenue.unit || series.netIncome.unit || "USD" };
-}
-
 async function shellMetricAudit(
   record: TickerRecord,
   facts: CompanyFacts,
@@ -528,108 +284,6 @@ async function shellMetricAudit(
       verifiedSnapshot: true,
     });
   }
-}
-
-function applyLocatedMetrics(
-  periods: FinancialPeriod[],
-  metricAudit: MetricLocatorAudit | null,
-) {
-  if (!metricAudit) return;
-  const period = periods.find(
-    (candidate) => candidate.periodEnd === metricAudit.reportingPeriod,
-  );
-  if (!period) return;
-  const values = new Map(
-    metricAudit.results
-      .filter((result) => result.found && result.selectedValue !== null)
-      .map((result) => [result.metricId, result.selectedValue!]),
-  );
-  period.cashCapex = values.get("cash-capex") ?? period.cashCapex;
-  period.freeCashFlowProxy = values.get("fcf") ?? period.freeCashFlowProxy;
-  period.netDebt = values.get("net-debt") ?? period.netDebt;
-  period.freeCashFlowMargin = safeDivide(period.freeCashFlowProxy, period.revenue);
-  period.cashConversion = safeDivide(period.freeCashFlowProxy, period.netIncome);
-}
-
-function buildScenarios(
-  periods: FinancialPeriod[],
-  pack: SectorPack,
-  locale: ResearchLocale,
-): Scenario[] {
-  const latest = periods.at(-1);
-  const revenueCagr = cagr(periods);
-  const averageNetMargin = average(periods.slice(-3).map((period) => period.netMargin));
-  const averageOcfMargin = average(
-    periods.slice(-3).map((period) => safeDivide(period.operatingCashFlow, period.revenue)),
-  );
-  const baseGrowth =
-    pack.id === "semiconductors"
-      ? clamp(revenueCagr ?? 0.08, -0.05, 0.3)
-      : clamp(revenueCagr ?? 0, -0.08, 0.08);
-  const growthSpread = pack.id === "semiconductors" ? 0.08 : 0.05;
-  const baseNetMargin = averageNetMargin ?? latest?.netMargin ?? null;
-  const baseOcfMargin =
-    averageOcfMargin ?? safeDivide(latest?.operatingCashFlow ?? null, latest?.revenue ?? null);
-  const useFallback =
-    pack.valuation.metric === "freeCashFlow" &&
-    (latest?.cashCapex === null || latest?.operatingCashFlow === null) &&
-    pack.valuation.fallback !== undefined;
-  const framework = useFallback ? pack.valuation.fallback! : pack.valuation;
-  const assumptions = [
-    { name: "Bear" as const, growth: baseGrowth - growthSpread, marginDelta: -0.03, capexFactor: 1.1, multiple: framework.multiples.bear },
-    { name: "Base" as const, growth: baseGrowth, marginDelta: 0, capexFactor: 1, multiple: framework.multiples.base },
-    { name: "Bull" as const, growth: baseGrowth + growthSpread, marginDelta: 0.03, capexFactor: 0.95, multiple: framework.multiples.bull },
-  ];
-
-  return assumptions.map((input) => {
-    const revenueGrowth = clamp(input.growth, -0.25, 0.45);
-    const projectedRevenue =
-      latest?.revenue === null || latest?.revenue === undefined
-        ? null
-        : latest.revenue * (1 + revenueGrowth);
-    const netMargin =
-      baseNetMargin === null ? null : clamp(baseNetMargin + input.marginDelta, -0.3, 0.65);
-    const operatingCashFlowMargin =
-      baseOcfMargin === null ? null : clamp(baseOcfMargin + input.marginDelta, -0.25, 0.7);
-    const projectedNetIncome =
-      projectedRevenue === null || netMargin === null ? null : projectedRevenue * netMargin;
-    const projectedCapex =
-      latest?.cashCapex === null || latest?.cashCapex === undefined
-        ? null
-        : latest.cashCapex * input.capexFactor;
-    const projectedFreeCashFlow =
-      projectedRevenue === null || operatingCashFlowMargin === null || projectedCapex === null
-        ? null
-        : projectedRevenue * operatingCashFlowMargin - projectedCapex;
-    const projectedOperatingCashFlow =
-      projectedRevenue === null || operatingCashFlowMargin === null
-        ? null
-        : projectedRevenue * operatingCashFlowMargin;
-    const valuationMetric =
-      framework.metric === "revenue"
-        ? projectedRevenue
-        : framework.metric === "operatingCashFlow"
-          ? projectedOperatingCashFlow
-          : projectedFreeCashFlow;
-    return {
-      name: input.name,
-      revenueGrowth,
-      netMargin,
-      operatingCashFlowMargin,
-      capexFactor: input.capexFactor,
-      projectedRevenue,
-      projectedNetIncome,
-      projectedFreeCashFlow,
-      enterpriseValueMultiple: input.multiple,
-      valuationMethod: framework.method[locale],
-      valuationMetric,
-      multipleLabel: framework.multipleLabel,
-      modelImpliedEnterpriseValue:
-        valuationMetric !== null && valuationMetric > 0
-          ? valuationMetric * input.multiple
-          : null,
-    };
-  });
 }
 
 function kpiValue(
@@ -683,6 +337,8 @@ function buildSectorKpis(
   currency: string,
   locale: ResearchLocale,
   metricAudit: MetricLocatorAudit | null,
+  metricRegistry: MetricRegistry,
+  companyId: string,
 ): SectorKpiResult[] {
   const located = new Map(
     metricAudit?.results.map((result) => [result.metricId, result]) ?? [],
@@ -690,6 +346,12 @@ function buildSectorKpis(
   return pack.coreKpis.map((definition): SectorKpiResult => {
     const locatorResult = located.get(definition.id);
     if (locatorResult) {
+      const canonicalMetric = metricRegistry.getMetric({
+        company_id: companyId,
+        metric_id: locatorResult.metricId,
+        period_end: locatorResult.period ?? undefined,
+        definition_id: locatorResult.definitionId,
+      });
       return {
         id: definition.id,
         label: definition.label[locale],
@@ -706,6 +368,7 @@ function buildSectorKpis(
         sourceUrl: locatorResult.sourceUrl,
         confidence: locatorResult.confidence,
         extractionMethod: locatorResult.extractionMethod,
+        canonicalKey: canonicalMetric.canonical_key,
         whyItMatters:
           locale === "zh"
             ? `该指标用于回答：${pack.researchQuestions[
@@ -718,6 +381,16 @@ function buildSectorKpis(
     }
     const derived = ["grossMargin", "freeCashFlow", "netDebt"].includes(definition.availability);
     const available = kpiHasValue(definition, latest);
+    const metricField = {
+      revenue: "revenue",
+      grossMargin: "grossMargin",
+      inventory: "inventory",
+      cashCapex: "cashCapex",
+      freeCashFlow: "freeCashFlowProxy",
+      netDebt: "netDebt",
+      notStandardized: "",
+    }[definition.availability];
+    const canonicalKey = metricField ? latest.metricKeys[metricField] ?? "" : "";
     return {
       id: definition.id,
       label: definition.label[locale],
@@ -737,6 +410,7 @@ function buildSectorKpis(
       sourceUrl: null,
       confidence: available ? 0.9 : 0,
       extractionMethod: available ? "Deterministic SEC Company Facts normalization" : null,
+      canonicalKey,
       whyItMatters:
         locale === "zh"
           ? `该指标用于回答：${pack.researchQuestions[
@@ -746,7 +420,7 @@ function buildSectorKpis(
               pack.coreKpis.indexOf(definition) % pack.researchQuestions.length
             ].en}`,
     };
-  }).filter((result) => result.usable);
+  }).filter((result) => result.usable && result.canonicalKey);
 }
 
 function matchingClaim(
@@ -772,24 +446,108 @@ function matchingClaim(
     .sort((a, b) => b.score - a.score)[0]?.claim;
 }
 
+const PERIOD_FIELD_BY_METRIC_ID: Record<string, string> = {
+  revenue: "revenue",
+  "revenue-growth": "revenueGrowth",
+  "revenue-cagr": "revenueCagr",
+  "gross-profit": "grossProfit",
+  "net-income": "netIncome",
+  "net-margin": "netMargin",
+  "net-margin-change": "netMarginChange",
+  "gross-margin": "grossMargin",
+  "operating-cash-flow": "operatingCashFlow",
+  "operating-cash-flow-margin": "operatingCashFlowMargin",
+  "cash-capex": "cashCapex",
+  fcf: "freeCashFlowProxy",
+  "fcf-margin": "freeCashFlowMargin",
+  "cash-conversion": "cashConversion",
+  assets: "assets",
+  liabilities: "liabilities",
+  "liabilities-assets": "liabilitiesAssets",
+  inventory: "inventory",
+  "current-ratio": "currentRatio",
+  "net-debt": "netDebt",
+};
+
+const DRIVER_METRIC_IDS: Record<string, string[]> = {
+  "oil-balance": ["production", "realized-prices", "operating-cash-flow"],
+  "lng-cycle": ["lng", "segment-earnings", "operating-cash-flow"],
+  "refining-cycle": ["refining-margin", "segment-earnings", "operating-cash-flow"],
+  "capital-discipline": ["cash-capex", "fcf", "net-debt", "dividends", "share-buybacks"],
+  "ai-demand": ["revenue", "revenue-growth", "gross-margin", "fcf"],
+  capacity: ["gross-margin", "inventory", "cash-capex"],
+  "product-cycle": ["revenue-growth", "gross-margin", "inventory"],
+  "export-controls": ["revenue", "revenue-growth", "inventory"],
+};
+
+function selectedCanonicalMetrics(
+  registry: MetricRegistry,
+  companyId: string,
+  latest: FinancialPeriod,
+  metricIds: string[],
+) {
+  const selected: CanonicalMetricObject[] = [];
+  for (const metricId of metricIds) {
+    const field = PERIOD_FIELD_BY_METRIC_ID[metricId];
+    const exactKey = field ? latest.metricKeys[field] : undefined;
+    const exact = exactKey ? registry.getByKey(exactKey) : null;
+    const candidates = exact
+      ? [exact]
+      : registry.findMetrics({
+          company_id: companyId,
+          metric_id: metricId,
+          period_end: latest.periodEnd,
+        }).filter((metric) => metric.value !== null && ["Reported", "Derived"].includes(metric.status));
+    const chosen = candidates.sort((left, right) =>
+      right.confidence - left.confidence ||
+      left.definition_id.localeCompare(right.definition_id)
+    )[0];
+    if (chosen && !selected.some((metric) => metric.canonical_key === chosen.canonical_key)) {
+      selected.push(chosen);
+    }
+  }
+  return selected;
+}
+
 function buildDriverExposure(
   companyName: string,
   pack: SectorPack,
   outlook: Awaited<ReturnType<typeof getSectorOutlook>>,
   locale: ResearchLocale,
+  registry: MetricRegistry,
+  companyId: string,
+  latest: FinancialPeriod,
 ): SectorDriverExposure[] {
   return pack.marketDrivers.map((driver, index) => {
     const claim =
       matchingClaim(driver.query, outlook) ??
       outlook.claims[index % Math.max(outlook.claims.length, 1)];
+    const canonicalMetrics = selectedCanonicalMetrics(
+      registry,
+      companyId,
+      latest,
+      DRIVER_METRIC_IDS[driver.id] ?? [],
+    );
+    const canonicalEvidence = canonicalMetrics
+      .slice(0, 3)
+      .map((metric) => `${metric.metric_id}: ${formatMetricForDisplay(metric, locale)}`)
+      .join("; ");
     return {
       driver: driver.name[locale],
-      companyExposure: `${companyName}: ${driver.companyExposure[locale]}`,
+      companyExposure: [
+        `${companyName}: ${driver.companyExposure[locale]}`,
+        canonicalEvidence
+          ? locale === "zh"
+            ? `最新规范指标：${canonicalEvidence}。`
+            : `Latest canonical metrics: ${canonicalEvidence}.`
+          : "",
+      ].filter(Boolean).join(" "),
       evidence: claim?.claim ?? COPY[locale].dataUnavailable,
       evidencePublisher: claim?.publisher ?? COPY[locale].dataUnavailable,
       evidenceDate: claim?.publicationDate ?? COPY[locale].dataUnavailable,
       evidenceUrl: claim?.url ?? "",
       investmentImplication: driver.implication[locale],
+      metricReferences: canonicalMetrics.map((metric) => metric.canonical_key),
     };
   });
 }
@@ -801,15 +559,13 @@ function buildNarrative(
   pack: SectorPack,
   outlook: Awaited<ReturnType<typeof getSectorOutlook>>,
   locale: ResearchLocale,
+  registry: MetricRegistry,
+  companyId: string,
 ) {
   const latest = periods.at(-1)!;
-  const prior = periods.at(-2);
-  const revenueCagr = cagr(periods);
-  const marginDelta =
-    latest.netMargin === null || prior?.netMargin === null || prior?.netMargin === undefined
-      ? null
-      : latest.netMargin - prior.netMargin;
-  const liabilityRatio = safeDivide(latest.liabilities, latest.assets);
+  const revenueCagr = latest.revenueCagr;
+  const marginDelta = latest.netMarginChange;
+  const liabilityRatio = latest.liabilitiesAssets;
   const cashConversion = latest.cashConversion;
   const primarySectorMetric =
     pack.id === "semiconductors"
@@ -820,6 +576,7 @@ function buildNarrative(
             locale === "zh"
               ? "毛利率 = 毛利润 ÷ 营收；产品组合与供给成本的重要信号。"
               : "Gross margin = gross profit / revenue; a key signal for product mix and supply cost.",
+          metricKey: latest.metricKeys.grossMargin ?? "",
         }
       : {
           label: locale === "zh" ? "净债务" : "Net debt",
@@ -828,6 +585,7 @@ function buildNarrative(
             locale === "zh"
               ? "净债务 = 标准化总债务 - 现金；衡量周期下行韧性。"
               : "Net debt = normalized debt - cash; a measure of downside-cycle resilience.",
+          metricKey: latest.metricKeys.netDebt ?? "",
         };
   const fcfValue =
     latest.freeCashFlowProxy === null
@@ -844,6 +602,7 @@ function buildNarrative(
           : `YoY ${percentage(latest.revenueGrowth, locale)}; multi-period CAGR ${percentage(revenueCagr, locale)}`,
       classification: "Reported fact",
       tone: latest.revenueGrowth === null ? "neutral" : latest.revenueGrowth >= 0 ? "positive" : "watch",
+      metricKey: latest.metricKeys.revenue ?? "",
     },
     {
       label: locale === "zh" ? "净利润率" : "Net margin",
@@ -854,6 +613,7 @@ function buildNarrative(
           : `YoY change ${marginDelta === null ? COPY.en.dataUnavailable : `${(marginDelta * 100).toFixed(1)}ppt`}`,
       classification: "Derived calculation",
       tone: marginDelta === null ? "neutral" : marginDelta >= 0 ? "positive" : "watch",
+      metricKey: latest.metricKeys.netMargin ?? "",
     },
     {
       label: locale === "zh" ? "自由现金流" : "Free cash flow",
@@ -864,6 +624,7 @@ function buildNarrative(
           : "FCF = operating cash flow - cash capital expenditure; no value is calculated when capex is unavailable.",
       classification: "Derived calculation",
       tone: latest.freeCashFlowProxy === null ? "neutral" : latest.freeCashFlowProxy > 0 ? "positive" : "watch",
+      metricKey: latest.metricKeys.freeCashFlowProxy ?? "",
     },
     {
       label: primarySectorMetric.label,
@@ -871,6 +632,7 @@ function buildNarrative(
       detail: primarySectorMetric.detail,
       classification: "Derived calculation",
       tone: "neutral",
+      metricKey: primarySectorMetric.metricKey,
     },
     {
       label: locale === "zh" ? "负债 / 资产" : "Liabilities / assets",
@@ -881,6 +643,7 @@ function buildNarrative(
           : `Current ratio ${latest.currentRatio === null ? COPY.en.dataUnavailable : `${latest.currentRatio.toFixed(2)}x`}`,
       classification: "Derived calculation",
       tone: liabilityRatio === null ? "neutral" : liabilityRatio <= 0.65 ? "positive" : "watch",
+      metricKey: latest.metricKeys.liabilitiesAssets ?? "",
     },
   ];
   const visibleDashboard = dashboard.filter((_, index) => [
@@ -918,6 +681,16 @@ function buildNarrative(
     const claim =
       matchingClaim(driver.query, outlook) ??
       outlook.claims[index % Math.max(outlook.claims.length, 1)];
+    const metricReferences = selectedCanonicalMetrics(
+      registry,
+      companyId,
+      latest,
+      [
+        ...(DRIVER_METRIC_IDS[driver.id] ?? []),
+        "revenue-growth",
+        "fcf",
+      ],
+    ).map((metric) => metric.canonical_key);
     return {
       title: driver.name[locale],
       view:
@@ -926,9 +699,16 @@ function buildNarrative(
           : `${companyName}'s relevant exposure is ${driver.companyExposure.en} Latest revenue growth was ${percentage(latest.revenueGrowth, locale)} and FCF was ${inlineFcfValue}. Sector evidence: ${claim?.publisher ?? COPY.en.dataUnavailable} · ${claim?.publicationDate ?? COPY.en.dataUnavailable}.`,
       counterEvidence: pack.risks[index % pack.risks.length][locale],
       monitor: pack.researchQuestions[index % pack.researchQuestions.length][locale],
+      metricReferences,
     };
   });
 
+  const riskMetricReferences = selectedCanonicalMetrics(
+    registry,
+    companyId,
+    latest,
+    ["revenue-growth", "net-margin", "fcf", "net-debt"],
+  ).map((metric) => metric.canonical_key);
   const risks: RiskPoint[] = pack.risks.map((risk, index) => ({
     title: risk[locale],
     evidence:
@@ -939,6 +719,7 @@ function buildNarrative(
       locale === "zh"
         ? `若“${pack.researchQuestions[index % pack.researchQuestions.length].zh}”连续两个报告期无法得到积极验证，则该论点失效。`
         : `The thesis breaks if "${pack.researchQuestions[index % pack.researchQuestions.length].en}" cannot be positively validated for two reporting periods.`,
+    metricReferences: riskMetricReferences,
   }));
   return { dashboard: visibleDashboard, earningsQuality, thesis, risks };
 }
@@ -948,6 +729,9 @@ function buildDebates(
   pack: SectorPack,
   outlook: Awaited<ReturnType<typeof getSectorOutlook>>,
   locale: ResearchLocale,
+  registry: MetricRegistry,
+  companyId: string,
+  latest: FinancialPeriod,
 ): InvestmentDebate[] {
   return pack.researchQuestions.slice(0, 4).map((question, index) => {
     const driver = pack.marketDrivers[index % pack.marketDrivers.length];
@@ -961,6 +745,12 @@ function buildDebates(
         (locale === "zh" ? "近期行业证据不足。" : "Recent sector evidence is insufficient."),
       evidenceAgainst: pack.risks[index % pack.risks.length][locale],
       monitor: `${companyName}: ${pack.coreKpis[index % pack.coreKpis.length].label[locale]}`,
+      metricReferences: selectedCanonicalMetrics(
+        registry,
+        companyId,
+        latest,
+        DRIVER_METRIC_IDS[driver.id] ?? [],
+      ).map((metric) => metric.canonical_key),
     };
   });
 }
@@ -968,6 +758,7 @@ function buildDebates(
 function catalystPoints(
   items: SectorPack["catalysts"]["operating"],
   locale: ResearchLocale,
+  metricReferences: string[],
 ): CatalystPoint[] {
   return items.map((item) => ({
     timing: locale === "zh" ? "持续监测" : "Ongoing monitor",
@@ -976,12 +767,16 @@ function catalystPoints(
       locale === "zh"
         ? "仅在经营或财务结果改变时视为催化剂；单纯申报日期不是催化剂。"
         : "Treated as a catalyst only when operating or financial outcomes change; a filing date alone is not a catalyst.",
+    metricReferences,
   }));
 }
 
 async function buildPeerComparison(
   pack: SectorPack,
   locale: ResearchLocale,
+  reportRegistry: MetricRegistry,
+  dataVersion: string,
+  retrievedAt: string,
 ): Promise<PeerComparisonItem[]> {
   return Promise.all(
     pack.peers.map(async (peer) => {
@@ -989,7 +784,17 @@ async function buildPeerComparison(
         const facts = await secFetch<CompanyFacts>(
           `https://data.sec.gov/api/xbrl/companyfacts/CIK${peer.cik}.json`,
         );
-        const { periods } = normalizedPeriods(facts);
+        const peerRegistry = buildFinancialMetricRegistry({
+          facts: facts as CompanyFactsPayload,
+          companyId: peer.ticker,
+          sector: pack.id,
+          dataVersion,
+          retrievedAt,
+        });
+        for (const metric of peerRegistry.values()) {
+          reportRegistry.registerOrVerify(metric);
+        }
+        const { periods } = financialPeriodsFromRegistry(peerRegistry, peer.ticker);
         const latest = periods.at(-1);
         return {
           ticker: peer.ticker,
@@ -999,6 +804,17 @@ async function buildPeerComparison(
           netMargin: latest?.netMargin ?? null,
           freeCashFlowMargin: latest?.freeCashFlowMargin ?? null,
           periodEnd: latest?.periodEnd ?? null,
+          metricReferences: {
+            ...(latest?.metricKeys.revenueGrowth
+              ? { revenueGrowth: latest.metricKeys.revenueGrowth }
+              : {}),
+            ...(latest?.metricKeys.netMargin
+              ? { netMargin: latest.metricKeys.netMargin }
+              : {}),
+            ...(latest?.metricKeys.freeCashFlowMargin
+              ? { freeCashFlowMargin: latest.metricKeys.freeCashFlowMargin }
+              : {}),
+          },
         };
       } catch {
         return {
@@ -1009,10 +825,36 @@ async function buildPeerComparison(
           netMargin: null,
           freeCashFlowMargin: null,
           periodEnd: null,
+          metricReferences: {},
         };
       }
     }),
   );
+}
+
+function buildMetricUsage(
+  registry: MetricRegistry,
+  locale: ResearchLocale,
+  groups: Array<{ module: string; keys: string[] }>,
+): MetricUsage[] {
+  const seen = new Set<string>();
+  const usage: MetricUsage[] = [];
+  for (const group of groups) {
+    for (const canonicalKey of group.keys.filter(Boolean)) {
+      const usageKey = `${group.module}|${canonicalKey}`;
+      if (seen.has(usageKey)) continue;
+      seen.add(usageKey);
+      const metric = registry.getByKey(canonicalKey);
+      usage.push({
+        module: group.module,
+        canonicalKey,
+        canonicalValue: metric.value,
+        displayedValue:
+          metric.value === null ? null : formatMetricForDisplay(metric, locale),
+      });
+    }
+  }
+  return usage;
 }
 
 function selectionFromPayload(payload: ResearchPayload): ResearchSelection | null {
@@ -1050,21 +892,152 @@ async function buildReport(
     throw new Error("SECTOR_MISMATCH");
   }
 
-  const { periods, currency } = normalizedPeriods(facts);
-  if (!periods.length) throw new Error("INSUFFICIENT_XBRL");
-  const metricAudit = await shellMetricAudit(record, facts);
-  applyLocatedMetrics(periods, metricAudit);
-  const latest = periods.at(-1)!;
   const companyName = submissions.name || facts.entityName || record.title;
   const today = new Date();
   const companyDataRetrievedAt = today.toISOString();
   const latestAnnual = filingSource(submissions, ANNUAL_FORMS, COPY[locale].annualFiling);
   const latestInterim = filingSource(submissions, INTERIM_FORMS, COPY[locale].interimFiling);
-  const narrative = buildNarrative(companyName, periods, currency, pack, sectorOutlook, locale);
-  const scenarios = selection.options.valuation ? buildScenarios(periods, pack, locale) : [];
-  const peerComparison = selection.options.peerComparison
-    ? await buildPeerComparison(pack, locale)
+  const dataVersion = [
+    record.ticker,
+    latestAnnual?.reportDate ?? "latest",
+    latestAnnual?.filed ?? "unfiled",
+    "canonical-v1",
+  ].join("-");
+  const metricRegistry = buildFinancialMetricRegistry({
+    facts: facts as CompanyFactsPayload,
+    companyId: record.ticker,
+    sector: pack.id,
+    dataVersion,
+    retrievedAt: companyDataRetrievedAt,
+  });
+  const metricAudit = await shellMetricAudit(record, facts);
+  if (metricAudit) {
+    publishLocatorAuditToRegistry({
+      registry: metricRegistry,
+      audit: metricAudit,
+      companyId: record.ticker,
+      sector: pack.id,
+      retrievedAt: companyDataRetrievedAt,
+    });
+    ensureCoreDerivedMetrics(metricRegistry, record.ticker);
+  }
+  const { periods, currency } = financialPeriodsFromRegistry(metricRegistry, record.ticker);
+  if (!periods.length) throw new Error("INSUFFICIENT_XBRL");
+  const latest = periods.at(-1)!;
+  const narrative = buildNarrative(
+    companyName,
+    periods,
+    currency,
+    pack,
+    sectorOutlook,
+    locale,
+    metricRegistry,
+    record.ticker,
+  );
+  const scenarios = selection.options.valuation
+    ? buildCanonicalScenarios({
+        registry: metricRegistry,
+        companyId: record.ticker,
+        periods,
+        pack,
+        locale,
+      })
     : [];
+  const peerComparison = selection.options.peerComparison
+    ? await buildPeerComparison(
+        pack,
+        locale,
+        metricRegistry,
+        dataVersion,
+        companyDataRetrievedAt,
+      )
+    : [];
+  const driverExposure = buildDriverExposure(
+    companyName,
+    pack,
+    sectorOutlook,
+    locale,
+    metricRegistry,
+    record.ticker,
+    latest,
+  );
+  const sectorKpis = buildSectorKpis(
+    pack,
+    latest,
+    currency,
+    locale,
+    metricAudit,
+    metricRegistry,
+    record.ticker,
+  );
+  const investmentDebates = selection.options.dueDiligence
+    ? buildDebates(
+        companyName,
+        pack,
+        sectorOutlook,
+        locale,
+        metricRegistry,
+        record.ticker,
+        latest,
+      )
+    : [];
+  const filingMetricReferences = selectedCanonicalMetrics(
+    metricRegistry,
+    record.ticker,
+    latest,
+    ["revenue", "net-income", "operating-cash-flow", "fcf"],
+  ).map((metric) => metric.canonical_key);
+  const filingWatchlist: CatalystPoint[] = [
+    ...(latestAnnual
+      ? [{
+          timing: latestAnnual.filed,
+          event: `${latestAnnual.form} · ${latestAnnual.reportDate}`,
+          investorRelevance:
+            locale === "zh"
+              ? "申报监测项：复核分部、会计政策、风险与资本配置；申报日期本身不是催化剂。"
+              : "Filing watch item: reconcile segments, accounting policy, risks, and capital allocation; the filing date itself is not a catalyst.",
+          metricReferences: filingMetricReferences,
+        }]
+      : []),
+    ...(latestInterim
+      ? [{
+          timing: latestInterim.filed,
+          event: `${latestInterim.form} · ${latestInterim.reportDate}`,
+          investorRelevance:
+            locale === "zh"
+              ? "申报监测项：检查经营、流动性与指引变化；申报日期本身不是催化剂。"
+              : "Filing watch item: review operating, liquidity, and guidance changes; the filing date itself is not a catalyst.",
+          metricReferences: filingMetricReferences,
+        }]
+      : []),
+  ];
+  const operatingCatalystReferences = selectedCanonicalMetrics(
+    metricRegistry,
+    record.ticker,
+    latest,
+    pack.id === "integrated-oil-gas"
+      ? ["production", "lng", "refining-margin", "major-projects"]
+      : ["revenue-growth", "gross-margin", "inventory"],
+  ).map((metric) => metric.canonical_key);
+  const financialCatalystReferences = selectedCanonicalMetrics(
+    metricRegistry,
+    record.ticker,
+    latest,
+    ["cash-capex", "fcf", "net-debt", "dividends", "share-buybacks"],
+  ).map((metric) => metric.canonical_key);
+  const regulatoryCatalystReferences = selectedCanonicalMetrics(
+    metricRegistry,
+    record.ticker,
+    latest,
+    pack.id === "integrated-oil-gas"
+      ? ["major-projects", "cash-capex"]
+      : ["revenue", "inventory"],
+  ).map((metric) => metric.canonical_key);
+  const catalysts = {
+    operating: catalystPoints(pack.catalysts.operating, locale, operatingCatalystReferences),
+    financial: catalystPoints(pack.catalysts.financial, locale, financialCatalystReferences),
+    regulatory: catalystPoints(pack.catalysts.regulatory, locale, regulatoryCatalystReferences),
+  };
   const sourceBase = `https://data.sec.gov/submissions/CIK${cik}.json`;
   const factsUrl = `https://data.sec.gov/api/xbrl/companyfacts/CIK${cik}.json`;
   const evidenceSources = sectorEvidenceSources(selection.market, selection.subindustry);
@@ -1092,6 +1065,40 @@ async function buildReport(
           ? ["net-debt"]
           : []),
       ];
+  const metricUsage = buildMetricUsage(metricRegistry, locale, [
+    ...periods.map((period) => ({
+      module: `historical-financials:${period.periodEnd}`,
+      keys: Object.values(period.metricKeys),
+    })),
+    { module: "dashboard", keys: narrative.dashboard.map((metric) => metric.metricKey) },
+    {
+      module: "earnings-quality",
+      keys: selectedCanonicalMetrics(
+        metricRegistry,
+        record.ticker,
+        latest,
+        ["net-income", "operating-cash-flow", "cash-capex", "fcf", "cash-conversion", "net-debt"],
+      ).map((metric) => metric.canonical_key),
+    },
+    ...narrative.thesis.map((item) => ({ module: "investment-thesis", keys: item.metricReferences })),
+    ...narrative.risks.map((item) => ({ module: "risks", keys: item.metricReferences })),
+    ...driverExposure.map((item) => ({ module: "driver-exposure", keys: item.metricReferences })),
+    ...sectorKpis.map((item) => ({ module: "sector-kpis", keys: [item.canonicalKey] })),
+    ...investmentDebates.map((item) => ({ module: "investment-debates", keys: item.metricReferences })),
+    ...filingWatchlist.map((item) => ({ module: "filing-watchlist", keys: item.metricReferences })),
+    ...Object.values(catalysts).flat().map((item) => ({
+      module: "catalysts",
+      keys: item.metricReferences,
+    })),
+    ...scenarios.map((item) => ({
+      module: "scenarios-and-valuation",
+      keys: Object.values(item.metricReferences),
+    })),
+    ...peerComparison.map((item) => ({
+      module: "peer-comparison",
+      keys: Object.values(item.metricReferences),
+    })),
+  ]);
 
   return {
     locale,
@@ -1114,6 +1121,8 @@ async function buildReport(
     currency,
     latestAnnual,
     latestInterim,
+    metricRegistry: metricRegistry.snapshot(),
+    metricUsage,
     periods,
     dashboard: narrative.dashboard,
     sectorPack: {
@@ -1125,8 +1134,8 @@ async function buildReport(
       valuationMethod: effectiveValuation.method[locale],
     },
     sectorOutlook: displayedOutlook,
-    driverExposure: buildDriverExposure(companyName, pack, sectorOutlook, locale),
-    sectorKpis: buildSectorKpis(pack, latest, currency, locale, metricAudit),
+    driverExposure,
+    sectorKpis,
     dataCoverage: {
       limited: criticalMetricIds.length > 0,
       criticalMetricIds,
@@ -1163,36 +1172,9 @@ async function buildReport(
           : `Standardized Company Facts does not consistently preserve issuer-defined segments and operating KPIs, so missing values are not inferred. ${pack.reportGuidance.map((item) => item.en).join(" ")}`,
     earningsQuality: narrative.earningsQuality,
     thesis: narrative.thesis,
-    investmentDebates: selection.options.dueDiligence
-      ? buildDebates(companyName, pack, sectorOutlook, locale)
-      : [],
-    filingWatchlist: [
-      ...(latestAnnual
-        ? [{
-            timing: latestAnnual.filed,
-            event: `${latestAnnual.form} · ${latestAnnual.reportDate}`,
-            investorRelevance:
-              locale === "zh"
-                ? "申报监测项：复核分部、会计政策、风险与资本配置；申报日期本身不是催化剂。"
-                : "Filing watch item: reconcile segments, accounting policy, risks, and capital allocation; the filing date itself is not a catalyst.",
-          }]
-        : []),
-      ...(latestInterim
-        ? [{
-            timing: latestInterim.filed,
-            event: `${latestInterim.form} · ${latestInterim.reportDate}`,
-            investorRelevance:
-              locale === "zh"
-                ? "申报监测项：检查经营、流动性与指引变化；申报日期本身不是催化剂。"
-                : "Filing watch item: review operating, liquidity, and guidance changes; the filing date itself is not a catalyst.",
-          }]
-        : []),
-    ],
-    catalysts: {
-      operating: catalystPoints(pack.catalysts.operating, locale),
-      financial: catalystPoints(pack.catalysts.financial, locale),
-      regulatory: catalystPoints(pack.catalysts.regulatory, locale),
-    },
+    investmentDebates,
+    filingWatchlist,
+    catalysts,
     risks: narrative.risks,
     scenarios,
     peerComparison,
