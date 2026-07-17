@@ -1,5 +1,17 @@
 # ScopeLine Metric Locator Worklog
 
+## Canonical Metric Upgrade — Phase 1
+
+- Objective: establish one canonical Metric Object and Metric Registry before changing report modules.
+- Changes: added schema validation, canonical-key construction, definition-aware lookup, history/sector selectors, deterministic formula dependency resolution, full-precision storage, source lineage, and locator-to-registry publication.
+- Files: `site/app/lib/canonical-metrics.ts`, metric-locator types/engine/API, tests.
+- Tests: production build passed; 13/13 tests passed; 0 failed.
+- Metrics unified: 12 Shell FY2025 objects, including strict FCF and its canonical operating-cash-flow/cash-capex inputs.
+- Inconsistencies found/resolved: issuer and normalized definitions can collide under a loose query; Registry now raises `DEFINITION_CONFLICT` until a definition is explicit.
+- Unresolved: report modules still use legacy period adapters and calculations; addressed in Phase 2.
+- Industries: Integrated Oil & Gas remains supported; Semiconductors remains existing support pending canonical acceptance; Banks, Biopharma, and Industrials remain preview/coming soon.
+- Next: connect every report module to the Registry and remove duplicate calculations.
+
 ## Changes made
 
 - Added a reusable, ordered Metric Locator Engine for standard SEC XBRL, filing custom XBRL, filing HTML tables, filing text, exhibits/releases, and existing presentations.

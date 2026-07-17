@@ -83,3 +83,15 @@
 - [x] Add the `Limited data coverage` indicator and expandable `Data Coverage` audit.
 - [x] Add and pass regression tests for source order, strict FCF, custom XBRL, and missing-data UI.
 - [x] Create the final local checkpoint and deploy Sites version 5 with owner-only access.
+
+## ScopeLine Canonical Metric upgrade
+
+- [x] Phase 1: implement Canonical Metric Object, Metric Registry, canonical-key uniqueness, explicit definitions, full-precision formulas, and source lineage.
+- [ ] Phase 2: connect dashboard, historicals, KPIs, exposures, debates, risks, catalysts, peers, scenarios, and valuation to Registry selectors.
+- [ ] Phase 3: add consistency and reproducibility auditor plus machine-readable comparison.
+- [ ] Phase 4: pass Shell consistency, double-run, and Web/PDF acceptance.
+- [ ] Phase 5: revalidate missing-data presentation and invalid-formula visibility.
+- [ ] Phase 6: implement the 2025-current sector research learning pipeline.
+- [ ] Phase 7: sequentially validate Semiconductors/NVDA, Banks/JPM, Biopharma/LLY, and Industrials/CAT.
+- [ ] Phase 8: add five-company snapshots and complete automated regression coverage.
+- [ ] Phase 9: finalize worklog, consistency artifact, recovery checkpoint, private deployment, and production verification.

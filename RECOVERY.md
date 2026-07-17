@@ -8,7 +8,7 @@ The subsequent objective was to turn that research approach into a one-input MVP
 
 The latest completed objective was to upgrade that existing private Site to a complete Chinese/English experience without changing its URL or access policy.
 
-The current objective is to improve the existing ScopeLine Site without adding sectors: build a reusable, source-ordered Metric Locator Engine; validate it against 11 Shell metrics; and replace repeated missing-value UI with hidden unusable cards plus a compact Data Coverage audit.
+The current objective is a sequential canonical-metric upgrade: make Metric Objects the only report data source, pass consistency and reproducibility audits with Shell, then sequentially research, validate, and unlock Semiconductors, Banks, Biopharma, and Industrials without generic fallbacks.
 
 ## Completed tasks
 
@@ -87,14 +87,18 @@ The current objective is to improve the existing ScopeLine Site without adding s
 - Committed the exact Sites source as `34fb7c4`, pushed it to the existing Sites source repository, saved version 5, and completed an owner-only production deployment.
 - Verified the production homepage, Shell metric-locator endpoint, and Shell research endpoint with authenticated HTTP 200 responses. Production returned 11/11 located metrics, strict FCF of USD 21.948 billion, no unresolved metrics, and no critical coverage warning.
 - Reconfirmed owner-only access with no allowed groups or additional users.
+- Completed Canonical Metric Phase 1: added the schema, registry, unique cache key, explicit-definition lookup, deterministic canonical formulas, source lineage, full-precision storage, and locator-to-registry publication.
+- Published 12 Shell FY2025 canonical objects, including operating cash flow as the hidden input to strict FCF; duplicate keys, ambiguous definitions, invalid schema values, and mixed-period formula inputs are rejected.
+- Passed the Phase 1 production build and all 13 automated tests.
 
 ## Remaining tasks
 
-- None for this Metric Locator iteration.
+- Resume at Phase 2: migrate every report module to Registry selectors/references.
+- Complete Phases 3–9 in the order recorded in `TODO.md`; do not expand sectors before the Shell gate passes.
 
 ## Current status
 
-Complete. Sites version 5 is live at `https://scopeline-research.evvan.chatgpt.site` from source commit `34fb7c4`. Engine, Shell validation, report integration, missing-data UI, 12/12 automated tests, full-document tests, authenticated production checks, and owner-only access verification all passed.
+In progress. Sites version 5 remains live and unchanged. Canonical Metric Phase 1 is complete with 13/13 tests passing; Phase 2 is the first unfinished task.
 
 ## Files modified
 
@@ -118,10 +122,11 @@ Complete. Sites version 5 is live at `https://scopeline-research.evvan.chatgpt.s
 - `site/app/globals.css`
 - `site/tests/rendered-html.test.mjs`
 - `WORKLOG.md`
+- `site/app/lib/canonical-metrics.ts`
 
 ## Next recommended step
 
-Monitor production extraction logs and rejected candidates before adding any new issuer definitions or sector packs.
+Migrate the existing report modules to explicit Metric Registry selectors without changing the Site design.
 
 ## Assumptions and pending decisions
 
