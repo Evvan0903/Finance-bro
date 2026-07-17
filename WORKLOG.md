@@ -1,5 +1,20 @@
 # ScopeLine Metric Locator Worklog
 
+## Canonical Metric Upgrade — Phase 7.2
+
+- Objective: validate Financials / Banks with JPM before beginning Biopharma.
+- Research: ingested three current official sources (FDIC Q1 2026 Quarterly Banking Profile, OCC Spring 2026 Semiannual Risk Perspective, and Federal Reserve 2025 stress-test results) with publication dates and source lineage.
+- Changes: added the bank KPI ontology, source priorities, research methods, drivers, peers, P/TBV scenarios, and bank-specific report/UI paths; industrial revenue, capex, and FCF templates are explicitly excluded.
+- Filing extraction: added a reusable issuer-reported filing-table metric input and captured JPM FY2025 firmwide managed-basis net yield (2.50%), standardized CET1 (14.6%), average LCR (111%), and issuer-reported ROE (17%) with exact 10-K table/row provenance.
+- Acceptance: 12/12 core bank KPIs were populated. FY2025 net revenue was USD 182.447bn, NII USD 95.443bn, deposits USD 2.559tn, loan growth 10.88%, credit-loss provision USD 14.212bn, allowance coverage 1.76%, efficiency ratio 52.42%, tangible book value USD 308.407bn, and capital returns USD 48.216bn.
+- Valuation: Bear/Base/Bull use explicit tangible-book growth and 1.2x/1.7x/2.2x P/TBV assumptions; model-implied equity values are USD 351.584bn / USD 540.021bn / USD 732.775bn. No FCF object is created for JPM.
+- Consistency and reproducibility: 167 canonical metrics and 642 surface references passed with zero issues; two identical runs matched all objects and outputs.
+- Known limitations: the 2.50% measure is JPM's managed-basis, FTE firmwide net yield on average interest-earning assets and is labeled as a NIM analogue, not silently treated as another NIM definition. Live issuers still require filing-table extraction or a verified snapshot for issuer-specific ratios absent from Company Facts.
+- Files: bank sector types/methods/evidence/pack, research API/UI, canonical scenarios, financial normalization, consistency auditor, JPM fixture, fixture generator, and tests.
+- Tests: targeted ESLint passed; production build passed; 18/18 automated tests passed; 0 failed.
+- Industry status: Banks validated/unlocked; Biopharma remains preview.
+- Next: implement and validate Healthcare / Biopharma with LLY, separating reported commercial metrics from pipeline assumptions.
+
 ## Canonical Metric Upgrade — Phase 7.1
 
 - Objective: validate Semiconductors / NVDA before beginning Banks.

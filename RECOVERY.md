@@ -117,15 +117,21 @@ The current objective is a sequential canonical-metric upgrade: make Metric Obje
 - NVDA produced five annual periods through FY2026, 174 canonical metrics, 662 audited surface references, and zero consistency issues. Two runs matched all 174 objects with no missing or changed outputs.
 - Confirmed exact FY2026 strict FCF of USD 96.676bn = USD 102.718bn operating cash flow − USD 6.042bn cash capex; gross margin was 71.07% and operating margin 60.38%.
 - Passed targeted ESLint, production build, and 17/17 automated tests; Semiconductors is validated, while Banks remains preview.
+- Completed Phase 7.2 Financials / Banks acceptance using JPM's official SEC Company Facts/Submissions snapshot and exact FY2025 Form 10-K filing-table evidence.
+- Added the bank ontology, recent official FDIC/OCC/Federal Reserve evidence, bank-specific drivers and peers, and P/TBV scenarios; industrial-company capex and FCF templates are explicitly excluded.
+- Populated all 12 bank KPIs, including definition-preserving issuer-reported firmwide net yield (2.50%), standardized CET1 (14.6%), average LCR (111%), and reported ROE (17%).
+- JPM produced five annual periods, 167 canonical metrics, 642 audited surface references, and zero consistency issues. Two runs reproduced every canonical object and output.
+- Verified FY2025 tangible book value of USD 308.407bn, capital returns of USD 48.216bn, and Bear/Base/Bull model-implied equity values of USD 351.584bn / USD 540.021bn / USD 732.775bn.
+- Passed targeted ESLint, production build, and 18/18 automated tests; Banks is validated, while Biopharma remains preview.
 
 ## Remaining tasks
 
-- Resume at Phase 7.2: implement and validate Banks / JPM.
+- Resume at Phase 7.3: implement and validate Healthcare / Biopharma with LLY.
 - Complete Phases 7–9 in the order recorded in `TODO.md`.
 
 ## Current status
 
-In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases 1–6 and Phase 7.1 are complete with 17/17 tests passing; Phase 7.2 is the first unfinished task.
+In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases 1–6 and Phases 7.1–7.2 are complete with 18/18 tests passing; Phase 7.3 is the first unfinished task.
 
 ## Files modified
 
@@ -157,13 +163,14 @@ In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases
 - `site/app/lib/sector-learning-pipeline.ts`
 - `site/tests/fixtures/shel-source-snapshot.json`
 - `site/tests/fixtures/nvda-source-snapshot.json`
+- `site/tests/fixtures/jpm-source-snapshot.json`
 - `site/scripts/create-company-fixture.mjs`
 - `site/artifacts/metric_consistency_report.json`
 - `site/output/pdf/shell-phase4-consistency.pdf`
 
 ## Next recommended step
 
-Implement the Banks / JPM pack and acceptance gate without using industrial-company revenue, FCF, or capex templates.
+Implement the Healthcare / Biopharma / LLY pack and acceptance gate, separating reported commercial metrics from pipeline assumptions and avoiding unsupported risk-adjusted pipeline precision.
 
 ## Assumptions and pending decisions
 
