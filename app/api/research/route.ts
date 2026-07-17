@@ -183,6 +183,22 @@ const ALIASES: Record<string, string> = {
   berkshire: "BRK-B",
 };
 
+// Resolve the currently supported research universe without spending a remote
+// SEC request on the ticker directory. The CIK identifiers are public SEC
+// identifiers; all filings and financial facts still come from SEC endpoints.
+const SUPPORTED_TICKER_RECORDS: TickerRecord[] = [
+  { cik_str: 1306965, ticker: "SHEL", title: "Shell plc" },
+  { cik_str: 34088, ticker: "XOM", title: "Exxon Mobil Corp" },
+  { cik_str: 93410, ticker: "CVX", title: "Chevron Corp" },
+  { cik_str: 313807, ticker: "BP", title: "BP p.l.c." },
+  { cik_str: 879764, ticker: "TTE", title: "TotalEnergies SE" },
+  { cik_str: 1045810, ticker: "NVDA", title: "NVIDIA Corp" },
+  { cik_str: 2488, ticker: "AMD", title: "Advanced Micro Devices Inc" },
+  { cik_str: 1730168, ticker: "AVGO", title: "Broadcom Inc" },
+  { cik_str: 50863, ticker: "INTC", title: "Intel Corp" },
+  { cik_str: 1046179, ticker: "TSM", title: "Taiwan Semiconductor Manufacturing Co Ltd" },
+];
+
 const secCache = new MemoryCache<unknown>(SEC_CACHE_TTL_MS);
 const tickerCache = new MemoryCache<TickerRecord[]>(TICKER_CACHE_TTL_MS);
 
@@ -218,10 +234,17 @@ async function getTickerRecords() {
 }
 
 async function resolveCompany(query: string) {
-  const records = await getTickerRecords();
   const normalizedQuery = normalize(query);
   const upperQuery = query.trim().toUpperCase();
   const aliasTicker = ALIASES[normalizedQuery];
+  const supportedRecord = SUPPORTED_TICKER_RECORDS.find(
+    (record) =>
+      record.ticker === (aliasTicker ?? upperQuery) ||
+      normalize(record.title) === normalizedQuery,
+  );
+  if (supportedRecord) return supportedRecord;
+
+  const records = await getTickerRecords();
   const exactTicker = records.find(
     (record) => record.ticker.toUpperCase() === (aliasTicker ?? upperQuery),
   );

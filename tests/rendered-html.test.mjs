@@ -170,6 +170,8 @@ test("enforces strict FCF and sector-specific analyst packs", async () => {
   assert.match(route, /safeSubtract\(operatingCashFlow,\s*cashCapex\)/);
   assert.doesNotMatch(route, /safeAdd\(operatingCashFlow(?:Value)?,\s*investingCashFlow/);
   assert.match(route, /Unable to calculate free cash flow from available filings\./);
+  assert.match(route, /SUPPORTED_TICKER_RECORDS/);
+  assert.match(route, /if \(supportedRecord\) return supportedRecord/);
 
   for (const required of [
     "Production",
