@@ -42,4 +42,4 @@
 
 ## Next recommended step
 
-Deploy this checkpoint to the existing owner-only ScopeLine Site, verify the production Shell locator and report responses, then monitor extraction behavior before adding any new sector or issuer pack.
+Monitor production extraction behavior before adding any new sector or issuer pack. Sites version 5 is live at `https://scopeline-research.evvan.chatgpt.site` and remains owner-only.

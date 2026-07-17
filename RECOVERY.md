@@ -84,14 +84,17 @@ The current objective is to improve the existing ScopeLine Site without adding s
 - Hid unusable KPI and balance cards, allowed CSS grids to reflow, and replaced repeated table gaps with a short em dash.
 - Added a one-time `Limited data coverage` chip for critical FCF/valuation gaps and an expandable bilingual `Data Coverage` panel with sources, locations, methods, confidence, formulas, unresolved reasons, and rejected candidates.
 - Added `WORKLOG.md`; passed ESLint, production build, 12/12 automated tests, a full-official-document Shell locator test, and an integrated Shell research-response test.
+- Committed the exact Sites source as `34fb7c4`, pushed it to the existing Sites source repository, saved version 5, and completed an owner-only production deployment.
+- Verified the production homepage, Shell metric-locator endpoint, and Shell research endpoint with authenticated HTTP 200 responses. Production returned 11/11 located metrics, strict FCF of USD 21.948 billion, no unresolved metrics, and no critical coverage warning.
+- Reconfirmed owner-only access with no allowed groups or additional users.
 
 ## Remaining tasks
 
-- Create the final local checkpoint, publish a new version of the existing private Site, and verify production.
+- None for this Metric Locator iteration.
 
 ## Current status
 
-In progress. Engine, Shell validation, report integration, missing-data UI, worklog, and final local QA are complete. Shell returns 11/11 metrics with no unresolved items; final checkpoint and deployment remain.
+Complete. Sites version 5 is live at `https://scopeline-research.evvan.chatgpt.site` from source commit `34fb7c4`. Engine, Shell validation, report integration, missing-data UI, 12/12 automated tests, full-document tests, authenticated production checks, and owner-only access verification all passed.
 
 ## Files modified
 
@@ -118,7 +121,7 @@ In progress. Engine, Shell validation, report integration, missing-data UI, work
 
 ## Next recommended step
 
-Commit the completed UI and integration milestone, then publish and verify a new owner-only Sites version.
+Monitor production extraction logs and rejected candidates before adding any new issuer definitions or sector packs.
 
 ## Assumptions and pending decisions
 

@@ -82,4 +82,4 @@
 - [x] Hide unusable cards, reflow grids, and replace repeated missing strings with compact display.
 - [x] Add the `Limited data coverage` indicator and expandable `Data Coverage` audit.
 - [x] Add and pass regression tests for source order, strict FCF, custom XBRL, and missing-data UI.
-- [ ] Create the final local checkpoint and deploy the owner-only Site.
+- [x] Create the final local checkpoint and deploy Sites version 5 with owner-only access.
