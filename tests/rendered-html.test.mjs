@@ -436,10 +436,15 @@ test("hides unusable cards and moves missing detail into Data Coverage", async (
   assert.match(client, /Data Coverage/);
   assert.match(client, /metric\.rejectedCandidates/);
   assert.match(client, /metric\.extractionMethod/);
+  assert.match(client, /scenario\.projectedFreeCashFlow !== null/);
+  assert.match(client, /scenario\.valuationMetric !== null/);
+  assert.match(client, /scenario\.modelImpliedEnterpriseValue !== null/);
   assert.doesNotMatch(client, /latestPeriod\.currentRatio === null \? copy\.unavailable/);
   assert.match(route, /\.filter\(\(result\) => result\.usable && result\.canonicalKey\)/);
   assert.match(route, /criticalMetricIds/);
   assert.match(route, /shellMetricAudit/);
+  assert.match(route, /if \(!consistencyAudit\.passed\)/);
+  assert.match(route, /potentially inconsistent financial results were not published/);
   assert.match(types, /dataCoverage:\s*DataCoverage/);
 });
 

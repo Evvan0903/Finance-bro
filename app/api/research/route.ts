@@ -1382,9 +1382,22 @@ export async function POST(request: Request) {
           }
         : undefined;
     const report = await buildReport(record, selection, locale, sourceSnapshot);
+    const consistencyAudit = auditResearchReport(report);
+    if (!consistencyAudit.passed) {
+      return Response.json(
+        {
+          error:
+            locale === "zh"
+              ? "报告一致性检查未通过，未发布可能不一致的财务结果。"
+              : "The report consistency check failed, so potentially inconsistent financial results were not published.",
+          consistencyAudit,
+        },
+        { status: 500 },
+      );
+    }
     return Response.json({
       report,
-      consistencyAudit: auditResearchReport(report),
+      consistencyAudit,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected error";

@@ -1200,11 +1200,17 @@ export function ResearchApp() {
                       <div><dt>{copy.revenueGrowthAssumption}</dt><dd>{formatPercent(scenario.revenueGrowth, locale)}</dd></div>
                       <div><dt>{copy.netMarginAssumption}</dt><dd>{formatPercent(scenario.netMargin, locale)}</dd></div>
                       <div><dt>{copy.reinvestmentFactor}</dt><dd>{scenario.capexFactor.toFixed(2)}x</dd></div>
-                      <div><dt>{copy.freeCashFlow}</dt><dd>{formatMoney(scenario.projectedFreeCashFlow, report.currency, locale)}</dd></div>
-                      <div><dt>{copy.valuationMetric}</dt><dd>{formatMoney(scenario.valuationMetric, report.currency, locale)}</dd></div>
+                      {scenario.projectedFreeCashFlow !== null && (
+                        <div><dt>{copy.freeCashFlow}</dt><dd>{formatMoney(scenario.projectedFreeCashFlow, report.currency, locale)}</dd></div>
+                      )}
+                      {scenario.valuationMetric !== null && (
+                        <div><dt>{copy.valuationMetric}</dt><dd>{formatMoney(scenario.valuationMetric, report.currency, locale)}</dd></div>
+                      )}
                     </dl>
                     <p>{copy.impliedEv}</p>
-                    <strong className="scenario-value">{formatMoney(scenario.modelImpliedEnterpriseValue, report.currency, locale)}</strong>
+                    {scenario.modelImpliedEnterpriseValue !== null && (
+                      <strong className="scenario-value">{formatMoney(scenario.modelImpliedEnterpriseValue, report.currency, locale)}</strong>
+                    )}
                   </article>
                 ))}
               </div>
