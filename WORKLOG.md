@@ -1,5 +1,22 @@
 # ScopeLine Metric Locator Worklog
 
+## Canonical Metric Upgrade — Phase 7.4
+
+- Objective: validate Industrials / Industrial Machinery with CAT and complete sequential sector unlocking.
+- Research: ingested four current official sources from the U.S. Census Bureau, Federal Reserve, BLS, and Caterpillar covering orders/backlog, manufacturing utilization, producer-price inputs, and Q1 2026 volume/price/cost execution.
+- Changes: added the industrial-machinery KPI ontology, source priorities, backlog and price-cost research methods, sector drivers, peers, EV/FCF scenarios, and dedicated bilingual report/UI paths.
+- Filing extraction: captured CAT FY2025 firm backlog (USD 51.2bn), backlog expected within one year (USD 19.3bn), price-realization profit impact (USD -0.817bn), manufacturing-cost profit impact (USD -2.148bn), and Power & Energy segment margin (19.9%) with exact 10-K provenance.
+- Derived metrics: working capital = USD 52.485bn current assets − USD 36.558bn current liabilities = USD 15.927bn; strict FCF = USD 11.739bn operating cash flow − USD 2.821bn cash capex = USD 8.918bn; FCF conversion = 100.41%; price-cost impact = USD -2.965bn; near-term backlog share = 37.70%.
+- Acceptance: 7/10 KPI cards have verified canonical values. Comparable FY2025 new orders, uniform organic growth, and CAT company-level utilization remain ontology concepts but are hidden because no comparable issuer numeric value was verified; industry utilization is context only.
+- Valuation: Bear/Base/Bull use explicit through-cycle FCF and 10x/14x/18x EV/FCF assumptions. Backlog is not treated as recognized revenue and near-term backlog share is not presented as a completion rate.
+- Consistency and reproducibility: 235 canonical metrics and 890 surface references passed with zero issues; two identical runs matched all objects, definitions, formulas, sources, statuses, scenarios, valuation values, citations, and outputs.
+- UI validation: saved-source Chinese and English CAT reports showed USD 51.2bn backlog, USD -2.965bn price-cost impact, 19.9% segment margin, USD 15.927bn working capital, and 100.4% FCF conversion without a false coverage warning or UI error.
+- Runtime note: a separate live-SEC browser request reproduced the existing temporary SEC public-data outage; the verified saved-source acceptance path passed. Runtime-source resilience remains a Phase 8 reliability item.
+- Files: industrial sector types/methods/evidence/pack, financial normalization, research/outlook APIs, bilingual UI, CAT fixture, and tests.
+- Tests: targeted ESLint passed; production build passed; 20/20 automated tests passed; bilingual browser acceptance passed; 0 failed.
+- Industry status: Industrial Machinery validated/unlocked. Semiconductors, Banks, Biopharma, and Industrial Machinery have all passed their sequential acceptance gates.
+- Next: complete Phase 8 automated invariants and five-company regression coverage.
+
 ## Canonical Metric Upgrade — Phase 7.3
 
 - Objective: validate Healthcare / Biopharma with LLY before beginning Industrials.

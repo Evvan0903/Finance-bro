@@ -130,15 +130,21 @@ The current objective is a sequential canonical-metric upgrade: make Metric Obje
 - LLY produced five annual periods, 166 canonical metrics, 594 audited surface references, and zero consistency issues. Two runs reproduced every canonical object and output.
 - Fixed a live-report gap found in browser QA by reusing the verified FY2025 10-K evidence only when LLY's current annual filing identity matches; Chinese and English live reports now agree with the acceptance snapshot without a false coverage warning.
 - Passed targeted ESLint, production build, 19/19 automated tests, and bilingual live browser acceptance; Biopharma is validated, while Industrials remains coming soon.
+- Completed Phase 7.4 Industrials / Industrial Machinery with CAT using a compact official SEC snapshot plus exact FY2025 10-K backlog, price/cost, and segment-margin evidence.
+- Added four recent official Census, Federal Reserve, BLS, and Caterpillar sources, industrial research methods, KPI ontology, drivers, peers, through-cycle EV/FCF scenarios, and bilingual UI/report paths.
+- Verified CAT FY2025 revenue of USD 67.589bn, operating income of USD 11.151bn, strict FCF of USD 8.918bn, working capital of USD 15.927bn, firm backlog of USD 51.2bn, combined price-cost impact of USD -2.965bn, Power & Energy segment margin of 19.9%, FCF conversion of 100.41%, and near-term backlog share of 37.70%.
+- Kept comparable new orders, uniform organic growth, and CAT company-level utilization unavailable rather than substituting revenue growth or industry utilization; near-term backlog is labeled as a delivery obligation, not a completion rate.
+- CAT produced 235 canonical metrics and 890 audited surface references with zero consistency issues. Two runs reproduced every object and output.
+- Passed targeted ESLint, production build, 20/20 automated tests, and bilingual saved-source browser acceptance. A separate live-SEC request reproduced the existing temporary SEC public-data outage, so runtime-source resilience remains for Phase 8.
 
 ## Remaining tasks
 
-- Resume at Phase 7.4: implement and validate Industrials with CAT.
-- Complete Phases 7–9 in the order recorded in `TODO.md`.
+- Resume at Phase 8: complete automated invariant and five-company regression coverage, including runtime-source resilience.
+- Complete Phases 8–9 in the order recorded in `TODO.md`.
 
 ## Current status
 
-In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases 1–6 and Phases 7.1–7.3 are complete with 19/19 tests passing; Phase 7.4 is the first unfinished task.
+In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases 1–7 are complete with 20/20 tests passing; Phase 8 is the first unfinished task.
 
 ## Files modified
 
@@ -172,13 +178,14 @@ In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases
 - `site/tests/fixtures/nvda-source-snapshot.json`
 - `site/tests/fixtures/jpm-source-snapshot.json`
 - `site/tests/fixtures/lly-source-snapshot.json`
+- `site/tests/fixtures/cat-source-snapshot.json`
 - `site/scripts/create-company-fixture.mjs`
 - `site/artifacts/metric_consistency_report.json`
 - `site/output/pdf/shell-phase4-consistency.pdf`
 
 ## Next recommended step
 
-Implement the Industrials / CAT pack and acceptance gate, including orders, backlog, price/cost, segment margin, working capital, FCF conversion, utilization, and project execution.
+Complete Phase 8 automated invariants and five-company regression coverage, then generate the final consistency artifact in Phase 9.
 
 ## Assumptions and pending decisions
 
@@ -203,6 +210,8 @@ Implement the Industrials / CAT pack and acceptance gate, including orders, back
 - Direct SEC ticker-directory calls can still be rate-limited from shared cloud egress. Supported energy, semiconductor, and peer tickers use the bundled public CIK resolver before falling back to the live directory.
 - Shell validation uses FY2025 consistently across all 11 metrics. The realized-price result is explicitly scoped to Europe / Shell subsidiaries / crude oil and NGL, not presented as a group-wide blended realization.
 - The latest Shell 2025 Form 20-F was filed March 12, 2026. The validation endpoint falls back to a compact verified excerpt only when official requests fail and discloses that source mode.
+- CAT acceptance uses FY2025 issuer metrics only when the latest 10-K identity matches the December 31, 2025 period and February 13, 2026 filing date.
+- Comparable CAT FY2025 new orders, uniform organic growth, and company-level utilization are not available as verified numeric metrics; industry utilization remains contextual evidence only.
 
 ## Recovery procedure
 
