@@ -63,6 +63,17 @@ export type SectorValuationFramework = {
     bull: number;
   };
   metric: "freeCashFlow" | "revenue";
+  fallback?: {
+    method: LocalizedText;
+    formula: LocalizedText;
+    multipleLabel: string;
+    multiples: {
+      bear: number;
+      base: number;
+      bull: number;
+    };
+    metric: "operatingCashFlow";
+  };
 };
 
 export type SectorPack = {

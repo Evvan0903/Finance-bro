@@ -1,19 +1,41 @@
 # ScopeLine
 
-ScopeLine is a bilingual Chinese/English institutional research MVP for ChatGPT Sites. Enter a company name or ticker to generate a point-in-time, source-linked research brief from official SEC filings.
+ScopeLine is a bilingual Chinese/English, sector-aware institutional research application for ChatGPT Sites. Select a supported market, sector, and subindustry, then enter a company name or ticker to generate a point-in-time research brief from official SEC filings and dated public industry evidence.
 
 ## What it does
 
 - resolves the issuer through the SEC company directory;
-- switches the full interface, generated report, errors, and Markdown export between Chinese and English while remembering the user's preference;
+- supports U.S.-listed Integrated Oil & Gas and Semiconductors through visibly different modular analyst packs;
+- switches the interface, generated report, errors, Markdown export, and application-owned PDF export between Chinese and English while remembering the user's preference;
 - supports domestic and foreign-private-issuer forms, including 10-K, 10-Q, 20-F, and 6-K;
 - normalizes three to five annual periods from SEC Company Facts;
+- retrieves screened 2025+ sector evidence only after sector, subindustry, geography, and date filtering;
+- keeps reusable research methodology separate from time-sensitive evidence;
 - separates reported facts, derived calculations, analyst assumptions, management statements, and interpretations;
-- covers financial trends, cash flow, balance sheet, earnings quality, thesis, catalysts, risks, and scenario valuation;
+- produces a compact 12-section report with sector KPIs, peers, earnings quality, debates, filing watchlist, catalysts, risks, scenarios, and transparent valuation;
+- calculates free cash flow only as operating cash flow minus cash capital expenditure and labels it unavailable when either input is missing;
+- refreshes the sector outlook independently without refetching the company;
 - leaves unavailable values visible rather than inventing them;
-- exports the generated report to Markdown or the browser print-to-PDF flow.
+- caches reusable SEC payloads, company reports, peer facts, and outlook retrievals;
+- exports the generated report to Markdown or a paginated application-owned PDF with a controlled footer.
 
-The MVP does not use live market prices and therefore does not publish a rating or target price. It is research information, not investment advice.
+The application does not use live market prices and therefore does not publish a rating or target price. Scenario valuation uses filing-supported enterprise metrics and intentionally avoids unsupported precision. ScopeLine is research information, not investment advice.
+
+## Supported research packs
+
+### Energy / Integrated Oil & Gas
+
+Production, realized prices, LNG, refining, cash capital expenditure, strict free cash flow, net debt, shareholder returns, commodity sensitivity, and major projects. Peer references: Exxon Mobil, Chevron, BP, and TotalEnergies.
+
+### Technology / Semiconductors
+
+End-market exposure, AI/data-center mix, gross margin, inventory, capital expenditure, strict free cash flow, product cycles, customer concentration, market share, and export controls. Peer references: AMD, Broadcom, Intel, and TSMC.
+
+## Evidence and limitations
+
+Issuer financials and filing dates come from official SEC submissions and Company Facts. Current sector context uses dated, public evidence from EIA, IEA, SIA, SEMI, and the U.S. Bureau of Industry and Security. Retrieval stores metadata and original summaries rather than full reports.
+
+The current scope is limited to supported U.S.-listed issuers with sufficient standardized SEC XBRL. Market prices, sell-side estimates, consensus target prices, and proprietary research are not used. Peer tables may be partial when a peer request fails or standardized facts are unavailable.
 
 ## Local development
 

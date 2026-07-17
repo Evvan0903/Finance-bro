@@ -7,6 +7,12 @@ export type EvidenceKind =
 
 export type ResearchLocale = "zh" | "en";
 
+import type {
+  ResearchSelection,
+  SectorOutlook,
+  SupportedSubindustry,
+} from "./sector-types";
+
 export type FilingSource = {
   title: string;
   form: string;
@@ -18,6 +24,7 @@ export type FilingSource = {
 export type FinancialPeriod = {
   periodEnd: string;
   revenue: number | null;
+  grossProfit: number | null;
   netIncome: number | null;
   operatingCashFlow: number | null;
   investingCashFlow: number | null;
@@ -27,12 +34,15 @@ export type FinancialPeriod = {
   liabilities: number | null;
   equity: number | null;
   cash: number | null;
+  inventory: number | null;
   currentAssets: number | null;
   currentLiabilities: number | null;
   totalDebt: number | null;
   netDebt: number | null;
   revenueGrowth: number | null;
   netMargin: number | null;
+  grossMargin: number | null;
+  freeCashFlowMargin: number | null;
   cashConversion: number | null;
   currentRatio: number | null;
 };
@@ -68,11 +78,67 @@ export type Scenario = {
   projectedNetIncome: number | null;
   projectedFreeCashFlow: number | null;
   enterpriseValueMultiple: number;
+  valuationMethod: string;
+  valuationMetric: number | null;
+  multipleLabel: string;
   modelImpliedEnterpriseValue: number | null;
+};
+
+export type SectorKpiResult = {
+  id: string;
+  label: string;
+  value: string;
+  definition: string;
+  classification: EvidenceKind;
+  sourceNote: string;
+  whyItMatters: string;
+};
+
+export type SectorDriverExposure = {
+  driver: string;
+  companyExposure: string;
+  evidence: string;
+  evidencePublisher: string;
+  evidenceDate: string;
+  evidenceUrl: string;
+  investmentImplication: string;
+};
+
+export type PeerComparisonItem = {
+  ticker: string;
+  name: string;
+  rationale: string;
+  revenueGrowth: number | null;
+  netMargin: number | null;
+  freeCashFlowMargin: number | null;
+  periodEnd: string | null;
+};
+
+export type InvestmentDebate = {
+  question: string;
+  evidenceFor: string;
+  evidenceAgainst: string;
+  monitor: string;
+};
+
+export type CatalystPoint = {
+  timing: string;
+  event: string;
+  investorRelevance: string;
+};
+
+export type ResearchSource = {
+  title: string;
+  url: string;
+  retrievedAt: string;
+  publisher?: string;
+  publicationDate?: string;
+  topic?: string;
 };
 
 export type ResearchReport = {
   locale: ResearchLocale;
+  selection: ResearchSelection;
   company: {
     name: string;
     ticker: string;
@@ -85,21 +151,43 @@ export type ResearchReport = {
   };
   researchDate: string;
   cutoff: string;
+  evidenceCutoff: string;
+  sectorLastRefreshedAt: string;
+  companyDataRetrievedAt: string;
   currency: string;
   latestAnnual: FilingSource | null;
   latestInterim: FilingSource | null;
   periods: FinancialPeriod[];
   dashboard: DashboardMetric[];
+  sectorPack: {
+    id: SupportedSubindustry;
+    sectorLabel: string;
+    subindustryLabel: string;
+    researchQuestions: string[];
+    reportGuidance: string[];
+    valuationMethod: string;
+  };
+  sectorOutlook: SectorOutlook;
+  driverExposure: SectorDriverExposure[];
+  sectorKpis: SectorKpiResult[];
   overview: string;
   segmentAnalysis: string;
   earningsQuality: string[];
   thesis: ThesisPoint[];
-  catalysts: Array<{ timing: string; event: string; investorRelevance: string }>;
+  investmentDebates: InvestmentDebate[];
+  filingWatchlist: CatalystPoint[];
+  catalysts: {
+    operating: CatalystPoint[];
+    financial: CatalystPoint[];
+    regulatory: CatalystPoint[];
+  };
   risks: RiskPoint[];
   scenarios: Scenario[];
+  peerComparison: PeerComparisonItem[];
   valuationAssessment: string;
   cashFlowProxyFormula: string;
   valuationFormula: string;
-  sources: Array<{ title: string; url: string; retrievedAt: string }>;
+  methodology: Array<{ name: string; purpose: string; steps: string[] }>;
+  sources: ResearchSource[];
   limitations: string[];
 };

@@ -102,7 +102,7 @@ const energyPack: SectorPack = {
       name: { zh: "资本纪律与股东分配", en: "Capital discipline and distributions" },
       companyExposure: { zh: "项目制资本开支、净债务、股息与回购。", en: "Project capex, net debt, dividends, and buybacks." },
       implication: { zh: "周期高点的资本纪律决定下行时的分配韧性。", en: "Peak-cycle capital discipline determines distribution resilience in a downturn." },
-      query: "energy capex free cash flow net debt dividends buybacks",
+      query: "oil investment capex free cash flow net debt dividends buybacks",
     },
   ],
   peers: [
@@ -117,6 +117,19 @@ const energyPack: SectorPack = {
     multipleLabel: "EV / FCF",
     multiples: { bear: 5, base: 7, bull: 9 },
     metric: "freeCashFlow",
+    fallback: {
+      method: {
+        zh: "FCF 不可计算时使用情景 EV / 经营现金流",
+        en: "Scenario EV / operating cash flow when FCF is unavailable",
+      },
+      formula: {
+        zh: "模型隐含企业价值 = 情景经营现金流 × 假设 EV/经营现金流倍数；不把经营现金流称为 FCF",
+        en: "Model-implied enterprise value = scenario operating cash flow × assumed EV/operating-cash-flow multiple; operating cash flow is not presented as FCF",
+      },
+      multipleLabel: "EV / OCF",
+      multiples: { bear: 4, base: 6, bull: 8 },
+      metric: "operatingCashFlow",
+    },
   },
   risks: [
     { zh: "油气与炼化价格同步下跌。", en: "A synchronized decline in oil, gas, and refining prices." },

@@ -16,24 +16,24 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase,
-    title: "ScopeLine｜机构研究台 · Institutional Research",
-    description: "输入公司名，基于 SEC 公开申报生成中英文可切换、来源可追溯的机构研究报告。 Enter a company to generate a bilingual, source-linked institutional research report.",
+    title: "ScopeLine｜行业感知研究 · Sector-Aware Research",
+    description: "选择行业并输入公司或代码，生成中英文可切换、来源可追溯的机构级研究报告。 Select a sector and company to generate a bilingual, source-linked institutional research report.",
     applicationName: "ScopeLine",
     icons: {
       icon: "/favicon.png",
       shortcut: "/favicon.png",
     },
     openGraph: {
-      title: "ScopeLine 机构研究台 · Institutional Research",
-      description: "输入公司名，生成中英文可切换、事实与假设分离、来源可追溯的研究报告。",
+      title: "ScopeLine 行业感知研究 · Sector-Aware Research",
+      description: "为能源与半导体公司生成中英文可切换、事实与假设分离、来源可追溯的研究报告。",
       type: "website",
       locale: "zh_CN",
-      images: [{ url: "/og.png", width: 1200, height: 630, alt: "ScopeLine 机构研究台 / Institutional Research" }],
+      images: [{ url: "/og.png", width: 1200, height: 630, alt: "ScopeLine 行业感知研究 / Sector-Aware Research" }],
     },
     twitter: {
       card: "summary_large_image",
-      title: "ScopeLine 机构研究台 · Institutional Research",
-      description: "Bilingual, source-linked institutional research from public SEC filings.",
+      title: "ScopeLine 行业感知研究 · Sector-Aware Research",
+      description: "Bilingual, sector-aware institutional research grounded in public filings and dated industry evidence.",
       images: ["/og.png"],
     },
   };

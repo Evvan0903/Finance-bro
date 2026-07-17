@@ -1,11 +1,29 @@
+import { MemoryCache } from "../../lib/cache";
+import { getSectorMethods } from "../../lib/sector-methodology";
+import { getSectorPack } from "../../lib/sector-packs";
+import { getSectorOutlook, sectorEvidenceSources } from "../../lib/sector-retrieval";
 import type {
+  ResearchMarket,
+  ResearchOptions,
+  ResearchSelection,
+  SectorKpiDefinition,
+  SectorPack,
+  SupportedSector,
+  SupportedSubindustry,
+} from "../../lib/sector-types";
+import type {
+  CatalystPoint,
   DashboardMetric,
   FilingSource,
   FinancialPeriod,
+  InvestmentDebate,
+  PeerComparisonItem,
   ResearchLocale,
   ResearchReport,
   RiskPoint,
   Scenario,
+  SectorDriverExposure,
+  SectorKpiResult,
   ThesisPoint,
 } from "../../lib/research-types";
 
@@ -16,28 +34,27 @@ const SEC_HEADERS = {
   "Accept-Encoding": "gzip, deflate",
   "User-Agent": process.env.SEC_USER_AGENT ?? "ScopeLine Research contact@example.com",
 };
-
 const ANNUAL_FORMS = new Set(["10-K", "10-K/A", "20-F", "20-F/A", "40-F", "40-F/A"]);
 const INTERIM_FORMS = new Set(["10-Q", "10-Q/A", "6-K"]);
+const SEC_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+const TICKER_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const RESEARCH_DATE = "2026-07-16";
+const FREE_CASH_FLOW_UNAVAILABLE = "Unable to calculate free cash flow from available filings.";
 
 type TickerRecord = { cik_str: number; ticker: string; title: string };
 type SecFact = {
   start?: string;
   end?: string;
   val?: number;
-  accn?: string;
-  fy?: number;
-  fp?: string;
   form?: string;
   filed?: string;
-  frame?: string;
 };
 type CompanyFacts = {
   cik: number;
   entityName: string;
   facts: Record<
     string,
-    Record<string, { label?: string; description?: string; units?: Record<string, SecFact[]> }>
+    Record<string, { units?: Record<string, SecFact[]> }>
   >;
 };
 type Submissions = {
@@ -50,18 +67,23 @@ type Submissions = {
   tickers?: string[];
   entityType?: string;
   category?: string;
-  filings?: {
-    recent?: Record<string, Array<string | number | null>>;
-  };
+  filings?: { recent?: Record<string, Array<string | number | null>> };
 };
-
 type Series = { unit: string; values: Map<string, number> };
+type ResearchPayload = {
+  company?: string;
+  locale?: ResearchLocale;
+  market?: ResearchMarket;
+  sector?: SupportedSector;
+  subindustry?: SupportedSubindustry;
+  options?: Partial<ResearchOptions>;
+};
 
 const COPY = {
   zh: {
     dataUnavailable: "数据不可用",
     notDisclosed: "未披露",
-    unableToCalculate: "无法根据现有申报计算",
+    unableFcf: "无法根据现有申报计算自由现金流。",
     annualFiling: "最新年度申报",
     interimFiling: "最新中期/当前申报",
     reportingIssuer: "SEC 申报发行人",
@@ -69,14 +91,20 @@ const COPY = {
   en: {
     dataUnavailable: "Data unavailable",
     notDisclosed: "Not disclosed",
-    unableToCalculate: "Unable to calculate from available filings",
+    unableFcf: FREE_CASH_FLOW_UNAVAILABLE,
     annualFiling: "Latest annual filing",
     interimFiling: "Latest interim/current filing",
     reportingIssuer: "SEC reporting issuer",
   },
 } as const;
 
-let tickerRecordsPromise: Promise<TickerRecord[]> | null = null;
+const DEFAULT_OPTIONS: ResearchOptions = {
+  sectorOutlook: true,
+  peerComparison: true,
+  valuation: true,
+  dueDiligence: true,
+  pdfExport: true,
+};
 
 const METRICS = {
   revenue: [
@@ -84,6 +112,10 @@ const METRICS = {
     ["us-gaap", "Revenues"],
     ["us-gaap", "SalesRevenueNet"],
     ["ifrs-full", "Revenue"],
+  ],
+  grossProfit: [
+    ["us-gaap", "GrossProfit"],
+    ["ifrs-full", "GrossProfit"],
   ],
   netIncome: [
     ["us-gaap", "NetIncomeLoss"],
@@ -105,14 +137,8 @@ const METRICS = {
     ["us-gaap", "PaymentsToAcquireProductiveAssets"],
     ["ifrs-full", "PurchaseOfPropertyPlantAndEquipment"],
   ],
-  assets: [
-    ["us-gaap", "Assets"],
-    ["ifrs-full", "Assets"],
-  ],
-  liabilities: [
-    ["us-gaap", "Liabilities"],
-    ["ifrs-full", "Liabilities"],
-  ],
+  assets: [["us-gaap", "Assets"], ["ifrs-full", "Assets"]],
+  liabilities: [["us-gaap", "Liabilities"], ["ifrs-full", "Liabilities"]],
   equity: [
     ["us-gaap", "StockholdersEquity"],
     ["us-gaap", "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"],
@@ -124,14 +150,12 @@ const METRICS = {
     ["us-gaap", "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents"],
     ["ifrs-full", "CashAndCashEquivalents"],
   ],
-  currentAssets: [
-    ["us-gaap", "AssetsCurrent"],
-    ["ifrs-full", "CurrentAssets"],
+  inventory: [
+    ["us-gaap", "InventoryNet"],
+    ["ifrs-full", "Inventories"],
   ],
-  currentLiabilities: [
-    ["us-gaap", "LiabilitiesCurrent"],
-    ["ifrs-full", "CurrentLiabilities"],
-  ],
+  currentAssets: [["us-gaap", "AssetsCurrent"], ["ifrs-full", "CurrentAssets"]],
+  currentLiabilities: [["us-gaap", "LiabilitiesCurrent"], ["ifrs-full", "CurrentLiabilities"]],
   totalDebt: [
     ["us-gaap", "LongTermDebtAndFinanceLeaseObligations"],
     ["us-gaap", "LongTermDebtAndCapitalLeaseObligations"],
@@ -154,9 +178,13 @@ const ALIASES: Record<string, string> = {
   facebook: "META",
   meta: "META",
   shell: "SHEL",
+  nvidia: "NVDA",
   amazon: "AMZN",
   berkshire: "BRK-B",
 };
+
+const secCache = new MemoryCache<unknown>(SEC_CACHE_TTL_MS);
+const tickerCache = new MemoryCache<TickerRecord[]>(TICKER_CACHE_TTL_MS);
 
 function normalize(value: string) {
   return value
@@ -169,24 +197,24 @@ function normalize(value: string) {
 }
 
 async function secFetch<T>(url: string): Promise<T> {
-  const response = await fetch(url, {
-    headers: SEC_HEADERS,
-    cache: "no-store",
-    signal: AbortSignal.timeout(20_000),
-  });
-  if (!response.ok) {
-    throw new Error(`SEC returned HTTP ${response.status}`);
-  }
-  return (await response.json()) as T;
+  return secCache.getOrLoad(url, async () => {
+    const response = await fetch(url, {
+      headers: SEC_HEADERS,
+      cache: "no-store",
+      signal: AbortSignal.timeout(20_000),
+    });
+    if (!response.ok) throw new Error(`SEC_HTTP_${response.status}`);
+    return response.json();
+  }) as Promise<T>;
 }
 
 async function getTickerRecords() {
-  if (!tickerRecordsPromise) {
-    tickerRecordsPromise = secFetch<Record<string, TickerRecord>>(
+  return tickerCache.getOrLoad("sec-tickers", async () => {
+    const payload = await secFetch<Record<string, TickerRecord>>(
       "https://www.sec.gov/files/company_tickers.json",
-    ).then((payload) => Object.values(payload));
-  }
-  return tickerRecordsPromise;
+    );
+    return Object.values(payload);
+  });
 }
 
 async function resolveCompany(query: string) {
@@ -194,13 +222,12 @@ async function resolveCompany(query: string) {
   const normalizedQuery = normalize(query);
   const upperQuery = query.trim().toUpperCase();
   const aliasTicker = ALIASES[normalizedQuery];
-
   const exactTicker = records.find(
     (record) => record.ticker.toUpperCase() === (aliasTicker ?? upperQuery),
   );
   if (exactTicker) return exactTicker;
 
-  const candidates = records
+  return records
     .map((record) => {
       const title = normalize(record.title);
       let score = 99;
@@ -211,22 +238,13 @@ async function resolveCompany(query: string) {
       return { record, score, titleLength: title.length };
     })
     .filter((candidate) => candidate.score < 99)
-    .sort((a, b) => a.score - b.score || a.titleLength - b.titleLength);
-
-  return candidates[0]?.record ?? null;
+    .sort((a, b) => a.score - b.score || a.titleLength - b.titleLength)[0]?.record ?? null;
 }
 
-function chooseUnit(units: Record<string, SecFact[]> | undefined, requested: "currency" | "shares") {
+function chooseUnit(units: Record<string, SecFact[]> | undefined) {
   if (!units) return null;
   const keys = Object.keys(units);
-  if (requested === "shares") {
-    return keys.find((key) => key.toLowerCase() === "shares") ?? null;
-  }
-  return (
-    keys.find((key) => key === "USD") ??
-    keys.find((key) => /^[A-Z]{3}$/.test(key)) ??
-    null
-  );
+  return keys.find((key) => key === "USD") ?? keys.find((key) => /^[A-Z]{3}$/.test(key)) ?? null;
 }
 
 function annualSeries(
@@ -241,9 +259,8 @@ function annualSeries(
 
   candidates.forEach(([taxonomy, concept], priority) => {
     const fact = facts.facts?.[taxonomy]?.[concept];
-    const unit = chooseUnit(fact?.units, "currency");
+    const unit = chooseUnit(fact?.units);
     if (!fact || !unit) return;
-
     for (const entry of fact.units?.[unit] ?? []) {
       if (
         !entry.end ||
@@ -251,15 +268,12 @@ function annualSeries(
         !Number.isFinite(entry.val) ||
         !entry.form ||
         !ANNUAL_FORMS.has(entry.form)
-      ) {
-        continue;
-      }
+      ) continue;
 
       let durationDistance = 0;
       if (duration) {
         if (!entry.start) continue;
-        const days =
-          (Date.parse(entry.end) - Date.parse(entry.start)) / (24 * 60 * 60 * 1000);
+        const days = (Date.parse(entry.end) - Date.parse(entry.start)) / 86_400_000;
         if (!Number.isFinite(days) || days < 280 || days > 430) continue;
         durationDistance = Math.abs(365 - days);
       } else if (entry.start) {
@@ -268,28 +282,21 @@ function annualSeries(
 
       const filed = entry.filed ?? "";
       const existing = selected.get(entry.end);
-      const shouldReplace =
+      if (
         !existing ||
         priority < existing.priority ||
         (priority === existing.priority && durationDistance < existing.durationDistance) ||
         (priority === existing.priority &&
           durationDistance === existing.durationDistance &&
-          filed > existing.filed);
-      if (shouldReplace) {
-        selected.set(entry.end, {
-          value: entry.val,
-          filed,
-          priority,
-          unit,
-          durationDistance,
-        });
+          filed > existing.filed)
+      ) {
+        selected.set(entry.end, { value: entry.val, filed, priority, unit, durationDistance });
       }
     }
   });
 
-  const currency = [...selected.values()][0]?.unit ?? "USD";
   return {
-    unit: currency,
+    unit: [...selected.values()][0]?.unit ?? "USD",
     values: new Map(
       [...selected.entries()]
         .sort(([a], [b]) => a.localeCompare(b))
@@ -326,9 +333,8 @@ function cagr(periods: FinancialPeriod[]) {
   const usable = periods.filter((period) => period.revenue !== null && period.revenue > 0);
   if (usable.length < 2) return null;
   const first = usable[0];
-  const last = usable[usable.length - 1];
-  const years =
-    (Date.parse(last.periodEnd) - Date.parse(first.periodEnd)) / (365.25 * 24 * 60 * 60 * 1000);
+  const last = usable.at(-1)!;
+  const years = (Date.parse(last.periodEnd) - Date.parse(first.periodEnd)) / 31_557_600_000;
   if (years <= 0 || first.revenue === null || last.revenue === null) return null;
   return Math.pow(last.revenue / first.revenue, 1 / years) - 1;
 }
@@ -365,8 +371,7 @@ function filingSource(
 ): FilingSource | null {
   const filing = recentFilings(submissions).find((item) => forms.has(item.form));
   if (!filing?.accessionNumber || !filing.primaryDocument) return null;
-  const cik = String(submissions.cik).padStart(10, "0");
-  const cikNumber = String(Number(cik));
+  const cikNumber = String(Number(String(submissions.cik).padStart(10, "0")));
   const accession = filing.accessionNumber.replace(/-/g, "");
   return {
     title,
@@ -377,58 +382,142 @@ function filingSource(
   };
 }
 
-function buildScenarios(periods: FinancialPeriod[]): Scenario[] {
-  const latest = periods.at(-1);
-  const growth = cagr(periods);
-  const latestThree = periods.slice(-3);
-  const averageNetMargin = average(latestThree.map((period) => period.netMargin));
-  const averageOcfMargin = average(
-    latestThree.map((period) => safeDivide(period.operatingCashFlow, period.revenue)),
-  );
-  const averageCashFlowProxyMargin = average(
-    latestThree.map((period) => safeDivide(period.freeCashFlowProxy, period.revenue)),
-  );
+function normalizedPeriods(facts: CompanyFacts) {
+  const series = {
+    revenue: annualSeries(facts, METRICS.revenue, true),
+    grossProfit: annualSeries(facts, METRICS.grossProfit, true),
+    netIncome: annualSeries(facts, METRICS.netIncome, true),
+    operatingCashFlow: annualSeries(facts, METRICS.operatingCashFlow, true),
+    investingCashFlow: annualSeries(facts, METRICS.investingCashFlow, true),
+    cashCapex: annualSeries(facts, METRICS.cashCapex, true),
+    assets: annualSeries(facts, METRICS.assets, false),
+    liabilities: annualSeries(facts, METRICS.liabilities, false),
+    equity: annualSeries(facts, METRICS.equity, false),
+    cash: annualSeries(facts, METRICS.cash, false),
+    inventory: annualSeries(facts, METRICS.inventory, false),
+    currentAssets: annualSeries(facts, METRICS.currentAssets, false),
+    currentLiabilities: annualSeries(facts, METRICS.currentLiabilities, false),
+    totalDebt: annualSeries(facts, METRICS.totalDebt, false),
+    currentDebt: annualSeries(facts, METRICS.currentDebt, false),
+    nonCurrentDebt: annualSeries(facts, METRICS.nonCurrentDebt, false),
+  };
+  const anchorDates = [...new Set([
+    ...series.revenue.values.keys(),
+    ...series.netIncome.values.keys(),
+    ...series.operatingCashFlow.values.keys(),
+  ])].sort().slice(-5);
 
-  const baseGrowth = growth === null ? 0 : clamp(growth, -0.08, 0.08);
+  const periods: FinancialPeriod[] = anchorDates.map((periodEnd, index) => {
+    const revenue = series.revenue.values.get(periodEnd) ?? null;
+    const priorRevenue = index ? series.revenue.values.get(anchorDates[index - 1]) ?? null : null;
+    const netIncome = series.netIncome.values.get(periodEnd) ?? null;
+    const operatingCashFlow = series.operatingCashFlow.values.get(periodEnd) ?? null;
+    const capexRaw = series.cashCapex.values.get(periodEnd) ?? null;
+    const cashCapex = capexRaw === null ? null : Math.abs(capexRaw);
+    const freeCashFlow = safeSubtract(operatingCashFlow, cashCapex);
+    const totalDebt =
+      series.totalDebt.values.get(periodEnd) ??
+      safeAdd(
+        series.currentDebt.values.get(periodEnd) ?? null,
+        series.nonCurrentDebt.values.get(periodEnd) ?? null,
+      );
+    const cash = series.cash.values.get(periodEnd) ?? null;
+    const grossProfit = series.grossProfit.values.get(periodEnd) ?? null;
+    return {
+      periodEnd,
+      revenue,
+      grossProfit,
+      netIncome,
+      operatingCashFlow,
+      investingCashFlow: series.investingCashFlow.values.get(periodEnd) ?? null,
+      cashCapex,
+      freeCashFlowProxy: freeCashFlow,
+      assets: series.assets.values.get(periodEnd) ?? null,
+      liabilities: series.liabilities.values.get(periodEnd) ?? null,
+      equity: series.equity.values.get(periodEnd) ?? null,
+      cash,
+      inventory: series.inventory.values.get(periodEnd) ?? null,
+      currentAssets: series.currentAssets.values.get(periodEnd) ?? null,
+      currentLiabilities: series.currentLiabilities.values.get(periodEnd) ?? null,
+      totalDebt,
+      netDebt: totalDebt === null || cash === null ? null : totalDebt - cash,
+      revenueGrowth: safeDivide(
+        revenue === null || priorRevenue === null ? null : revenue - priorRevenue,
+        priorRevenue,
+      ),
+      netMargin: safeDivide(netIncome, revenue),
+      grossMargin: safeDivide(grossProfit, revenue),
+      freeCashFlowMargin: safeDivide(freeCashFlow, revenue),
+      cashConversion: safeDivide(freeCashFlow, netIncome),
+      currentRatio: safeDivide(
+        series.currentAssets.values.get(periodEnd) ?? null,
+        series.currentLiabilities.values.get(periodEnd) ?? null,
+      ),
+    };
+  });
+  return { periods, currency: series.revenue.unit || series.netIncome.unit || "USD" };
+}
+
+function buildScenarios(
+  periods: FinancialPeriod[],
+  pack: SectorPack,
+  locale: ResearchLocale,
+): Scenario[] {
+  const latest = periods.at(-1);
+  const revenueCagr = cagr(periods);
+  const averageNetMargin = average(periods.slice(-3).map((period) => period.netMargin));
+  const averageOcfMargin = average(
+    periods.slice(-3).map((period) => safeDivide(period.operatingCashFlow, period.revenue)),
+  );
+  const baseGrowth =
+    pack.id === "semiconductors"
+      ? clamp(revenueCagr ?? 0.08, -0.05, 0.3)
+      : clamp(revenueCagr ?? 0, -0.08, 0.08);
+  const growthSpread = pack.id === "semiconductors" ? 0.08 : 0.05;
   const baseNetMargin = averageNetMargin ?? latest?.netMargin ?? null;
   const baseOcfMargin =
-    averageOcfMargin ??
-    safeDivide(latest?.operatingCashFlow ?? null, latest?.revenue ?? null);
-  const baseCashFlowProxyMargin =
-    averageCashFlowProxyMargin ??
-    safeDivide(latest?.freeCashFlowProxy ?? null, latest?.revenue ?? null);
-
-  const inputs = [
-    { name: "Bear" as const, growth: baseGrowth - 0.05, marginDelta: -0.02, capexFactor: 1.05, multiple: 6 },
-    { name: "Base" as const, growth: baseGrowth, marginDelta: 0, capexFactor: 1, multiple: 8 },
-    { name: "Bull" as const, growth: baseGrowth + 0.05, marginDelta: 0.02, capexFactor: 0.95, multiple: 10 },
+    averageOcfMargin ?? safeDivide(latest?.operatingCashFlow ?? null, latest?.revenue ?? null);
+  const useFallback =
+    pack.valuation.metric === "freeCashFlow" &&
+    (latest?.cashCapex === null || latest?.operatingCashFlow === null) &&
+    pack.valuation.fallback !== undefined;
+  const framework = useFallback ? pack.valuation.fallback! : pack.valuation;
+  const assumptions = [
+    { name: "Bear" as const, growth: baseGrowth - growthSpread, marginDelta: -0.03, capexFactor: 1.1, multiple: framework.multiples.bear },
+    { name: "Base" as const, growth: baseGrowth, marginDelta: 0, capexFactor: 1, multiple: framework.multiples.base },
+    { name: "Bull" as const, growth: baseGrowth + growthSpread, marginDelta: 0.03, capexFactor: 0.95, multiple: framework.multiples.bull },
   ];
 
-  return inputs.map((input) => {
-    const revenueGrowth = clamp(input.growth, -0.2, 0.2);
+  return assumptions.map((input) => {
+    const revenueGrowth = clamp(input.growth, -0.25, 0.45);
     const projectedRevenue =
       latest?.revenue === null || latest?.revenue === undefined
         ? null
         : latest.revenue * (1 + revenueGrowth);
     const netMargin =
-      baseNetMargin === null ? null : clamp(baseNetMargin + input.marginDelta, -0.25, 0.5);
+      baseNetMargin === null ? null : clamp(baseNetMargin + input.marginDelta, -0.3, 0.65);
     const operatingCashFlowMargin =
-      baseOcfMargin === null ? null : clamp(baseOcfMargin + input.marginDelta, -0.25, 0.6);
+      baseOcfMargin === null ? null : clamp(baseOcfMargin + input.marginDelta, -0.25, 0.7);
     const projectedNetIncome =
       projectedRevenue === null || netMargin === null ? null : projectedRevenue * netMargin;
-    const capex =
+    const projectedCapex =
       latest?.cashCapex === null || latest?.cashCapex === undefined
         ? null
-        : Math.abs(latest.cashCapex) * input.capexFactor;
+        : latest.cashCapex * input.capexFactor;
     const projectedFreeCashFlow =
-      projectedRevenue === null
+      projectedRevenue === null || operatingCashFlowMargin === null || projectedCapex === null
         ? null
-        : operatingCashFlowMargin !== null && capex !== null
-          ? projectedRevenue * operatingCashFlowMargin - capex
-          : baseCashFlowProxyMargin === null
-            ? null
-            : (projectedRevenue * clamp(baseCashFlowProxyMargin + input.marginDelta, -0.25, 0.6)) /
-              input.capexFactor;
+        : projectedRevenue * operatingCashFlowMargin - projectedCapex;
+    const projectedOperatingCashFlow =
+      projectedRevenue === null || operatingCashFlowMargin === null
+        ? null
+        : projectedRevenue * operatingCashFlowMargin;
+    const valuationMetric =
+      framework.metric === "revenue"
+        ? projectedRevenue
+        : framework.metric === "operatingCashFlow"
+          ? projectedOperatingCashFlow
+          : projectedFreeCashFlow;
     return {
       name: input.name,
       revenueGrowth,
@@ -439,358 +528,406 @@ function buildScenarios(periods: FinancialPeriod[]): Scenario[] {
       projectedNetIncome,
       projectedFreeCashFlow,
       enterpriseValueMultiple: input.multiple,
+      valuationMethod: framework.method[locale],
+      valuationMetric,
+      multipleLabel: framework.multipleLabel,
       modelImpliedEnterpriseValue:
-        projectedFreeCashFlow !== null && projectedFreeCashFlow > 0
-          ? projectedFreeCashFlow * input.multiple
+        valuationMetric !== null && valuationMetric > 0
+          ? valuationMetric * input.multiple
           : null,
     };
   });
 }
 
-function buildNarrative(
-  periods: FinancialPeriod[],
+function kpiValue(
+  definition: SectorKpiDefinition,
+  latest: FinancialPeriod,
   currency: string,
   locale: ResearchLocale,
-): {
-  dashboard: DashboardMetric[];
-  earningsQuality: string[];
-  thesis: ThesisPoint[];
-  risks: RiskPoint[];
-} {
-  const latest = periods.at(-1);
-  const prior = periods.at(-2);
-  const growth = latest?.revenueGrowth ?? null;
-  const revenueCagr = cagr(periods);
-  const fcf = latest?.freeCashFlowProxy ?? null;
-  const cashFlowProxyFormula =
-    latest?.cashCapex !== null && latest?.cashCapex !== undefined
-      ? locale === "zh"
-        ? "经营现金流 − |现金资本开支|"
-        : "Operating cash flow − |cash capital expenditure|"
-      : latest?.investingCashFlow !== null && latest?.investingCashFlow !== undefined
-        ? locale === "zh"
-          ? "经营现金流 + 投资活动现金流"
-          : "Operating cash flow + investing cash flow"
-        : COPY[locale].unableToCalculate;
-  const cashConversion = latest?.cashConversion ?? null;
-  const liabilityRatio = safeDivide(latest?.liabilities ?? null, latest?.assets ?? null);
-  const capexIntensity = safeDivide(latest?.cashCapex ?? null, latest?.revenue ?? null);
-  const priorNetMargin = prior?.netMargin ?? null;
-  const marginDelta =
-    latest?.netMargin === null || latest?.netMargin === undefined || priorNetMargin === null
-      ? null
-      : latest.netMargin - priorNetMargin;
-
-  if (locale === "en") {
-    const dashboard: DashboardMetric[] = [
-      {
-        label: "Latest revenue",
-        value: compactMoney(latest?.revenue ?? null, currency, locale),
-        detail: `YoY ${percentage(growth, locale)}; multi-period CAGR ${percentage(revenueCagr, locale)}`,
-        classification: "Reported fact",
-        tone: growth === null ? "neutral" : growth >= 0 ? "positive" : "watch",
-      },
-      {
-        label: "Net margin",
-        value: percentage(latest?.netMargin ?? null, locale),
-        detail: `Change from prior year ${marginDelta === null ? COPY.en.dataUnavailable : `${(marginDelta * 100).toFixed(1)}ppt`}`,
-        classification: "Derived calculation",
-        tone: marginDelta === null ? "neutral" : marginDelta >= 0 ? "positive" : "watch",
-      },
-      {
-        label: "Cash-flow proxy",
-        value: compactMoney(fcf, currency, locale),
-        detail: `${cashFlowProxyFormula}; the measure may differ from issuer-defined FCF`,
-        classification: "Derived calculation",
-        tone: fcf === null ? "neutral" : fcf > 0 ? "positive" : "watch",
-      },
-      {
-        label: "Cash conversion",
-        value: cashConversion === null ? COPY.en.dataUnavailable : `${cashConversion.toFixed(2)}x`,
-        detail: "Cash-flow proxy / net income; calculated only when net income is non-zero",
-        classification: "Derived calculation",
-        tone: cashConversion === null ? "neutral" : cashConversion >= 0.8 ? "positive" : "watch",
-      },
-      {
-        label: "Liabilities / assets",
-        value: percentage(liabilityRatio, locale),
-        detail: `Current ratio ${latest?.currentRatio === null || latest?.currentRatio === undefined ? COPY.en.dataUnavailable : `${latest.currentRatio.toFixed(2)}x`}`,
-        classification: "Derived calculation",
-        tone: liabilityRatio === null ? "neutral" : liabilityRatio <= 0.65 ? "positive" : "watch",
-      },
-    ];
-
-    const earningsQuality = [
-      `Latest annual net income was ${compactMoney(latest?.netIncome ?? null, currency, locale)}, versus operating cash flow of ${compactMoney(latest?.operatingCashFlow ?? null, currency, locale)}.`,
-      `The cash-flow proxy (${cashFlowProxyFormula}) was ${compactMoney(fcf, currency, locale)}, for cash conversion of ${cashConversion === null ? COPY.en.dataUnavailable : `${cashConversion.toFixed(2)}x`}.`,
-      `Capital-expenditure intensity was ${percentage(capexIntensity, locale)}; a higher ratio raises the bar for revenue quality and funding capacity.`,
-      "Standardized XBRL is insufficient to identify every one-off item, restructuring charge, or management adjustment; verify these in the notes to the latest annual filing.",
-    ];
-
-    const thesis: ThesisPoint[] = [
-      {
-        title: "Revenue trend sets the direction of operating leverage",
-        view: `Latest annual revenue growth was ${percentage(growth, locale)}, with a multi-period CAGR of ${percentage(revenueCagr, locale)}. Improving revenue can support profit and cash coverage.`,
-        counterEvidence:
-          growth !== null && growth < 0
-            ? "Latest annual revenue was still contracting, so scale benefits remain unproven."
-            : "Revenue growth does not automatically convert to cash; margins and working capital still matter.",
-        monitor: "Revenue growth, gross/net margin, and management guidance in the next periodic report.",
-      },
-      {
-        title: "Cash conversion is closer to distributable capacity than accounting profit",
-        view: `The cash-flow proxy was ${compactMoney(fcf, currency, locale)}, with cash conversion of ${cashConversion === null ? COPY.en.dataUnavailable : `${cashConversion.toFixed(2)}x`}.`,
-        counterEvidence:
-          cashConversion !== null && cashConversion < 0.8
-            ? "Cash conversion below 0.8x may indicate pressure from working capital, capital expenditure, or earnings quality."
-            : "A single year of cash release may reflect working-capital timing rather than permanent improvement.",
-        monitor: "Operating cash flow, working capital, capital expenditure, and cash balances.",
-      },
-      {
-        title: "The balance sheet determines downside resilience",
-        view: `Liabilities / assets were ${percentage(liabilityRatio, locale)}, and the current ratio was ${latest?.currentRatio === null || latest?.currentRatio === undefined ? COPY.en.dataUnavailable : `${latest.currentRatio.toFixed(2)}x`}.`,
-        counterEvidence:
-          liabilityRatio !== null && liabilityRatio > 0.65
-            ? "A high liability share makes rates, refinancing, and earnings weakness transmit more quickly to equity value."
-            : "A lower liability share does not rule out off-balance-sheet, lease, or pension obligations.",
-        monitor: "Total debt, cash, liquidity, interest expense, and the maturity profile.",
-      },
-      {
-        title: "Capital intensity determines whether growth can be self-funded",
-        view: `Cash capital expenditure / revenue was ${percentage(capexIntensity, locale)}. Stable capital efficiency supports free-cash-flow expansion.`,
-        counterEvidence: "Standardized data cannot distinguish maintenance from growth capital expenditure.",
-        monitor: "Capital-expenditure guidance, asset turnover, project returns, and impairments.",
-      },
-    ];
-
-    const risks: RiskPoint[] = [
-      {
-        title: "Sustained revenue or margin deterioration",
-        evidence: `Latest revenue growth was ${percentage(growth, locale)}; net margin was ${percentage(latest?.netMargin ?? null, locale)}.`,
-        thesisBreaker: "Revenue and margins decline together for two consecutive years without a credible management recovery plan.",
-      },
-      {
-        title: "Cash conversion trails accounting profit",
-        evidence: `Cash conversion was ${cashConversion === null ? COPY.en.dataUnavailable : `${cashConversion.toFixed(2)}x`}.`,
-        thesisBreaker: "Operating cash flow and the cash-flow proxy remain below net income without a working-capital timing explanation.",
-      },
-      {
-        title: "Capital expenditure or leverage crowds out shareholder returns",
-        evidence: `Capital-expenditure intensity was ${percentage(capexIntensity, locale)}; liabilities / assets were ${percentage(liabilityRatio, locale)}.`,
-        thesisBreaker: "Capital expenditure and distributions continue to exceed operating cash flow while cash falls or debt rises.",
-      },
-      {
-        title: "Disclosure and standardized-data boundaries",
-        evidence: "SEC Company Facts supports verification of core financial history but does not fully capture segment KPIs, orders, customer concentration, or every one-off item.",
-        thesisBreaker: "Material differences between the latest annual-filing notes and standardized XBRL cannot be reconciled.",
-      },
-    ];
-
-    return { dashboard, earningsQuality, thesis, risks };
+) {
+  switch (definition.availability) {
+    case "revenue":
+      return compactMoney(latest.revenue, currency, locale);
+    case "grossMargin":
+      return percentage(latest.grossMargin, locale);
+    case "inventory":
+      return compactMoney(latest.inventory, currency, locale);
+    case "cashCapex":
+      return compactMoney(latest.cashCapex, currency, locale);
+    case "freeCashFlow":
+      return latest.cashCapex === null || latest.operatingCashFlow === null
+        ? COPY[locale].unableFcf
+        : compactMoney(latest.freeCashFlowProxy, currency, locale);
+    case "netDebt":
+      return compactMoney(latest.netDebt, currency, locale);
+    default:
+      return COPY[locale].notDisclosed;
   }
+}
 
+function buildSectorKpis(
+  pack: SectorPack,
+  latest: FinancialPeriod,
+  currency: string,
+  locale: ResearchLocale,
+): SectorKpiResult[] {
+  return pack.coreKpis.map((definition) => {
+    const derived = ["grossMargin", "freeCashFlow", "netDebt"].includes(definition.availability);
+    const available = definition.availability !== "notStandardized";
+    return {
+      id: definition.id,
+      label: definition.label[locale],
+      value: kpiValue(definition, latest, currency, locale),
+      definition: definition.description[locale],
+      classification: derived ? "Derived calculation" : "Reported fact",
+      sourceNote: available
+        ? locale === "zh"
+          ? "SEC Company Facts；按本页公式标准化。"
+          : "SEC Company Facts; normalized using the displayed formula."
+        : locale === "zh"
+          ? "标准化 SEC Company Facts 未披露；需回到最新年报分部与业务附注。"
+          : "Not disclosed in standardized SEC Company Facts; review the latest annual filing's segment and business notes.",
+      whyItMatters:
+        locale === "zh"
+          ? `该指标用于回答：${pack.researchQuestions[
+              pack.coreKpis.indexOf(definition) % pack.researchQuestions.length
+            ].zh}`
+          : `This metric helps answer: ${pack.researchQuestions[
+              pack.coreKpis.indexOf(definition) % pack.researchQuestions.length
+            ].en}`,
+    };
+  });
+}
+
+function matchingClaim(
+  query: string,
+  outlook: Awaited<ReturnType<typeof getSectorOutlook>>,
+) {
+  const tokens = new Set(
+    query
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .split(/\s+/)
+      .filter((token) => token.length > 2),
+  );
+  return [...outlook.claims]
+    .map((claim) => {
+      const haystack = `${claim.topic} ${claim.title}`.toLowerCase();
+      const score = [...tokens].reduce(
+        (sum, token) => sum + (haystack.includes(token) ? 1 : 0),
+        0,
+      );
+      return { claim, score };
+    })
+    .sort((a, b) => b.score - a.score)[0]?.claim;
+}
+
+function buildDriverExposure(
+  companyName: string,
+  pack: SectorPack,
+  outlook: Awaited<ReturnType<typeof getSectorOutlook>>,
+  locale: ResearchLocale,
+): SectorDriverExposure[] {
+  return pack.marketDrivers.map((driver, index) => {
+    const claim =
+      matchingClaim(driver.query, outlook) ??
+      outlook.claims[index % Math.max(outlook.claims.length, 1)];
+    return {
+      driver: driver.name[locale],
+      companyExposure: `${companyName}: ${driver.companyExposure[locale]}`,
+      evidence: claim?.claim ?? COPY[locale].dataUnavailable,
+      evidencePublisher: claim?.publisher ?? COPY[locale].dataUnavailable,
+      evidenceDate: claim?.publicationDate ?? COPY[locale].dataUnavailable,
+      evidenceUrl: claim?.url ?? "",
+      investmentImplication: driver.implication[locale],
+    };
+  });
+}
+
+function buildNarrative(
+  companyName: string,
+  periods: FinancialPeriod[],
+  currency: string,
+  pack: SectorPack,
+  outlook: Awaited<ReturnType<typeof getSectorOutlook>>,
+  locale: ResearchLocale,
+) {
+  const latest = periods.at(-1)!;
+  const prior = periods.at(-2);
+  const revenueCagr = cagr(periods);
+  const marginDelta =
+    latest.netMargin === null || prior?.netMargin === null || prior?.netMargin === undefined
+      ? null
+      : latest.netMargin - prior.netMargin;
+  const liabilityRatio = safeDivide(latest.liabilities, latest.assets);
+  const cashConversion = latest.cashConversion;
+  const primarySectorMetric =
+    pack.id === "semiconductors"
+      ? {
+          label: locale === "zh" ? "毛利率" : "Gross margin",
+          value: percentage(latest.grossMargin, locale),
+          detail:
+            locale === "zh"
+              ? "毛利率 = 毛利润 ÷ 营收；产品组合与供给成本的重要信号。"
+              : "Gross margin = gross profit / revenue; a key signal for product mix and supply cost.",
+        }
+      : {
+          label: locale === "zh" ? "净债务" : "Net debt",
+          value: compactMoney(latest.netDebt, currency, locale),
+          detail:
+            locale === "zh"
+              ? "净债务 = 标准化总债务 - 现金；衡量周期下行韧性。"
+              : "Net debt = normalized debt - cash; a measure of downside-cycle resilience.",
+        };
+  const fcfValue =
+    latest.freeCashFlowProxy === null
+      ? COPY[locale].unableFcf
+      : compactMoney(latest.freeCashFlowProxy, currency, locale);
+  const inlineFcfValue = fcfValue.replace(/[。.]+$/, "");
   const dashboard: DashboardMetric[] = [
     {
-      label: "最新营收",
-      value: compactMoney(latest?.revenue ?? null, currency, locale),
-      detail: `同比 ${percentage(growth, locale)}；多期 CAGR ${percentage(revenueCagr, locale)}`,
+      label: locale === "zh" ? "最新营收" : "Latest revenue",
+      value: compactMoney(latest.revenue, currency, locale),
+      detail:
+        locale === "zh"
+          ? `同比 ${percentage(latest.revenueGrowth, locale)}；多期 CAGR ${percentage(revenueCagr, locale)}`
+          : `YoY ${percentage(latest.revenueGrowth, locale)}; multi-period CAGR ${percentage(revenueCagr, locale)}`,
       classification: "Reported fact",
-      tone: growth === null ? "neutral" : growth >= 0 ? "positive" : "watch",
+      tone: latest.revenueGrowth === null ? "neutral" : latest.revenueGrowth >= 0 ? "positive" : "watch",
     },
     {
-      label: "净利润率",
-      value: percentage(latest?.netMargin ?? null, locale),
-      detail: `较上一年度变化 ${marginDelta === null ? COPY.zh.dataUnavailable : `${(marginDelta * 100).toFixed(1)}个百分点`}`,
+      label: locale === "zh" ? "净利润率" : "Net margin",
+      value: percentage(latest.netMargin, locale),
+      detail:
+        locale === "zh"
+          ? `较上年 ${marginDelta === null ? COPY.zh.dataUnavailable : `${(marginDelta * 100).toFixed(1)}个百分点`}`
+          : `YoY change ${marginDelta === null ? COPY.en.dataUnavailable : `${(marginDelta * 100).toFixed(1)}ppt`}`,
       classification: "Derived calculation",
       tone: marginDelta === null ? "neutral" : marginDelta >= 0 ? "positive" : "watch",
     },
     {
-      label: "现金流代理",
-      value: compactMoney(fcf, currency, locale),
-      detail: `${cashFlowProxyFormula}；口径可能不同于公司自定义 FCF`,
+      label: locale === "zh" ? "自由现金流" : "Free cash flow",
+      value: fcfValue,
+      detail:
+        locale === "zh"
+          ? "FCF = 经营现金流 - 现金资本开支；资本开支缺失时不计算。"
+          : "FCF = operating cash flow - cash capital expenditure; no value is calculated when capex is unavailable.",
       classification: "Derived calculation",
-      tone: fcf === null ? "neutral" : fcf > 0 ? "positive" : "watch",
+      tone: latest.freeCashFlowProxy === null ? "neutral" : latest.freeCashFlowProxy > 0 ? "positive" : "watch",
     },
     {
-      label: "现金转化",
-      value: cashConversion === null ? COPY.zh.dataUnavailable : `${cashConversion.toFixed(2)}x`,
-      detail: "现金流代理 / 净利润；仅在净利润非零时计算",
+      label: primarySectorMetric.label,
+      value: primarySectorMetric.value,
+      detail: primarySectorMetric.detail,
       classification: "Derived calculation",
-      tone: cashConversion === null ? "neutral" : cashConversion >= 0.8 ? "positive" : "watch",
+      tone: "neutral",
     },
     {
-      label: "负债 / 资产",
+      label: locale === "zh" ? "负债 / 资产" : "Liabilities / assets",
       value: percentage(liabilityRatio, locale),
-      detail: `流动比率 ${latest?.currentRatio === null || latest?.currentRatio === undefined ? COPY.zh.dataUnavailable : `${latest.currentRatio.toFixed(2)}x`}`,
+      detail:
+        locale === "zh"
+          ? `流动比率 ${latest.currentRatio === null ? COPY.zh.dataUnavailable : `${latest.currentRatio.toFixed(2)}x`}`
+          : `Current ratio ${latest.currentRatio === null ? COPY.en.dataUnavailable : `${latest.currentRatio.toFixed(2)}x`}`,
       classification: "Derived calculation",
       tone: liabilityRatio === null ? "neutral" : liabilityRatio <= 0.65 ? "positive" : "watch",
     },
   ];
 
-  const earningsQuality = [
-    `最新年度净利润为 ${compactMoney(latest?.netIncome ?? null, currency, locale)}，经营现金流为 ${compactMoney(latest?.operatingCashFlow ?? null, currency, locale)}。`,
-    `现金流代理（${cashFlowProxyFormula}）为 ${compactMoney(fcf, currency, locale)}，现金转化为 ${cashConversion === null ? COPY.zh.dataUnavailable : `${cashConversion.toFixed(2)}x`}。`,
-    `资本开支强度为 ${percentage(capexIntensity, locale)}；该比率越高，对收入增长质量和融资能力的要求越高。`,
-    "标准化 XBRL 不足以判断全部一次性项目、重组费用或管理层调整项，需回到最新年报附注复核。",
-  ];
+  const earningsQuality =
+    locale === "zh"
+      ? [
+          `${companyName} 最新年度净利润为 ${compactMoney(latest.netIncome, currency, locale)}，经营现金流为 ${compactMoney(latest.operatingCashFlow, currency, locale)}。`,
+          latest.freeCashFlowProxy === null
+            ? COPY.zh.unableFcf
+            : `FCF = 经营现金流 - 现金资本开支 = ${compactMoney(latest.freeCashFlowProxy, currency, locale)}；FCF / 净利润为 ${cashConversion === null ? COPY.zh.dataUnavailable : `${cashConversion.toFixed(2)}x`}。`,
+          pack.id === "semiconductors"
+            ? `毛利率 ${percentage(latest.grossMargin, locale)}，库存 ${compactMoney(latest.inventory, currency, locale)}；需结合产品换代和供给承诺判断周期质量。`
+            : `现金资本开支 ${compactMoney(latest.cashCapex, currency, locale)}，净债务 ${compactMoney(latest.netDebt, currency, locale)}；需结合商品价格与分配政策判断覆盖。`,
+          "标准化 XBRL 不足以识别所有重组、减值、一次性项目或管理层调整项，需回到年报附注复核。",
+        ]
+      : [
+          `${companyName}'s latest annual net income was ${compactMoney(latest.netIncome, currency, locale)}, versus operating cash flow of ${compactMoney(latest.operatingCashFlow, currency, locale)}.`,
+          latest.freeCashFlowProxy === null
+            ? COPY.en.unableFcf
+            : `FCF = operating cash flow - cash capital expenditure = ${compactMoney(latest.freeCashFlowProxy, currency, locale)}; FCF / net income was ${cashConversion === null ? COPY.en.dataUnavailable : `${cashConversion.toFixed(2)}x`}.`,
+          pack.id === "semiconductors"
+            ? `Gross margin was ${percentage(latest.grossMargin, locale)} and inventory was ${compactMoney(latest.inventory, currency, locale)}; assess both with product transitions and supply commitments.`
+            : `Cash capex was ${compactMoney(latest.cashCapex, currency, locale)} and net debt was ${compactMoney(latest.netDebt, currency, locale)}; assess coverage with commodity prices and distribution policy.`,
+          "Standardized XBRL cannot identify every restructuring, impairment, one-off, or management adjustment; verify them in the annual-filing notes.",
+        ];
 
-  const thesis: ThesisPoint[] = [
-    {
-      title: "收入趋势决定经营杠杆方向",
-      view: `最新年度收入增长为 ${percentage(growth, locale)}，多期 CAGR 为 ${percentage(revenueCagr, locale)}。收入改善通常可带动利润和现金覆盖。`,
-      counterEvidence: growth !== null && growth < 0 ? "最新年度收入仍在收缩，规模效应尚未得到确认。" : "收入增长并不自动转化为现金，仍需观察利润率和营运资本。",
-      monitor: "下一次定期报告中的收入增速、毛利/净利率和管理层指引。",
-    },
-    {
-      title: "现金转化比会计利润更接近分配能力",
-      view: `现金流代理为 ${compactMoney(fcf, currency, locale)}，现金转化 ${cashConversion === null ? COPY.zh.dataUnavailable : `${cashConversion.toFixed(2)}x`}。`,
-      counterEvidence: cashConversion !== null && cashConversion < 0.8 ? "现金转化低于 0.8x，可能反映营运资本、资本开支或利润质量压力。" : "单一年度的现金释放可能来自营运资本时点，并非永久改善。",
-      monitor: "经营现金流、营运资本、资本开支和现金余额。",
-    },
-    {
-      title: "资产负债表决定下行情景的容错空间",
-      view: `负债 / 资产为 ${percentage(liabilityRatio, locale)}，流动比率为 ${latest?.currentRatio === null || latest?.currentRatio === undefined ? COPY.zh.dataUnavailable : `${latest.currentRatio.toFixed(2)}x`}。`,
-      counterEvidence: liabilityRatio !== null && liabilityRatio > 0.65 ? "负债占比较高，利率、再融资和盈利下行会更快传导到股东价值。" : "较低负债占比也不能排除表外义务、租赁或养老金风险。",
-      monitor: "总债务、现金、流动性、利息费用和到期结构。",
-    },
-    {
-      title: "资本强度决定增长是否可自筹",
-      view: `现金资本开支 / 收入为 ${percentage(capexIntensity, locale)}。稳定的资本效率有利于自由现金流扩张。`,
-      counterEvidence: "标准化数据无法区分维护性与增长性资本开支。",
-      monitor: "资本开支指引、资产周转、项目回报和减值。",
-    },
-  ];
-
-  const risks: RiskPoint[] = [
-    {
-      title: "收入或利润率持续恶化",
-      evidence: `最新收入增长 ${percentage(growth, locale)}；净利润率 ${percentage(latest?.netMargin ?? null, locale)}。`,
-      thesisBreaker: "收入和利润率连续两个年度同步下降，且管理层没有可信的修复路径。",
-    },
-    {
-      title: "现金转化弱于会计利润",
-      evidence: `现金转化 ${cashConversion === null ? COPY.zh.dataUnavailable : `${cashConversion.toFixed(2)}x`}。`,
-      thesisBreaker: "经营现金流和现金流代理持续低于净利润，且无法由营运资本时点解释。",
-    },
-    {
-      title: "资本开支或杠杆挤压股东回报",
-      evidence: `资本开支强度 ${percentage(capexIntensity, locale)}；负债 / 资产 ${percentage(liabilityRatio, locale)}。`,
-      thesisBreaker: "资本开支和分配持续超过经营现金流，同时现金下降或债务上升。",
-    },
-    {
-      title: "披露与标准化数据边界",
-      evidence: "SEC Company Facts 可复核核心财务历史，但无法完整覆盖分部 KPI、订单、客户集中度和所有一次性项目。",
-      thesisBreaker: "最新年报附注与标准化 XBRL 出现无法解释的重大差异。",
-    },
-  ];
-
-  return { dashboard, earningsQuality, thesis, risks };
-}
-
-async function buildReport(record: TickerRecord, locale: ResearchLocale): Promise<ResearchReport> {
-  const cik = String(record.cik_str).padStart(10, "0");
-  const [submissions, facts] = await Promise.all([
-    secFetch<Submissions>(`https://data.sec.gov/submissions/CIK${cik}.json`),
-    secFetch<CompanyFacts>(`https://data.sec.gov/api/xbrl/companyfacts/CIK${cik}.json`),
-  ]);
-
-  const revenue = annualSeries(facts, METRICS.revenue, true);
-  const netIncome = annualSeries(facts, METRICS.netIncome, true);
-  const operatingCashFlow = annualSeries(facts, METRICS.operatingCashFlow, true);
-  const investingCashFlow = annualSeries(facts, METRICS.investingCashFlow, true);
-  const cashCapex = annualSeries(facts, METRICS.cashCapex, true);
-  const assets = annualSeries(facts, METRICS.assets, false);
-  const liabilities = annualSeries(facts, METRICS.liabilities, false);
-  const equity = annualSeries(facts, METRICS.equity, false);
-  const cash = annualSeries(facts, METRICS.cash, false);
-  const currentAssets = annualSeries(facts, METRICS.currentAssets, false);
-  const currentLiabilities = annualSeries(facts, METRICS.currentLiabilities, false);
-  const totalDebt = annualSeries(facts, METRICS.totalDebt, false);
-  const currentDebt = annualSeries(facts, METRICS.currentDebt, false);
-  const nonCurrentDebt = annualSeries(facts, METRICS.nonCurrentDebt, false);
-
-  const anchorDates = [...new Set([
-    ...revenue.values.keys(),
-    ...netIncome.values.keys(),
-    ...operatingCashFlow.values.keys(),
-  ])]
-    .sort()
-    .slice(-5);
-
-  const periods: FinancialPeriod[] = anchorDates.map((periodEnd, index) => {
-    const revenueValue = revenue.values.get(periodEnd) ?? null;
-    const priorRevenue = index > 0 ? revenue.values.get(anchorDates[index - 1]) ?? null : null;
-    const netIncomeValue = netIncome.values.get(periodEnd) ?? null;
-    const operatingCashFlowValue = operatingCashFlow.values.get(periodEnd) ?? null;
-    const investingCashFlowValue = investingCashFlow.values.get(periodEnd) ?? null;
-    const capexValue = cashCapex.values.get(periodEnd) ?? null;
-    const totalDebtValue =
-      totalDebt.values.get(periodEnd) ??
-      safeAdd(currentDebt.values.get(periodEnd) ?? null, nonCurrentDebt.values.get(periodEnd) ?? null);
-    const cashValue = cash.values.get(periodEnd) ?? null;
-    const fcf =
-      capexValue !== null
-        ? safeSubtract(operatingCashFlowValue, capexValue)
-        : safeAdd(operatingCashFlowValue, investingCashFlowValue);
+  const thesis: ThesisPoint[] = pack.marketDrivers.slice(0, 4).map((driver, index) => {
+    const claim =
+      matchingClaim(driver.query, outlook) ??
+      outlook.claims[index % Math.max(outlook.claims.length, 1)];
     return {
-      periodEnd,
-      revenue: revenueValue,
-      netIncome: netIncomeValue,
-      operatingCashFlow: operatingCashFlowValue,
-      investingCashFlow: investingCashFlowValue,
-      cashCapex: capexValue === null ? null : Math.abs(capexValue),
-      freeCashFlowProxy: fcf,
-      assets: assets.values.get(periodEnd) ?? null,
-      liabilities: liabilities.values.get(periodEnd) ?? null,
-      equity: equity.values.get(periodEnd) ?? null,
-      cash: cashValue,
-      currentAssets: currentAssets.values.get(periodEnd) ?? null,
-      currentLiabilities: currentLiabilities.values.get(periodEnd) ?? null,
-      totalDebt: totalDebtValue,
-      netDebt:
-        totalDebtValue === null || cashValue === null ? null : totalDebtValue - cashValue,
-      revenueGrowth: safeDivide(
-        revenueValue === null || priorRevenue === null ? null : revenueValue - priorRevenue,
-        priorRevenue,
-      ),
-      netMargin: safeDivide(netIncomeValue, revenueValue),
-      cashConversion: safeDivide(fcf, netIncomeValue),
-      currentRatio: safeDivide(
-        currentAssets.values.get(periodEnd) ?? null,
-        currentLiabilities.values.get(periodEnd) ?? null,
-      ),
+      title: driver.name[locale],
+      view:
+        locale === "zh"
+          ? `${companyName} 的相关敞口是${driver.companyExposure.zh} 最新营收增长 ${percentage(latest.revenueGrowth, locale)}、FCF ${inlineFcfValue}。行业证据：${claim?.publisher ?? COPY.zh.dataUnavailable} · ${claim?.publicationDate ?? COPY.zh.dataUnavailable}。`
+          : `${companyName}'s relevant exposure is ${driver.companyExposure.en} Latest revenue growth was ${percentage(latest.revenueGrowth, locale)} and FCF was ${inlineFcfValue}. Sector evidence: ${claim?.publisher ?? COPY.en.dataUnavailable} · ${claim?.publicationDate ?? COPY.en.dataUnavailable}.`,
+      counterEvidence: pack.risks[index % pack.risks.length][locale],
+      monitor: pack.researchQuestions[index % pack.researchQuestions.length][locale],
     };
   });
 
-  if (!periods.length) {
-    throw new Error("Insufficient standardized annual XBRL data for this issuer.");
+  const risks: RiskPoint[] = pack.risks.map((risk, index) => ({
+    title: risk[locale],
+    evidence:
+      locale === "zh"
+        ? `${companyName} 最新营收增速 ${percentage(latest.revenueGrowth, locale)}、净利润率 ${percentage(latest.netMargin, locale)}、FCF ${inlineFcfValue}。`
+        : `${companyName}'s latest revenue growth was ${percentage(latest.revenueGrowth, locale)}, net margin ${percentage(latest.netMargin, locale)}, and FCF ${inlineFcfValue}.`,
+    thesisBreaker:
+      locale === "zh"
+        ? `若“${pack.researchQuestions[index % pack.researchQuestions.length].zh}”连续两个报告期无法得到积极验证，则该论点失效。`
+        : `The thesis breaks if "${pack.researchQuestions[index % pack.researchQuestions.length].en}" cannot be positively validated for two reporting periods.`,
+  }));
+  return { dashboard, earningsQuality, thesis, risks };
+}
+
+function buildDebates(
+  companyName: string,
+  pack: SectorPack,
+  outlook: Awaited<ReturnType<typeof getSectorOutlook>>,
+  locale: ResearchLocale,
+): InvestmentDebate[] {
+  return pack.researchQuestions.slice(0, 4).map((question, index) => {
+    const driver = pack.marketDrivers[index % pack.marketDrivers.length];
+    const claim =
+      matchingClaim(driver.query, outlook) ??
+      outlook.claims[index % Math.max(outlook.claims.length, 1)];
+    return {
+      question: question[locale],
+      evidenceFor:
+        claim?.claim ??
+        (locale === "zh" ? "近期行业证据不足。" : "Recent sector evidence is insufficient."),
+      evidenceAgainst: pack.risks[index % pack.risks.length][locale],
+      monitor: `${companyName}: ${pack.coreKpis[index % pack.coreKpis.length].label[locale]}`,
+    };
+  });
+}
+
+function catalystPoints(
+  items: SectorPack["catalysts"]["operating"],
+  locale: ResearchLocale,
+): CatalystPoint[] {
+  return items.map((item) => ({
+    timing: locale === "zh" ? "持续监测" : "Ongoing monitor",
+    event: item[locale],
+    investorRelevance:
+      locale === "zh"
+        ? "仅在经营或财务结果改变时视为催化剂；单纯申报日期不是催化剂。"
+        : "Treated as a catalyst only when operating or financial outcomes change; a filing date alone is not a catalyst.",
+  }));
+}
+
+async function buildPeerComparison(
+  pack: SectorPack,
+  locale: ResearchLocale,
+): Promise<PeerComparisonItem[]> {
+  return Promise.all(
+    pack.peers.map(async (peer) => {
+      try {
+        const facts = await secFetch<CompanyFacts>(
+          `https://data.sec.gov/api/xbrl/companyfacts/CIK${peer.cik}.json`,
+        );
+        const { periods } = normalizedPeriods(facts);
+        const latest = periods.at(-1);
+        return {
+          ticker: peer.ticker,
+          name: peer.name,
+          rationale: peer.rationale[locale],
+          revenueGrowth: latest?.revenueGrowth ?? null,
+          netMargin: latest?.netMargin ?? null,
+          freeCashFlowMargin: latest?.freeCashFlowMargin ?? null,
+          periodEnd: latest?.periodEnd ?? null,
+        };
+      } catch {
+        return {
+          ticker: peer.ticker,
+          name: peer.name,
+          rationale: peer.rationale[locale],
+          revenueGrowth: null,
+          netMargin: null,
+          freeCashFlowMargin: null,
+          periodEnd: null,
+        };
+      }
+    }),
+  );
+}
+
+function selectionFromPayload(payload: ResearchPayload): ResearchSelection | null {
+  const market = payload.market ?? "Global";
+  const sector = payload.sector ?? "energy";
+  const subindustry = payload.subindustry ?? "integrated-oil-gas";
+  if (!["US", "Europe", "Global"].includes(market)) return null;
+  if (!["energy", "technology"].includes(sector)) return null;
+  if (!["integrated-oil-gas", "semiconductors"].includes(subindustry)) return null;
+  if (
+    (sector === "energy" && subindustry !== "integrated-oil-gas") ||
+    (sector === "technology" && subindustry !== "semiconductors")
+  ) return null;
+  return {
+    market,
+    sector,
+    subindustry,
+    options: { ...DEFAULT_OPTIONS, ...payload.options },
+  };
+}
+
+async function buildReport(
+  record: TickerRecord,
+  selection: ResearchSelection,
+  locale: ResearchLocale,
+): Promise<ResearchReport> {
+  const cik = String(record.cik_str).padStart(10, "0");
+  const [submissions, facts, sectorOutlook] = await Promise.all([
+    secFetch<Submissions>(`https://data.sec.gov/submissions/CIK${cik}.json`),
+    secFetch<CompanyFacts>(`https://data.sec.gov/api/xbrl/companyfacts/CIK${cik}.json`),
+    getSectorOutlook(selection.market, selection.subindustry, locale),
+  ]);
+  const pack = getSectorPack(selection.subindustry);
+  if (submissions.sic && !pack.sicCodes.includes(submissions.sic)) {
+    throw new Error("SECTOR_MISMATCH");
   }
 
-  const currency = revenue.unit || netIncome.unit || "USD";
+  const { periods, currency } = normalizedPeriods(facts);
+  if (!periods.length) throw new Error("INSUFFICIENT_XBRL");
+  const latest = periods.at(-1)!;
+  const companyName = submissions.name || facts.entityName || record.title;
+  const today = new Date();
+  const companyDataRetrievedAt = today.toISOString();
   const latestAnnual = filingSource(submissions, ANNUAL_FORMS, COPY[locale].annualFiling);
   const latestInterim = filingSource(submissions, INTERIM_FORMS, COPY[locale].interimFiling);
-  const narrative = buildNarrative(periods, currency, locale);
-  const scenarios = buildScenarios(periods);
-  const today = new Date();
-  const retrievedAt = today.toISOString();
-  const latest = periods.at(-1);
-  const cashFlowProxyFormula =
-    latest?.cashCapex !== null && latest?.cashCapex !== undefined
-      ? locale === "zh"
-        ? "现金流代理 = 经营现金流 − |现金资本开支|"
-        : "Cash-flow proxy = operating cash flow − |cash capital expenditure|"
-      : latest?.investingCashFlow !== null && latest?.investingCashFlow !== undefined
-        ? locale === "zh"
-          ? "现金流代理 = 经营现金流 + 投资活动现金流"
-          : "Cash-flow proxy = operating cash flow + investing cash flow"
-        : COPY[locale].unableToCalculate;
+  const narrative = buildNarrative(companyName, periods, currency, pack, sectorOutlook, locale);
+  const scenarios = selection.options.valuation ? buildScenarios(periods, pack, locale) : [];
+  const peerComparison = selection.options.peerComparison
+    ? await buildPeerComparison(pack, locale)
+    : [];
   const sourceBase = `https://data.sec.gov/submissions/CIK${cik}.json`;
   const factsUrl = `https://data.sec.gov/api/xbrl/companyfacts/CIK${cik}.json`;
+  const evidenceSources = sectorEvidenceSources(selection.market, selection.subindustry);
+  const strictFcfFormula =
+    locale === "zh"
+      ? "自由现金流 = 经营现金流 - 现金资本开支"
+      : "Free cash flow = operating cash flow - cash capital expenditure";
+  const useValuationFallback =
+    pack.valuation.metric === "freeCashFlow" &&
+    (latest.cashCapex === null || latest.operatingCashFlow === null) &&
+    pack.valuation.fallback !== undefined;
+  const effectiveValuation = useValuationFallback ? pack.valuation.fallback! : pack.valuation;
+  const valuationFormula = `${effectiveValuation.formula[locale]}; ${strictFcfFormula}.`;
+  const displayedOutlook = selection.options.sectorOutlook
+    ? sectorOutlook
+    : { ...sectorOutlook, claims: [] };
 
   return {
     locale,
+    selection,
     company: {
-      name: submissions.name || facts.entityName || record.title,
+      name: companyName,
       ticker: submissions.tickers?.[0] || record.ticker,
       cik,
       exchange: submissions.exchanges?.[0] || COPY[locale].notDisclosed,
@@ -799,146 +936,153 @@ async function buildReport(record: TickerRecord, locale: ResearchLocale): Promis
       fiscalYearEnd: submissions.fiscalYearEnd || COPY[locale].notDisclosed,
       filingStatus: submissions.entityType || submissions.category || COPY[locale].reportingIssuer,
     },
-    researchDate: today.toLocaleDateString("en-CA", { timeZone: "UTC" }),
-    cutoff: retrievedAt,
+    researchDate: RESEARCH_DATE,
+    cutoff: companyDataRetrievedAt,
+    evidenceCutoff: sectorOutlook.evidenceCutoff,
+    sectorLastRefreshedAt: sectorOutlook.lastRefreshedAt,
+    companyDataRetrievedAt,
     currency,
     latestAnnual,
     latestInterim,
     periods,
     dashboard: narrative.dashboard,
+    sectorPack: {
+      id: pack.id,
+      sectorLabel: pack.sectorLabel[locale],
+      subindustryLabel: pack.subindustryLabel[locale],
+      researchQuestions: pack.researchQuestions.map((item) => item[locale]),
+      reportGuidance: pack.reportGuidance.map((item) => item[locale]),
+      valuationMethod: effectiveValuation.method[locale],
+    },
+    sectorOutlook: displayedOutlook,
+    driverExposure: buildDriverExposure(companyName, pack, sectorOutlook, locale),
+    sectorKpis: buildSectorKpis(pack, latest, currency, locale),
     overview:
       locale === "zh"
-        ? `${submissions.name || record.title} 在 SEC 的行业分类为 ${submissions.sicDescription || COPY.zh.notDisclosed}（SIC ${submissions.sic || COPY.zh.notDisclosed}）。本报告以该发行人的申报身份、财政年度和标准化 XBRL 为基础；详细商业模式仍需结合最新年报业务与分部附注。`
-        : `${submissions.name || record.title} is classified by the SEC in ${submissions.sicDescription || COPY.en.notDisclosed} (SIC ${submissions.sic || COPY.en.notDisclosed}). This report is based on the issuer's filing status, fiscal year, and standardized XBRL; the detailed business model should be verified against the business and segment notes in the latest annual filing.`,
+        ? `${companyName} 被纳入 ${pack.sectorLabel.zh} / ${pack.subindustryLabel.zh} 分析师包。SEC 分类为 ${submissions.sicDescription || COPY.zh.notDisclosed}（SIC ${submissions.sic || COPY.zh.notDisclosed}）。结论同时使用标准化申报事实、显式计算和 2025 年以来的近期行业证据。`
+        : `${companyName} is analyzed with the ${pack.sectorLabel.en} / ${pack.subindustryLabel.en} analyst pack. Its SEC classification is ${submissions.sicDescription || COPY.en.notDisclosed} (SIC ${submissions.sic || COPY.en.notDisclosed}). Conclusions combine normalized filing facts, visible calculations, and recent sector evidence published since 2025.`,
     segmentAnalysis:
       locale === "zh"
-        ? "标准化 Company Facts 无法稳定保留所有分部维度和发行人自定义 KPI。本 MVP 不猜测分部数值；请通过最新年报链接复核分部收入、利润、资本开支及定义变化。"
-        : "Standardized Company Facts does not consistently preserve every segment dimension or issuer-defined KPI. This MVP does not infer segment values; use the latest annual-filing link to verify segment revenue, profit, capital expenditure, and definition changes.",
+        ? `标准化 Company Facts 不能稳定保留发行人自定义分部和经营 KPI，因此系统不推测缺失值。${pack.reportGuidance.map((item) => item.zh).join(" ")}`
+        : `Standardized Company Facts does not consistently preserve issuer-defined segments and operating KPIs, so missing values are not inferred. ${pack.reportGuidance.map((item) => item.en).join(" ")}`,
     earningsQuality: narrative.earningsQuality,
     thesis: narrative.thesis,
-    catalysts:
-      locale === "zh"
-        ? [
-            latestInterim
-              ? {
-                  timing: latestInterim.filed,
-                  event: `${latestInterim.form} 已提交`,
-                  investorRelevance: "检查最新经营变化、流动性、指引和一次性项目。",
-                }
-              : {
-                  timing: COPY.zh.notDisclosed,
-                  event: "下一次中期更新",
-                  investorRelevance: "SEC 标准化数据未提供可靠的下一次业绩发布日期。",
-                },
-            latestAnnual
-              ? {
-                  timing: latestAnnual.filed,
-                  event: `${latestAnnual.form} 年报基线`,
-                  investorRelevance: "用于复核业务分部、风险因素、资本配置和会计政策。",
-                }
-              : {
-                  timing: COPY.zh.notDisclosed,
-                  event: "年度报告",
-                  investorRelevance: "最新年度申报链接不可用。",
-                },
-            {
-              timing: "持续监测",
-              event: "现金转化和资产负债表",
-              investorRelevance: `最新现金流代理 ${compactMoney(latest?.freeCashFlowProxy ?? null, currency, locale)}；重点观察下一期经营现金流、资本开支和债务。`,
-            },
-          ]
-        : [
-            latestInterim
-              ? {
-                  timing: latestInterim.filed,
-                  event: `${latestInterim.form} filed`,
-                  investorRelevance: "Review the latest operating changes, liquidity, guidance, and one-off items.",
-                }
-              : {
-                  timing: COPY.en.notDisclosed,
-                  event: "Next interim update",
-                  investorRelevance: "Standardized SEC data does not provide a reliable date for the next results release.",
-                },
-            latestAnnual
-              ? {
-                  timing: latestAnnual.filed,
-                  event: `${latestAnnual.form} annual baseline`,
-                  investorRelevance: "Use it to verify business segments, risk factors, capital allocation, and accounting policies.",
-                }
-              : {
-                  timing: COPY.en.notDisclosed,
-                  event: "Annual report",
-                  investorRelevance: "The latest annual-filing link is unavailable.",
-                },
-            {
-              timing: "Ongoing",
-              event: "Cash conversion and balance sheet",
-              investorRelevance: `The latest cash-flow proxy was ${compactMoney(latest?.freeCashFlowProxy ?? null, currency, locale)}; monitor operating cash flow, capital expenditure, and debt in the next period.`,
-            },
-          ],
+    investmentDebates: selection.options.dueDiligence
+      ? buildDebates(companyName, pack, sectorOutlook, locale)
+      : [],
+    filingWatchlist: [
+      ...(latestAnnual
+        ? [{
+            timing: latestAnnual.filed,
+            event: `${latestAnnual.form} · ${latestAnnual.reportDate}`,
+            investorRelevance:
+              locale === "zh"
+                ? "申报监测项：复核分部、会计政策、风险与资本配置；申报日期本身不是催化剂。"
+                : "Filing watch item: reconcile segments, accounting policy, risks, and capital allocation; the filing date itself is not a catalyst.",
+          }]
+        : []),
+      ...(latestInterim
+        ? [{
+            timing: latestInterim.filed,
+            event: `${latestInterim.form} · ${latestInterim.reportDate}`,
+            investorRelevance:
+              locale === "zh"
+                ? "申报监测项：检查经营、流动性与指引变化；申报日期本身不是催化剂。"
+                : "Filing watch item: review operating, liquidity, and guidance changes; the filing date itself is not a catalyst.",
+          }]
+        : []),
+    ],
+    catalysts: {
+      operating: catalystPoints(pack.catalysts.operating, locale),
+      financial: catalystPoints(pack.catalysts.financial, locale),
+      regulatory: catalystPoints(pack.catalysts.regulatory, locale),
+    },
     risks: narrative.risks,
     scenarios,
+    peerComparison,
     valuationAssessment:
-      locale === "zh"
-        ? "该自动化版本没有使用未获许可或未注明日期的实时股价，因此不输出目标价。情景表仅以标准化现金流代理和显式倍数生成模型隐含企业价值，用于敏感性分析，而非投资建议。"
-        : "This automated version does not use unlicensed or undated real-time share prices, so it does not provide a price target. The scenario table applies explicit multiples to a standardized cash-flow proxy to produce model-implied enterprise values for sensitivity analysis, not investment advice.",
-    cashFlowProxyFormula,
-    valuationFormula:
-      locale === "zh"
-        ? `模型隐含企业价值 = 情景现金流代理 × 假设 EV/现金流倍数；${cashFlowProxyFormula}。`
-        : `Model-implied enterprise value = scenario cash-flow proxy × assumed EV/cash-flow multiple; ${cashFlowProxyFormula}.`,
+      !selection.options.valuation
+        ? locale === "zh" ? "本次未选择估值模块。" : "Valuation was not selected for this run."
+        : locale === "zh"
+          ? `采用${effectiveValuation.method.zh}，不使用未注明日期的实时股价，不输出评级或目标价。${useValuationFallback ? "由于现金资本开支不可取得，经营现金流仅作为估值指标，未被表述为 FCF。" : ""}倍数为分析假设，企业价值用于敏感性而非价格预测。`
+          : `Uses ${effectiveValuation.method.en} without an undated real-time share price, rating, or price target. ${useValuationFallback ? "Because cash capex is unavailable, operating cash flow is used only as the valuation metric and is not presented as FCF. " : ""}Multiples are analyst assumptions and enterprise values are sensitivities, not forecasts.`,
+    cashFlowProxyFormula:
+      latest.cashCapex === null || latest.operatingCashFlow === null
+        ? COPY[locale].unableFcf
+        : strictFcfFormula,
+    valuationFormula,
+    methodology: getSectorMethods(selection.subindustry).map((method) => ({
+      name: method.name[locale],
+      purpose: method.purpose[locale],
+      steps: method.steps.map((step) => step[locale]),
+    })),
     sources: [
       {
         title: locale === "zh" ? "SEC 公司与交易代码映射" : "SEC company and ticker mapping",
         url: "https://www.sec.gov/files/company_tickers.json",
-        retrievedAt,
+        retrievedAt: companyDataRetrievedAt,
+        publisher: "U.S. Securities and Exchange Commission",
       },
       {
         title: locale === "zh" ? "SEC 发行人申报索引" : "SEC issuer submissions index",
         url: sourceBase,
-        retrievedAt,
+        retrievedAt: companyDataRetrievedAt,
+        publisher: "U.S. Securities and Exchange Commission",
       },
       {
-        title: locale === "zh" ? "SEC 申报层级 Company Facts" : "SEC filing-level Company Facts",
+        title: locale === "zh" ? "SEC Company Facts" : "SEC Company Facts",
         url: factsUrl,
-        retrievedAt,
+        retrievedAt: companyDataRetrievedAt,
+        publisher: "U.S. Securities and Exchange Commission",
       },
       ...(latestAnnual
-        ? [
-            {
-              title:
-                locale === "zh"
-                  ? `${latestAnnual.form} 年度申报`
-                  : `${latestAnnual.form} annual filing`,
-              url: latestAnnual.url,
-              retrievedAt,
-            },
-          ]
+        ? [{
+            title: `${latestAnnual.form} ${locale === "zh" ? "年度申报" : "annual filing"}`,
+            url: latestAnnual.url,
+            retrievedAt: companyDataRetrievedAt,
+            publisher: companyName,
+            publicationDate: latestAnnual.filed,
+            topic: "Issuer filing",
+          }]
         : []),
+      ...evidenceSources.map((source) => ({
+        title: source.title,
+        url: source.url,
+        retrievedAt: companyDataRetrievedAt,
+        publisher: source.publisher,
+        publicationDate: source.publicationDate,
+        topic: source.topic,
+      })),
     ],
-    limitations:
+    limitations: [
+      ...(sectorOutlook.insufficientEvidence
+        ? ["Insufficient recent sector research available for 2025–2026."]
+        : []),
       locale === "zh"
-        ? [
-            "MVP 目前覆盖能够在 SEC Company Facts 中取得标准化年度 XBRL 的发行人；非 SEC 发行人或缺乏标准化历史的公司可能无法生成。",
-            "分部、运营 KPI、客户集中度、订单、管理层指引和风险因素需要阅读最新年报正文；系统不会填造缺失值。",
-            "所有情景均为分析师假设，不是公司指引、概率预测、评级或目标价。",
-            "公司名称解析基于 SEC 公司与交易代码映射；重名公司可能需要输入交易代码。",
-            "数据按检索时点锁定，并优先使用最新申报或修订后的标准化事实。",
-          ]
-        : [
-            "The MVP currently covers issuers with standardized annual XBRL available in SEC Company Facts; non-SEC issuers or companies without standardized history may not generate a report.",
-            "Segments, operating KPIs, customer concentration, orders, management guidance, and risk factors require review of the latest annual filing; the system does not fabricate missing values.",
-            "All scenarios are analyst assumptions, not company guidance, probability forecasts, ratings, or price targets.",
-            "Company-name resolution uses the SEC company and ticker mapping; similarly named companies may require a ticker.",
-            "Data is locked to the retrieval timestamp, with priority given to the latest filed or amended standardized facts.",
-          ],
+        ? "标准化 SEC XBRL 不足以稳定提取全部分部、产量、实现价格、终端市场、客户集中度、市场份额和发行人自定义 KPI；缺失值保持为未披露。"
+        : "Standardized SEC XBRL does not consistently expose every segment, production, realization, end-market, customer-concentration, market-share, or issuer-defined KPI; missing values remain not disclosed.",
+      latest.cashCapex === null || latest.operatingCashFlow === null
+        ? COPY[locale].unableFcf
+        : locale === "zh"
+          ? "FCF 严格按经营现金流减现金资本开支计算，可能不同于发行人自定义口径。"
+          : "FCF is calculated strictly as operating cash flow less cash capital expenditure and may differ from the issuer's definition.",
+      locale === "zh"
+        ? "同业比较使用各公司最近可取得的标准化年度事实，财政年度、业务组合和会计口径可能不同。"
+        : "Peer comparison uses each company's latest available standardized annual facts; fiscal years, business mixes, and accounting definitions may differ.",
+      locale === "zh"
+        ? "行业证据仅包含发布日期在 2025-01-01 至研究日之间、可公开访问且通过去重和相关性筛选的来源。"
+        : "Sector evidence includes only accessible, deduplicated, relevant sources published from 2025-01-01 through the research date.",
+      locale === "zh"
+        ? "未使用实时股价，因此不提供评级、目标价或股权价值。"
+        : "No real-time share price is used, so the report does not provide a rating, price target, or equity value.",
+    ],
   };
 }
 
 export async function POST(request: Request) {
   let locale: ResearchLocale = "zh";
   try {
-    const payload = (await request.json()) as { company?: string; locale?: ResearchLocale };
+    const payload = (await request.json()) as ResearchPayload;
     locale = payload.locale === "en" ? "en" : "zh";
     const company = payload.company?.trim() ?? "";
     if (company.length < 2 || company.length > 100) {
@@ -952,7 +1096,18 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
-
+    const selection = selectionFromPayload(payload);
+    if (!selection) {
+      return Response.json(
+        {
+          error:
+            locale === "zh"
+              ? "请选择当前支持的市场、行业和子行业组合。"
+              : "Select a currently supported market, sector, and subindustry combination.",
+        },
+        { status: 400 },
+      );
+    }
     const record = await resolveCompany(company);
     if (!record) {
       return Response.json(
@@ -965,20 +1120,38 @@ export async function POST(request: Request) {
         { status: 404 },
       );
     }
-
-    return Response.json({ report: await buildReport(record, locale) });
+    return Response.json({ report: await buildReport(record, selection, locale) });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected error";
+    if (message === "SECTOR_MISMATCH") {
+      return Response.json(
+        {
+          error:
+            locale === "zh"
+              ? "所选行业与该发行人的 SEC 行业分类不匹配。请核对行业和子行业。"
+              : "The selected sector does not match the issuer's SEC industry classification. Check the sector and subindustry.",
+        },
+        { status: 422 },
+      );
+    }
+    if (message === "INSUFFICIENT_XBRL") {
+      return Response.json(
+        {
+          error:
+            locale === "zh"
+              ? "该公司缺少足够的标准化年度申报数据。请尝试另一家公司或交易代码。"
+              : "This company does not have enough standardized annual filing data. Try another company or ticker.",
+        },
+        { status: 422 },
+      );
+    }
+    const statusMatch = message.match(/SEC_HTTP_(\d+)/);
     return Response.json(
       {
         error:
-          message.includes("Insufficient")
-            ? locale === "zh"
-              ? "该公司缺少足够的标准化年度申报数据。请尝试另一家公司或交易代码。"
-              : "This company does not have enough standardized annual filing data. Try another company or ticker."
-            : locale === "zh"
-              ? "公开数据暂时无法获取，请稍后重试。"
-              : "Public data is temporarily unavailable. Please try again later.",
+          locale === "zh"
+            ? `SEC 公开数据服务暂时不可用${statusMatch ? `（HTTP ${statusMatch[1]}）` : ""}。已保留行业选择，请稍后重试。`
+            : `The SEC public-data service is temporarily unavailable${statusMatch ? ` (HTTP ${statusMatch[1]})` : ""}. Your sector selection is preserved; please try again later.`,
       },
       { status: 502 },
     );
