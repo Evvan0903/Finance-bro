@@ -32,6 +32,12 @@ const energyPack: SectorPack = {
       availability: "notStandardized",
     },
     {
+      id: "segment-earnings",
+      label: { zh: "分部收益", en: "Segment earnings" },
+      description: { zh: "管理层分部调整后收益及合并核对。", en: "Management segment adjusted earnings and consolidated reconciliation." },
+      availability: "notStandardized",
+    },
+    {
       id: "cash-capex",
       label: { zh: "现金资本开支", en: "Cash capex" },
       description: { zh: "标准化申报中的现金购置固定资产。", en: "Cash purchases of property and equipment in standardized filings." },
@@ -50,9 +56,15 @@ const energyPack: SectorPack = {
       availability: "netDebt",
     },
     {
-      id: "dividends-buybacks",
-      label: { zh: "股息与回购", en: "Dividends and buybacks" },
-      description: { zh: "现金分配、覆盖倍数与顺周期性。", en: "Cash distributions, coverage, and cyclicality." },
+      id: "dividends",
+      label: { zh: "现金股息", en: "Dividends" },
+      description: { zh: "向母公司股东支付的现金股息。", en: "Cash dividends paid to parent-company shareholders." },
+      availability: "notStandardized",
+    },
+    {
+      id: "share-buybacks",
+      label: { zh: "股票回购", en: "Share buybacks" },
+      description: { zh: "用于收购或赎回发行人股份的现金。", en: "Cash used to acquire or redeem the issuer's shares." },
       availability: "notStandardized",
     },
     {

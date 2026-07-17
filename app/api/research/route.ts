@@ -2,6 +2,14 @@ import { MemoryCache } from "../../lib/cache";
 import { getSectorMethods } from "../../lib/sector-methodology";
 import { getSectorPack } from "../../lib/sector-packs";
 import { getSectorOutlook, sectorEvidenceSources } from "../../lib/sector-retrieval";
+import {
+  runShellMetricValidation,
+  SHELL_2025_20F_URL,
+} from "../../lib/shell-metric-validation";
+import type {
+  CompanyFactsPayload,
+  MetricLocatorAudit,
+} from "../../lib/metric-locator-types";
 import type {
   ResearchMarket,
   ResearchOptions,
@@ -224,6 +232,18 @@ async function secFetch<T>(url: string): Promise<T> {
   }) as Promise<T>;
 }
 
+async function secTextFetch(url: string): Promise<string> {
+  return secCache.getOrLoad(`text:${url}`, async () => {
+    const response = await fetch(url, {
+      headers: SEC_HEADERS,
+      cache: "no-store",
+      signal: AbortSignal.timeout(20_000),
+    });
+    if (!response.ok) throw new Error(`SEC_HTTP_${response.status}`);
+    return response.text();
+  }) as Promise<string>;
+}
+
 async function getTickerRecords() {
   return tickerCache.getOrLoad("sec-tickers", async () => {
     const payload = await secFetch<Record<string, TickerRecord>>(
@@ -363,16 +383,25 @@ function cagr(periods: FinancialPeriod[]) {
 }
 
 function compactMoney(value: number | null, currency: string, locale: ResearchLocale) {
-  if (value === null) return COPY[locale].dataUnavailable;
+  if (value === null) return "—";
   const absolute = Math.abs(value);
   const scale = absolute >= 1e9 ? 1e9 : absolute >= 1e6 ? 1e6 : 1;
   const suffix = scale === 1e9 ? "bn" : scale === 1e6 ? "m" : "";
   const amount = value / scale;
-  return `${currency} ${amount.toFixed(Math.abs(amount) >= 100 ? 0 : 1)}${suffix}`;
+  return `${currency} ${new Intl.NumberFormat(locale === "zh" ? "zh-CN" : "en-US", {
+    minimumFractionDigits: Math.abs(amount) >= 100 ? 0 : 1,
+    maximumFractionDigits: Math.abs(amount) >= 100 ? 0 : 1,
+  }).format(amount)}${suffix}`;
 }
 
 function percentage(value: number | null, locale: ResearchLocale) {
-  return value === null ? COPY[locale].dataUnavailable : `${(value * 100).toFixed(1)}%`;
+  return value === null
+    ? "—"
+    : new Intl.NumberFormat(locale === "zh" ? "zh-CN" : "en-US", {
+        style: "percent",
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      }).format(value);
 }
 
 function recentFilings(submissions: Submissions) {
@@ -481,6 +510,47 @@ function normalizedPeriods(facts: CompanyFacts) {
   return { periods, currency: series.revenue.unit || series.netIncome.unit || "USD" };
 }
 
+async function shellMetricAudit(
+  record: TickerRecord,
+  facts: CompanyFacts,
+): Promise<MetricLocatorAudit | null> {
+  if (record.ticker !== "SHEL") return null;
+  try {
+    const filingHtml = await secTextFetch(SHELL_2025_20F_URL);
+    return runShellMetricValidation({
+      companyFacts: facts as CompanyFactsPayload,
+      filingHtml,
+      verifiedSnapshot: false,
+    });
+  } catch {
+    return runShellMetricValidation({
+      companyFacts: facts as CompanyFactsPayload,
+      verifiedSnapshot: true,
+    });
+  }
+}
+
+function applyLocatedMetrics(
+  periods: FinancialPeriod[],
+  metricAudit: MetricLocatorAudit | null,
+) {
+  if (!metricAudit) return;
+  const period = periods.find(
+    (candidate) => candidate.periodEnd === metricAudit.reportingPeriod,
+  );
+  if (!period) return;
+  const values = new Map(
+    metricAudit.results
+      .filter((result) => result.found && result.selectedValue !== null)
+      .map((result) => [result.metricId, result.selectedValue!]),
+  );
+  period.cashCapex = values.get("cash-capex") ?? period.cashCapex;
+  period.freeCashFlowProxy = values.get("fcf") ?? period.freeCashFlowProxy;
+  period.netDebt = values.get("net-debt") ?? period.netDebt;
+  period.freeCashFlowMargin = safeDivide(period.freeCashFlowProxy, period.revenue);
+  period.cashConversion = safeDivide(period.freeCashFlowProxy, period.netIncome);
+}
+
 function buildScenarios(
   periods: FinancialPeriod[],
   pack: SectorPack,
@@ -579,12 +649,31 @@ function kpiValue(
       return compactMoney(latest.cashCapex, currency, locale);
     case "freeCashFlow":
       return latest.cashCapex === null || latest.operatingCashFlow === null
-        ? COPY[locale].unableFcf
+        ? "—"
         : compactMoney(latest.freeCashFlowProxy, currency, locale);
     case "netDebt":
       return compactMoney(latest.netDebt, currency, locale);
     default:
-      return COPY[locale].notDisclosed;
+      return "—";
+  }
+}
+
+function kpiHasValue(definition: SectorKpiDefinition, latest: FinancialPeriod) {
+  switch (definition.availability) {
+    case "revenue":
+      return latest.revenue !== null;
+    case "grossMargin":
+      return latest.grossMargin !== null;
+    case "inventory":
+      return latest.inventory !== null;
+    case "cashCapex":
+      return latest.cashCapex !== null;
+    case "freeCashFlow":
+      return latest.freeCashFlowProxy !== null;
+    case "netDebt":
+      return latest.netDebt !== null;
+    default:
+      return false;
   }
 }
 
@@ -593,14 +682,49 @@ function buildSectorKpis(
   latest: FinancialPeriod,
   currency: string,
   locale: ResearchLocale,
+  metricAudit: MetricLocatorAudit | null,
 ): SectorKpiResult[] {
-  return pack.coreKpis.map((definition) => {
+  const located = new Map(
+    metricAudit?.results.map((result) => [result.metricId, result]) ?? [],
+  );
+  return pack.coreKpis.map((definition): SectorKpiResult => {
+    const locatorResult = located.get(definition.id);
+    if (locatorResult) {
+      return {
+        id: definition.id,
+        label: definition.label[locale],
+        value: locatorResult.displayValue ?? "—",
+        usable: locatorResult.found,
+        status: locatorResult.status,
+        period: locatorResult.period,
+        definition: definition.description[locale],
+        classification:
+          locatorResult.status === "Derived" ? "Derived calculation" : "Reported fact",
+        sourceNote: locatorResult.found
+          ? `${locatorResult.sourceDocument} · ${locatorResult.filingDate} · ${locatorResult.section}${locatorResult.table ? ` / ${locatorResult.table}` : ""} / ${locatorResult.row} · ${(locatorResult.confidence * 100).toFixed(0)}% confidence`
+          : locatorResult.reason ?? locatorResult.status,
+        sourceUrl: locatorResult.sourceUrl,
+        confidence: locatorResult.confidence,
+        extractionMethod: locatorResult.extractionMethod,
+        whyItMatters:
+          locale === "zh"
+            ? `该指标用于回答：${pack.researchQuestions[
+                pack.coreKpis.indexOf(definition) % pack.researchQuestions.length
+              ].zh}`
+            : `This metric helps answer: ${pack.researchQuestions[
+                pack.coreKpis.indexOf(definition) % pack.researchQuestions.length
+              ].en}`,
+      } satisfies SectorKpiResult;
+    }
     const derived = ["grossMargin", "freeCashFlow", "netDebt"].includes(definition.availability);
-    const available = definition.availability !== "notStandardized";
+    const available = kpiHasValue(definition, latest);
     return {
       id: definition.id,
       label: definition.label[locale],
       value: kpiValue(definition, latest, currency, locale),
+      usable: available,
+      status: available ? (derived ? "Derived" : "Reported") : "Not yet extracted",
+      period: available ? latest.periodEnd : null,
       definition: definition.description[locale],
       classification: derived ? "Derived calculation" : "Reported fact",
       sourceNote: available
@@ -610,6 +734,9 @@ function buildSectorKpis(
         : locale === "zh"
           ? "标准化 SEC Company Facts 未披露；需回到最新年报分部与业务附注。"
           : "Not disclosed in standardized SEC Company Facts; review the latest annual filing's segment and business notes.",
+      sourceUrl: null,
+      confidence: available ? 0.9 : 0,
+      extractionMethod: available ? "Deterministic SEC Company Facts normalization" : null,
       whyItMatters:
         locale === "zh"
           ? `该指标用于回答：${pack.researchQuestions[
@@ -619,7 +746,7 @@ function buildSectorKpis(
               pack.coreKpis.indexOf(definition) % pack.researchQuestions.length
             ].en}`,
     };
-  });
+  }).filter((result) => result.usable);
 }
 
 function matchingClaim(
@@ -704,7 +831,7 @@ function buildNarrative(
         };
   const fcfValue =
     latest.freeCashFlowProxy === null
-      ? COPY[locale].unableFcf
+      ? "—"
       : compactMoney(latest.freeCashFlowProxy, currency, locale);
   const inlineFcfValue = fcfValue.replace(/[。.]+$/, "");
   const dashboard: DashboardMetric[] = [
@@ -756,6 +883,13 @@ function buildNarrative(
       tone: liabilityRatio === null ? "neutral" : liabilityRatio <= 0.65 ? "positive" : "watch",
     },
   ];
+  const visibleDashboard = dashboard.filter((_, index) => [
+    latest.revenue !== null,
+    latest.netMargin !== null,
+    latest.freeCashFlowProxy !== null,
+    pack.id === "semiconductors" ? latest.grossMargin !== null : latest.netDebt !== null,
+    liabilityRatio !== null,
+  ][index]);
 
   const earningsQuality =
     locale === "zh"
@@ -806,7 +940,7 @@ function buildNarrative(
         ? `若“${pack.researchQuestions[index % pack.researchQuestions.length].zh}”连续两个报告期无法得到积极验证，则该论点失效。`
         : `The thesis breaks if "${pack.researchQuestions[index % pack.researchQuestions.length].en}" cannot be positively validated for two reporting periods.`,
   }));
-  return { dashboard, earningsQuality, thesis, risks };
+  return { dashboard: visibleDashboard, earningsQuality, thesis, risks };
 }
 
 function buildDebates(
@@ -918,6 +1052,8 @@ async function buildReport(
 
   const { periods, currency } = normalizedPeriods(facts);
   if (!periods.length) throw new Error("INSUFFICIENT_XBRL");
+  const metricAudit = await shellMetricAudit(record, facts);
+  applyLocatedMetrics(periods, metricAudit);
   const latest = periods.at(-1)!;
   const companyName = submissions.name || facts.entityName || record.title;
   const today = new Date();
@@ -945,6 +1081,17 @@ async function buildReport(
   const displayedOutlook = selection.options.sectorOutlook
     ? sectorOutlook
     : { ...sectorOutlook, claims: [] };
+  const criticalMetricIds = metricAudit
+    ? ["cash-capex", "fcf", "net-debt"].filter(
+        (id) => !metricAudit.results.find((result) => result.metricId === id)?.found,
+      )
+    : [
+        ...(latest.cashCapex === null ? ["cash-capex"] : []),
+        ...(latest.freeCashFlowProxy === null ? ["fcf"] : []),
+        ...(pack.valuation.metric === "freeCashFlow" && latest.netDebt === null
+          ? ["net-debt"]
+          : []),
+      ];
 
   return {
     locale,
@@ -979,15 +1126,41 @@ async function buildReport(
     },
     sectorOutlook: displayedOutlook,
     driverExposure: buildDriverExposure(companyName, pack, sectorOutlook, locale),
-    sectorKpis: buildSectorKpis(pack, latest, currency, locale),
+    sectorKpis: buildSectorKpis(pack, latest, currency, locale, metricAudit),
+    dataCoverage: {
+      limited: criticalMetricIds.length > 0,
+      criticalMetricIds,
+      searchedSources: metricAudit?.searchedSources ?? ["standard-sec-xbrl"],
+      metrics: metricAudit?.results ?? [],
+      notes: [
+        ...(metricAudit
+          ? [
+              locale === "zh"
+                ? `Shell FY2025 指标定位器已提取 ${metricAudit.extractedCount}/${metricAudit.requestedCount} 项。`
+                : `The Shell FY2025 locator extracted ${metricAudit.extractedCount}/${metricAudit.requestedCount} requested metrics.`,
+            ]
+          : []),
+        ...(criticalMetricIds.length
+          ? [
+              locale === "zh"
+                ? `影响 FCF 或估值的关键输入尚未可用：${criticalMetricIds.join(", ")}。`
+                : `Critical FCF or valuation inputs remain unavailable: ${criticalMetricIds.join(", ")}.`,
+            ]
+          : []),
+      ],
+    },
     overview:
       locale === "zh"
         ? `${companyName} 被纳入 ${pack.sectorLabel.zh} / ${pack.subindustryLabel.zh} 分析师包。SEC 分类为 ${submissions.sicDescription || COPY.zh.notDisclosed}（SIC ${submissions.sic || COPY.zh.notDisclosed}）。结论同时使用标准化申报事实、显式计算和 2025 年以来的近期行业证据。`
         : `${companyName} is analyzed with the ${pack.sectorLabel.en} / ${pack.subindustryLabel.en} analyst pack. Its SEC classification is ${submissions.sicDescription || COPY.en.notDisclosed} (SIC ${submissions.sic || COPY.en.notDisclosed}). Conclusions combine normalized filing facts, visible calculations, and recent sector evidence published since 2025.`,
     segmentAnalysis:
-      locale === "zh"
-        ? `标准化 Company Facts 不能稳定保留发行人自定义分部和经营 KPI，因此系统不推测缺失值。${pack.reportGuidance.map((item) => item.zh).join(" ")}`
-        : `Standardized Company Facts does not consistently preserve issuer-defined segments and operating KPIs, so missing values are not inferred. ${pack.reportGuidance.map((item) => item.en).join(" ")}`,
+      metricAudit
+        ? locale === "zh"
+          ? `指标定位器依次检索标准 SEC XBRL、自定义 XBRL、申报表格与正文，并保留口径验证和拒绝记录；本期提取 ${metricAudit.extractedCount}/${metricAudit.requestedCount} 项。${pack.reportGuidance.map((item) => item.zh).join(" ")}`
+          : `The metric locator searches standard SEC XBRL, custom XBRL, filing tables, and filing text in order while retaining validation and rejection records; it extracted ${metricAudit.extractedCount}/${metricAudit.requestedCount} items for this period. ${pack.reportGuidance.map((item) => item.en).join(" ")}`
+        : locale === "zh"
+          ? `标准化 Company Facts 不能稳定保留发行人自定义分部和经营 KPI，因此系统不推测缺失值。${pack.reportGuidance.map((item) => item.zh).join(" ")}`
+          : `Standardized Company Facts does not consistently preserve issuer-defined segments and operating KPIs, so missing values are not inferred. ${pack.reportGuidance.map((item) => item.en).join(" ")}`,
     earningsQuality: narrative.earningsQuality,
     thesis: narrative.thesis,
     investmentDebates: selection.options.dueDiligence

@@ -12,6 +12,11 @@ import type {
   SectorOutlook,
   SupportedSubindustry,
 } from "./sector-types";
+import type {
+  MetricLocatorResult,
+  MetricSourceTier,
+  MetricStatus,
+} from "./metric-locator-types";
 
 export type FilingSource = {
   title: string;
@@ -88,10 +93,24 @@ export type SectorKpiResult = {
   id: string;
   label: string;
   value: string;
+  usable: boolean;
+  status: MetricStatus;
+  period: string | null;
   definition: string;
   classification: EvidenceKind;
   sourceNote: string;
+  sourceUrl: string | null;
+  confidence: number;
+  extractionMethod: string | null;
   whyItMatters: string;
+};
+
+export type DataCoverage = {
+  limited: boolean;
+  criticalMetricIds: string[];
+  searchedSources: MetricSourceTier[];
+  metrics: MetricLocatorResult[];
+  notes: string[];
 };
 
 export type SectorDriverExposure = {
@@ -170,6 +189,7 @@ export type ResearchReport = {
   sectorOutlook: SectorOutlook;
   driverExposure: SectorDriverExposure[];
   sectorKpis: SectorKpiResult[];
+  dataCoverage: DataCoverage;
   overview: string;
   segmentAnalysis: string;
   earningsQuality: string[];

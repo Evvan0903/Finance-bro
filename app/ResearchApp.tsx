@@ -146,6 +146,15 @@ const COPY = {
     sectorKpis: "行业 KPI",
     kpiDefinition: "定义",
     sourceBoundary: "来源 / 数据边界",
+    limitedCoverage: "数据覆盖有限",
+    dataCoverage: "数据覆盖",
+    coverageSummary: "指标提取与拒绝候选的审计记录",
+    sourceOrder: "检索顺序",
+    extractionMethod: "提取方法",
+    confidence: "置信度",
+    rejectedCandidates: "拒绝候选",
+    formula: "公式",
+    unresolvedReason: "未解决原因",
     researchQuestions: "分析师问题清单",
     cashCapital: "现金流与资本配置",
     cash: "现金",
@@ -276,6 +285,15 @@ const COPY = {
     sectorKpis: "Sector KPIs",
     kpiDefinition: "Definition",
     sourceBoundary: "Source / data boundary",
+    limitedCoverage: "Limited data coverage",
+    dataCoverage: "Data Coverage",
+    coverageSummary: "Audit trail for extracted metrics and rejected candidates",
+    sourceOrder: "Search order",
+    extractionMethod: "Extraction method",
+    confidence: "Confidence",
+    rejectedCandidates: "Rejected candidates",
+    formula: "Formula",
+    unresolvedReason: "Unresolved reason",
     researchQuestions: "Analyst question set",
     cashCapital: "Cash flow and capital allocation",
     cash: "Cash",
@@ -329,7 +347,7 @@ const COPY = {
 } as const;
 
 function formatMoney(value: number | null, currency: string, locale: Locale) {
-  if (value === null || !Number.isFinite(value)) return COPY[locale].unavailable;
+  if (value === null || !Number.isFinite(value)) return "—";
   return `${currency} ${new Intl.NumberFormat(locale === "zh" ? "zh-CN" : "en-US", {
     notation: "compact",
     maximumFractionDigits: 1,
@@ -338,8 +356,12 @@ function formatMoney(value: number | null, currency: string, locale: Locale) {
 
 function formatPercent(value: number | null, locale: Locale) {
   return value === null || !Number.isFinite(value)
-    ? COPY[locale].unavailable
-    : `${(value * 100).toFixed(1)}%`;
+    ? "—"
+    : new Intl.NumberFormat(locale === "zh" ? "zh-CN" : "en-US", {
+        style: "percent",
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      }).format(value);
 }
 
 function shortYear(periodEnd: string) {
@@ -453,6 +475,14 @@ function reportToMarkdown(report: ResearchReport, locale: Locale) {
       (item) => `- **${item.label}: ${item.value}** — ${item.definition}\n  - ${item.sourceNote}\n  - ${copy.whyMatters}: ${item.whyItMatters}`,
     ),
     "",
+    `### ${copy.dataCoverage}`,
+    `- ${copy.sourceOrder}: ${report.dataCoverage.searchedSources.join(" → ")}`,
+    ...report.dataCoverage.notes.map((note) => `- ${note}`),
+    ...report.dataCoverage.metrics.map(
+      (metric) =>
+        `- **${metric.displayName[locale]} — ${metric.status}**${metric.displayValue ? ` · ${metric.displayValue} · ${metric.period}` : ""}\n  - ${metric.sourceDocument ?? metric.reason ?? "—"}${metric.extractionMethod ? `\n  - ${copy.extractionMethod}: ${metric.extractionMethod}` : ""}${metric.formula ? `\n  - ${copy.formula}: ${metric.formula}` : ""}`,
+    ),
+    "",
     `## 7. ${copy.cashCapital}`,
     ...report.earningsQuality.map((item) => `- ${item}`),
     "",
@@ -522,6 +552,79 @@ function CatalystColumn({
         </article>
       ))}
     </div>
+  );
+}
+
+function DataCoveragePanel({
+  report,
+  locale,
+}: {
+  report: ResearchReport;
+  locale: Locale;
+}) {
+  const copy = COPY[locale];
+  if (!report.dataCoverage.metrics.length && !report.dataCoverage.limited) return null;
+  return (
+    <details className="data-coverage">
+      <summary>
+        <span>{copy.dataCoverage}</span>
+        <small>
+          {report.dataCoverage.metrics.length
+            ? `${report.dataCoverage.metrics.filter((metric) => metric.found).length}/${report.dataCoverage.metrics.length}`
+            : copy.limitedCoverage}
+        </small>
+      </summary>
+      <p>{copy.coverageSummary}</p>
+      <p className="coverage-source-order">
+        <b>{copy.sourceOrder}:</b> {report.dataCoverage.searchedSources.join(" → ")}
+      </p>
+      {report.dataCoverage.notes.map((note) => <p key={note}>{note}</p>)}
+      <div className="coverage-list">
+        {report.dataCoverage.metrics.map((metric) => (
+          <article key={metric.metricId} className={metric.found ? "located" : "unresolved"}>
+            <header>
+              <div>
+                <h4>{metric.displayName[locale]}</h4>
+                <span>{metric.status}</span>
+              </div>
+              {metric.displayValue && <strong>{metric.displayValue}</strong>}
+            </header>
+            <dl>
+              {metric.period && <div><dt>{copy.period}</dt><dd>{metric.period}</dd></div>}
+              <div>
+                <dt>{copy.sourceBoundary}</dt>
+                <dd>
+                  {metric.sourceUrl
+                    ? <a href={metric.sourceUrl} target="_blank" rel="noreferrer">{metric.sourceDocument} ↗</a>
+                    : metric.sourceDocument ?? "—"}
+                  {metric.section ? ` · ${metric.section}` : ""}
+                  {metric.table ? ` / ${metric.table}` : ""}
+                  {metric.row ? ` / ${metric.row}` : ""}
+                </dd>
+              </div>
+              {metric.extractionMethod && (
+                <div><dt>{copy.extractionMethod}</dt><dd>{metric.extractionMethod}</dd></div>
+              )}
+              <div><dt>{copy.confidence}</dt><dd>{(metric.confidence * 100).toFixed(0)}%</dd></div>
+              {metric.formula && <div><dt>{copy.formula}</dt><dd>{metric.formula}</dd></div>}
+              {metric.reason && <div><dt>{copy.unresolvedReason}</dt><dd>{metric.reason}</dd></div>}
+            </dl>
+            {metric.rejectedCandidates.length > 0 && (
+              <details>
+                <summary>{copy.rejectedCandidates} · {metric.rejectedCandidates.length}</summary>
+                <ul>
+                  {metric.rejectedCandidates.map((candidate, index) => (
+                    <li key={`${candidate.rawLabel}-${candidate.value}-${index}`}>
+                      <b>{candidate.rawLabel}</b> · {candidate.rawValue} {candidate.unit} · {candidate.rejectionReasons.join("; ")}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </article>
+        ))}
+      </div>
+    </details>
   );
 }
 
@@ -833,7 +936,12 @@ export function ResearchApp() {
               </dl>
             </section>
             <section className="disclosure-banner">
-              <strong>{report.sectorPack.valuationMethod}</strong>
+              <div className="disclosure-title">
+                <strong>{report.sectorPack.valuationMethod}</strong>
+                {report.dataCoverage.limited && (
+                  <span className="coverage-chip">{copy.limitedCoverage}</span>
+                )}
+              </div>
               <p>{copy.footerDescriptor}</p>
               <div className="evidence-key">
                 {(Object.keys(EVIDENCE_LABELS[locale]) as EvidenceKind[]).map((key) => (
@@ -959,16 +1067,22 @@ export function ResearchApp() {
           <section className="report-section" data-pdf-block>
             <SectionHeading number="06" title={copy.sectorKpis} />
             <div className="kpi-grid">
-              {report.sectorKpis.map((item) => (
+              {report.sectorKpis.filter((item) => item.usable).map((item) => (
                 <article key={item.id}>
                   <div><h4>{item.label}</h4><EvidenceBadge kind={item.classification} locale={locale} /></div>
                   <strong>{item.value}</strong>
                   <p><b>{copy.kpiDefinition}:</b> {item.definition}</p>
-                  <p><b>{copy.sourceBoundary}:</b> {item.sourceNote}</p>
+                  <p>
+                    <b>{copy.sourceBoundary}:</b>{" "}
+                    {item.sourceUrl
+                      ? <a href={item.sourceUrl} target="_blank" rel="noreferrer">{item.sourceNote} ↗</a>
+                      : item.sourceNote}
+                  </p>
                   <p><b>{copy.whyMatters}:</b> {item.whyItMatters}</p>
                 </article>
               ))}
             </div>
+            <DataCoveragePanel report={report} locale={locale} />
             <details className="research-questions">
               <summary>{copy.researchQuestions}</summary>
               <ol>{report.sectorPack.researchQuestions.map((question) => <li key={question}>{question}</li>)}</ol>
@@ -979,12 +1093,16 @@ export function ResearchApp() {
             <SectionHeading number="07" title={copy.cashCapital} />
             <div className="balance-panel">
               <div className="balance-grid">
-                <div><span>{copy.cash}</span><strong>{formatMoney(latestPeriod.cash, report.currency, locale)}</strong></div>
-                <div><span>{copy.totalDebt}</span><strong>{formatMoney(latestPeriod.totalDebt, report.currency, locale)}</strong></div>
-                <div><span>{copy.netDebt}</span><strong>{formatMoney(latestPeriod.netDebt, report.currency, locale)}</strong></div>
-                <div><span>{copy.inventory}</span><strong>{formatMoney(latestPeriod.inventory, report.currency, locale)}</strong></div>
-                <div><span>{copy.cashCapex}</span><strong>{formatMoney(latestPeriod.cashCapex, report.currency, locale)}</strong></div>
-                <div><span>{copy.currentRatio}</span><strong>{latestPeriod.currentRatio === null ? copy.unavailable : `${latestPeriod.currentRatio.toFixed(2)}x`}</strong></div>
+                {[
+                  { label: copy.cash, value: latestPeriod.cash, formatted: formatMoney(latestPeriod.cash, report.currency, locale) },
+                  { label: copy.totalDebt, value: latestPeriod.totalDebt, formatted: formatMoney(latestPeriod.totalDebt, report.currency, locale) },
+                  { label: copy.netDebt, value: latestPeriod.netDebt, formatted: formatMoney(latestPeriod.netDebt, report.currency, locale) },
+                  { label: copy.inventory, value: latestPeriod.inventory, formatted: formatMoney(latestPeriod.inventory, report.currency, locale) },
+                  { label: copy.cashCapex, value: latestPeriod.cashCapex, formatted: formatMoney(latestPeriod.cashCapex, report.currency, locale) },
+                  { label: copy.currentRatio, value: latestPeriod.currentRatio, formatted: latestPeriod.currentRatio === null ? "—" : `${latestPeriod.currentRatio.toFixed(2)}x` },
+                ].filter((item) => item.value !== null).map((item) => (
+                  <div key={item.label}><span>{item.label}</span><strong>{item.formatted}</strong></div>
+                ))}
               </div>
               <p><EvidenceBadge kind="Derived calculation" locale={locale} /> {report.cashFlowProxyFormula}</p>
             </div>
@@ -1005,7 +1123,7 @@ export function ResearchApp() {
                       <tr key={peer.ticker}>
                         <th>{peer.ticker}<small>{peer.name}</small></th>
                         <td>{peer.rationale}</td>
-                        <td>{peer.periodEnd ?? copy.unavailable}</td>
+                        <td>{peer.periodEnd ?? "—"}</td>
                         <td>{formatPercent(peer.revenueGrowth, locale)}</td>
                         <td>{formatPercent(peer.netMargin, locale)}</td>
                         <td>{formatPercent(peer.freeCashFlowMargin, locale)}</td>

@@ -200,6 +200,107 @@ test("enforces strict FCF and sector-specific analyst packs", async () => {
   assert.match(retrieval, /full reports are never loaded/);
 });
 
+test("locates all 11 Shell metrics with ordered, auditable source selection", async () => {
+  const builtWorker = await worker();
+  const response = await builtWorker.fetch(
+    new Request("http://localhost/api/metric-locator", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ company: "SHEL", fixture: true }),
+    }),
+    environment,
+    context,
+  );
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  assert.equal(payload.sourceMode, "verified-snapshot");
+  assert.equal(payload.audit.extractedCount, 11);
+  assert.equal(payload.audit.requestedCount, 11);
+  assert.equal(payload.audit.extractionSuccessRate, 1);
+  assert.deepEqual(payload.unresolved, []);
+  assert.deepEqual(payload.audit.searchedSources, [
+    "standard-sec-xbrl",
+    "filing-custom-xbrl",
+    "filing-html-table",
+    "filing-text",
+    "earnings-release-exhibit",
+    "investor-presentation",
+  ]);
+
+  const results = Object.fromEntries(
+    payload.audit.results.map((result) => [result.metricId, result]),
+  );
+  assert.equal(results.production.displayValue, "2,800 kboe/d");
+  assert.equal(results["realized-prices"].row, "Europe — Shell subsidiaries — crude oil and natural gas liquids");
+  assert.equal(results.lng.displayValue, "72.9 million tonnes");
+  assert.equal(results["refining-margin"].displayValue, "USD 10.14/bbl");
+  assert.equal(results["segment-earnings"].sourceTier, "filing-custom-xbrl");
+  assert.equal(results["cash-capex"].displayValue, "USD 20.915bn");
+  assert.equal(results.fcf.status, "Derived");
+  assert.equal(results.fcf.selectedValue, 21_948_000_000);
+  assert.match(results.fcf.formula, /Operating cash flow - cash capital expenditure/);
+  assert.ok(
+    results.fcf.rejectedCandidates.some((candidate) =>
+      candidate.rejectionReasons.includes("Accounting-definition mismatch")),
+  );
+  assert.equal(results["net-debt"].displayValue, "USD 45.687bn");
+  assert.equal(results.dividends.sourceTier, "standard-sec-xbrl");
+  assert.equal(results["share-buybacks"].displayValue, "USD 13.879bn");
+  assert.equal(results["major-projects"].displayValue, "21 projects");
+});
+
+test("keeps metric definitions and non-disclosure controls explicit", async () => {
+  const [definitions, locator, types] = await Promise.all([
+    readFile(new URL("../app/lib/metric-definitions.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/metric-locator.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/metric-locator-types.ts", import.meta.url), "utf8"),
+  ]);
+  for (const field of [
+    "id:",
+    "displayName:",
+    "aliases:",
+    "acceptedUnits:",
+    "periodRule:",
+    "preferredSources",
+    "derivationFormula:",
+    "requiredInputs:",
+    "validationRules:",
+  ]) assert.match(definitions, new RegExp(field));
+  for (const status of [
+    "Reported",
+    "Derived",
+    "Not yet extracted",
+    "Not disclosed by issuer",
+    "Unable to calculate",
+    "Definition mismatch",
+    "Extraction failed",
+  ]) assert.match(types, new RegExp(status));
+  assert.match(locator, /METRIC_SOURCE_ORDER\.every/);
+  assert.match(locator, /allSourcesSearched[\s\S]*Not disclosed by issuer/);
+  assert.match(locator, /Lower-priority valid candidate/);
+  assert.match(locator, /Dimensional fact is not the consolidated total/);
+  assert.match(locator, /Deterministic arithmetic using two validated inputs/);
+});
+
+test("hides unusable cards and moves missing detail into Data Coverage", async () => {
+  const [client, route, types] = await Promise.all([
+    readFile(new URL("../app/ResearchApp.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/research/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/research-types.ts", import.meta.url), "utf8"),
+  ]);
+  assert.match(client, /item\.usable/);
+  assert.match(client, /\.filter\(\(item\) => item\.value !== null\)/);
+  assert.match(client, /Limited data coverage/);
+  assert.match(client, /Data Coverage/);
+  assert.match(client, /metric\.rejectedCandidates/);
+  assert.match(client, /metric\.extractionMethod/);
+  assert.doesNotMatch(client, /latestPeriod\.currentRatio === null \? copy\.unavailable/);
+  assert.match(route, /\.filter\(\(result\) => result\.usable\)/);
+  assert.match(route, /criticalMetricIds/);
+  assert.match(route, /shellMetricAudit/);
+  assert.match(types, /dataCoverage:\s*DataCoverage/);
+});
+
 test("owns PDF pagination and footer instead of browser print metadata", async () => {
   const [client, pdf, css] = await Promise.all([
     readFile(new URL("../app/ResearchApp.tsx", import.meta.url), "utf8"),
