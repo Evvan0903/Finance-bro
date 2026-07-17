@@ -7,6 +7,7 @@ import {
   SHELL_VERIFIED_FILING_EXCERPT,
 } from "../../lib/shell-metric-validation";
 import type { CompanyFactsPayload } from "../../lib/metric-locator-types";
+import { registryFromLocatorAudit } from "../../lib/canonical-metrics";
 
 export const runtime = "edge";
 
@@ -67,8 +68,15 @@ export async function POST(request: Request) {
     ...inputs,
     verifiedSnapshot: sourceMode === "verified-snapshot",
   });
+  const metricRegistry = registryFromLocatorAudit({
+    audit,
+    companyId: "SHEL",
+    sector: "integrated-oil-gas",
+    dataVersion: "shel-fy2025-20f-2026-03-12-v1",
+  }).snapshot();
   return NextResponse.json({
     audit,
+    metricRegistry,
     found: audit.results.filter((result) => result.found).map((result) => result.metricId),
     unresolved: audit.results.filter((result) => !result.found).map((result) => ({
       metricId: result.metricId,

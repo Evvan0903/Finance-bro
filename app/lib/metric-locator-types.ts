@@ -170,6 +170,8 @@ export type MetricLocatorResult = {
   table: string | null;
   row: string | null;
   rawLabel: string | null;
+  rawValue: string | null;
+  definitionId: string;
   formula: string | null;
   confidence: number;
   extractionMethod: string | null;
@@ -183,6 +185,7 @@ export type MetricLocatorAudit = {
   reportingPeriod: string;
   searchedSources: MetricSourceTier[];
   results: MetricLocatorResult[];
+  allResults: MetricLocatorResult[];
   extractionSuccessRate: number;
   extractedCount: number;
   requestedCount: number;

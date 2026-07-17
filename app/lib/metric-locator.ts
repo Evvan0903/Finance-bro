@@ -419,6 +419,8 @@ function emptyResult(
     table: null,
     row: null,
     rawLabel: null,
+    rawValue: null,
+    definitionId: definition.acceptedDefinitionKeys[0] ?? `unresolved-${definition.id}`,
     formula: definition.derivationFormula ?? null,
     confidence: 0,
     extractionMethod: null,
@@ -452,6 +454,8 @@ function selectedResult(
     table: selected.table ?? null,
     row: selected.row,
     rawLabel: selected.rawLabel,
+    rawValue: selected.rawValue,
+    definitionId: selected.definitionKey,
     formula: selected.formula ?? null,
     confidence: selected.confidence,
     extractionMethod: selected.extractionMethod,
@@ -595,6 +599,9 @@ export function locateMetrics(input: {
     }
   }
 
+  const allResults = input.definitions
+    .map((definition) => results.get(definition.id)!)
+    .filter(Boolean);
   const visibleResults = input.definitions
     .filter((definition) => definition.visible)
     .map((definition) => results.get(definition.id)!)
@@ -605,6 +612,7 @@ export function locateMetrics(input: {
     reportingPeriod: input.reportingPeriod,
     searchedSources,
     results: visibleResults,
+    allResults,
     extractionSuccessRate: visibleResults.length ? extractedCount / visibleResults.length : 0,
     extractedCount,
     requestedCount: visibleResults.length,

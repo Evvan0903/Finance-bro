@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
+import ts from "typescript";
 
 const projectRoot = new URL("../", import.meta.url);
 
@@ -9,6 +10,20 @@ async function worker() {
   workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}-${Math.random()}`);
   const { default: builtWorker } = await import(workerUrl.href);
   return builtWorker;
+}
+
+async function canonicalMetricsModule() {
+  const source = await readFile(
+    new URL("../app/lib/canonical-metrics.ts", import.meta.url),
+    "utf8",
+  );
+  const compiled = ts.transpileModule(source, {
+    compilerOptions: {
+      module: ts.ModuleKind.ESNext,
+      target: ts.ScriptTarget.ES2022,
+    },
+  }).outputText;
+  return import(`data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}#${Date.now()}-${Math.random()}`);
 }
 
 const environment = {
@@ -247,6 +262,117 @@ test("locates all 11 Shell metrics with ordered, auditable source selection", as
   assert.equal(results.dividends.sourceTier, "standard-sec-xbrl");
   assert.equal(results["share-buybacks"].displayValue, "USD 13.879bn");
   assert.equal(results["major-projects"].displayValue, "21 projects");
+
+  const registry = payload.metricRegistry;
+  assert.equal(registry.schema_version, "1.0");
+  assert.equal(registry.metrics.length, 12);
+  assert.equal(
+    new Set(registry.metrics.map((metric) => metric.canonical_key)).size,
+    registry.metrics.length,
+  );
+  assert.ok(registry.metrics.every((metric) => !("displayValue" in metric)));
+  const canonicalFcf = registry.metrics.find((metric) => metric.metric_id === "fcf");
+  assert.equal(canonicalFcf.value, 21_948_000_000);
+  assert.equal(canonicalFcf.definition_id, "strict-ocf-minus-cash-capex");
+  assert.equal(canonicalFcf.formula_id, "subtract");
+  assert.equal(canonicalFcf.input_metric_keys.length, 2);
+});
+
+test("enforces canonical schema, key uniqueness, definitions, and dependencies", async () => {
+  const {
+    CanonicalMetricError,
+    MetricRegistry,
+    calculateFromCanonicalInputs,
+    createCanonicalMetric,
+  } = await canonicalMetricsModule();
+  const reported = (overrides = {}) =>
+    createCanonicalMetric({
+      metric_id: "net-debt",
+      company_id: "SHEL",
+      sector: "integrated-oil-gas",
+      period: "FY2025",
+      period_start: null,
+      period_end: "2025-12-31",
+      value: 45_687_000_000,
+      unit: "USD",
+      currency: "USD",
+      status: "Reported",
+      definition_id: "issuer-reported-net-debt",
+      formula_id: null,
+      formula: null,
+      input_metric_keys: [],
+      source_document: "Shell FY2025 Form 20-F",
+      source_url: "https://www.sec.gov/",
+      source_type: "filing",
+      source_date: "2026-03-12",
+      filing_date: "2026-03-12",
+      section: "Liquidity",
+      table: "Net debt",
+      row_label: "Net debt",
+      raw_value: "45,687",
+      extraction_method: "filing-table",
+      confidence: 0.98,
+      retrieved_at: "2026-07-17T00:00:00.000Z",
+      data_version: "fixture-v1",
+      calculation_version: "1.0",
+      ...overrides,
+    });
+
+  const registry = new MetricRegistry("fixture-v1", "1.0");
+  const issuerNetDebt = reported();
+  registry.register(issuerNetDebt);
+  assert.throws(
+    () => registry.register(issuerNetDebt),
+    (error) =>
+      error instanceof CanonicalMetricError &&
+      error.code === "DUPLICATE_CANONICAL_KEY",
+  );
+  registry.register(reported({
+    value: 43_000_000_000,
+    definition_id: "normalized-debt-less-cash",
+  }));
+  assert.throws(
+    () => registry.getMetric({
+      company_id: "SHEL",
+      metric_id: "net-debt",
+      period: "FY2025",
+    }),
+    (error) =>
+      error instanceof CanonicalMetricError &&
+      error.code === "DEFINITION_CONFLICT",
+  );
+
+  const ocf = reported({
+    metric_id: "operating-cash-flow",
+    value: 42_863_000_000,
+    definition_id: "reported-operating-cash-flow",
+  });
+  const capex = reported({
+    metric_id: "cash-capex",
+    value: 20_915_000_000,
+    definition_id: "shell-cash-capex",
+  });
+  assert.equal(calculateFromCanonicalInputs("subtract", [ocf, capex]), 21_948_000_000);
+  assert.throws(
+    () => reported({ value: null }),
+    (error) =>
+      error instanceof CanonicalMetricError &&
+      error.code === "INVALID_METRIC",
+  );
+  assert.throws(
+    () => calculateFromCanonicalInputs("subtract", [
+      ocf,
+      reported({
+        metric_id: "cash-capex",
+        period: "FY2024",
+        period_end: "2024-12-31",
+        value: 21_085_000_000,
+      }),
+    ]),
+    (error) =>
+      error instanceof CanonicalMetricError &&
+      error.code === "PERIOD_MISMATCH",
+  );
 });
 
 test("keeps metric definitions and non-disclosure controls explicit", async () => {
