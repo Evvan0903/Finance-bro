@@ -40,6 +40,11 @@ async function consistencyAuditorModule() {
   return import(`${auditorUrl}#${Date.now()}-${Math.random()}`);
 }
 
+async function cacheModule() {
+  const url = await transpiledModuleUrl("../app/lib/cache.ts");
+  return import(`${url}#${Date.now()}-${Math.random()}`);
+}
+
 const environment = {
   ASSETS: {
     fetch: async () => new Response("Not found", { status: 404 }),
@@ -484,6 +489,121 @@ test("enforces canonical schema, key uniqueness, definitions, and dependencies",
   );
 });
 
+test("rejects mixed units and currencies while preserving full calculation precision", async () => {
+  const {
+    CanonicalMetricError,
+    calculateFromCanonicalInputs,
+    createCanonicalMetric,
+  } = await canonicalMetricsModule();
+  const metric = (overrides = {}) =>
+    createCanonicalMetric({
+      metric_id: "revenue",
+      company_id: "CAT",
+      sector: "industrial-machinery",
+      period: "FY2025",
+      period_start: "2025-01-01",
+      period_end: "2025-12-31",
+      value: 67_589_000_000,
+      unit: "USD",
+      currency: "USD",
+      status: "Reported",
+      definition_id: "reported-revenue",
+      formula_id: null,
+      formula: null,
+      input_metric_keys: [],
+      source_document: "Caterpillar 2025 Form 10-K",
+      source_url: "https://www.sec.gov/",
+      source_type: "filing",
+      source_date: "2026-02-13",
+      filing_date: "2026-02-13",
+      section: "Statements of Results",
+      table: "Results",
+      row_label: "Sales and revenues",
+      raw_value: "67589",
+      extraction_method: "deterministic-sec-xbrl",
+      confidence: 0.99,
+      retrieved_at: "2026-07-17T00:00:00.000Z",
+      data_version: "cat-fixture-v1",
+      calculation_version: "1.0",
+      ...overrides,
+    });
+  const usd = metric();
+  const eur = metric({
+    metric_id: "cash-capex",
+    value: 2_821_000_000,
+    currency: "EUR",
+    unit: "EUR",
+    definition_id: "cash-purchases-property-plant-equipment",
+  });
+  assert.throws(
+    () => calculateFromCanonicalInputs("subtract", [usd, eur]),
+    (error) =>
+      error instanceof CanonicalMetricError &&
+      error.code === "UNIT_MISMATCH",
+  );
+  const usdTonnes = metric({
+    metric_id: "production",
+    value: 1.23456789,
+    currency: null,
+    unit: "million tonnes",
+    definition_id: "reported-production",
+  });
+  assert.throws(
+    () => calculateFromCanonicalInputs("add", [usd, usdTonnes]),
+    (error) =>
+      error instanceof CanonicalMetricError &&
+      error.code === "UNIT_MISMATCH",
+  );
+  const eurCurrencyOnly = metric({
+    metric_id: "cash-capex",
+    value: 2_821_000_000,
+    currency: "EUR",
+    unit: "USD",
+    definition_id: "cash-purchases-property-plant-equipment",
+  });
+  assert.throws(
+    () => calculateFromCanonicalInputs("subtract", [usd, eurCurrencyOnly]),
+    (error) =>
+      error instanceof CanonicalMetricError &&
+      error.code === "CURRENCY_MISMATCH",
+  );
+  const numerator = metric({ value: 19_300_000_000 });
+  const denominator = metric({
+    metric_id: "backlog",
+    value: 51_200_000_000,
+    definition_id: "issuer-reported-firm-order-backlog",
+  });
+  assert.equal(
+    calculateFromCanonicalInputs("divide", [numerator, denominator]),
+    19_300_000_000 / 51_200_000_000,
+  );
+});
+
+test("invalidates expired, deleted, failed, and explicitly refreshed cache entries", async () => {
+  const { MemoryCache } = await cacheModule();
+  let loads = 0;
+  const cache = new MemoryCache(25);
+  const loader = async () => {
+    loads += 1;
+    return { generation: loads };
+  };
+  assert.deepEqual(await cache.getOrLoad("CAT|FY2025|v1", loader), { generation: 1 });
+  assert.deepEqual(await cache.getOrLoad("CAT|FY2025|v1", loader), { generation: 1 });
+  cache.delete("CAT|FY2025|v1");
+  assert.deepEqual(await cache.getOrLoad("CAT|FY2025|v1", loader), { generation: 2 });
+  await new Promise((resolve) => setTimeout(resolve, 30));
+  assert.deepEqual(await cache.getOrLoad("CAT|FY2025|v1", loader), { generation: 3 });
+  await assert.rejects(
+    cache.getOrLoad("failure", async () => {
+      throw new Error("temporary");
+    }),
+    /temporary/,
+  );
+  assert.deepEqual(await cache.getOrLoad("failure", loader), { generation: 4 });
+  cache.clear();
+  assert.deepEqual(await cache.getOrLoad("CAT|FY2025|v1", loader), { generation: 5 });
+});
+
 test("keeps metric definitions and non-disclosure controls explicit", async () => {
   const [definitions, locator, types] = await Promise.all([
     readFile(new URL("../app/lib/metric-definitions.ts", import.meta.url), "utf8"),
@@ -575,6 +695,28 @@ test("routes every quantitative report module through the canonical registry", a
   assert.match(registry, /input_metric_keys/);
   assert.match(types, /metricUsage:\s*MetricUsage\[\]/);
   assert.match(types, /metricReferences:/);
+});
+
+test("keeps five official-source regression snapshots and a disclosed runtime fallback", async () => {
+  const [route, shell, nvda, jpm, lly, cat] = await Promise.all([
+    readFile(new URL("../app/api/research/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("fixtures/shel-source-snapshot.json", import.meta.url), "utf8"),
+    readFile(new URL("fixtures/nvda-source-snapshot.json", import.meta.url), "utf8"),
+    readFile(new URL("fixtures/jpm-source-snapshot.json", import.meta.url), "utf8"),
+    readFile(new URL("fixtures/lly-source-snapshot.json", import.meta.url), "utf8"),
+    readFile(new URL("fixtures/cat-source-snapshot.json", import.meta.url), "utf8"),
+  ]);
+  for (const [ticker, source] of Object.entries({ SHEL: shell, NVDA: nvda, JPM: jpm, LLY: lly, CAT: cat })) {
+    const fixture = JSON.parse(source);
+    assert.ok(fixture.companyFacts?.facts, `${ticker} fixture lacks Company Facts`);
+    assert.ok(fixture.submissions?.filings?.recent, `${ticker} fixture lacks Submissions`);
+  }
+  assert.match(route, /VERIFIED_SOURCE_SNAPSHOTS/);
+  assert.match(route, /isTemporaryPublicDataFailure/);
+  assert.match(route, /verified-runtime-fallback/);
+  assert.match(route, /live SEC endpoint was temporarily unavailable/i);
+  assert.match(route, /if \(\s*sourceSnapshot \|\|\s*!verifiedFallback \|\|\s*!isTemporaryPublicDataFailure\(error\)/);
+  assert.doesNotMatch(route, /verifiedFallback\s*\?\?\s*shellSourceSnapshot/);
 });
 
 test("audits exact canonical values, shared Web/PDF surfaces, and reproducibility", async () => {
@@ -1321,6 +1463,8 @@ test("passes the Industrials and CAT acceptance gate with backlog, price-cost, a
   assert.equal(first.consistencyAudit.issues.length, 0);
   assert.equal(latest.periodEnd, "2025-12-31");
   assert.equal(latest.revenue, 67_589_000_000);
+  assert.equal(latest.grossProfit, null);
+  assert.equal(latest.grossMargin, null);
   assert.equal(latest.operatingIncome, 11_151_000_000);
   assert.equal(latest.netIncome, 8_882_000_000);
   assert.equal(latest.operatingCashFlow, 11_739_000_000);

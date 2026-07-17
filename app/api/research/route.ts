@@ -98,6 +98,7 @@ type ReportSourceSnapshot = {
   submissions: Submissions;
   retrievedAt: string;
   issuerReportedMetrics?: IssuerReportedMetric[];
+  sourceMode: "explicit-test-snapshot" | "verified-runtime-fallback";
 };
 
 const COPY = {
@@ -1203,6 +1204,35 @@ function verifiedIssuerMetrics(
   return undefined;
 }
 
+const VERIFIED_SOURCE_SNAPSHOTS = {
+  SHEL: shellSourceSnapshot,
+  NVDA: nvdaSourceSnapshot,
+  JPM: jpmSourceSnapshot,
+  LLY: llySourceSnapshot,
+  CAT: catSourceSnapshot,
+} as const;
+
+function reportSourceSnapshot(
+  fixture: (typeof VERIFIED_SOURCE_SNAPSHOTS)[keyof typeof VERIFIED_SOURCE_SNAPSHOTS],
+  sourceMode: ReportSourceSnapshot["sourceMode"],
+): ReportSourceSnapshot {
+  return {
+    companyFacts: fixture.companyFacts as CompanyFactsPayload,
+    submissions: fixture.submissions as unknown as Submissions,
+    retrievedAt: "2026-07-17T00:00:00.000Z",
+    issuerReportedMetrics:
+      "issuerReportedMetrics" in fixture
+        ? fixture.issuerReportedMetrics as IssuerReportedMetric[]
+        : undefined,
+    sourceMode,
+  };
+}
+
+function isTemporaryPublicDataFailure(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return /SEC_HTTP_\d{3}|fetch failed|timed? ?out|network|EAI_AGAIN|ECONNRESET|UND_ERR/i.test(message);
+}
+
 async function buildReport(
   record: TickerRecord,
   selection: ResearchSelection,
@@ -1563,6 +1593,13 @@ async function buildReport(
       searchedSources: metricAudit?.searchedSources ?? ["standard-sec-xbrl"],
       metrics: metricAudit?.results ?? [],
       notes: [
+        ...(sourceSnapshot?.sourceMode === "verified-runtime-fallback"
+          ? [
+              locale === "zh"
+                ? `SEC 实时端点暂时不可用；本报告使用检索于 ${sourceSnapshot.retrievedAt.slice(0, 10)} 的已验证官方来源快照。申报身份和期间仍按来源记录显示。`
+                : `The live SEC endpoint was temporarily unavailable, so this report uses a verified official-source snapshot retrieved ${sourceSnapshot.retrievedAt.slice(0, 10)}. Filing identity and period remain disclosed from the source record.`,
+            ]
+          : []),
         ...(metricAudit
           ? [
               locale === "zh"
@@ -1752,31 +1789,32 @@ export async function POST(request: Request) {
     const requestHostname = new URL(request.url).hostname;
     const localFixtureAllowed =
       ["localhost", "127.0.0.1"].includes(requestHostname);
-    const fixtureByTicker = {
-      SHEL: shellSourceSnapshot,
-      NVDA: nvdaSourceSnapshot,
-      JPM: jpmSourceSnapshot,
-      LLY: llySourceSnapshot,
-      CAT: catSourceSnapshot,
-    } as const;
+    const fixtureByTicker = VERIFIED_SOURCE_SNAPSHOTS;
     const selectedFixture =
       payload.fixture && localFixtureAllowed
         ? fixtureByTicker[record.ticker as keyof typeof fixtureByTicker]
         : undefined;
     const sourceSnapshot = selectedFixture
-      ? {
-          companyFacts:
-            selectedFixture.companyFacts as CompanyFactsPayload,
-          submissions:
-            selectedFixture.submissions as unknown as Submissions,
-          retrievedAt: "2026-07-17T00:00:00.000Z",
-          issuerReportedMetrics:
-            "issuerReportedMetrics" in selectedFixture
-              ? selectedFixture.issuerReportedMetrics as IssuerReportedMetric[]
-              : undefined,
-        }
+      ? reportSourceSnapshot(selectedFixture, "explicit-test-snapshot")
       : undefined;
-    const report = await buildReport(record, selection, locale, sourceSnapshot);
+    let report: ResearchReport;
+    try {
+      report = await buildReport(record, selection, locale, sourceSnapshot);
+    } catch (error) {
+      const verifiedFallback =
+        fixtureByTicker[record.ticker as keyof typeof fixtureByTicker];
+      if (
+        sourceSnapshot ||
+        !verifiedFallback ||
+        !isTemporaryPublicDataFailure(error)
+      ) throw error;
+      report = await buildReport(
+        record,
+        selection,
+        locale,
+        reportSourceSnapshot(verifiedFallback, "verified-runtime-fallback"),
+      );
+    }
     const consistencyAudit = auditResearchReport(report);
     if (!consistencyAudit.passed) {
       return Response.json(

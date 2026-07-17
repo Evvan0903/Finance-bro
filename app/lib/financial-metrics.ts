@@ -615,7 +615,22 @@ export function ensureCoreDerivedMetrics(
       periodEnd,
       [FINANCIAL_DEFINITION_IDS.costOfRevenue],
     );
-    if (!grossProfit && revenue && costOfRevenue) {
+    const costOfRevenueRatio =
+      typeof revenue?.value === "number" &&
+      revenue.value !== 0 &&
+      typeof costOfRevenue?.value === "number"
+        ? Math.abs(costOfRevenue.value / revenue.value)
+        : null;
+    const costOfRevenueSupportsConsolidatedGrossProfit =
+      costOfRevenueRatio !== null &&
+      costOfRevenueRatio >= 0.01 &&
+      costOfRevenueRatio <= 1.5;
+    if (
+      !grossProfit &&
+      revenue &&
+      costOfRevenue &&
+      costOfRevenueSupportsConsolidatedGrossProfit
+    ) {
       grossProfit = registerDerived(registry, {
         metricId: "gross-profit",
         companyId,

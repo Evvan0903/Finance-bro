@@ -107,6 +107,7 @@ const PERIOD_VALUE_FIELDS: Array<keyof FinancialPeriod> = [
   "inventory",
   "currentAssets",
   "currentLiabilities",
+  "workingCapital",
   "totalDebt",
   "netDebt",
   "revenueGrowth",
