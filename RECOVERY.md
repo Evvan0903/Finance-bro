@@ -6,7 +6,9 @@ Refactor `skills/institutional_equity_research/SKILL.md` into a concise executio
 
 The subsequent objective was to turn that research approach into a one-input MVP and publish it to ChatGPT Sites with owner-only access.
 
-The latest objective was to upgrade that existing private Site to a complete Chinese/English experience without changing its URL or access policy.
+The latest completed objective was to upgrade that existing private Site to a complete Chinese/English experience without changing its URL or access policy.
+
+The current objective is to incrementally upgrade the same private ScopeLine Site into a sector-aware research platform, initially supporting Energy / Integrated Oil & Gas and Technology / Semiconductors, while preserving the brand, SEC pipeline, citations, bilingual experience, PDF export, URL, and owner-only access.
 
 ## Completed tasks
 
@@ -49,11 +51,17 @@ The latest objective was to upgrade that existing private Site to a complete Chi
 
 ## Remaining tasks
 
-None. The ScopeLine site is deployed privately and the prior skill/report work remains complete.
+- Implement modular energy and semiconductor analyst packs.
+- Separate sector methodology from dated 2025-2026 evidence and add filter-first retrieval with deterministic embeddings.
+- Upgrade the SEC report API, enforce strict FCF, and produce the requested 12-section sector-aware report.
+- Simplify the request UI and add market, sector, dynamic subindustry, options, and sector refresh.
+- Improve PDF generation and print layout.
+- Add and run SHEL/NVDA regression, browser, and PDF visual checks.
+- Create a new local checkpoint and deploy version 3 to the existing private Site.
 
 ## Current status
 
-Complete. The skill/report deliverables remain complete, and ScopeLine version 2 is live at the existing owner-only ChatGPT Site with complete Chinese/English switching. Production homepage and both localized Shell report paths returned HTTP 200 after deployment.
+In progress. The repository, recovery notes, and version 2 checkpoint were reconciled before changes. The existing bilingual Site remains live and untouched in production. The current code audit confirmed that the old API incorrectly falls back to operating cash flow plus investing cash flow when cash capex is unavailable; version 3 will remove that fallback. Official, accessible, dated recent evidence has been selected for both supported sectors. Modular analyst packs, a separate methodology store, a screened evidence store, reusable caches, and filter-first deterministic embedding retrieval over summary/method chunks have been added and linted. The Sites repository checkpoint is `5933408` (`checkpoint: sector research architecture`); nothing was pushed or deployed.
 
 ## Files modified
 
@@ -68,7 +76,7 @@ Complete. The skill/report deliverables remain complete, and ScopeLine version 2
 
 ## Next recommended step
 
-Open the private ScopeLine URL, switch between `中文` and `EN`, and test additional SEC-reporting issuers. Make changes only for a newly identified defect or new request; do not regenerate the completed skill, Shell sample, or site from scratch.
+Integrate the completed sector architecture into the existing SEC report route, enforce strict FCF, and expose outlook-only refresh without recreating the completed site.
 
 ## Assumptions and pending decisions
 
@@ -84,6 +92,9 @@ Open the private ScopeLine URL, switch between `中文` and `EN`, and test addit
 - `site/` is its own Git repository used by ChatGPT Sites; the parent repository must not recreate or flatten it.
 - Chinese remains the server-rendered default; the browser remembers a user's selected language under `scopeline-locale` and restores it after hydration.
 - Switching language after report generation refetches the same issuer in the selected language so the narrative and exported Markdown do not mix languages.
+- Version 3 will keep sector evidence as curated metadata and original summaries rather than storing or reproducing full third-party reports.
+- Sector retrieval will use local deterministic text embeddings after sector, subindustry, geography, and date filters; it does not require an external embedding API.
+- Browser print headers and URLs cannot be reliably controlled by CSS, so version 3 will add an application-owned PDF path with its own footer while retaining print styles as a fallback.
 
 ## Recovery procedure
 

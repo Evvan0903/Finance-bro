@@ -51,3 +51,22 @@
 - [x] Commit and push the exact bilingual Sites source state.
 - [x] Deploy version 2 to the existing owner-only Site.
 - [x] Verify the production homepage and both localized Shell APIs.
+
+## ScopeLine sector-aware version 3
+
+- [x] Recover and verify the version 2 checkpoint before changing code.
+- [x] Audit the current SEC, bilingual UI, and browser PDF implementation.
+- [x] Select accessible, dated 2025-2026 official evidence for energy and semiconductors.
+- [x] Add modular energy and semiconductor analyst packs.
+- [x] Separate the sector methodology store from the current evidence store.
+- [x] Add filter-first chunk retrieval, deterministic embeddings, and caches.
+- [ ] Upgrade the SEC report API to the market-sector-subindustry flow.
+- [ ] Remove the investing-cash-flow fallback and enforce strict FCF.
+- [ ] Add the 12-section sector-aware bilingual report and outlook-only refresh.
+- [ ] Simplify the hero and add the sector-aware request controls.
+- [ ] Improve PDF export, print layout, tables, charts, sources, and footer.
+- [ ] Add regression tests for source screening, FCF, SHEL, and NVDA.
+- [ ] Verify visibly different SHEL and NVDA research outputs.
+- [ ] Run lint, build, automated tests, browser QA, and PDF rendering QA.
+- [ ] Update recovery notes and create a local checkpoint commit.
+- [ ] Publish version 3 to the existing private ScopeLine Site and verify production.
