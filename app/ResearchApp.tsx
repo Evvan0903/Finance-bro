@@ -670,6 +670,10 @@ export function ResearchApp() {
   }, [locale, localeReady]);
 
   function requestBody(query: string, requestedLocale: Locale) {
+    const localFixture =
+      typeof window !== "undefined" &&
+      ["localhost", "127.0.0.1"].includes(window.location.hostname) &&
+      new URLSearchParams(window.location.search).get("fixture") === "shell";
     return {
       company: query,
       locale: requestedLocale,
@@ -677,6 +681,7 @@ export function ResearchApp() {
       sector,
       subindustry,
       options,
+      ...(localFixture ? { fixture: true } : {}),
     };
   }
 

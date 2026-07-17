@@ -118,6 +118,7 @@ const SCENARIO_VALUE_FIELDS: Array<keyof Scenario> = [
   "projectedNetIncome",
   "projectedFreeCashFlow",
   "enterpriseValueMultiple",
+  "valuationStartingPoint",
   "valuationMetric",
   "modelImpliedEnterpriseValue",
 ];

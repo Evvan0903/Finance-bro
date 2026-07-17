@@ -93,6 +93,7 @@ export type Scenario = {
   projectedFreeCashFlow: number | null;
   enterpriseValueMultiple: number;
   valuationMethod: string;
+  valuationStartingPoint: number | null;
   valuationMetric: number | null;
   multipleLabel: string;
   modelImpliedEnterpriseValue: number | null;

@@ -194,6 +194,20 @@ export function buildCanonicalScenarios(input: {
     latest.periodEnd,
     FINANCIAL_DEFINITION_IDS.operatingCashFlowMargin,
   );
+  const latestOperatingCashFlow = optionalMetric(
+    input.registry,
+    input.companyId,
+    "operating-cash-flow",
+    latest.periodEnd,
+    FINANCIAL_DEFINITION_IDS.operatingCashFlow,
+  );
+  const latestFreeCashFlow = optionalMetric(
+    input.registry,
+    input.companyId,
+    "fcf",
+    latest.periodEnd,
+    FINANCIAL_DEFINITION_IDS.freeCashFlow,
+  );
   const capexDefinitionPriority: string[] = [
     FINANCIAL_DEFINITION_IDS.issuerCashCapex,
     FINANCIAL_DEFINITION_IDS.cashCapex,
@@ -217,6 +231,12 @@ export function buildCanonicalScenarios(input: {
     (!latestCashCapex || !latestOcfMargin) &&
     input.pack.valuation.fallback !== undefined;
   const framework = useFallback ? input.pack.valuation.fallback! : input.pack.valuation;
+  const valuationStartingMetric =
+    framework.metric === "revenue"
+      ? latestRevenue
+      : framework.metric === "operatingCashFlow"
+        ? latestOperatingCashFlow
+        : latestFreeCashFlow;
   const nextYear = Number(latest.periodEnd.slice(0, 4)) + 1;
   const forecastEnd = `${nextYear}-12-31`;
   const growthSpread = input.pack.id === "semiconductors" ? 0.08 : 0.05;
@@ -408,6 +428,7 @@ export function buildCanonicalScenarios(input: {
       projectedFreeCashFlow: projectedFcf?.value ?? null,
       enterpriseValueMultiple: valuationMultiple.value!,
       valuationMethod: framework.method[input.locale],
+      valuationStartingPoint: valuationStartingMetric?.value ?? null,
       valuationMetric: valuationMetric?.value ?? null,
       multipleLabel: framework.multipleLabel,
       modelImpliedEnterpriseValue: enterpriseValue?.value ?? null,
@@ -423,6 +444,7 @@ export function buildCanonicalScenarios(input: {
           ["projectedCashCapex", projectedCapex],
           ["projectedFreeCashFlow", projectedFcf],
           ["enterpriseValueMultiple", valuationMultiple],
+          ["valuationStartingPoint", valuationStartingMetric],
           ["valuationMetric", valuationMetric],
           ["modelImpliedEnterpriseValue", enterpriseValue],
         ].filter((entry): entry is [string, CanonicalMetricObject] => entry[1] !== null)

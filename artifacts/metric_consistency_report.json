@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "generated_for_phase": 4,
+  "data_version": "SHEL-2025-12-31-2026-03-12-canonical-v1",
+  "total_canonical_metrics": 142,
+  "total_surface_references": 642,
+  "duplicate_keys": 0,
+  "conflicting_values": 0,
+  "formula_mismatches": 0,
+  "cross_section_mismatches": 0,
+  "reproducibility_mismatches": 0,
+  "reproducibility": {
+    "matched_objects": 142,
+    "mismatched_objects": 0,
+    "missing_objects": 0,
+    "changed_definitions": 0,
+    "changed_formulas": 0,
+    "changed_sources": 0,
+    "changed_outputs": 0
+  },
+  "shell_acceptance": {
+    "passed": true,
+    "required_metrics_found": 14,
+    "required_metrics_total": 14,
+    "free_cash_flow": {
+      "value": 21948000000,
+      "currency": "USD",
+      "unit": "USD",
+      "definition_id": "ocf-less-cash-capex",
+      "formula": "operating_cash_flow - cash_capex",
+      "dashboard_history_kpi_valuation_starting_key_match": true
+    },
+    "net_debt_definition_id": "issuer-reported-net-debt",
+    "capital_allocation_references_match": true,
+    "investment_debate_references_match": true,
+    "company_exposure_coverage_passed": true,
+    "web_pdf_shared_model": "shared-research-report-dom-v1",
+    "pdf_pages_visually_verified": 8
+  },
+  "sector_acceptance": {
+    "integrated-oil-gas": "passed",
+    "semiconductors": "pending",
+    "banks": "pending",
+    "biopharma": "pending",
+    "industrials": "pending"
+  }
+}

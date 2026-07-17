@@ -682,6 +682,14 @@ export function formatMetricForDisplay(
       maximumFractionDigits: 1,
     }).format(metric.value);
   }
+  if (
+    metric.currency &&
+    metric.unit.startsWith(`${metric.currency}/`)
+  ) {
+    return `${metric.currency} ${new Intl.NumberFormat(numberLocale, {
+      maximumFractionDigits: 3,
+    }).format(metric.value)}/${metric.unit.slice(metric.currency.length + 1)}`;
+  }
   return `${new Intl.NumberFormat(numberLocale, {
     maximumFractionDigits: 3,
   }).format(metric.value)} ${metric.unit}`;

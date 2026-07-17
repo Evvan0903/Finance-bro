@@ -12,6 +12,7 @@ import {
   buildFinancialMetricRegistry,
   ensureCoreDerivedMetrics,
   financialPeriodsFromRegistry,
+  FINANCIAL_DEFINITION_IDS,
 } from "../../lib/financial-metrics";
 import { getSectorMethods } from "../../lib/sector-methodology";
 import { getSectorPack } from "../../lib/sector-packs";
@@ -48,6 +49,7 @@ import type {
   SectorKpiResult,
   ThesisPoint,
 } from "../../lib/research-types";
+import shellSourceSnapshot from "../../../tests/fixtures/shel-source-snapshot.json";
 
 export const dynamic = "force-dynamic";
 
@@ -84,6 +86,12 @@ type ResearchPayload = {
   sector?: SupportedSector;
   subindustry?: SupportedSubindustry;
   options?: Partial<ResearchOptions>;
+  fixture?: boolean;
+};
+type ReportSourceSnapshot = {
+  companyFacts: CompanyFactsPayload;
+  submissions: Submissions;
+  retrievedAt: string;
 };
 
 const COPY = {
@@ -271,8 +279,15 @@ function filingSource(
 async function shellMetricAudit(
   record: TickerRecord,
   facts: CompanyFacts,
+  verifiedSnapshot = false,
 ): Promise<MetricLocatorAudit | null> {
   if (record.ticker !== "SHEL") return null;
+  if (verifiedSnapshot) {
+    return runShellMetricValidation({
+      companyFacts: facts as CompanyFactsPayload,
+      verifiedSnapshot: true,
+    });
+  }
   try {
     const filingHtml = await secTextFetch(SHELL_2025_20F_URL);
     return runShellMetricValidation({
@@ -361,7 +376,16 @@ function buildSectorKpis(
         usable: locatorResult.found,
         status: locatorResult.status,
         period: locatorResult.period,
-        definition: definition.description[locale],
+        definition:
+          locatorResult.definitionId === FINANCIAL_DEFINITION_IDS.issuerNetDebt
+            ? locale === "zh"
+              ? "发行人报告净债务：流动与非流动债务减现金，并调整债务对冲衍生品及相关抵押品。"
+              : "Issuer-reported net debt: current and non-current debt less cash, adjusted for debt-hedging derivatives and associated collateral."
+            : locatorResult.definitionId === FINANCIAL_DEFINITION_IDS.issuerCashCapex
+              ? locale === "zh"
+                ? "发行人报告现金资本开支，来自年度申报的自定义 XBRL。"
+                : "Issuer-reported cash capital expenditure from filing-level custom XBRL."
+              : definition.description[locale],
         classification:
           locatorResult.status === "Derived" ? "Derived calculation" : "Reported fact",
         sourceNote: locatorResult.found
@@ -569,6 +593,9 @@ function buildNarrative(
   const marginDelta = latest.netMarginChange;
   const liabilityRatio = latest.liabilitiesAssets;
   const cashConversion = latest.cashConversion;
+  const primaryNetDebtMetric = latest.metricKeys.netDebt
+    ? registry.getByKey(latest.metricKeys.netDebt)
+    : null;
   const primarySectorMetric =
     pack.id === "semiconductors"
       ? {
@@ -579,15 +606,25 @@ function buildNarrative(
               ? "毛利率 = 毛利润 ÷ 营收；产品组合与供给成本的重要信号。"
               : "Gross margin = gross profit / revenue; a key signal for product mix and supply cost.",
           metricKey: latest.metricKeys.grossMargin ?? "",
+          classification: "Derived calculation" as const,
         }
       : {
           label: locale === "zh" ? "净债务" : "Net debt",
           value: compactMoney(latest.netDebt, currency, locale),
           detail:
-            locale === "zh"
-              ? "净债务 = 标准化总债务 - 现金；衡量周期下行韧性。"
-              : "Net debt = normalized debt - cash; a measure of downside-cycle resilience.",
+            primaryNetDebtMetric?.definition_id ===
+            FINANCIAL_DEFINITION_IDS.issuerNetDebt
+              ? locale === "zh"
+                ? "发行人报告口径；包括债务对冲衍生品及相关抵押品调整，用于衡量下行周期韧性。"
+                : "Issuer-reported definition including debt-hedging derivative and associated-collateral adjustments; a measure of downside-cycle resilience."
+              : locale === "zh"
+                ? "标准化净债务 = 总债务 - 现金；衡量周期下行韧性。"
+                : "Normalized net debt = total debt - cash; a measure of downside-cycle resilience.",
           metricKey: latest.metricKeys.netDebt ?? "",
+          classification:
+            primaryNetDebtMetric?.status === "Reported"
+              ? "Reported fact" as const
+              : "Derived calculation" as const,
         };
   const fcfValue =
     latest.freeCashFlowProxy === null
@@ -632,7 +669,7 @@ function buildNarrative(
       label: primarySectorMetric.label,
       value: primarySectorMetric.value,
       detail: primarySectorMetric.detail,
-      classification: "Derived calculation",
+      classification: primarySectorMetric.classification,
       tone: "neutral",
       metricKey: primarySectorMetric.metricKey,
     },
@@ -882,11 +919,16 @@ async function buildReport(
   record: TickerRecord,
   selection: ResearchSelection,
   locale: ResearchLocale,
+  sourceSnapshot?: ReportSourceSnapshot,
 ): Promise<ResearchReport> {
   const cik = String(record.cik_str).padStart(10, "0");
   const [submissions, facts, sectorOutlook] = await Promise.all([
-    secFetch<Submissions>(`https://data.sec.gov/submissions/CIK${cik}.json`),
-    secFetch<CompanyFacts>(`https://data.sec.gov/api/xbrl/companyfacts/CIK${cik}.json`),
+    sourceSnapshot
+      ? Promise.resolve(sourceSnapshot.submissions)
+      : secFetch<Submissions>(`https://data.sec.gov/submissions/CIK${cik}.json`),
+    sourceSnapshot
+      ? Promise.resolve(sourceSnapshot.companyFacts)
+      : secFetch<CompanyFacts>(`https://data.sec.gov/api/xbrl/companyfacts/CIK${cik}.json`),
     getSectorOutlook(selection.market, selection.subindustry, locale),
   ]);
   const pack = getSectorPack(selection.subindustry);
@@ -895,8 +937,8 @@ async function buildReport(
   }
 
   const companyName = submissions.name || facts.entityName || record.title;
-  const today = new Date();
-  const companyDataRetrievedAt = today.toISOString();
+  const companyDataRetrievedAt =
+    sourceSnapshot?.retrievedAt ?? new Date().toISOString();
   const latestAnnual = filingSource(submissions, ANNUAL_FORMS, COPY[locale].annualFiling);
   const latestInterim = filingSource(submissions, INTERIM_FORMS, COPY[locale].interimFiling);
   const dataVersion = [
@@ -912,7 +954,7 @@ async function buildReport(
     dataVersion,
     retrievedAt: companyDataRetrievedAt,
   });
-  const metricAudit = await shellMetricAudit(record, facts);
+  const metricAudit = await shellMetricAudit(record, facts, Boolean(sourceSnapshot));
   if (metricAudit) {
     publishLocatorAuditToRegistry({
       registry: metricRegistry,
@@ -1107,6 +1149,7 @@ async function buildReport(
       module: "valuation",
       keys: [
         item.metricReferences.enterpriseValueMultiple,
+        item.metricReferences.valuationStartingPoint,
         item.metricReferences.valuationMetric,
         item.metricReferences.modelImpliedEnterpriseValue,
       ].filter(Boolean),
@@ -1325,7 +1368,20 @@ export async function POST(request: Request) {
         { status: 404 },
       );
     }
-    const report = await buildReport(record, selection, locale);
+    const requestHostname = new URL(request.url).hostname;
+    const localFixtureAllowed =
+      ["localhost", "127.0.0.1"].includes(requestHostname);
+    const sourceSnapshot =
+      payload.fixture && localFixtureAllowed && record.ticker === "SHEL"
+        ? {
+            companyFacts:
+              shellSourceSnapshot.companyFacts as CompanyFactsPayload,
+            submissions:
+              shellSourceSnapshot.submissions as unknown as Submissions,
+            retrievedAt: "2026-07-17T00:00:00.000Z",
+          }
+        : undefined;
+    const report = await buildReport(record, selection, locale, sourceSnapshot);
     return Response.json({
       report,
       consistencyAudit: auditResearchReport(report),

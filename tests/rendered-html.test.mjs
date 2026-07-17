@@ -623,6 +623,147 @@ test("audits exact canonical values, shared Web/PDF surfaces, and reproducibilit
   assert.equal(comparison.mismatchedObjects.length, 1);
 });
 
+test("passes the full Shell canonical consistency and double-run acceptance gate", async () => {
+  const builtWorker = await worker();
+  const requestBody = {
+    company: "SHEL",
+    locale: "en",
+    market: "Europe",
+    sector: "energy",
+    subindustry: "integrated-oil-gas",
+    fixture: true,
+    options: {
+      sectorOutlook: true,
+      peerComparison: false,
+      valuation: true,
+      dueDiligence: true,
+      pdfExport: true,
+    },
+  };
+  const run = async () => {
+    const response = await builtWorker.fetch(
+      new Request("http://localhost/api/research", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(requestBody),
+      }),
+      environment,
+      context,
+    );
+    assert.equal(response.status, 200);
+    return response.json();
+  };
+  const [first, second] = await Promise.all([run(), run()]);
+  assert.equal(first.consistencyAudit.passed, true);
+  assert.equal(first.consistencyAudit.issues.length, 0);
+  assert.deepEqual(first.consistencyAudit.checks, {
+    registry: true,
+    formulas: true,
+    lineage: true,
+    cache: true,
+    json: true,
+    tables: true,
+    charts: true,
+    narrative: true,
+    scenarios: true,
+    valuation: true,
+    webPdf: true,
+  });
+
+  const report = first.report;
+  const latest = report.periods.at(-1);
+  const registry = new Map(
+    report.metricRegistry.metrics.map((metric) => [metric.canonical_key, metric]),
+  );
+  const latestMetrics = new Map(
+    report.metricRegistry.metrics
+      .filter((metric) => metric.company_id === "SHEL" && metric.period_end === "2025-12-31")
+      .map((metric) => [metric.metric_id, metric]),
+  );
+  for (const metricId of [
+    "revenue",
+    "net-income",
+    "operating-cash-flow",
+    "production",
+    "realized-prices",
+    "lng",
+    "refining-margin",
+    "segment-earnings",
+    "cash-capex",
+    "fcf",
+    "net-debt",
+    "dividends",
+    "share-buybacks",
+    "major-projects",
+  ]) {
+    assert.ok(latestMetrics.get(metricId), `missing Shell acceptance metric: ${metricId}`);
+  }
+
+  const ocf = registry.get(latest.metricKeys.operatingCashFlow);
+  const capex = registry.get(latest.metricKeys.cashCapex);
+  const fcf = registry.get(latest.metricKeys.freeCashFlowProxy);
+  assert.equal(fcf.definition_id, "ocf-less-cash-capex");
+  assert.equal(fcf.value, ocf.value - capex.value);
+  assert.equal(fcf.value, 21_948_000_000);
+  const dashboardFcf = report.dashboard.find(
+    (item) => registry.get(item.metricKey)?.metric_id === "fcf",
+  );
+  const kpiFcf = report.sectorKpis.find((item) => item.id === "fcf");
+  assert.equal(dashboardFcf.metricKey, fcf.canonical_key);
+  assert.equal(kpiFcf.canonicalKey, fcf.canonical_key);
+  assert.ok(
+    report.scenarios.every(
+      (scenario) =>
+        scenario.valuationStartingPoint === fcf.value &&
+        scenario.metricReferences.valuationStartingPoint === fcf.canonical_key,
+    ),
+  );
+
+  const netDebt = registry.get(latest.metricKeys.netDebt);
+  assert.equal(netDebt.definition_id, "issuer-reported-net-debt");
+  const capitalExposure = report.driverExposure.find((item) =>
+    /Capital discipline/i.test(item.driver)
+  );
+  const capitalIds = new Set(
+    capitalExposure.metricReferences.map((key) => registry.get(key).metric_id),
+  );
+  for (const id of ["fcf", "dividends", "share-buybacks", "net-debt"]) {
+    assert.ok(capitalIds.has(id), `capital allocation missing ${id}`);
+  }
+  assert.doesNotMatch(capitalExposure.companyExposure, /Data unavailable/i);
+
+  const debateMetricIds = new Set(
+    report.investmentDebates
+      .flatMap((debate) => debate.metricReferences)
+      .map((key) => registry.get(key).metric_id),
+  );
+  for (const id of [
+    "production",
+    "realized-prices",
+    "lng",
+    "refining-margin",
+    "fcf",
+    "dividends",
+    "share-buybacks",
+  ]) {
+    assert.ok(debateMetricIds.has(id), `investment debates missing ${id}`);
+  }
+
+  const { compareResearchReports } = await consistencyAuditorModule();
+  const comparison = compareResearchReports(first.report, second.report);
+  assert.equal(comparison.passed, true);
+  assert.equal(comparison.mismatchedObjects.length, 0);
+  assert.equal(comparison.missingObjects.length, 0);
+  assert.equal(comparison.changedDefinitions.length, 0);
+  assert.equal(comparison.changedFormulas.length, 0);
+  assert.equal(comparison.changedSources.length, 0);
+  assert.equal(comparison.changedOutputs.length, 0);
+  assert.equal(
+    comparison.matchedObjects.length,
+    report.metricRegistry.metrics.length,
+  );
+});
+
 test("owns PDF pagination and footer instead of browser print metadata", async () => {
   const [client, pdf, css] = await Promise.all([
     readFile(new URL("../app/ResearchApp.tsx", import.meta.url), "utf8"),
