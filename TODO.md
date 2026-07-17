@@ -93,5 +93,9 @@
 - [x] Phase 5: revalidate missing-data presentation and invalid-formula visibility.
 - [x] Phase 6: implement the 2025-current sector research learning pipeline.
 - [ ] Phase 7: sequentially validate Semiconductors/NVDA, Banks/JPM, Biopharma/LLY, and Industrials/CAT.
+  - [x] Phase 7.1: Semiconductors / NVDA.
+  - [ ] Phase 7.2: Banks / JPM.
+  - [ ] Phase 7.3: Biopharma / LLY.
+  - [ ] Phase 7.4: Industrials / CAT.
 - [ ] Phase 8: add five-company snapshots and complete automated regression coverage.
 - [ ] Phase 9: finalize worklog, consistency artifact, recovery checkpoint, private deployment, and production verification.

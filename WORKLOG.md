@@ -1,5 +1,18 @@
 # ScopeLine Metric Locator Worklog
 
+## Canonical Metric Upgrade — Phase 7.1
+
+- Objective: validate Semiconductors / NVDA before beginning Banks.
+- Changes: saved a compact official SEC Company Facts/Submissions snapshot through 2026-07-17; made the fixture generator issuer-agnostic; added reported operating income and canonical operating-margin calculation; completed the semiconductor KPI ontology with operating margin and utilization.
+- Acceptance: NVDA FY2022–FY2026 history; FY2026 revenue USD 215.938bn, gross margin 71.07%, operating margin 60.38%, inventory USD 21.403bn, cash capex USD 6.042bn, and strict FCF USD 96.676bn.
+- Consistency: 174 canonical metrics and 662 surface references passed with zero issues. Dashboard, history, KPIs, debates, risks, scenarios, valuation, Web, and PDF references use the same keys.
+- Reproducibility: two identical NVDA snapshot runs matched all 174 objects with zero missing or mismatched outputs.
+- Known limitations: standardized SEC facts do not make issuer-specific utilization, product-cycle, customer-concentration, end-market/AI mix, or external market-share measures reliably comparable; unusable cards remain hidden and the ontology records the required concepts.
+- Files: NVDA fixture/generator, financial metric normalization, semiconductor pack/types, research API/types, consistency auditor, and tests.
+- Tests: targeted ESLint passed; production build passed; 17/17 automated tests passed; 0 failed.
+- Industry status: Semiconductors validated/unlocked; Banks remains preview.
+- Next: implement and validate Banks / JPM without industrial-company FCF or revenue templates.
+
 ## Canonical Metric Upgrade — Phase 6
 
 - Objective: make recent sector-research learning reusable, dated, concise, and separate from company filings and canonical metrics.

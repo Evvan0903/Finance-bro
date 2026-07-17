@@ -112,15 +112,20 @@ The current objective is a sequential canonical-metric upgrade: make Metric Obje
 - Stored source type, generalized analytical methods, and current evidence separately; runtime retrieval uses concise bilingual chunks and never loads full reports.
 - Accepted 3 integrated-oil-and-gas and 4 semiconductor sources/methods from 2025-01-01 through 2026-07-17 with no rejected sources; every current claim retains publisher and original publication date.
 - Reviewed the official source URLs and passed targeted ESLint, the production build, and all 16 automated tests.
+- Completed Phase 7.1 Semiconductors / NVDA acceptance using a compact official SEC snapshot through 2026-07-17.
+- Added canonical reported operating income and derived operating margin, completed the semiconductor ontology with operating margin and utilization, and made the source-fixture generator issuer-agnostic.
+- NVDA produced five annual periods through FY2026, 174 canonical metrics, 662 audited surface references, and zero consistency issues. Two runs matched all 174 objects with no missing or changed outputs.
+- Confirmed exact FY2026 strict FCF of USD 96.676bn = USD 102.718bn operating cash flow − USD 6.042bn cash capex; gross margin was 71.07% and operating margin 60.38%.
+- Passed targeted ESLint, production build, and 17/17 automated tests; Semiconductors is validated, while Banks remains preview.
 
 ## Remaining tasks
 
-- Resume at Phase 7.1: validate Semiconductors / NVDA before adding Banks.
+- Resume at Phase 7.2: implement and validate Banks / JPM.
 - Complete Phases 7–9 in the order recorded in `TODO.md`.
 
 ## Current status
 
-In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases 1–6 are complete with 16/16 tests passing; Phase 7.1 is the first unfinished task.
+In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases 1–6 and Phase 7.1 are complete with 17/17 tests passing; Phase 7.2 is the first unfinished task.
 
 ## Files modified
 
@@ -151,13 +156,14 @@ In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases
 - `site/app/lib/report-rendering-model.ts`
 - `site/app/lib/sector-learning-pipeline.ts`
 - `site/tests/fixtures/shel-source-snapshot.json`
+- `site/tests/fixtures/nvda-source-snapshot.json`
 - `site/scripts/create-company-fixture.mjs`
 - `site/artifacts/metric_consistency_report.json`
 - `site/output/pdf/shell-phase4-consistency.pdf`
 
 ## Next recommended step
 
-Run the complete Semiconductors / NVDA acceptance gate and keep later industries in preview until their own gates pass.
+Implement the Banks / JPM pack and acceptance gate without using industrial-company revenue, FCF, or capex templates.
 
 ## Assumptions and pending decisions
 
