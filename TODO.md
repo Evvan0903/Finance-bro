@@ -97,5 +97,11 @@
   - [x] Phase 7.2: Banks / JPM.
   - [x] Phase 7.3: Biopharma / LLY.
   - [x] Phase 7.4: Industrials / CAT.
-- [ ] Phase 8: add five-company snapshots and complete automated regression coverage.
-- [ ] Phase 9: finalize worklog, consistency artifact, recovery checkpoint, private deployment, and production verification.
+- [x] Phase 8: add five-company snapshots and complete automated regression coverage.
+- [x] Phase 9: finalize worklog, consistency artifact, recovery checkpoint, private deployment, and production verification.
+  - [x] Generate the final five-company consistency artifact.
+  - [x] Run the production build, ESLint, and 24/24 automated tests.
+  - [x] Create the exact local Sites source checkpoint at `71f5fd4`.
+  - [x] Push `71f5fd4` to the existing Sites source repository.
+  - [x] Save and deploy the new owner-only Sites version (version 6).
+  - [x] Verify the production URL and confirm Sites latest version 6 points to the requested commit.

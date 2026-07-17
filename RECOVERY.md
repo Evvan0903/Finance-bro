@@ -134,17 +134,25 @@ The current objective is a sequential canonical-metric upgrade: make Metric Obje
 - Added four recent official Census, Federal Reserve, BLS, and Caterpillar sources, industrial research methods, KPI ontology, drivers, peers, through-cycle EV/FCF scenarios, and bilingual UI/report paths.
 - Verified CAT FY2025 revenue of USD 67.589bn, operating income of USD 11.151bn, strict FCF of USD 8.918bn, working capital of USD 15.927bn, firm backlog of USD 51.2bn, combined price-cost impact of USD -2.965bn, Power & Energy segment margin of 19.9%, FCF conversion of 100.41%, and near-term backlog share of 37.70%.
 - Kept comparable new orders, uniform organic growth, and CAT company-level utilization unavailable rather than substituting revenue growth or industry utilization; near-term backlog is labeled as a delivery obligation, not a completion rate.
-- CAT produced 235 canonical metrics and 890 audited surface references with zero consistency issues. Two runs reproduced every object and output.
+- CAT produced 227 canonical metrics and 858 audited surface references after the consolidated-gross-profit plausibility gate, with zero consistency issues. Two runs reproduced every object and output.
 - Passed targeted ESLint, production build, 20/20 automated tests, and bilingual saved-source browser acceptance. A separate live-SEC request reproduced the existing temporary SEC public-data outage, so runtime-source resilience remains for Phase 8.
+- Completed Phase 8 automated coverage for unit and currency conflicts, full-precision formulas, cache deletion/expiry/failure/clear behavior, five official-source snapshots, working-capital surface reconciliation, and unsupported-sector prevention.
+- Prevented CAT's immaterial standardized `CostOfGoodsAndServicesSold` fact from generating a false consolidated gross profit or 99.9% gross margin; CAT operating margin remains the supported profitability measure.
+- Added a disclosed, dated runtime fallback for only the five accepted companies after temporary SEC/network failures. A direct no-fixture CAT outage simulation returned HTTP 200, passed consistency, disclosed the July 17, 2026 snapshot, and retained strict FCF of USD 8.918bn.
+- Passed targeted ESLint, production build, and 23/23 automated tests for Phase 8.
+- Completed the local Phase 9 artifact and final audit: 921 canonical metrics and 3,562 report-surface references across SHEL, NVDA, JPM, LLY, and CAT; zero duplicate keys, conflicting values, formula mismatches, cross-section mismatches, or reproducibility mismatches.
+- Passed the final production build, ESLint, and 24/24 automated tests.
+- Created the exact local Sites source checkpoint `71f5fd4` (`checkpoint: final consistency artifact phase 9`).
+- Pushed the exact validated source commit `71f5fd47380c04606e0a80045d53fe3a401837b4` to the existing Sites `main` branch, saved Sites version 6 (`appgprj_6a585b81f7708191b13b1c34903345a9~appgver_2308142c1fa88191b7bc7fb93c6d00f3`), and deployed it successfully through the verified owner-only path.
+- Sites now reports version 6 as latest and live at `https://scopeline-research.evvan.chatgpt.site`; the authenticated production URL returned HTTP 200. No implementation files were changed during deployment.
 
 ## Remaining tasks
 
-- Resume at Phase 8: complete automated invariant and five-company regression coverage, including runtime-source resilience.
-- Complete Phases 8–9 in the order recorded in `TODO.md`.
+- None for the requested deployment-only release. The existing local validation and source checkpoint remain the source of truth; no new implementation work is pending from this turn.
 
 ## Current status
 
-In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases 1–7 are complete with 20/20 tests passing; Phase 8 is the first unfinished task.
+Phase 9 is complete. Local implementation and validation remain complete at Sites commit `71f5fd4`; 24/24 tests pass. Production version 6 is live at the existing owner-only URL, and its saved source provenance matches the requested full commit SHA.
 
 ## Files modified
 
@@ -185,7 +193,7 @@ In progress. Sites version 5 remains live and unchanged. Canonical Metric Phases
 
 ## Next recommended step
 
-Complete Phase 8 automated invariants and five-company regression coverage, then generate the final consistency artifact in Phase 9.
+Monitor the version 6 production release for extraction behavior; do not change or rebuild the validated implementation unless a production issue is observed.
 
 ## Assumptions and pending decisions
 
@@ -212,6 +220,9 @@ Complete Phase 8 automated invariants and five-company regression coverage, then
 - The latest Shell 2025 Form 20-F was filed March 12, 2026. The validation endpoint falls back to a compact verified excerpt only when official requests fail and discloses that source mode.
 - CAT acceptance uses FY2025 issuer metrics only when the latest 10-K identity matches the December 31, 2025 period and February 13, 2026 filing date.
 - Comparable CAT FY2025 new orders, uniform organic growth, and company-level utilization are not available as verified numeric metrics; industry utilization remains contextual evidence only.
+- Verified runtime fallback is restricted to SHEL, NVDA, JPM, LLY, and CAT, occurs only after a temporary SEC/network error, and is disclosed with its retrieval date; arbitrary issuers do not receive a generic snapshot.
+- The current local Sites HEAD is the validated source of truth. Do not amend `71f5fd4` before the release unless a newly discovered defect requires a separate commit.
+- Sites access was rechecked before deployment: `custom` access, one owner (`evansunemail@gmail.com`), no allowed groups, and no additional users.
 
 ## Recovery procedure
 

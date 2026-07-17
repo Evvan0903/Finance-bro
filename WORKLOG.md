@@ -1,5 +1,35 @@
 # ScopeLine Metric Locator Worklog
 
+## Deployment — validated Phase 9 release
+
+- Commit SHA: `71f5fd47380c04606e0a80045d53fe3a401837b4` (`71f5fd4`)
+- Sites project: `appgprj_6a585b81f7708191b13b1c34903345a9`
+- Saved version: Sites version **6** (`appgprj_6a585b81f7708191b13b1c34903345a9~appgver_2308142c1fa88191b7bc7fb93c6d00f3`)
+- Deployment: succeeded as publish deployment `appgdep_6a5a8e7b4d5881918d17ab62bf8d7aef`; owner-only access preserved.
+- Production URL: <https://scopeline-research.evvan.chatgpt.site>
+- Verification: Sites reports latest version 6 and the saved version source matches the commit above; the authenticated production URL returned HTTP 200 with 10,435 bytes.
+- Remaining issues: no deployment or implementation blockers. The in-app browser DOM snapshot was empty in this session, so live verification used the Sites deployment record and an authenticated production HTTP check.
+
+## Canonical Metric Upgrade — Phase 9
+
+- Objective: finalize the worklog, machine-readable consistency artifact, recovery state, and private production release.
+- Artifact: updated `site/artifacts/metric_consistency_report.json` for all five accepted companies and sectors. It records 921 canonical metrics, 3,562 surface references, zero duplicate keys, zero conflicting values, zero formula mismatches, zero cross-section mismatches, and zero reproducibility mismatches.
+- Final validation: all five fixture reports returned HTTP 200, passed consistency with zero issues, and reproduced exactly across two runs. The final production build, ESLint, and 24/24 automated tests passed.
+- Source checkpoint: exact validated Sites source is committed locally at `71f5fd4` (`checkpoint: final consistency artifact phase 9`); Phase 8 is `ee60e83`, and Phase 7.4 is `4c7e91e`.
+- Deployment status: completed. The exact source was pushed to the existing Sites `main` branch, saved as version 6, deployed through the owner-only production path, and verified live at the production URL above.
+- Remaining action: none for this deployment-only release. The existing application validation remains recorded below; no implementation or refactor was made during deployment.
+
+## Canonical Metric Upgrade — Phase 8
+
+- Objective: complete deterministic coverage for schema, uniqueness, dependencies, units, currency, periods, lineage, candidate/definition conflicts, precision, consistency, cache invalidation, reproducibility, Web/PDF agreement, sector requirements, and unsupported fallbacks.
+- Changes: added explicit mixed-unit and mixed-currency rejection tests, full-precision ratio verification, cache hit/delete/expiry/failure/clear tests, five-snapshot presence checks, and industrial working-capital surface auditing.
+- Candidate validation: CAT's standardized `CostOfGoodsAndServicesSold` fact was not a consolidated cost-of-sales measure. A plausibility gate now prevents this immaterial fact from creating a false 99.9% derived gross margin; CAT gross profit and gross margin remain unavailable while operating margin remains verified.
+- Runtime resilience: live SEC requests remain first priority. Only SHEL, NVDA, JPM, LLY, and CAT may fall back after a temporary SEC/network error to their dated, verified official-source snapshots; the fallback is disclosed in Data Coverage. Arbitrary issuers never receive a Shell or generic snapshot.
+- Regression fixtures: SHEL, NVDA, JPM, LLY, and CAT all have saved Company Facts/Submissions snapshots, and every supported sector has a double-run acceptance test.
+- Tests: targeted ESLint passed; production build passed; 23/23 automated tests passed at the Phase 8 checkpoint; direct no-fixture CAT outage simulation returned HTTP 200, passed the consistency audit, disclosed the snapshot date, and preserved FY2025 strict FCF of USD 8.918bn; 0 failed.
+- Files: research API, financial normalization, consistency auditor, and regression tests.
+- Next: generate the final machine-readable consistency artifact and completion report.
+
 ## Canonical Metric Upgrade — Phase 7.4
 
 - Objective: validate Industrials / Industrial Machinery with CAT and complete sequential sector unlocking.
@@ -9,7 +39,7 @@
 - Derived metrics: working capital = USD 52.485bn current assets − USD 36.558bn current liabilities = USD 15.927bn; strict FCF = USD 11.739bn operating cash flow − USD 2.821bn cash capex = USD 8.918bn; FCF conversion = 100.41%; price-cost impact = USD -2.965bn; near-term backlog share = 37.70%.
 - Acceptance: 7/10 KPI cards have verified canonical values. Comparable FY2025 new orders, uniform organic growth, and CAT company-level utilization remain ontology concepts but are hidden because no comparable issuer numeric value was verified; industry utilization is context only.
 - Valuation: Bear/Base/Bull use explicit through-cycle FCF and 10x/14x/18x EV/FCF assumptions. Backlog is not treated as recognized revenue and near-term backlog share is not presented as a completion rate.
-- Consistency and reproducibility: 235 canonical metrics and 890 surface references passed with zero issues; two identical runs matched all objects, definitions, formulas, sources, statuses, scenarios, valuation values, citations, and outputs.
+- Consistency and reproducibility: after the Phase 8 consolidated-gross-profit plausibility gate, 227 canonical metrics and 858 surface references passed with zero issues; two identical runs matched all objects, definitions, formulas, sources, statuses, scenarios, valuation values, citations, and outputs.
 - UI validation: saved-source Chinese and English CAT reports showed USD 51.2bn backlog, USD -2.965bn price-cost impact, 19.9% segment margin, USD 15.927bn working capital, and 100.4% FCF conversion without a false coverage warning or UI error.
 - Runtime note: a separate live-SEC browser request reproduced the existing temporary SEC public-data outage; the verified saved-source acceptance path passed. Runtime-source resilience remains a Phase 8 reliability item.
 - Files: industrial sector types/methods/evidence/pack, financial normalization, research/outlook APIs, bilingual UI, CAT fixture, and tests.
@@ -170,4 +200,4 @@
 
 ## Next recommended step
 
-Monitor production extraction behavior before adding any new sector or issuer pack. Sites version 5 is live at `https://scopeline-research.evvan.chatgpt.site` and remains owner-only.
+Monitor production extraction behavior before adding any new sector or issuer pack. Sites version 6 is live at `https://scopeline-research.evvan.chatgpt.site` and remains owner-only.
