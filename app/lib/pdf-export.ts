@@ -1,5 +1,7 @@
 "use client";
 
+import { REPORT_RENDERING_MODEL } from "./report-rendering-model";
+
 type PdfExportMeta = {
   ticker: string;
   researchDate: string;
@@ -225,6 +227,9 @@ function pdfBlob(pages: HTMLCanvasElement[]) {
 }
 
 export async function exportReportPdf(root: HTMLElement, meta: PdfExportMeta) {
+  if (root.dataset.renderingModel !== REPORT_RENDERING_MODEL.pdf) {
+    throw new Error("PDF export requires the audited shared report data model.");
+  }
   if ("fonts" in document) await document.fonts.ready;
   const pages = await composePages(root, meta);
   const url = URL.createObjectURL(pdfBlob(pages));

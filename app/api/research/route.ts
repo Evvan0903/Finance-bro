@@ -6,6 +6,8 @@ import {
 } from "../../lib/canonical-metrics";
 import type { CanonicalMetricObject } from "../../lib/canonical-metrics";
 import { buildCanonicalScenarios } from "../../lib/canonical-scenarios";
+import { auditResearchReport } from "../../lib/metric-consistency-auditor";
+import { REPORT_RENDERING_MODEL } from "../../lib/report-rendering-model";
 import {
   buildFinancialMetricRegistry,
   ensureCoreDerivedMetrics,
@@ -1065,10 +1067,17 @@ async function buildReport(
           ? ["net-debt"]
           : []),
       ];
-  const metricUsage = buildMetricUsage(metricRegistry, locale, [
+  const usageGroups = [
     ...periods.map((period) => ({
-      module: `historical-financials:${period.periodEnd}`,
+      module: `historical-table:${period.periodEnd}`,
       keys: Object.values(period.metricKeys),
+    })),
+    ...periods.map((period) => ({
+      module: `trend-chart:${period.periodEnd}`,
+      keys: [
+        period.metricKeys.revenue,
+        period.metricKeys.operatingCashFlow,
+      ].filter(Boolean),
     })),
     { module: "dashboard", keys: narrative.dashboard.map((metric) => metric.metricKey) },
     {
@@ -1091,13 +1100,30 @@ async function buildReport(
       keys: item.metricReferences,
     })),
     ...scenarios.map((item) => ({
-      module: "scenarios-and-valuation",
+      module: "scenarios",
       keys: Object.values(item.metricReferences),
+    })),
+    ...scenarios.map((item) => ({
+      module: "valuation",
+      keys: [
+        item.metricReferences.enterpriseValueMultiple,
+        item.metricReferences.valuationMetric,
+        item.metricReferences.modelImpliedEnterpriseValue,
+      ].filter(Boolean),
     })),
     ...peerComparison.map((item) => ({
       module: "peer-comparison",
       keys: Object.values(item.metricReferences),
     })),
+  ];
+  const quantitativeKeys = [...new Set(
+    usageGroups.flatMap((group) => group.keys).filter(Boolean),
+  )];
+  const metricUsage = buildMetricUsage(metricRegistry, locale, [
+    ...usageGroups,
+    { module: "json-research-object", keys: quantitativeKeys },
+    { module: "web-report", keys: quantitativeKeys },
+    { module: "pdf-data-model", keys: quantitativeKeys },
   ]);
 
   return {
@@ -1123,6 +1149,7 @@ async function buildReport(
     latestInterim,
     metricRegistry: metricRegistry.snapshot(),
     metricUsage,
+    renderingModel: REPORT_RENDERING_MODEL,
     periods,
     dashboard: narrative.dashboard,
     sectorPack: {
@@ -1298,7 +1325,11 @@ export async function POST(request: Request) {
         { status: 404 },
       );
     }
-    return Response.json({ report: await buildReport(record, selection, locale) });
+    const report = await buildReport(record, selection, locale);
+    return Response.json({
+      report,
+      consistencyAudit: auditResearchReport(report),
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected error";
     if (message === "SECTOR_MISMATCH") {

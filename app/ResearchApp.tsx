@@ -914,7 +914,12 @@ export function ResearchApp() {
       </section>
 
       {report && latestPeriod && (
-        <article className="report" id="report" ref={reportRef}>
+        <article
+          className="report"
+          id="report"
+          ref={reportRef}
+          data-rendering-model={report.renderingModel.web}
+        >
           <div data-pdf-block>
             <section className="report-cover">
               <div>

@@ -30,7 +30,7 @@ export type CanonicalMetricObject = {
   currency: string | null;
   status: MetricStatus;
   definition_id: string;
-  formula_id: string | null;
+  formula_id: CanonicalFormulaId | null;
   formula: string | null;
   input_metric_keys: string[];
   source_document: string | null;

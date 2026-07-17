@@ -13,17 +13,31 @@ async function worker() {
 }
 
 async function canonicalMetricsModule() {
-  const source = await readFile(
-    new URL("../app/lib/canonical-metrics.ts", import.meta.url),
-    "utf8",
-  );
+  const url = await transpiledModuleUrl("../app/lib/canonical-metrics.ts");
+  return import(`${url}#${Date.now()}-${Math.random()}`);
+}
+
+async function transpiledModuleUrl(path, replacements = {}) {
+  let source = await readFile(new URL(path, import.meta.url), "utf8");
+  for (const [from, to] of Object.entries(replacements)) {
+    source = source.replaceAll(from, to);
+  }
   const compiled = ts.transpileModule(source, {
     compilerOptions: {
       module: ts.ModuleKind.ESNext,
       target: ts.ScriptTarget.ES2022,
     },
   }).outputText;
-  return import(`data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}#${Date.now()}-${Math.random()}`);
+  return `data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`;
+}
+
+async function consistencyAuditorModule() {
+  const canonicalUrl = await transpiledModuleUrl("../app/lib/canonical-metrics.ts");
+  const auditorUrl = await transpiledModuleUrl(
+    "../app/lib/metric-consistency-auditor.ts",
+    { '"./canonical-metrics"': JSON.stringify(canonicalUrl) },
+  );
+  return import(`${auditorUrl}#${Date.now()}-${Math.random()}`);
 }
 
 const environment = {
@@ -448,7 +462,8 @@ test("routes every quantitative report module through the canonical registry", a
   assert.match(route, /module:\s*"driver-exposure"/);
   assert.match(route, /module:\s*"sector-kpis"/);
   assert.match(route, /module:\s*"investment-debates"/);
-  assert.match(route, /module:\s*"scenarios-and-valuation"/);
+  assert.match(route, /module:\s*"scenarios"/);
+  assert.match(route, /module:\s*"valuation"/);
   assert.match(route, /module:\s*"peer-comparison"/);
   assert.doesNotMatch(route, /function (safeDivide|safeAdd|safeSubtract|cagr|buildScenarios)\b/);
 
@@ -462,6 +477,150 @@ test("routes every quantitative report module through the canonical registry", a
   assert.match(registry, /input_metric_keys/);
   assert.match(types, /metricUsage:\s*MetricUsage\[\]/);
   assert.match(types, /metricReferences:/);
+});
+
+test("audits exact canonical values, shared Web/PDF surfaces, and reproducibility", async () => {
+  const [
+    { createCanonicalMetric, MetricRegistry },
+    { auditResearchReport, compareResearchReports },
+  ] = await Promise.all([
+    canonicalMetricsModule(),
+    consistencyAuditorModule(),
+  ]);
+  const registry = new MetricRegistry("audit-fixture-v1");
+  const revenue = createCanonicalMetric({
+    metric_id: "revenue",
+    company_id: "SHEL",
+    sector: "integrated-oil-gas",
+    period: "FY2025",
+    period_start: "2025-01-01",
+    period_end: "2025-12-31",
+    value: 288_305_000_000,
+    unit: "USD",
+    currency: "USD",
+    status: "Reported",
+    definition_id: "reported-revenue",
+    formula_id: null,
+    formula: null,
+    input_metric_keys: [],
+    source_document: "Shell FY2025 Form 20-F",
+    source_url: "https://www.sec.gov/",
+    source_type: "filing",
+    source_date: "2026-03-12",
+    filing_date: "2026-03-12",
+    section: "Statements of income",
+    table: "Consolidated statement of income",
+    row_label: "Revenue",
+    raw_value: "288305",
+    extraction_method: "deterministic-sec-xbrl",
+    confidence: 0.99,
+    retrieved_at: "2026-07-17T00:00:00.000Z",
+    data_version: "audit-fixture-v1",
+    calculation_version: "1.0",
+  });
+  registry.register(revenue);
+  const emptyPeriod = Object.fromEntries([
+    "grossProfit",
+    "netIncome",
+    "operatingCashFlow",
+    "investingCashFlow",
+    "cashCapex",
+    "freeCashFlowProxy",
+    "assets",
+    "liabilities",
+    "equity",
+    "cash",
+    "inventory",
+    "currentAssets",
+    "currentLiabilities",
+    "totalDebt",
+    "netDebt",
+    "revenueGrowth",
+    "revenueCagr",
+    "netMargin",
+    "netMarginChange",
+    "grossMargin",
+    "operatingCashFlowMargin",
+    "freeCashFlowMargin",
+    "cashConversion",
+    "currentRatio",
+    "liabilitiesAssets",
+  ].map((field) => [field, null]));
+  const surfaceModules = [
+    "historical-table:2025-12-31",
+    "trend-chart:2025-12-31",
+    "dashboard",
+    "json-research-object",
+    "web-report",
+    "pdf-data-model",
+  ];
+  const report = {
+    cutoff: "2026-07-17T01:00:00.000Z",
+    metricRegistry: registry.snapshot(),
+    metricUsage: surfaceModules.map((module) => ({
+      module,
+      canonicalKey: revenue.canonical_key,
+      canonicalValue: revenue.value,
+      displayedValue: "USD 288.305bn",
+    })),
+    renderingModel: {
+      json: "canonical-research-object-v1",
+      web: "shared-research-report-dom-v1",
+      pdf: "shared-research-report-dom-v1",
+      tables: "canonical-financial-period-adapter-v1",
+      charts: "canonical-financial-period-adapter-v1",
+    },
+    periods: [{
+      periodEnd: "2025-12-31",
+      revenue: revenue.value,
+      ...emptyPeriod,
+      metricKeys: { revenue: revenue.canonical_key },
+    }],
+    dashboard: [{
+      metricKey: revenue.canonical_key,
+      label: "Revenue",
+      value: "USD 288.3bn",
+      detail: "FY2025",
+      classification: "Reported fact",
+      tone: "neutral",
+    }],
+    driverExposure: [],
+    thesis: [],
+    investmentDebates: [],
+    risks: [],
+    filingWatchlist: [],
+    catalysts: { operating: [], financial: [], regulatory: [] },
+    sectorKpis: [],
+    peerComparison: [],
+    scenarios: [],
+    sources: [{
+      title: "Shell FY2025 Form 20-F",
+      url: "https://www.sec.gov/",
+      retrievedAt: "2026-07-17T00:00:00.000Z",
+    }],
+  };
+
+  const audit = auditResearchReport(report);
+  assert.equal(audit.passed, true);
+  assert.equal(audit.totalCanonicalMetrics, 1);
+  assert.equal(audit.checks.webPdf, true);
+  const broken = structuredClone(report);
+  broken.periods[0].revenue = 288_304_000_000;
+  const brokenAudit = auditResearchReport(broken);
+  assert.equal(brokenAudit.passed, false);
+  assert.ok(
+    brokenAudit.issues.some((issue) => issue.code === "SURFACE_VALUE_MISMATCH"),
+  );
+
+  const rerun = structuredClone(report);
+  rerun.cutoff = "2026-07-17T01:05:00.000Z";
+  rerun.metricRegistry.metrics[0].retrieved_at = "2026-07-17T01:05:00.000Z";
+  rerun.sources[0].retrievedAt = "2026-07-17T01:05:00.000Z";
+  assert.equal(compareResearchReports(report, rerun).passed, true);
+  rerun.metricRegistry.metrics[0].value = 288_304_000_000;
+  const comparison = compareResearchReports(report, rerun);
+  assert.equal(comparison.passed, false);
+  assert.equal(comparison.mismatchedObjects.length, 1);
 });
 
 test("owns PDF pagination and footer instead of browser print metadata", async () => {

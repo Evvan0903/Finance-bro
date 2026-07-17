@@ -168,6 +168,14 @@ export type MetricUsage = {
   displayedValue: string | null;
 };
 
+export type ReportRenderingModel = {
+  json: string;
+  web: string;
+  pdf: string;
+  tables: string;
+  charts: string;
+};
+
 export type ResearchSource = {
   title: string;
   url: string;
@@ -200,6 +208,7 @@ export type ResearchReport = {
   latestInterim: FilingSource | null;
   metricRegistry: MetricRegistrySnapshot;
   metricUsage: MetricUsage[];
+  renderingModel: ReportRenderingModel;
   periods: FinancialPeriod[];
   dashboard: DashboardMetric[];
   sectorPack: {
