@@ -159,8 +159,16 @@ test("returns distinct screened outlooks without regenerating company data", asy
   assert.equal(semis.subindustry, "semiconductors");
   assert.ok(energy.claims.length >= 2);
   assert.ok(semis.claims.length >= 2);
-  assert.ok(energy.claims.every((claim) => claim.publicationDate >= "2025-01-01"));
-  assert.ok(semis.claims.every((claim) => claim.publicationDate >= "2025-01-01"));
+  assert.ok(energy.claims.every((claim) =>
+    claim.publicationDate >= "2025-01-01" && claim.publisher && claim.title && claim.url
+  ));
+  assert.ok(semis.claims.every((claim) =>
+    claim.publicationDate >= "2025-01-01" && claim.publisher && claim.title && claim.url
+  ));
+  assert.ok(energy.learningAudit.acceptedSources >= 2);
+  assert.ok(semis.learningAudit.acceptedSources >= 2);
+  assert.equal(energy.learningAudit.publicationWindowStart, "2025-01-01");
+  assert.equal(semis.learningAudit.publicationWindowStart, "2025-01-01");
   assert.notDeepEqual(
     energy.claims.map((claim) => claim.publisher),
     semis.claims.map((claim) => claim.publisher),
@@ -188,12 +196,14 @@ test("keeps the full client-to-API sector and locale contract explicit", async (
 });
 
 test("enforces strict FCF and sector-specific analyst packs", async () => {
-  const [route, financialMetrics, packs, evidence, retrieval] = await Promise.all([
+  const [route, financialMetrics, packs, evidence, retrieval, learning, sectorTypes] = await Promise.all([
     readFile(new URL("../app/api/research/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/financial-metrics.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/sector-packs.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/sector-evidence.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/sector-retrieval.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/sector-learning-pipeline.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/sector-types.ts", import.meta.url), "utf8"),
   ]);
 
   assert.match(route, /Free cash flow = operating cash flow - cash capital expenditure/);
@@ -222,12 +232,32 @@ test("enforces strict FCF and sector-specific analyst packs", async () => {
   assert.match(packs, /XOM/);
   assert.match(packs, /AMD/);
 
-  assert.match(evidence, /MIN_PUBLICATION_DATE = "2025-01-01"/);
-  assert.match(evidence, /source\.publicationDate < MIN_PUBLICATION_DATE/);
-  assert.match(evidence, /seenUrls/);
-  assert.match(evidence, /source\.accessible/);
+  assert.match(learning, /SECTOR_RESEARCH_START_DATE = "2025-01-01"/);
+  assert.match(learning, /source\.publicationDate < SECTOR_RESEARCH_START_DATE/);
+  assert.match(learning, /source\.retrievalDate < source\.publicationDate/);
+  assert.match(learning, /seenUrls/);
+  assert.match(learning, /source\.accessible/);
+  assert.match(learning, /non-concise-learning-content/);
+  for (const field of [
+    "title",
+    "publisher",
+    "publicationDate",
+    "retrievalDate",
+    "sector",
+    "subindustry",
+    "geography",
+    "topic",
+    "url",
+    "sourceType",
+    "currentEvidence",
+    "generalizedMethods",
+  ]) assert.match(sectorTypes, new RegExp(`${field}:`));
+  assert.match(evidence, /SECTOR_LEARNING_CORPUS/);
+  assert.doesNotMatch(evidence + sectorTypes, /fullText:|documentBody:|reportContent:/);
   assert.match(retrieval, /filteredSources/);
   assert.match(retrieval, /embed\(/);
+  assert.match(retrieval, /source\.generalizedMethods/);
+  assert.match(retrieval, /source\.currentEvidence/);
   assert.match(retrieval, /full reports are never loaded/);
 });
 

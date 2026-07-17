@@ -107,21 +107,38 @@ export type SectorMethod = {
 
 export type EvidenceGeography = ResearchMarket | "North America" | "International";
 
+export type SectorResearchSourceType =
+  | "government-outlook"
+  | "industry-outlook"
+  | "industry-statistics"
+  | "regulatory-action";
+
 export type SectorEvidenceSource = {
   id: string;
   title: string;
   publisher: string;
   publicationDate: string;
   retrievalDate: string;
+  sourceType: SectorResearchSourceType;
   access: "public";
   sector: SupportedSector;
   subindustry: SupportedSubindustry;
   geography: EvidenceGeography[];
   topic: string;
   url: string;
-  summary: LocalizedText;
-  researchMethod: LocalizedText;
+  currentEvidence: LocalizedText;
+  generalizedMethods: LocalizedText[];
   investorImplication: LocalizedText;
+};
+
+export type SectorLearningAudit = {
+  acceptedSources: number;
+  rejectedSources: number;
+  extractedMethods: number;
+  currentEvidenceItems: number;
+  publicationWindowStart: string;
+  publicationWindowEnd: string;
+  rejectionReasons: Array<{ sourceId: string; reason: string }>;
 };
 
 export type EvidenceChunk = {
@@ -151,6 +168,7 @@ export type SectorOutlook = {
   claims: SectorOutlookClaim[];
   insufficientEvidence: boolean;
   methodology: string;
+  learningAudit: Omit<SectorLearningAudit, "rejectionReasons">;
 };
 
 export function localize(text: LocalizedText, locale: ResearchLocale) {

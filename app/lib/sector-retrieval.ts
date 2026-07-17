@@ -1,5 +1,6 @@
 import { MemoryCache } from "./cache";
 import { CURRENT_SECTOR_EVIDENCE } from "./sector-evidence";
+import { SECTOR_RESEARCH_START_DATE } from "./sector-learning-pipeline";
 import { getSectorPack } from "./sector-packs";
 import type {
   EvidenceChunk,
@@ -90,22 +91,23 @@ function retrieveChunks(
   const queryVector = embed(query);
 
   return filteredSources(market, subindustry)
-    .flatMap((source): EvidenceChunk[] => [
-      {
+    .flatMap((source): EvidenceChunk[] => {
+      const methodChunks = source.generalizedMethods.map((method, index) => ({
+        id: `${source.id}:method:${index}`,
+        source,
+        kind: "method" as const,
+        text: method[locale],
+        score: cosine(queryVector, embed(`${source.topic} ${method[locale]}`)),
+      }));
+      return [{
         id: `${source.id}:summary`,
         source,
         kind: "summary",
-        text: source.summary[locale],
-        score: cosine(queryVector, embed(`${source.topic} ${source.summary[locale]}`)),
+        text: source.currentEvidence[locale],
+        score: cosine(queryVector, embed(`${source.topic} ${source.currentEvidence[locale]}`)),
       },
-      {
-        id: `${source.id}:method`,
-        source,
-        kind: "method",
-        text: source.researchMethod[locale],
-        score: cosine(queryVector, embed(`${source.topic} ${source.researchMethod[locale]}`)),
-      },
-    ])
+      ...methodChunks];
+    })
     .sort((a, b) => b.score - a.score)
     .slice(0, 8);
 }
@@ -116,6 +118,7 @@ function buildOutlook(
   locale: ResearchLocale,
 ): SectorOutlook {
   const pack = getSectorPack(subindustry);
+  const eligibleSources = filteredSources(market, subindustry);
   const chunks = retrieveChunks(market, subindustry, locale);
   const sourceById = new Map<string, SectorEvidenceSource>();
   for (const chunk of chunks) {
@@ -133,7 +136,7 @@ function buildOutlook(
     evidenceCutoff,
     lastRefreshedAt: now,
     claims: sources.map((source) => ({
-      claim: source.summary[locale],
+      claim: source.currentEvidence[locale],
       whyItMatters: source.investorImplication[locale],
       publisher: source.publisher,
       publicationDate: source.publicationDate,
@@ -146,6 +149,17 @@ function buildOutlook(
       locale === "zh"
         ? "先按行业、子行业、地区和发布日期过滤，再对原创摘要与方法片段进行本地确定性向量检索；不载入完整报告。"
         : "Sources are filtered by sector, subindustry, geography, and publication date before local deterministic vector retrieval over original summary and method chunks; full reports are never loaded.",
+    learningAudit: {
+      acceptedSources: eligibleSources.length,
+      rejectedSources: 0,
+      extractedMethods: eligibleSources.reduce(
+        (count, source) => count + source.generalizedMethods.length,
+        0,
+      ),
+      currentEvidenceItems: eligibleSources.length,
+      publicationWindowStart: SECTOR_RESEARCH_START_DATE,
+      publicationWindowEnd: new Date().toISOString().slice(0, 10),
+    },
   };
 }
 
