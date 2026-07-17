@@ -69,4 +69,4 @@
 - [x] Verify visibly different SHEL and NVDA research outputs.
 - [x] Run lint, build, automated tests, browser QA, and PDF rendering QA.
 - [x] Update recovery notes and create a local checkpoint commit.
-- [ ] Publish version 3 to the existing private ScopeLine Site and verify production.
+- [x] Publish the sector-aware release to the existing private ScopeLine Site and verify production.

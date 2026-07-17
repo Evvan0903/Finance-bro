@@ -64,17 +64,24 @@ The current objective is to incrementally upgrade the same private ScopeLine Sit
 - Verified outlook-only refresh changed the sector timestamp while leaving the company-data retrieval timestamp unchanged.
 - Downloaded a real eight-page NVDA PDF, rendered every page, and confirmed populated charts, unclipped tables, readable sources, intact scenario cards, and the exact application footer without browser URLs.
 - Committed the completed version 3 implementation locally as `8d22cab` (`checkpoint: sector-aware research experience`); it has not yet been pushed or deployed.
+- Published the validated sector-aware source to the existing private ScopeLine Site.
+- Diagnosed a production-only SEC HTTP 429 at the remote ticker-directory lookup, configured a compliant SEC User-Agent in Sites, and added a public-CIK local resolver for the two supported sector universes so supported reports do not spend a remote directory request.
+- Kept all filing, Company Facts, financial, and peer data on the original official SEC pipeline; the local resolver only maps supported tickers and company names to public SEC CIK identifiers.
+- Passed lint, production build, and all nine regression tests again after the SEC request-resilience change.
+- Committed the final source as `6d6b671` (`fix: reduce SEC directory requests`), pushed that exact state, saved Sites version 4, and deployed it successfully.
+- Verified the private production homepage, SHEL energy report, NVDA semiconductor report, and independent sector-outlook refresh endpoint with HTTP 200 responses.
+- Verified production SHEL has five annual periods, ten energy KPIs, XOM/CVX/BP/TTE peers, strict unavailable FCF treatment, and EV / OCF valuation fallback.
+- Verified production NVDA has five annual periods, nine semiconductor KPIs, AMD/AVGO/INTC/TSM peers, 71.1% latest gross margin, USD 96.7 billion strict FCF, and EV / Revenue valuation.
+- Updated the Site display title to `ScopeLine 行业感知研究 · Sector-Aware Research`.
+- Reconfirmed access remains owner-only with one owner, no additional users, and no allowed groups.
 
 ## Remaining tasks
 
-- Push the exact committed version 3 source to the existing ChatGPT Sites source repository.
-- Save and deploy version 3 to the existing owner-only ScopeLine Site.
-- Verify the production homepage, SHEL report, NVDA report, PDF control, and access policy.
-- Record the final deployment identifiers and checkpoint the updated recovery notes.
+- None for the requested version 3 upgrade.
 
 ## Current status
 
-Implementation and local validation are complete. The existing bilingual version 2 Site remains live in production until the next deployment. Version 3 is committed in the independent Sites repository as `8d22cab`; lint, production build, all nine tests, SHEL/NVDA browser validation, outlook-only refresh, and eight-page PDF rendering QA have passed. No version 3 source has been pushed or deployed yet.
+Complete. Sites version 4 is live at `https://scopeline-research.evvan.chatgpt.site` from source commit `6d6b671`. Lint, production build, all nine tests, local SHEL/NVDA browser validation, outlook-only refresh, eight-page PDF rendering QA, and authenticated production homepage/SHEL/NVDA/outlook checks all passed. The Site remains owner-only.
 
 ## Files modified
 
@@ -89,7 +96,7 @@ Implementation and local validation are complete. The existing bilingual version
 
 ## Next recommended step
 
-Push commit `8d22cab` to the existing Sites source repository, package that exact source state, save version 3, deploy it to the current owner-only URL, and verify production.
+Open the private production Site while signed into the owner ChatGPT account and use the SHEL / NVDA examples or enter another company in the currently supported universe.
 
 ## Assumptions and pending decisions
 
@@ -110,6 +117,8 @@ Push commit `8d22cab` to the existing Sites source repository, package that exac
 - The application-owned PDF path controls pagination and footer metadata; print styles remain a fallback.
 - When strict FCF is unavailable for an energy issuer, the scenario framework may use explicitly labeled operating cash flow as an EV / OCF valuation input, but never relabels it as FCF.
 - Runtime retrieval timestamps use UTC, while the research date uses the current US/Pacific calendar date.
+- Production Sites uses a compliant `SEC_USER_AGENT` runtime variable stored as a secret; it is not committed to source.
+- Direct SEC ticker-directory calls can still be rate-limited from shared cloud egress. Supported energy, semiconductor, and peer tickers use the bundled public CIK resolver before falling back to the live directory.
 
 ## Recovery procedure
 
