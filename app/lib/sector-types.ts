@@ -176,6 +176,9 @@ export type SectorOutlook = {
   sector: SupportedSector;
   subindustry: SupportedSubindustry;
   market: ResearchMarket;
+  researchWindowStart: string;
+  researchWindowEnd: string;
+  /** Retained for compatibility with saved reports; presentation uses the research-window fields. */
   evidenceCutoff: string;
   lastRefreshedAt: string;
   claims: SectorOutlookClaim[];

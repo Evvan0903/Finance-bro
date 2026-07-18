@@ -179,6 +179,34 @@ const EVIDENCE_CANDIDATES: EvidenceCandidate[] = [
     accessible: true,
   },
   {
+    id: "semi-memory-equipment-june-2026",
+    title: "SEMI Projects 300mm Memory Equipment Investment to Surpass $50 Billion in 2026",
+    publisher: "SEMI",
+    publicationDate: "2026-06-29",
+    retrievalDate: RETRIEVAL_DATE,
+    sourceType: "industry-outlook",
+    access: "public",
+    sector: "technology",
+    subindustry: "semiconductors",
+    geography: ["Global", "US", "Europe", "International"],
+    topic: "HBM, advanced-memory capacity, and cloud-led equipment investment",
+    url: "https://www.semi.org/en/semi-press-release/semi-projects-300mm-memory-equipment-investment-to-surpass-50-billion-dollars-in-2026",
+    currentEvidence: {
+      zh: "SEMI 预计 2026 年全球 300mm 存储设备投资增长 29% 至 520 亿美元，DRAM 设备支出受 HBM 和 DDR5 需求推动；技术迁移和先进制程仍限制有效产能增速。",
+      en: "SEMI expects 2026 global 300mm memory-equipment investment to rise 29% to US$52 billion, with DRAM spending supported by HBM and DDR5 demand; technology migration and advanced-node complexity still moderate effective capacity growth.",
+    },
+    generalizedMethods: [{
+      zh: "使用逐厂设备支出和产能项目数据库，将云资本开支、AI 加速器需求与 HBM、DRAM 和 NAND 的技术迁移相互验证。",
+      en: "Use facility-level equipment-spending and capacity projects to cross-check cloud capex and AI-accelerator demand against HBM, DRAM, and NAND technology migration.",
+    }],
+    investorImplication: {
+      zh: "HBM 与先进存储的资本开支支持 AI 供应链需求，但设备支出上行不等同于所有芯片厂的收入或利润同步上行。",
+      en: "HBM and advanced-memory capex supports AI-supply-chain demand, but higher equipment spending does not imply uniform revenue or margin gains across chip suppliers.",
+    },
+    relevant: true,
+    accessible: true,
+  },
+  {
     id: "bis-h200-license-january-2026",
     title: "Department of Commerce Revises License Review Policy for Semiconductors Exported to China",
     publisher: "U.S. Bureau of Industry and Security",
@@ -190,7 +218,7 @@ const EVIDENCE_CANDIDATES: EvidenceCandidate[] = [
     subindustry: "semiconductors",
     geography: ["US", "International"],
     topic: "Advanced-computing export licensing",
-    url: "https://www.bis.gov/sites/default/files/documents/DoC%20Revises%20License%20Review%20Policy%20for%20Semiconductors%20Exports.pdf",
+    url: "https://www.bis.gov/press-release/department-commerce-revises-license-review-policy-semiconductors-exported-china",
     currentEvidence: {
       zh: "BIS 将 Nvidia H200、AMD MI325X 及类似芯片对华出口改为满足安全、产能与合规条件后逐案审查，显示高端产品市场准入取决于许可细节。",
       en: "BIS moved China exports of Nvidia H200, AMD MI325X, and similar chips to case-by-case review subject to security, capacity, and compliance conditions, making market access dependent on licensing details.",

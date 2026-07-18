@@ -77,6 +77,13 @@ function filteredSources(market: ResearchMarket, subindustry: SupportedSubindust
   );
 }
 
+function sourcePriority(source: SectorEvidenceSource) {
+  if (source.sourceType === "regulatory-action") return 0;
+  if (source.sourceType === "industry-statistics") return 1;
+  if (source.sourceType === "industry-outlook") return 2;
+  return 3;
+}
+
 function retrieveChunks(
   market: ResearchMarket,
   subindustry: SupportedSubindustry,
@@ -108,7 +115,7 @@ function retrieveChunks(
       },
       ...methodChunks];
     })
-    .sort((a, b) => b.score - a.score)
+    .sort((a, b) => b.score - a.score || sourcePriority(a.source) - sourcePriority(b.source))
     .slice(0, 8);
 }
 
@@ -124,16 +131,18 @@ function buildOutlook(
   for (const chunk of chunks) {
     if (chunk.kind === "summary") sourceById.set(chunk.source.id, chunk.source);
   }
-  const sources = [...sourceById.values()].slice(0, 4);
+  const sources = [...sourceById.values()].slice(0, 5);
   const now = new Date().toISOString();
-  const evidenceCutoff =
-    sources.map((source) => source.publicationDate).sort().at(-1) ?? "2025-01-01";
+  const researchWindowEnd =
+    eligibleSources.map((source) => source.publicationDate).sort().at(-1) ?? SECTOR_RESEARCH_START_DATE;
 
   return {
     sector: pack.sector,
     subindustry,
     market,
-    evidenceCutoff,
+    researchWindowStart: SECTOR_RESEARCH_START_DATE,
+    researchWindowEnd,
+    evidenceCutoff: researchWindowEnd,
     lastRefreshedAt: now,
     claims: sources.map((source) => ({
       claim: source.currentEvidence[locale],
@@ -147,8 +156,8 @@ function buildOutlook(
     insufficientEvidence: sources.length < 2,
     methodology:
       locale === "zh"
-        ? "先按行业、子行业、地区和发布日期过滤，再对原创摘要与方法片段进行本地确定性向量检索；不载入完整报告。"
-        : "Sources are filtered by sector, subindustry, geography, and publication date before local deterministic vector retrieval over original summary and method chunks; full reports are never loaded.",
+        ? "先按行业、子行业、地区和发布日期过滤，再以来源层级为并列排序规则，对原创摘要与方法片段进行本地确定性向量检索；不载入完整报告。"
+        : "Sources are filtered by sector, subindustry, geography, and publication date before local deterministic vector retrieval over original summary and method chunks, with the source hierarchy used as a tie-breaker; full reports are never loaded.",
     learningAudit: {
       acceptedSources: eligibleSources.length,
       rejectedSources: 0,
@@ -158,7 +167,7 @@ function buildOutlook(
       ),
       currentEvidenceItems: eligibleSources.length,
       publicationWindowStart: SECTOR_RESEARCH_START_DATE,
-      publicationWindowEnd: new Date().toISOString().slice(0, 10),
+      publicationWindowEnd: researchWindowEnd,
     },
   };
 }

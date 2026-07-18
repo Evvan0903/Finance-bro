@@ -4,6 +4,7 @@ import type {
   MetricSourceTier,
   MetricStatus,
 } from "./metric-locator-types";
+import { formatCanonicalMetricValue } from "./presentation-format";
 
 export const CANONICAL_METRIC_SCHEMA_VERSION = "1.0";
 export const DEFAULT_CALCULATION_VERSION = "1.0";
@@ -666,37 +667,5 @@ export function formatMetricForDisplay(
   metric: CanonicalMetricObject,
   locale: "zh" | "en" = "en",
 ) {
-  if (metric.value === null) return "—";
-  const numberLocale = locale === "zh" ? "zh-CN" : "en-US";
-  if (metric.currency && metric.unit === metric.currency) {
-    const absolute = Math.abs(metric.value);
-    const divisor = absolute >= 1e9 ? 1e9 : absolute >= 1e6 ? 1e6 : 1;
-    const suffix = divisor === 1e9 ? "bn" : divisor === 1e6 ? "m" : "";
-    return `${metric.currency} ${new Intl.NumberFormat(numberLocale, {
-      maximumFractionDigits: divisor === 1 ? 2 : 3,
-    }).format(metric.value / divisor)}${suffix}`;
-  }
-  if (metric.unit === "ratio") {
-    return new Intl.NumberFormat(numberLocale, {
-      style: "percent",
-      maximumFractionDigits: 1,
-    }).format(metric.value);
-  }
-  if (metric.unit === "year") {
-    return new Intl.NumberFormat(numberLocale, {
-      useGrouping: false,
-      maximumFractionDigits: 0,
-    }).format(metric.value);
-  }
-  if (
-    metric.currency &&
-    metric.unit.startsWith(`${metric.currency}/`)
-  ) {
-    return `${metric.currency} ${new Intl.NumberFormat(numberLocale, {
-      maximumFractionDigits: 3,
-    }).format(metric.value)}/${metric.unit.slice(metric.currency.length + 1)}`;
-  }
-  return `${new Intl.NumberFormat(numberLocale, {
-    maximumFractionDigits: 3,
-  }).format(metric.value)} ${metric.unit}`;
+  return formatCanonicalMetricValue(metric, locale);
 }

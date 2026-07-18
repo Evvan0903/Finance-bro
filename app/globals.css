@@ -828,13 +828,14 @@ main {
   opacity: .6;
 }
 
-.insufficient-evidence,
+.limited-recent-evidence,
 .module-not-selected {
   background: var(--amber-soft);
   border-left: 3px solid var(--amber);
   color: #6d4a25;
-  font-size: 12px;
-  padding: 12px 14px;
+  font-size: 11px;
+  margin: 0;
+  padding: 8px 10px;
 }
 
 .outlook-grid {
@@ -850,11 +851,19 @@ main {
   padding: 20px;
 }
 
-.outlook-grid .source-stamp {
+.source-title {
+  color: var(--muted);
+  display: block;
+  font-size: 9px;
+  margin: 12px 0 4px;
+}
+
+.compact-citation {
   color: var(--teal-dark);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 9px;
   font-weight: 800;
+  overflow-wrap: anywhere;
+  text-decoration: none;
 }
 
 .outlook-grid p {
@@ -1014,7 +1023,21 @@ main {
 .trend-chart {
   background: #f7f7f2;
   border: 1px solid var(--line);
-  padding: 22px 24px 13px;
+  padding: 38px 24px 13px;
+  position: relative;
+}
+
+.chart-unit-label,
+.table-unit-label {
+  color: var(--muted);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-unit-label {
+  position: absolute;
+  right: 24px;
+  top: 12px;
 }
 
 .chart-legend {
@@ -1086,6 +1109,17 @@ main {
 .table-wrap {
   overflow-x: auto;
   width: 100%;
+}
+
+.table-wrap.has-unit-label {
+  padding-top: 26px;
+  position: relative;
+}
+
+.table-wrap.has-unit-label .table-unit-label {
+  position: absolute;
+  right: 0;
+  top: 6px;
 }
 
 table {
@@ -1807,6 +1841,9 @@ tbody tr:hover { background: #f1f5f2; }
   .debate-grid article, .catalyst-column { break-inside: avoid; page-break-inside: avoid; }
   .scenario-grid { break-inside: avoid; page-break-inside: avoid; }
   .table-wrap { overflow: visible; }
+  .table-wrap.has-unit-label { padding-top: 20px; }
+  .table-wrap.has-unit-label .table-unit-label { top: 2px; }
+  .chart-unit-label { right: 12px; }
   table { font-size: 7.5pt; min-width: 0; table-layout: fixed; width: 100%; }
   th, td { overflow-wrap: anywhere; padding: 6px 4px; white-space: normal; }
   .driver-table, .financial-table, .peer-table { min-width: 0; }

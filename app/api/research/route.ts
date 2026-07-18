@@ -4,6 +4,7 @@ import {
   formatMetricForDisplay,
   publishLocatorAuditToRegistry,
 } from "../../lib/canonical-metrics";
+import { formatFinancialValue, formatPercentage } from "../../lib/presentation-format";
 import type { CanonicalMetricObject } from "../../lib/canonical-metrics";
 import { buildCanonicalScenarios } from "../../lib/canonical-scenarios";
 import { auditResearchReport } from "../../lib/metric-consistency-auditor";
@@ -252,25 +253,11 @@ async function resolveCompany(query: string) {
 }
 
 function compactMoney(value: number | null, currency: string, locale: ResearchLocale) {
-  if (value === null) return "—";
-  const absolute = Math.abs(value);
-  const scale = absolute >= 1e9 ? 1e9 : absolute >= 1e6 ? 1e6 : 1;
-  const suffix = scale === 1e9 ? "bn" : scale === 1e6 ? "m" : "";
-  const amount = value / scale;
-  return `${currency} ${new Intl.NumberFormat(locale === "zh" ? "zh-CN" : "en-US", {
-    minimumFractionDigits: Math.abs(amount) >= 100 ? 0 : 1,
-    maximumFractionDigits: Math.abs(amount) >= 100 ? 0 : 1,
-  }).format(amount)}${suffix}`;
+  return formatFinancialValue(value, currency, locale);
 }
 
 function percentage(value: number | null, locale: ResearchLocale) {
-  return value === null
-    ? "—"
-    : new Intl.NumberFormat(locale === "zh" ? "zh-CN" : "en-US", {
-        style: "percent",
-        minimumFractionDigits: 1,
-        maximumFractionDigits: 1,
-      }).format(value);
+  return formatPercentage(value, locale);
 }
 
 function recentFilings(submissions: Submissions) {
@@ -534,29 +521,6 @@ function buildSectorKpis(
   }).filter((result) => result.usable && result.canonicalKey);
 }
 
-function matchingClaim(
-  query: string,
-  outlook: Awaited<ReturnType<typeof getSectorOutlook>>,
-) {
-  const tokens = new Set(
-    query
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, " ")
-      .split(/\s+/)
-      .filter((token) => token.length > 2),
-  );
-  return [...outlook.claims]
-    .map((claim) => {
-      const haystack = `${claim.topic} ${claim.title}`.toLowerCase();
-      const score = [...tokens].reduce(
-        (sum, token) => sum + (haystack.includes(token) ? 1 : 0),
-        0,
-      );
-      return { claim, score };
-    })
-    .sort((a, b) => b.score - a.score)[0]?.claim;
-}
-
 const PERIOD_FIELD_BY_METRIC_ID: Record<string, string> = {
   revenue: "revenue",
   "revenue-growth": "revenueGrowth",
@@ -617,6 +581,122 @@ const DRIVER_METRIC_IDS: Record<string, string[]> = {
   "industrial-cash-execution": ["working-capital", "cash-conversion", "fcf", "near-term-backlog-share"],
 };
 
+function matchingClaim(
+  query: string,
+  outlook: Awaited<ReturnType<typeof getSectorOutlook>>,
+) {
+  const tokens = new Set(
+    query
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .split(/\s+/)
+      .filter((token) => token.length > 2),
+  );
+  return [...outlook.claims]
+    .map((claim) => {
+      const haystack = `${claim.topic} ${claim.title}`.toLowerCase();
+      const score = [...tokens].reduce(
+        (sum, token) => sum + (haystack.includes(token) ? 1 : 0),
+        0,
+      );
+      return { claim, score };
+    })
+    .sort((a, b) => b.score - a.score)[0]?.claim;
+}
+
+type CompanyExposureTemplate = {
+  driverId: string;
+  title: string;
+  publisher: string;
+  date: string;
+  url: string;
+  evidence: Record<ResearchLocale, string>;
+  companyExposure: Record<ResearchLocale, string>;
+  investmentImplication: Record<ResearchLocale, string>;
+};
+
+const NVDA_FY2026_10K_URL = "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000021/nvda-20260125.htm";
+const NVDA_FY2026_Q1_10Q_URL = "https://www.sec.gov/Archives/edgar/data/1045810/000104581025000116/nvda-20250427.htm";
+
+const NVDA_EXPOSURE_TEMPLATES: CompanyExposureTemplate[] = [
+  {
+    driverId: "ai-demand",
+    title: "NVIDIA FY2026 Form 10-K",
+    publisher: "NVIDIA Corporation",
+    date: "2026-02-25",
+    url: NVDA_FY2026_10K_URL,
+    evidence: {
+      zh: "NVIDIA 披露 FY2026 数据中心收入为 US$193.7 billion，同比增长 68%，并将增长归因于加速计算和 AI 平台需求。",
+      en: "NVIDIA disclosed FY2026 Data Center revenue of US$193.7 billion, up 68%, and attributed the increase to accelerated-computing and AI-platform demand.",
+    },
+    companyExposure: {
+      zh: "高：数据中心计算与网络产品直接受 AI 工作负载和大规模数据中心部署影响。",
+      en: "High: Data Center compute and networking are directly exposed to AI workloads and scaled data-center deployment.",
+    },
+    investmentImplication: {
+      zh: "数据中心收入持续性比行业总销售更能检验 AI 需求是否转化为公司级增长。",
+      en: "Data Center revenue durability is more informative than industry sales for judging whether AI demand converts into company-level growth.",
+    },
+  },
+  {
+    driverId: "capacity",
+    title: "NVIDIA Announces Financial Results for Fourth Quarter and Fiscal 2026",
+    publisher: "NVIDIA Corporation",
+    date: "2026-02-25",
+    url: "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Fourth-Quarter-and-Fiscal-2026/",
+    evidence: {
+      zh: "NVIDIA 将第三方制造、组装、封装和测试依赖列为风险因素；该材料未披露公司级 HBM 供应量或价格。",
+      en: "NVIDIA identifies reliance on third parties to manufacture, assemble, package, and test its products as a risk factor; the release does not disclose company-level HBM supply volumes or pricing.",
+    },
+    companyExposure: {
+      zh: "中高：外包制造和封装依赖使系统供给、成本和交付时点成为公司级变量；不将行业 HBM 数据视作 NVIDIA 的披露。",
+      en: "Medium-high: Outsourced manufacturing and packaging make system availability, cost, and delivery timing company-level variables; industry HBM data is not presented as NVIDIA disclosure.",
+    },
+    investmentImplication: {
+      zh: "应把毛利率、库存和供应承诺与产品交付一并检验；HBM/先进封装只作为行业背景，除非发行人进一步量化。",
+      en: "Test gross margin, inventory, supply commitments, and delivery together; HBM and advanced packaging remain industry context unless the issuer quantifies them further.",
+    },
+  },
+  {
+    driverId: "product-cycle",
+    title: "NVIDIA FY2026 Form 10-K",
+    publisher: "NVIDIA Corporation",
+    date: "2026-02-25",
+    url: NVDA_FY2026_10K_URL,
+    evidence: {
+      zh: "NVIDIA 披露 FY2026 数据中心计算收入增长 59%，主要受 Blackwell 推动；网络收入增长 142%，主要受 NVLink 计算结构和以太网推动。",
+      en: "NVIDIA disclosed FY2026 Data Center compute revenue growth of 59%, primarily from Blackwell, and networking growth of 142%, primarily from NVLink compute fabric and Ethernet.",
+    },
+    companyExposure: {
+      zh: "高：产品周期同时影响加速器与网络收入结构，不能仅用单一 GPU 指标概括。",
+      en: "High: The product cycle affects both accelerator and networking mix, so a single GPU measure is incomplete.",
+    },
+    investmentImplication: {
+      zh: "计算与网络增速的差异有助于识别平台扩张、产品过渡或客户部署节奏的变化。",
+      en: "The spread between compute and networking growth can signal platform expansion, product transition, or customer-deployment timing.",
+    },
+  },
+  {
+    driverId: "export-controls",
+    title: "NVIDIA FY2026 Q1 Form 10-Q",
+    publisher: "NVIDIA Corporation",
+    date: "2025-05-28",
+    url: NVDA_FY2026_Q1_10Q_URL,
+    evidence: {
+      zh: "NVIDIA 披露，美国对 H20 向中国出口的许可要求导致其在 FY2026 第一季度确认 US$4.5 billion 费用，并可能影响后续收入。",
+      en: "NVIDIA disclosed that U.S. licensing requirements for H20 exports to China caused a US$4.5 billion charge in FY2026 Q1 and could affect subsequent revenue.",
+    },
+    companyExposure: {
+      zh: "高：出口许可直接影响可服务市场、特定产品库存和收入实现时点。",
+      en: "High: Export licensing directly affects the serviceable market, inventory for specific products, and revenue timing.",
+    },
+    investmentImplication: {
+      zh: "监管情景应独立于核心需求情景，并用许可、产品结构和库存处理检验。",
+      en: "A regulatory scenario should remain separate from the core-demand scenario and be tested through licensing, product mix, and inventory treatment.",
+    },
+  },
+];
+
 function selectedCanonicalMetrics(
   registry: MetricRegistry,
   companyId: string,
@@ -647,46 +727,40 @@ function selectedCanonicalMetrics(
 }
 
 function buildDriverExposure(
-  companyName: string,
   pack: SectorPack,
-  outlook: Awaited<ReturnType<typeof getSectorOutlook>>,
   locale: ResearchLocale,
   registry: MetricRegistry,
   companyId: string,
   latest: FinancialPeriod,
-): SectorDriverExposure[] {
-  return pack.marketDrivers.map((driver, index) => {
-    const claim =
-      matchingClaim(driver.query, outlook) ??
-      outlook.claims[index % Math.max(outlook.claims.length, 1)];
+): { rows: SectorDriverExposure[]; omittedDrivers: string[] } {
+  const templates = companyId === "NVDA" ? NVDA_EXPOSURE_TEMPLATES : [];
+  const rows = pack.marketDrivers.flatMap((driver) => {
+    const template = templates.find((item) => item.driverId === driver.id);
+    if (!template) return [];
     const canonicalMetrics = selectedCanonicalMetrics(
       registry,
       companyId,
       latest,
       DRIVER_METRIC_IDS[driver.id] ?? [],
     );
-    const canonicalEvidence = canonicalMetrics
-      .slice(0, 3)
-      .map((metric) => `${metric.metric_id}: ${formatMetricForDisplay(metric, locale)}`)
-      .join("; ");
     return {
       driver: driver.name[locale],
-      companyExposure: [
-        `${companyName}: ${driver.companyExposure[locale]}`,
-        canonicalEvidence
-          ? locale === "zh"
-            ? `最新规范指标：${canonicalEvidence}。`
-            : `Latest canonical metrics: ${canonicalEvidence}.`
-          : "",
-      ].filter(Boolean).join(" "),
-      evidence: claim?.claim ?? COPY[locale].dataUnavailable,
-      evidencePublisher: claim?.publisher ?? COPY[locale].dataUnavailable,
-      evidenceDate: claim?.publicationDate ?? COPY[locale].dataUnavailable,
-      evidenceUrl: claim?.url ?? "",
-      investmentImplication: driver.implication[locale],
+      companyExposure: template.companyExposure[locale],
+      evidence: template.evidence[locale],
+      evidenceTitle: template.title,
+      evidencePublisher: template.publisher,
+      evidenceDate: template.date,
+      evidenceUrl: template.url,
+      investmentImplication: template.investmentImplication[locale],
       metricReferences: canonicalMetrics.map((metric) => metric.canonical_key),
     };
   });
+  return {
+    rows,
+    omittedDrivers: pack.marketDrivers
+      .filter((driver) => !rows.some((row) => row.driver === driver.name[locale]))
+      .map((driver) => driver.name[locale]),
+  };
 }
 
 function buildNarrative(
@@ -1317,15 +1391,14 @@ async function buildReport(
         companyDataRetrievedAt,
       )
     : [];
-  const driverExposure = buildDriverExposure(
-    companyName,
+  const exposureBuild = buildDriverExposure(
     pack,
-    sectorOutlook,
     locale,
     metricRegistry,
     record.ticker,
     latest,
   );
+  const driverExposure = exposureBuild.rows;
   const sectorKpis = buildSectorKpis(
     pack,
     latest,
@@ -1614,6 +1687,13 @@ async function buildReport(
                 : `Critical ${pack.id === "banks" ? "bank earnings or valuation" : pack.id === "biopharma" ? "commercial analysis or valuation" : pack.id === "industrial-machinery" ? "backlog execution, cash conversion, or valuation" : "FCF or valuation"} inputs remain unavailable: ${criticalMetricIds.join(", ")}.`,
             ]
           : []),
+        ...(exposureBuild.omittedDrivers.length
+          ? [
+              locale === "zh"
+                ? `公司敞口未显示以下行业驱动因素，因为目前没有可验证的公司专属证据：${exposureBuild.omittedDrivers.join("、")}。`
+                : `Company exposure omits these sector drivers because no verifiable company-specific evidence is currently available: ${exposureBuild.omittedDrivers.join(", ")}.`,
+            ]
+          : []),
         ...(pack.id === "biopharma"
           ? [
               locale === "zh"
@@ -1699,6 +1779,14 @@ async function buildReport(
             topic: "Issuer filing",
           }]
         : []),
+      ...driverExposure.map((item) => ({
+        title: item.evidenceTitle,
+        url: item.evidenceUrl,
+        retrievedAt: companyDataRetrievedAt,
+        publisher: item.evidencePublisher,
+        publicationDate: item.evidenceDate,
+        topic: "Company exposure evidence",
+      })),
       ...evidenceSources.map((source) => ({
         title: source.title,
         url: source.url,

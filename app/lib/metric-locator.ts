@@ -1,4 +1,5 @@
 import { METRIC_SOURCE_ORDER } from "./metric-definitions";
+import { formatFinancialValue, formatPerUnitValue } from "./presentation-format";
 import type {
   CompanyFactsPayload,
   MetricCandidate,
@@ -381,13 +382,9 @@ export function displayMetricValue(
   currency?: string,
 ) {
   if (unit === "USD") {
-    const absolute = Math.abs(value);
-    const divisor = absolute >= 1_000_000_000 ? 1_000_000_000 : 1_000_000;
-    const suffix = divisor === 1_000_000_000 ? "bn" : "m";
-    const decimals = absolute / divisor >= 100 ? 1 : 3;
-    return `${currency ?? "USD"} ${(value / divisor).toFixed(decimals).replace(/\.?0+$/, "")}${suffix}`;
+    return formatFinancialValue(value, currency ?? "USD", "en");
   }
-  if (unit === "USD/bbl") return `${currency ?? "USD"} ${value.toFixed(2)}/bbl`;
+  if (unit === "USD/bbl") return formatPerUnitValue(value, currency ?? "USD", "en", "bbl");
   if (unit === "kboe/d") return `${Math.round(value).toLocaleString("en-US")} kboe/d`;
   if (unit === "million tonnes") return `${value.toFixed(1)} million tonnes`;
   if (unit === "projects") return `${Math.round(value)} projects`;

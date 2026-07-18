@@ -13,7 +13,10 @@ async function worker() {
 }
 
 async function canonicalMetricsModule() {
-  const url = await transpiledModuleUrl("../app/lib/canonical-metrics.ts");
+  const presentationUrl = await transpiledModuleUrl("../app/lib/presentation-format.ts");
+  const url = await transpiledModuleUrl("../app/lib/canonical-metrics.ts", {
+    '"./presentation-format"': JSON.stringify(presentationUrl),
+  });
   return import(`${url}#${Date.now()}-${Math.random()}`);
 }
 
@@ -32,7 +35,10 @@ async function transpiledModuleUrl(path, replacements = {}) {
 }
 
 async function consistencyAuditorModule() {
-  const canonicalUrl = await transpiledModuleUrl("../app/lib/canonical-metrics.ts");
+  const presentationUrl = await transpiledModuleUrl("../app/lib/presentation-format.ts");
+  const canonicalUrl = await transpiledModuleUrl("../app/lib/canonical-metrics.ts", {
+    '"./presentation-format"': JSON.stringify(presentationUrl),
+  });
   const auditorUrl = await transpiledModuleUrl(
     "../app/lib/metric-consistency-auditor.ts",
     { '"./canonical-metrics"': JSON.stringify(canonicalUrl) },
@@ -362,9 +368,9 @@ test("locates all 11 Shell metrics with ordered, auditable source selection", as
   assert.equal(results.production.displayValue, "2,800 kboe/d");
   assert.equal(results["realized-prices"].row, "Europe — Shell subsidiaries — crude oil and natural gas liquids");
   assert.equal(results.lng.displayValue, "72.9 million tonnes");
-  assert.equal(results["refining-margin"].displayValue, "USD 10.14/bbl");
+  assert.equal(results["refining-margin"].displayValue, "US$10.14 per bbl");
   assert.equal(results["segment-earnings"].sourceTier, "filing-custom-xbrl");
-  assert.equal(results["cash-capex"].displayValue, "USD 20.915bn");
+  assert.equal(results["cash-capex"].displayValue, "US$20.9 billion");
   assert.equal(results.fcf.status, "Derived");
   assert.equal(results.fcf.selectedValue, 21_948_000_000);
   assert.match(results.fcf.formula, /Operating cash flow - cash capital expenditure/);
@@ -372,9 +378,9 @@ test("locates all 11 Shell metrics with ordered, auditable source selection", as
     results.fcf.rejectedCandidates.some((candidate) =>
       candidate.rejectionReasons.includes("Accounting-definition mismatch")),
   );
-  assert.equal(results["net-debt"].displayValue, "USD 45.687bn");
+  assert.equal(results["net-debt"].displayValue, "US$45.7 billion");
   assert.equal(results.dividends.sourceTier, "standard-sec-xbrl");
-  assert.equal(results["share-buybacks"].displayValue, "USD 13.879bn");
+  assert.equal(results["share-buybacks"].displayValue, "US$13.9 billion");
   assert.equal(results["major-projects"].displayValue, "21 projects");
 
   const registry = payload.metricRegistry;
@@ -975,16 +981,11 @@ test("passes the full Shell canonical consistency and double-run acceptance gate
 
   const netDebt = registry.get(latest.metricKeys.netDebt);
   assert.equal(netDebt.definition_id, "issuer-reported-net-debt");
-  const capitalExposure = report.driverExposure.find((item) =>
-    /Capital discipline/i.test(item.driver)
+  assert.equal(report.driverExposure.length, 0);
+  assert.match(
+    report.dataCoverage.notes.join(" "),
+    /no verifiable company-specific evidence/i,
   );
-  const capitalIds = new Set(
-    capitalExposure.metricReferences.map((key) => registry.get(key).metric_id),
-  );
-  for (const id of ["fcf", "dividends", "share-buybacks", "net-debt"]) {
-    assert.ok(capitalIds.has(id), `capital allocation missing ${id}`);
-  }
-  assert.doesNotMatch(capitalExposure.companyExposure, /Data unavailable/i);
 
   const debateMetricIds = new Set(
     report.investmentDebates
@@ -1069,6 +1070,34 @@ test("passes the Semiconductors and NVDA canonical acceptance gate before unlock
     latest.freeCashFlowProxy,
     latest.operatingCashFlow - latest.cashCapex,
   );
+  assert.deepEqual(
+    [report.sectorOutlook.researchWindowStart, report.sectorOutlook.researchWindowEnd],
+    ["2025-01-01", "2026-06-29"],
+  );
+  assert.ok(report.sectorOutlook.claims.length >= 4);
+  assert.ok(
+    report.sectorOutlook.claims.every(
+      (claim) =>
+        claim.publisher &&
+        claim.publicationDate >= "2025-01-01" &&
+        claim.publicationDate <= "2026-07-17" &&
+        claim.url.startsWith("https://"),
+    ),
+  );
+  assert.ok(report.sectorOutlook.claims.some((claim) => /HBM|memory/i.test(claim.topic)));
+  assert.ok(report.sectorOutlook.claims.some((claim) => /export/i.test(claim.topic)));
+  assert.equal(report.driverExposure.length, 4);
+  assert.ok(
+    report.driverExposure.every(
+      (item) =>
+        item.evidencePublisher === "NVIDIA Corporation" &&
+        item.evidenceDate >= "2025-01-01" &&
+        item.evidenceUrl.startsWith("https://") &&
+        item.evidenceTitle,
+    ),
+  );
+  assert.match(report.dashboard[0].value, /^US\$215\.9 billion$/);
+  assert.ok(report.dashboard.every((item) => !/\bUSD\b|\bbn\b|\bB\b/.test(item.value)));
 
   const kpis = new Map(report.sectorKpis.map((item) => [item.id, item]));
   for (const id of [

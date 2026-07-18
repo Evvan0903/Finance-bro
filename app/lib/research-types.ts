@@ -145,6 +145,7 @@ export type SectorDriverExposure = {
   driver: string;
   companyExposure: string;
   evidence: string;
+  evidenceTitle: string;
   evidencePublisher: string;
   evidenceDate: string;
   evidenceUrl: string;

@@ -14,6 +14,13 @@ import type {
   SupportedSector,
   SupportedSubindustry,
 } from "./lib/sector-types";
+import {
+  formatFinancialMixedUnitLabel,
+  formatFinancialTableValue,
+  formatFinancialUnitLabel,
+  formatFinancialValue,
+  formatPercentage,
+} from "./lib/presentation-format";
 
 type Locale = "zh" | "en";
 
@@ -130,7 +137,7 @@ const COPY = {
     progressSteps: "筛选近期证据 → 标准化 SEC 报表 → 加载行业 KPI → 构建估值与论点",
     reportUnavailable: "报告暂时无法生成。",
     researchDate: "研究日期",
-    evidenceCutoff: "行业证据截止",
+    researchWindow: "研究窗口",
     sectorRefresh: "行业最近刷新",
     companyRetrieved: "公司数据检索",
     refreshOutlook: "仅刷新行业展望",
@@ -142,7 +149,8 @@ const COPY = {
     dashboard: "研究仪表板",
     outlook: "当前行业展望",
     outlookNote: "每项市场判断显示发布机构和原始发布日期。",
-    insufficientEvidence: "2025–2026 年近期行业研究证据不足。",
+    insufficientEvidence: "近期行业证据有限",
+    viewSource: "查看来源",
     whyMatters: "对投资者为何重要",
     driverExposure: "公司对行业驱动因素的敞口",
     driver: "行业驱动",
@@ -285,7 +293,7 @@ const COPY = {
     progressSteps: "Screen recent evidence → normalize SEC statements → load sector KPIs → build valuation and thesis",
     reportUnavailable: "The report could not be generated right now.",
     researchDate: "Research date",
-    evidenceCutoff: "Sector evidence cutoff",
+    researchWindow: "Research window",
     sectorRefresh: "Last sector refresh",
     companyRetrieved: "Company data retrieved",
     refreshOutlook: "Refresh sector outlook only",
@@ -297,7 +305,8 @@ const COPY = {
     dashboard: "Research dashboard",
     outlook: "Current sector outlook",
     outlookNote: "Every market claim shows its publisher and original publication date.",
-    insufficientEvidence: "Insufficient recent sector research available for 2025–2026.",
+    insufficientEvidence: "Limited recent sector evidence",
+    viewSource: "View source",
     whyMatters: "Why it matters to investors",
     driverExposure: "Company exposure to sector drivers",
     driver: "Sector driver",
@@ -400,21 +409,15 @@ const COPY = {
 } as const;
 
 function formatMoney(value: number | null, currency: string, locale: Locale) {
-  if (value === null || !Number.isFinite(value)) return "—";
-  return `${currency} ${new Intl.NumberFormat(locale === "zh" ? "zh-CN" : "en-US", {
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(value)}`;
+  return formatFinancialValue(value, currency, locale);
+}
+
+function formatTableMoney(value: number | null, locale: Locale) {
+  return formatFinancialTableValue(value, locale);
 }
 
 function formatPercent(value: number | null, locale: Locale) {
-  return value === null || !Number.isFinite(value)
-    ? "—"
-    : new Intl.NumberFormat(locale === "zh" ? "zh-CN" : "en-US", {
-        style: "percent",
-        minimumFractionDigits: 1,
-        maximumFractionDigits: 1,
-      }).format(value);
+  return formatPercentage(value, locale);
 }
 
 function shortYear(periodEnd: string) {
@@ -466,6 +469,7 @@ function TrendChart({
   const secondLabel = bank ? copy.netInterestIncome : copy.operatingCashFlow;
   return (
     <div className="trend-chart" role="img" aria-label={`${copy.revenue} / ${secondLabel}`}>
+      <span className="chart-unit-label">{formatFinancialUnitLabel(currency, locale)}</span>
       <div className="chart-legend">
         <span><i className="legend-revenue" />{copy.revenue}</span>
         <span><i className="legend-cash" />{secondLabel}</span>
@@ -499,7 +503,7 @@ function reportToMarkdown(report: ResearchReport, locale: Locale) {
     `# ${report.company.name} — ${copy.markdownTitle}`,
     "",
     `**${copy.researchDate}:** ${report.researchDate}  `,
-    `**${copy.evidenceCutoff}:** ${report.evidenceCutoff}  `,
+    `**${copy.researchWindow}:** ${report.sectorOutlook.researchWindowStart} to ${report.sectorOutlook.researchWindowEnd}  `,
     `**${copy.companyRetrieved}:** ${report.companyDataRetrievedAt}`,
     "",
     `## 1. ${copy.dashboard}`,
@@ -507,12 +511,12 @@ function reportToMarkdown(report: ResearchReport, locale: Locale) {
     "",
     `## 2. ${copy.outlook}`,
     ...report.sectorOutlook.claims.map(
-      (claim) => `- ${claim.claim} — [${claim.publisher} · ${claim.publicationDate}](${claim.url})\n  - ${copy.whyMatters}: ${claim.whyItMatters}`,
+      (claim) => `- ${claim.claim} — [${claim.publisher} · ${claim.publicationDate} · ${copy.viewSource} ↗](${claim.url})\n  - ${copy.whyMatters}: ${claim.whyItMatters}`,
     ),
     "",
     `## 3. ${copy.driverExposure}`,
     ...report.driverExposure.map(
-      (item) => `- **${item.driver}** — ${item.companyExposure}\n  - ${item.evidencePublisher} · ${item.evidenceDate}: ${item.evidence}\n  - ${copy.implication}: ${item.investmentImplication}`,
+      (item) => `- **${item.driver}** — ${item.companyExposure}\n  - [${item.evidenceTitle} · ${item.evidenceDate} · ${copy.viewSource} ↗](${item.evidenceUrl}) — ${item.evidence}\n  - ${copy.implication}: ${item.investmentImplication}`,
     ),
     "",
     `## 4. ${copy.businessSegments}`,
@@ -521,13 +525,14 @@ function reportToMarkdown(report: ResearchReport, locale: Locale) {
     report.segmentAnalysis,
     "",
     `## 5. ${copy.financials}`,
+    `*${formatFinancialMixedUnitLabel(report.currency, locale)}*`,
     ...(report.sectorPack.id === "banks"
       ? [
           `| ${copy.year} | ${copy.revenue} | ${copy.netInterestIncome} | ${copy.deposits} | ${copy.loanGrowth} | ${copy.creditLossProvision} | ${copy.efficiencyRatio} |`,
           "|---|---:|---:|---:|---:|---:|---:|",
           ...report.periods.map(
             (period) =>
-              `| ${shortYear(period.periodEnd)}A | ${formatMoney(period.revenue, report.currency, locale)} | ${formatMoney(period.netInterestIncome, report.currency, locale)} | ${formatMoney(period.deposits, report.currency, locale)} | ${formatPercent(period.loanGrowth, locale)} | ${formatMoney(period.creditLossProvision, report.currency, locale)} | ${formatPercent(period.efficiencyRatio, locale)} |`,
+              `| ${shortYear(period.periodEnd)}A | ${formatTableMoney(period.revenue, locale)} | ${formatTableMoney(period.netInterestIncome, locale)} | ${formatTableMoney(period.deposits, locale)} | ${formatPercent(period.loanGrowth, locale)} | ${formatTableMoney(period.creditLossProvision, locale)} | ${formatPercent(period.efficiencyRatio, locale)} |`,
           ),
         ]
       : report.sectorPack.id === "biopharma"
@@ -536,7 +541,7 @@ function reportToMarkdown(report: ResearchReport, locale: Locale) {
             "|---|---:|---:|---:|---:|---:|",
             ...report.periods.map(
               (period) =>
-                `| ${shortYear(period.periodEnd)}A | ${formatMoney(period.revenue, report.currency, locale)} | ${formatPercent(period.grossMargin, locale)} | ${formatMoney(period.researchAndDevelopment, report.currency, locale)} | ${formatMoney(period.netIncome, report.currency, locale)} | ${formatMoney(period.freeCashFlowProxy, report.currency, locale)} |`,
+              `| ${shortYear(period.periodEnd)}A | ${formatTableMoney(period.revenue, locale)} | ${formatPercent(period.grossMargin, locale)} | ${formatTableMoney(period.researchAndDevelopment, locale)} | ${formatTableMoney(period.netIncome, locale)} | ${formatTableMoney(period.freeCashFlowProxy, locale)} |`,
             ),
           ]
       : report.sectorPack.id === "industrial-machinery"
@@ -545,7 +550,7 @@ function reportToMarkdown(report: ResearchReport, locale: Locale) {
             "|---|---:|---:|---:|---:|---:|---:|",
             ...report.periods.map(
               (period) =>
-                `| ${shortYear(period.periodEnd)}A | ${formatMoney(period.revenue, report.currency, locale)} | ${formatPercent(period.operatingMargin, locale)} | ${formatMoney(period.inventory, report.currency, locale)} | ${formatMoney(period.cashCapex, report.currency, locale)} | ${formatMoney(period.freeCashFlowProxy, report.currency, locale)} | ${formatPercent(period.cashConversion, locale)} |`,
+              `| ${shortYear(period.periodEnd)}A | ${formatTableMoney(period.revenue, locale)} | ${formatPercent(period.operatingMargin, locale)} | ${formatTableMoney(period.inventory, locale)} | ${formatTableMoney(period.cashCapex, locale)} | ${formatTableMoney(period.freeCashFlowProxy, locale)} | ${formatPercent(period.cashConversion, locale)} |`,
             ),
           ]
       : [
@@ -553,7 +558,7 @@ function reportToMarkdown(report: ResearchReport, locale: Locale) {
           "|---|---:|---:|---:|---:|---:|",
           ...report.periods.map(
             (period) =>
-              `| ${shortYear(period.periodEnd)}A | ${formatMoney(period.revenue, report.currency, locale)} | ${formatMoney(period.netIncome, report.currency, locale)} | ${formatMoney(period.operatingCashFlow, report.currency, locale)} | ${formatMoney(period.cashCapex, report.currency, locale)} | ${formatMoney(period.freeCashFlowProxy, report.currency, locale)} |`,
+              `| ${shortYear(period.periodEnd)}A | ${formatTableMoney(period.revenue, locale)} | ${formatTableMoney(period.netIncome, locale)} | ${formatTableMoney(period.operatingCashFlow, locale)} | ${formatTableMoney(period.cashCapex, locale)} | ${formatTableMoney(period.freeCashFlowProxy, locale)} |`,
           ),
         ]),
     "",
@@ -1043,7 +1048,7 @@ export function ResearchApp() {
               </div>
               <dl className="evidence-meta">
                 <div><dt>{copy.researchDate}</dt><dd>{report.researchDate}</dd></div>
-                <div><dt>{copy.evidenceCutoff}</dt><dd>{report.evidenceCutoff}</dd></div>
+                <div><dt>{copy.researchWindow}</dt><dd>{report.sectorOutlook.researchWindowStart} — {report.sectorOutlook.researchWindowEnd}</dd></div>
                 <div><dt>{copy.sectorRefresh}</dt><dd>{formatTimestamp(report.sectorLastRefreshedAt, locale)} UTC</dd></div>
                 <div><dt>{copy.companyRetrieved}</dt><dd>{formatTimestamp(report.companyDataRetrievedAt, locale)} UTC</dd></div>
               </dl>
@@ -1071,54 +1076,62 @@ export function ResearchApp() {
             </div>
           </section>
 
-          <section className="report-section outlook-section" data-pdf-block>
-            <SectionHeading number="02" title={copy.outlook} note={copy.outlookNote} />
-            <div className="outlook-toolbar">
-              <span>{copy.evidenceCutoff}: <strong>{report.evidenceCutoff}</strong></span>
-              <button type="button" onClick={() => void refreshSectorOutlook()} disabled={refreshingOutlook}>
-                {refreshingOutlook ? copy.refreshing : copy.refreshOutlook}
-              </button>
-            </div>
-            {report.sectorOutlook.insufficientEvidence && (
-              <p className="insufficient-evidence">{copy.insufficientEvidence}</p>
-            )}
-            <div className="outlook-grid">
-              {report.sectorOutlook.claims.map((claim) => (
-                <article key={claim.url}>
-                  <span className="source-stamp">{claim.publisher} · {claim.publicationDate}</span>
-                  <p>{claim.claim}</p>
-                  <strong>{copy.whyMatters}</strong>
-                  <p>{claim.whyItMatters}</p>
-                  <a href={claim.url} target="_blank" rel="noreferrer">{claim.title} ↗</a>
-                </article>
-              ))}
-            </div>
-          </section>
+          {report.sectorOutlook.claims.length > 0 ? (
+            <section className="report-section outlook-section" data-pdf-block>
+              <SectionHeading number="02" title={copy.outlook} note={copy.outlookNote} />
+              <div className="outlook-toolbar">
+                <span>{copy.researchWindow}: <strong>{report.sectorOutlook.researchWindowStart} — {report.sectorOutlook.researchWindowEnd}</strong></span>
+                <button type="button" onClick={() => void refreshSectorOutlook()} disabled={refreshingOutlook}>
+                  {refreshingOutlook ? copy.refreshing : copy.refreshOutlook}
+                </button>
+              </div>
+              {report.sectorOutlook.insufficientEvidence && (
+                <p className="limited-recent-evidence">{copy.insufficientEvidence}</p>
+              )}
+              <div className="outlook-grid">
+                {report.sectorOutlook.claims.map((claim) => (
+                  <article key={claim.url}>
+                    <p>{claim.claim}</p>
+                    <strong>{copy.whyMatters}</strong>
+                    <p>{claim.whyItMatters}</p>
+                    <span className="source-title">{claim.title}</span>
+                    <a className="compact-citation" href={claim.url} target="_blank" rel="noreferrer">
+                      {claim.publisher} · {claim.publicationDate} · {copy.viewSource} ↗
+                    </a>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : report.sectorOutlook.insufficientEvidence ? (
+            <p className="limited-recent-evidence" data-pdf-block>{copy.insufficientEvidence}</p>
+          ) : null}
 
-          <section className="report-section" data-pdf-block>
-            <SectionHeading number="03" title={copy.driverExposure} />
-            <div className="table-wrap">
-              <table className="driver-table">
-                <thead>
-                  <tr><th>{copy.driver}</th><th>{copy.companyExposure}</th><th>{copy.evidence}</th><th>{copy.implication}</th></tr>
-                </thead>
-                <tbody>
-                  {report.driverExposure.map((item) => (
-                    <tr key={item.driver}>
-                      <th>{item.driver}</th>
-                      <td>{item.companyExposure}</td>
-                      <td>
-                        {item.evidenceUrl
-                          ? <a href={item.evidenceUrl} target="_blank" rel="noreferrer"><strong>{item.evidencePublisher} · {item.evidenceDate}</strong><br />{item.evidence}</a>
-                          : item.evidence}
-                      </td>
-                      <td>{item.investmentImplication}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+          {report.driverExposure.length > 0 && (
+            <section className="report-section" data-pdf-block>
+              <SectionHeading number="03" title={copy.driverExposure} />
+              <div className="table-wrap">
+                <table className="driver-table">
+                  <thead>
+                    <tr><th>{copy.driver}</th><th>{copy.companyExposure}</th><th>{copy.evidence}</th><th>{copy.implication}</th></tr>
+                  </thead>
+                  <tbody>
+                    {report.driverExposure.map((item) => (
+                      <tr key={item.driver}>
+                        <th>{item.driver}</th>
+                        <td>{item.companyExposure}</td>
+                        <td>
+                          <a className="compact-citation" href={item.evidenceUrl} target="_blank" rel="noreferrer">
+                            <strong>{item.evidencePublisher} · {item.evidenceDate} · {copy.viewSource} ↗</strong><br />{item.evidence}
+                          </a>
+                        </td>
+                        <td>{item.investmentImplication}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
 
           <section className="report-section split-section" data-pdf-block>
             <SectionHeading number="04" title={copy.businessSegments} />
@@ -1153,9 +1166,10 @@ export function ResearchApp() {
               locale={locale}
               bank={report.sectorPack.id === "banks"}
             />
-            <div className="table-wrap">
+            <div className="table-wrap has-unit-label">
+              <span className="table-unit-label">{formatFinancialMixedUnitLabel(report.currency, locale)}</span>
               <table className="financial-table">
-                <caption>{copy.actualKey} · {report.currency}</caption>
+                <caption>{copy.actualKey}</caption>
                 <thead>
                   {report.sectorPack.id === "banks" ? (
                     <tr>
@@ -1189,41 +1203,41 @@ export function ResearchApp() {
                       <th>{shortYear(period.periodEnd)}A</th>
                       {report.sectorPack.id === "banks" ? (
                         <>
-                          <td>{formatMoney(period.revenue, report.currency, locale)}</td>
-                          <td>{formatMoney(period.netInterestIncome, report.currency, locale)}</td>
-                          <td>{formatMoney(period.deposits, report.currency, locale)}</td>
-                          <td>{formatMoney(period.loans, report.currency, locale)}</td>
+                          <td>{formatTableMoney(period.revenue, locale)}</td>
+                          <td>{formatTableMoney(period.netInterestIncome, locale)}</td>
+                          <td>{formatTableMoney(period.deposits, locale)}</td>
+                          <td>{formatTableMoney(period.loans, locale)}</td>
                           <td>{formatPercent(period.loanGrowth, locale)}</td>
-                          <td>{formatMoney(period.creditLossProvision, report.currency, locale)}</td>
+                          <td>{formatTableMoney(period.creditLossProvision, locale)}</td>
                           <td>{formatPercent(period.efficiencyRatio, locale)}</td>
                         </>
                       ) : report.sectorPack.id === "biopharma" ? (
                         <>
-                          <td>{formatMoney(period.revenue, report.currency, locale)}</td>
+                          <td>{formatTableMoney(period.revenue, locale)}</td>
                           <td>{formatPercent(period.grossMargin, locale)}</td>
-                          <td>{formatMoney(period.researchAndDevelopment, report.currency, locale)}</td>
-                          <td>{formatMoney(period.netIncome, report.currency, locale)}</td>
-                          <td>{formatMoney(period.operatingCashFlow, report.currency, locale)}</td>
-                          <td>{formatMoney(period.freeCashFlowProxy, report.currency, locale)}</td>
+                          <td>{formatTableMoney(period.researchAndDevelopment, locale)}</td>
+                          <td>{formatTableMoney(period.netIncome, locale)}</td>
+                          <td>{formatTableMoney(period.operatingCashFlow, locale)}</td>
+                          <td>{formatTableMoney(period.freeCashFlowProxy, locale)}</td>
                         </>
                       ) : report.sectorPack.id === "industrial-machinery" ? (
                         <>
-                          <td>{formatMoney(period.revenue, report.currency, locale)}</td>
+                          <td>{formatTableMoney(period.revenue, locale)}</td>
                           <td>{formatPercent(period.operatingMargin, locale)}</td>
-                          <td>{formatMoney(period.inventory, report.currency, locale)}</td>
-                          <td>{formatMoney(period.workingCapital, report.currency, locale)}</td>
-                          <td>{formatMoney(period.cashCapex, report.currency, locale)}</td>
-                          <td>{formatMoney(period.freeCashFlowProxy, report.currency, locale)}</td>
+                          <td>{formatTableMoney(period.inventory, locale)}</td>
+                          <td>{formatTableMoney(period.workingCapital, locale)}</td>
+                          <td>{formatTableMoney(period.cashCapex, locale)}</td>
+                          <td>{formatTableMoney(period.freeCashFlowProxy, locale)}</td>
                           <td>{formatPercent(period.cashConversion, locale)}</td>
                         </>
                       ) : (
                         <>
-                          <td>{formatMoney(period.revenue, report.currency, locale)}</td>
+                          <td>{formatTableMoney(period.revenue, locale)}</td>
                           <td>{formatPercent(period.grossMargin, locale)}</td>
-                          <td>{formatMoney(period.netIncome, report.currency, locale)}</td>
-                          <td>{formatMoney(period.operatingCashFlow, report.currency, locale)}</td>
-                          <td>{formatMoney(period.cashCapex, report.currency, locale)}</td>
-                          <td>{formatMoney(period.freeCashFlowProxy, report.currency, locale)}</td>
+                          <td>{formatTableMoney(period.netIncome, locale)}</td>
+                          <td>{formatTableMoney(period.operatingCashFlow, locale)}</td>
+                          <td>{formatTableMoney(period.cashCapex, locale)}</td>
+                          <td>{formatTableMoney(period.freeCashFlowProxy, locale)}</td>
                           <td>{formatPercent(period.netMargin, locale)}</td>
                         </>
                       )}
