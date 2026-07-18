@@ -8,9 +8,18 @@ The subsequent objective was to turn that research approach into a one-input MVP
 
 The latest completed objective was to upgrade that existing private Site to a complete Chinese/English experience without changing its URL or access policy.
 
-The current objective is a sequential canonical-metric upgrade: make Metric Objects the only report data source, pass consistency and reproducibility audits with Shell, then sequentially research, validate, and unlock Semiconductors, Banks, Biopharma, and Industrials without generic fallbacks.
+The current implementation objective is complete: improve the existing ScopeLine presentation and sector-evidence flow without rebuilding it, using NVDA to validate dated current-industry outlook, company-specific exposure, consistent units, bilingual Web/PDF parity, and private Sites deployment. One owner-signed-in visual PDF export check remains.
 
 ## Completed tasks
+
+- Added a reusable presentation-format layer across dashboard, KPI cards, metric locator output, historical tables, charts, and Markdown/PDF report content. Money now uses `US$` with full named units; tables declare `Unit: US$ billion` (or an explicit mixed-unit label), use one decimal for financial values, and use two decimals for per-unit and multiple figures.
+- Anchored semiconductor retrieval to the explicit research date of July 17, 2026 so deployment time cannot conceal accepted evidence. The visible NVDA research window is January 1, 2025 through June 29, 2026, the most recent accepted source publication date.
+- Added official SEMI June 29, 2026 HBM/memory-equipment evidence and corrected the official BIS export-control source. Source selection deterministically prefers regulatory sources, industry statistics, then industry outlook sources after relevance/date filtering.
+- Replaced generic company-exposure mappings with four NVIDIA-specific evidence rows: FY2026 Data Center revenue/growth, supply-chain reliance, Blackwell/networking transition, and Q1 FY2026 H20 export-control impact. Unsupported company-level HBM volumes/pricing and generic sector assertions are omitted and recorded in Data Coverage.
+- Validated production English and Chinese NVDA responses after deployment: reported values agree, citations are dated and clickable, the research window is current, and all four exposure rows have NVIDIA filing/IR evidence.
+- Passed the production build, ESLint, and all 24 automated tests. Direct production API verification also passed for both locales.
+- Committed the independent Sites source changes as `947cd24`, `8a7fd81`, and final cache-safe release `3898e54`; deployed the final commit as private Sites version 9 at `https://scopeline-research.evvan.chatgpt.site`.
+- Updated `WORKLOG.md` and `TODO.md` with the result, remaining owner-signed-in visual-export check, sources, unit rules, and validation outcome.
 
 - Recovered and verified the prior completed skill-upgrade checkpoint (`b9b928d`).
 - Read the complete `skill-creator` and PDF skill instructions.
@@ -148,11 +157,11 @@ The current objective is a sequential canonical-metric upgrade: make Metric Obje
 
 ## Remaining tasks
 
-- None for the requested deployment-only release. The existing local validation and source checkpoint remain the source of truth; no new implementation work is pending from this turn.
+- Perform one owner-signed-in visual export of a live NVDA report to PDF and inspect it for clipping, chart/table legibility, English/Chinese unit labels, and citations. No implementation change is authorized unless that visual check reveals a concrete defect.
 
 ## Current status
 
-Phase 9 is complete. Local implementation and validation remain complete at Sites commit `71f5fd4`; 24/24 tests pass. Production version 6 is live at the existing owner-only URL, and its saved source provenance matches the requested full commit SHA.
+The prior canonical-metric Phase 9 work remains complete. The subsequent current-industry/NVDA upgrade is deployed from independent Sites commit `3898e54`; 24/24 tests pass. Private production version 9 is live at the existing owner-only URL and authenticated English/Chinese API checks passed. Only human visual PDF QA remains.
 
 ## Files modified
 
@@ -182,6 +191,10 @@ Phase 9 is complete. Local implementation and validation remain complete at Site
 - `site/app/lib/metric-consistency-auditor.ts`
 - `site/app/lib/report-rendering-model.ts`
 - `site/app/lib/sector-learning-pipeline.ts`
+- `site/app/lib/sector-evidence.ts`
+- `site/app/lib/sector-retrieval.ts`
+- `site/app/lib/sector-types.ts`
+- `site/app/lib/presentation-format.ts`
 - `site/tests/fixtures/shel-source-snapshot.json`
 - `site/tests/fixtures/nvda-source-snapshot.json`
 - `site/tests/fixtures/jpm-source-snapshot.json`
@@ -193,11 +206,11 @@ Phase 9 is complete. Local implementation and validation remain complete at Site
 
 ## Next recommended step
 
-Monitor the version 6 production release for extraction behavior; do not change or rebuild the validated implementation unless a production issue is observed.
+Sign in as the Site owner, generate an NVDA report in each language, export one PDF, and inspect it. Keep version 9 and the current architecture unchanged unless that targeted visual check reveals a reproducible defect.
 
 ## Assumptions and pending decisions
 
-- Research cutoff is July 15, 2026; Q1 2026 is the latest reported quarter, while the July 7 Q2 update is management guidance rather than reported results.
+- Current semiconductor evidence is filtered from January 1, 2025 through the explicit research date of July 17, 2026. The latest accepted publication is June 29, 2026, so that date is shown as the visible end of the research window.
 - FY2025 and Q1 2026 issuer figures are primarily USD and may not sum because of rounding.
 - Scenario values are explicitly labeled analyst assumptions and use transparent enterprise cash-flow proxy formulas rather than unsupported target-price precision.
 - Market-value calculations require a dated LSE price and a disclosed GBP/USD conversion; they will be treated as permitted third-party market inputs, not issuer-reported facts.
@@ -221,7 +234,7 @@ Monitor the version 6 production release for extraction behavior; do not change 
 - CAT acceptance uses FY2025 issuer metrics only when the latest 10-K identity matches the December 31, 2025 period and February 13, 2026 filing date.
 - Comparable CAT FY2025 new orders, uniform organic growth, and company-level utilization are not available as verified numeric metrics; industry utilization remains contextual evidence only.
 - Verified runtime fallback is restricted to SHEL, NVDA, JPM, LLY, and CAT, occurs only after a temporary SEC/network error, and is disclosed with its retrieval date; arbitrary issuers do not receive a generic snapshot.
-- The current local Sites HEAD is the validated source of truth. Do not amend `71f5fd4` before the release unless a newly discovered defect requires a separate commit.
+- The current local Sites HEAD is `3898e54`, the deployed source of truth. Do not amend prior checkpoints; create a separate fix commit only for a newly discovered, reproducible defect.
 - Sites access was rechecked before deployment: `custom` access, one owner (`evansunemail@gmail.com`), no allowed groups, and no additional users.
 
 ## Recovery procedure

@@ -105,3 +105,14 @@
   - [x] Push `71f5fd4` to the existing Sites source repository.
   - [x] Save and deploy the new owner-only Sites version (version 6).
   - [x] Verify the production URL and confirm Sites latest version 6 points to the requested commit.
+
+## ScopeLine Current Industry Outlook & NVDA presentation upgrade
+
+- [x] Preserve the existing architecture, canonical metrics, bilingual UI, and private Sites configuration.
+- [x] Add current dated semiconductor evidence and a visible research window.
+- [x] Use compact clickable citations and omit raw source URLs from report copy.
+- [x] Centralize money, percentage, per-unit, and table unit presentation.
+- [x] Replace generic company-exposure rows with validated NVIDIA filing/IR evidence.
+- [x] Validate English and Chinese NVDA reports, build, lint, and all automated tests.
+- [x] Deploy the validated private Sites version and record the result in `WORKLOG.md`.
+- [ ] Perform owner-signed-in visual export QA of one live NVDA PDF.

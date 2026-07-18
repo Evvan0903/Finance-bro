@@ -1,5 +1,18 @@
 # ScopeLine Metric Locator Worklog
 
+## Current Industry Outlook & NVDA presentation upgrade — deployed
+
+- Objective: improve the existing sector-aware application without rebuilding it: current, cited sector outlook; company-specific exposure; one presentation layer for financial units; bilingual Web/PDF parity; and NVDA validation.
+- Changes: added a typed presentation formatter used by the dashboard, KPI cards, historical tables, and report export; values now use `US$` plus named full units, while financial tables use `Unit: US$ billion` (or the explicit mixed-unit label), one decimal for financial table values, and two for per-unit and multiple values.
+- Sector evidence: deterministic retrieval now uses the research date rather than deployment-clock time, applies the source hierarchy as a tie-breaker, records `Research window: 2025-01-01 to 2026-06-29`, and includes compact clickable publisher/date/source citations. Added current official SEMI HBM/memory-capacity evidence and corrected the BIS export-control source.
+- NVDA company exposure: replaced generic sector-to-company claims with four verified NVIDIA-specific rows: FY2026 Data Center revenue and growth; third-party manufacturing/assembly/package/test dependency; Blackwell and networking transition evidence; and the Q1 FY2026 H20 export-control charge. Unsupported HBM volumes/pricing and generic sector rows are omitted and retained only in Data Coverage.
+- Shell metrics: 11/11 previously requested Shell locator metrics remain found — production, realized prices, LNG volumes, refining margin, segment earnings, cash capex, strict FCF, net debt, dividends, buybacks, and major projects. Unresolved: none.
+- Files changed: `site/app/lib/presentation-format.ts`, canonical-metric and locator formatters, sector evidence/retrieval/types/learning pipeline, research API/types, `ResearchApp.tsx`, styles, and rendered-report tests.
+- Validation: production build passed; ESLint passed; 24/24 automated tests passed. Authenticated production API checks returned current English and Chinese NVDA reports with matching financial values, the accepted research window, dated citations, and four verified exposure rows. Failed tests: none. The package-manager wrapper could not run in the non-interactive restricted environment, so the underlying build/test commands were run directly and passed.
+- Deployment: private Sites version **9** is live at <https://scopeline-research.evvan.chatgpt.site>, sourced from `3898e54f6dc9eec07ccace8491b928a8eec92b60` (`3898e54`). Deployment ID: `appgdep_6a5ad4a6fb58819185cfdf9236553f42`. Owner-only access remains unchanged.
+- Known limitations: owner-only authentication prevented a fresh in-browser visual/PDF screenshot in this session. PDF export continues to use the same audited shared report DOM and its regression checks passed. Claims are limited to accepted public evidence; missing company-specific facts remain hidden rather than inferred.
+- Next recommended step: have the owner sign in and export one live NVDA PDF for final human visual QA; do not expand to additional sectors until that check is satisfactory.
+
 ## Deployment — validated Phase 9 release
 
 - Commit SHA: `71f5fd47380c04606e0a80045d53fe3a401837b4` (`71f5fd4`)
