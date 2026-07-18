@@ -1,6 +1,9 @@
 import { MemoryCache } from "./cache";
 import { CURRENT_SECTOR_EVIDENCE } from "./sector-evidence";
-import { SECTOR_RESEARCH_START_DATE } from "./sector-learning-pipeline";
+import {
+  SECTOR_RESEARCH_AS_OF_DATE,
+  SECTOR_RESEARCH_START_DATE,
+} from "./sector-learning-pipeline";
 import { getSectorPack } from "./sector-packs";
 import type {
   EvidenceChunk,
@@ -66,13 +69,12 @@ function geographyMatches(source: SectorEvidenceSource, market: ResearchMarket) 
 
 function filteredSources(market: ResearchMarket, subindustry: SupportedSubindustry) {
   const pack = getSectorPack(subindustry);
-  const today = new Date().toISOString().slice(0, 10);
   return CURRENT_SECTOR_EVIDENCE.filter(
     (source) =>
       source.sector === pack.sector &&
       source.subindustry === subindustry &&
       source.publicationDate >= "2025-01-01" &&
-      source.publicationDate <= today &&
+      source.publicationDate <= SECTOR_RESEARCH_AS_OF_DATE &&
       geographyMatches(source, market),
   );
 }

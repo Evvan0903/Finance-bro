@@ -1,12 +1,13 @@
 import {
   ingestSectorResearch,
+  SECTOR_RESEARCH_AS_OF_DATE,
   SECTOR_RESEARCH_START_DATE,
   type SectorResearchCandidate,
 } from "./sector-learning-pipeline";
 
 export type EvidenceCandidate = SectorResearchCandidate;
 
-const RETRIEVAL_DATE = "2026-07-17";
+const RETRIEVAL_DATE = SECTOR_RESEARCH_AS_OF_DATE;
 export const MIN_PUBLICATION_DATE = SECTOR_RESEARCH_START_DATE;
 
 const EVIDENCE_CANDIDATES: EvidenceCandidate[] = [
@@ -546,7 +547,7 @@ const EVIDENCE_CANDIDATES: EvidenceCandidate[] = [
 
 export function screenSectorEvidence(
   candidates: EvidenceCandidate[],
-  currentDate = new Date().toISOString().slice(0, 10),
+  currentDate = SECTOR_RESEARCH_AS_OF_DATE,
 ) {
   return ingestSectorResearch(candidates, currentDate).sources;
 }

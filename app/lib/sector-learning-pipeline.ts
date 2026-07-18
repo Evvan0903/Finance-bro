@@ -4,6 +4,9 @@ import type {
 } from "./sector-types";
 
 export const SECTOR_RESEARCH_START_DATE = "2025-01-01";
+// The research date is explicit so a deployment host's clock cannot silently
+// exclude accepted public evidence that belongs in this report edition.
+export const SECTOR_RESEARCH_AS_OF_DATE = "2026-07-17";
 const MAX_CONCISE_TEXT_LENGTH = 1_200;
 
 export type SectorResearchCandidate = SectorEvidenceSource & {
@@ -84,7 +87,7 @@ function rejectionReason(
 
 export function ingestSectorResearch(
   candidates: SectorResearchCandidate[],
-  currentDate = new Date().toISOString().slice(0, 10),
+  currentDate = SECTOR_RESEARCH_AS_OF_DATE,
 ): SectorLearningCorpus {
   const seenUrls = new Set<string>();
   const seenTitles = new Set<string>();
