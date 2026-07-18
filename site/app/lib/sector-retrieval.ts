@@ -1,0 +1,279 @@
+import { MemoryCache } from "./cache";
+import { CURRENT_SECTOR_EVIDENCE } from "./sector-evidence";
+import {
+  SECTOR_RESEARCH_AS_OF_DATE,
+  SECTOR_RESEARCH_START_DATE,
+} from "./sector-learning-pipeline";
+import { getSectorPack } from "./sector-packs";
+import type {
+  EvidenceChunk,
+  ResearchMarket,
+  SectorEvidenceSource,
+  SectorOutlook,
+  SupportedSubindustry,
+} from "./sector-types";
+import type { ResearchLocale } from "./research-types";
+
+const VECTOR_SIZE = 96;
+const OUTLOOK_TTL_MS = 6 * 60 * 60 * 1000;
+const outlookCache = new MemoryCache<SectorOutlook>(OUTLOOK_TTL_MS);
+const embeddingCache = new Map<string, number[]>();
+
+function tokenize(text: string) {
+  return text
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim()
+    .split(/\s+/)
+    .filter((token) => token.length > 1);
+}
+
+function hashToken(token: string) {
+  let hash = 2166136261;
+  for (let index = 0; index < token.length; index += 1) {
+    hash ^= token.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function embed(text: string) {
+  const cached = embeddingCache.get(text);
+  if (cached) return cached;
+
+  const vector = Array<number>(VECTOR_SIZE).fill(0);
+  for (const token of tokenize(text)) {
+    const hash = hashToken(token);
+    const position = hash % VECTOR_SIZE;
+    const sign = (hash & 1) === 0 ? 1 : -1;
+    vector[position] += sign * (1 + Math.log1p(token.length));
+  }
+  const magnitude = Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0)) || 1;
+  const normalized = vector.map((value) => value / magnitude);
+  embeddingCache.set(text, normalized);
+  return normalized;
+}
+
+function cosine(a: number[], b: number[]) {
+  return a.reduce((sum, value, index) => sum + value * (b[index] ?? 0), 0);
+}
+
+function geographyMatches(source: SectorEvidenceSource, market: ResearchMarket) {
+  if (source.geography.includes("Global")) return true;
+  if (market === "Global") return source.geography.includes("International");
+  if (market === "US") {
+    return source.geography.includes("US") || source.geography.includes("North America");
+  }
+  return source.geography.includes("Europe") || source.geography.includes("International");
+}
+
+function filteredSources(market: ResearchMarket, subindustry: SupportedSubindustry) {
+  const pack = getSectorPack(subindustry);
+  return CURRENT_SECTOR_EVIDENCE.filter(
+    (source) =>
+      source.sector === pack.sector &&
+      source.subindustry === subindustry &&
+      source.publicationDate >= "2025-01-01" &&
+      source.publicationDate <= SECTOR_RESEARCH_AS_OF_DATE &&
+      geographyMatches(source, market),
+  );
+}
+
+function sourcePriority(source: SectorEvidenceSource) {
+  if (source.sourceType === "regulatory-action") return 0;
+  if (source.sourceType === "industry-statistics") return 1;
+  if (source.sourceType === "industry-outlook") return 2;
+  return 3;
+}
+
+const BANK_TOPIC_ORDER = [
+  "rates",
+  "deposits",
+  "loans",
+  "credit",
+  "capital",
+  "regulation",
+  "trading",
+  "risk",
+] as const;
+
+const BIOPHARMA_TOPIC_ORDER = [
+  "demand",
+  "competition",
+  "access",
+  "pricing",
+  "manufacturing",
+  "clinical",
+  "regulatory",
+  "risk",
+] as const;
+
+function bankTopic(source: SectorEvidenceSource) {
+  if (source.id === "fed-mpr-july-2026") return "rates";
+  if (source.id === "fed-fsr-funding-may-2026") return "deposits";
+  if (source.id === "fed-sloos-april-2026") return "loans";
+  if (source.id === "fdic-qbp-q1-2026") return "credit";
+  if (source.id === "fed-stress-test-2026") return "capital";
+  if (source.id === "fed-bank-capital-proposals-march-2026") return "regulation";
+  if (source.id === "occ-bank-trading-q1-2026") return "trading";
+  return "risk";
+}
+
+function biopharmaTopic(source: SectorEvidenceSource) {
+  if (source.id === "fda-oral-wegovy-approval-2025") return "competition";
+  if (source.id === "cms-medicare-glp1-bridge-april-2026") return "access";
+  if (
+    source.id === "cms-drug-negotiation-2028-selection" ||
+    source.id === "cms-2028-mfp-effectuation-guidance-july-2026"
+  ) return "pricing";
+  if (source.id === "lilly-indiana-manufacturing-may-2026") return "manufacturing";
+  if (
+    source.id === "clinicaltrials-remternetug-phase3-may-2026" ||
+    source.id === "lilly-foundayo-approval-april-2026"
+  ) return "clinical";
+  if (
+    source.id === "fda-novel-drug-approvals-2025" ||
+    source.id === "fda-clinical-participation-guidance-2025"
+  ) return "regulatory";
+  if (source.id === "iqvia-global-rd-trends-2025") return "risk";
+  return "demand";
+}
+
+function retrieveChunks(
+  market: ResearchMarket,
+  subindustry: SupportedSubindustry,
+  locale: ResearchLocale,
+) {
+  const pack = getSectorPack(subindustry);
+  const query = [
+    ...pack.marketDrivers.map((driver) => driver.query),
+    ...pack.researchQuestions.map((question) => question[locale]),
+    ...pack.reportGuidance.map((guidance) => guidance[locale]),
+  ].join(" ");
+  const queryVector = embed(query);
+
+  const chunks = filteredSources(market, subindustry)
+    .flatMap((source): EvidenceChunk[] => {
+      const methodChunks = source.generalizedMethods.map((method, index) => ({
+        id: `${source.id}:method:${index}`,
+        source,
+        kind: "method" as const,
+        text: method[locale],
+        score: cosine(queryVector, embed(`${source.topic} ${method[locale]}`)),
+      }));
+      return [{
+        id: `${source.id}:summary`,
+        source,
+        kind: "summary",
+        text: source.currentEvidence[locale],
+        score: cosine(queryVector, embed(`${source.topic} ${source.currentEvidence[locale]}`)),
+      },
+      ...methodChunks];
+    });
+
+  if (subindustry === "banks") {
+    return chunks
+      .filter((chunk) => chunk.kind === "summary")
+      .sort((a, b) => {
+        const topicDifference =
+          BANK_TOPIC_ORDER.indexOf(bankTopic(a.source)) -
+          BANK_TOPIC_ORDER.indexOf(bankTopic(b.source));
+        return topicDifference ||
+          b.score - a.score ||
+          sourcePriority(a.source) - sourcePriority(b.source) ||
+          b.source.publicationDate.localeCompare(a.source.publicationDate);
+      })
+      .slice(0, 8);
+  }
+
+  if (subindustry === "biopharma") {
+    return chunks
+      .filter((chunk) => chunk.kind === "summary")
+      .sort((a, b) => {
+        const topicDifference =
+          BIOPHARMA_TOPIC_ORDER.indexOf(biopharmaTopic(a.source)) -
+          BIOPHARMA_TOPIC_ORDER.indexOf(biopharmaTopic(b.source));
+        return topicDifference ||
+          b.source.publicationDate.localeCompare(a.source.publicationDate) ||
+          sourcePriority(a.source) - sourcePriority(b.source);
+      })
+      .slice(0, 8);
+  }
+
+  return chunks
+    .sort((a, b) => b.score - a.score || sourcePriority(a.source) - sourcePriority(b.source))
+    .slice(0, 8);
+}
+
+function buildOutlook(
+  market: ResearchMarket,
+  subindustry: SupportedSubindustry,
+  locale: ResearchLocale,
+): SectorOutlook {
+  const pack = getSectorPack(subindustry);
+  const eligibleSources = filteredSources(market, subindustry);
+  const chunks = retrieveChunks(market, subindustry, locale);
+  const sourceById = new Map<string, SectorEvidenceSource>();
+  for (const chunk of chunks) {
+    if (chunk.kind === "summary") sourceById.set(chunk.source.id, chunk.source);
+  }
+  const sourceLimit =
+    subindustry === "banks" || subindustry === "biopharma" ? 8 : 5;
+  const sources = [...sourceById.values()].slice(0, sourceLimit);
+  const now = new Date().toISOString();
+  const researchWindowEnd =
+    eligibleSources.map((source) => source.publicationDate).sort().at(-1) ?? SECTOR_RESEARCH_START_DATE;
+
+  return {
+    sector: pack.sector,
+    subindustry,
+    market,
+    researchWindowStart: SECTOR_RESEARCH_START_DATE,
+    researchWindowEnd,
+    evidenceCutoff: researchWindowEnd,
+    lastRefreshedAt: now,
+    claims: sources.map((source) => ({
+      claim: source.currentEvidence[locale],
+      whyItMatters: source.investorImplication[locale],
+      publisher: source.publisher,
+      publicationDate: source.publicationDate,
+      title: source.title,
+      url: source.url,
+      topic: source.topic,
+    })),
+    insufficientEvidence: sources.length < 2,
+    methodology:
+      locale === "zh"
+        ? "先按行业、子行业、地区和发布日期过滤，再以来源层级为并列排序规则，对原创摘要与方法片段进行本地确定性向量检索；不载入完整报告。"
+        : "Sources are filtered by sector, subindustry, geography, and publication date before local deterministic vector retrieval over original summary and method chunks, with the source hierarchy used as a tie-breaker; full reports are never loaded.",
+    learningAudit: {
+      acceptedSources: eligibleSources.length,
+      rejectedSources: 0,
+      extractedMethods: eligibleSources.reduce(
+        (count, source) => count + source.generalizedMethods.length,
+        0,
+      ),
+      currentEvidenceItems: eligibleSources.length,
+      publicationWindowStart: SECTOR_RESEARCH_START_DATE,
+      publicationWindowEnd: researchWindowEnd,
+    },
+  };
+}
+
+export function getSectorOutlook(
+  market: ResearchMarket,
+  subindustry: SupportedSubindustry,
+  locale: ResearchLocale,
+  refresh = false,
+) {
+  const key = `${SECTOR_RESEARCH_AS_OF_DATE}:${market}:${subindustry}:${locale}`;
+  if (refresh) outlookCache.delete(key);
+  return outlookCache.getOrLoad(key, async () => buildOutlook(market, subindustry, locale));
+}
+
+export function sectorEvidenceSources(
+  market: ResearchMarket,
+  subindustry: SupportedSubindustry,
+) {
+  return filteredSources(market, subindustry);
+}

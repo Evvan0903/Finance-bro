@@ -1,0 +1,2031 @@
+{
+  "fixtureSchemaVersion": "1.0",
+  "source": {
+    "companyFacts": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000059478.json",
+    "submissions": "https://data.sec.gov/submissions/CIK0000059478.json",
+    "originalPublicationCutoff": "2026-07-17"
+  },
+  "issuerReportedMetrics": [
+    {
+      "metricId": "product-revenue",
+      "definitionId": "issuer-reported-mounjaro-total-revenue",
+      "period": "FY2025",
+      "periodStart": "2025-01-01",
+      "periodEnd": "2025-12-31",
+      "value": 22965000000,
+      "unit": "USD",
+      "currency": "USD",
+      "sourceDocument": "Eli Lilly and Company 2025 Form 10-K",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/59478/000005947826000013/lly-20251231.htm",
+      "sourceDate": "2026-02-12",
+      "filingDate": "2026-02-12",
+      "section": "Management's Discussion and Analysis — Revenue",
+      "table": "Revenue by product",
+      "rowLabel": "Mounjaro — Total",
+      "rawValue": "$22,965 million",
+      "extractionMethod": "deterministic-filing-html-table",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "product-revenue",
+      "definitionId": "issuer-reported-zepbound-total-revenue",
+      "period": "FY2025",
+      "periodStart": "2025-01-01",
+      "periodEnd": "2025-12-31",
+      "value": 13542000000,
+      "unit": "USD",
+      "currency": "USD",
+      "sourceDocument": "Eli Lilly and Company 2025 Form 10-K",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/59478/000005947826000013/lly-20251231.htm",
+      "sourceDate": "2026-02-12",
+      "filingDate": "2026-02-12",
+      "section": "Management's Discussion and Analysis — Revenue",
+      "table": "Revenue by product",
+      "rowLabel": "Zepbound — Total",
+      "rawValue": "$13,542 million",
+      "extractionMethod": "deterministic-filing-html-table",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "product-concentration",
+      "definitionId": "issuer-reported-mounjaro-zepbound-share-of-total-revenue",
+      "period": "FY2025",
+      "periodStart": "2025-01-01",
+      "periodEnd": "2025-12-31",
+      "value": 0.56,
+      "unit": "ratio",
+      "currency": null,
+      "sourceDocument": "Eli Lilly and Company 2025 Form 10-K",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/59478/000005947826000013/lly-20251231.htm",
+      "sourceDate": "2026-02-12",
+      "filingDate": "2026-02-12",
+      "section": "Risk Factors — Product concentration",
+      "table": "Narrative disclosure",
+      "rowLabel": "Mounjaro and Zepbound share of total revenues",
+      "rawValue": "56 percent",
+      "extractionMethod": "deterministic-filing-text",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "patent-expiry-year",
+      "definitionId": "issuer-estimated-us-compound-patent-expiry-mounjaro-zepbound",
+      "period": "FY2025",
+      "periodStart": null,
+      "periodEnd": "2025-12-31",
+      "value": 2036,
+      "unit": "year",
+      "currency": null,
+      "sourceDocument": "Eli Lilly and Company 2025 Form 10-K",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/59478/000005947826000013/lly-20251231.htm",
+      "sourceDate": "2026-02-12",
+      "filingDate": "2026-02-12",
+      "section": "Business — Our Intellectual Property Portfolio",
+      "table": "Relevant patent or data protection and estimated expiry dates",
+      "rowLabel": "Mounjaro/Zepbound — compound patent — U.S.",
+      "rawValue": "2036",
+      "extractionMethod": "deterministic-filing-html-table",
+      "confidence": 0.98
+    },
+    {
+      "metricId": "product-revenue",
+      "definitionId": "issuer-reported-mounjaro-total-revenue",
+      "period": "FY2024",
+      "periodStart": "2024-01-01",
+      "periodEnd": "2024-12-31",
+      "value": 11540000000,
+      "unit": "USD",
+      "currency": "USD",
+      "sourceDocument": "Eli Lilly and Company 2025 Form 10-K",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/59478/000005947826000013/lly-20251231.htm",
+      "sourceDate": "2026-02-12",
+      "filingDate": "2026-02-12",
+      "section": "Note 2 — Revenue",
+      "table": "Revenue by product",
+      "rowLabel": "Mounjaro — Total 2024",
+      "rawValue": "$11,540 million",
+      "extractionMethod": "deterministic-filing-html-table",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "product-revenue",
+      "definitionId": "issuer-reported-zepbound-total-revenue",
+      "period": "FY2024",
+      "periodStart": "2024-01-01",
+      "periodEnd": "2024-12-31",
+      "value": 4926000000,
+      "unit": "USD",
+      "currency": "USD",
+      "sourceDocument": "Eli Lilly and Company 2025 Form 10-K",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/59478/000005947826000013/lly-20251231.htm",
+      "sourceDate": "2026-02-12",
+      "filingDate": "2026-02-12",
+      "section": "Note 2 — Revenue",
+      "table": "Revenue by product",
+      "rowLabel": "Zepbound — Total 2024",
+      "rawValue": "$4,926 million",
+      "extractionMethod": "deterministic-filing-html-table",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "product-revenue",
+      "definitionId": "issuer-reported-verzenio-total-revenue",
+      "period": "FY2025",
+      "periodStart": "2025-01-01",
+      "periodEnd": "2025-12-31",
+      "value": 5723000000,
+      "unit": "USD",
+      "currency": "USD",
+      "sourceDocument": "Eli Lilly and Company 2025 Form 10-K",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/59478/000005947826000013/lly-20251231.htm",
+      "sourceDate": "2026-02-12",
+      "filingDate": "2026-02-12",
+      "section": "Note 2 — Revenue",
+      "table": "Revenue by product",
+      "rowLabel": "Verzenio — Total 2025",
+      "rawValue": "$5,723 million",
+      "extractionMethod": "deterministic-filing-html-table",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "product-revenue",
+      "definitionId": "issuer-reported-verzenio-total-revenue",
+      "period": "FY2024",
+      "periodStart": "2024-01-01",
+      "periodEnd": "2024-12-31",
+      "value": 5307000000,
+      "unit": "USD",
+      "currency": "USD",
+      "sourceDocument": "Eli Lilly and Company 2025 Form 10-K",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/59478/000005947826000013/lly-20251231.htm",
+      "sourceDate": "2026-02-12",
+      "filingDate": "2026-02-12",
+      "section": "Note 2 — Revenue",
+      "table": "Revenue by product",
+      "rowLabel": "Verzenio — Total 2024",
+      "rawValue": "$5,307 million",
+      "extractionMethod": "deterministic-filing-html-table",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "product-revenue",
+      "definitionId": "issuer-reported-trulicity-total-revenue",
+      "period": "FY2025",
+      "periodStart": "2025-01-01",
+      "periodEnd": "2025-12-31",
+      "value": 4276000000,
+      "unit": "USD",
+      "currency": "USD",
+      "sourceDocument": "Eli Lilly and Company 2025 Form 10-K",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/59478/000005947826000013/lly-20251231.htm",
+      "sourceDate": "2026-02-12",
+      "filingDate": "2026-02-12",
+      "section": "Note 2 — Revenue",
+      "table": "Revenue by product and geography",
+      "rowLabel": "Trulicity — Total 2025",
+      "rawValue": "$2,914 million U.S. + $1,362 million outside U.S.",
+      "extractionMethod": "deterministic-filing-html-table-sum",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "product-revenue",
+      "definitionId": "issuer-reported-trulicity-total-revenue",
+      "period": "FY2024",
+      "periodStart": "2024-01-01",
+      "periodEnd": "2024-12-31",
+      "value": 5254000000,
+      "unit": "USD",
+      "currency": "USD",
+      "sourceDocument": "Eli Lilly and Company 2025 Form 10-K",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/59478/000005947826000013/lly-20251231.htm",
+      "sourceDate": "2026-02-12",
+      "filingDate": "2026-02-12",
+      "section": "Note 2 — Revenue",
+      "table": "Revenue by product and geography",
+      "rowLabel": "Trulicity — Total 2024",
+      "rawValue": "$3,694 million U.S. + $1,560 million outside U.S.",
+      "extractionMethod": "deterministic-filing-html-table-sum",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "product-revenue",
+      "definitionId": "issuer-reported-jardiance-collaboration-revenue",
+      "period": "FY2025",
+      "periodStart": "2025-01-01",
+      "periodEnd": "2025-12-31",
+      "value": 3432000000,
+      "unit": "USD",
+      "currency": "USD",
+      "sourceDocument": "Eli Lilly and Company 2025 Form 10-K",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/59478/000005947826000013/lly-20251231.htm",
+      "sourceDate": "2026-02-12",
+      "filingDate": "2026-02-12",
+      "section": "Note 3 — Collaborations and Other Arrangements",
+      "table": "Boehringer Ingelheim collaboration revenue",
+      "rowLabel": "Jardiance — 2025",
+      "rawValue": "$3,432 million",
+      "extractionMethod": "deterministic-filing-html-table",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "product-revenue",
+      "definitionId": "issuer-reported-jardiance-collaboration-revenue",
+      "period": "FY2024",
+      "periodStart": "2024-01-01",
+      "periodEnd": "2024-12-31",
+      "value": 3341000000,
+      "unit": "USD",
+      "currency": "USD",
+      "sourceDocument": "Eli Lilly and Company 2025 Form 10-K",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/59478/000005947826000013/lly-20251231.htm",
+      "sourceDate": "2026-02-12",
+      "filingDate": "2026-02-12",
+      "section": "Note 3 — Collaborations and Other Arrangements",
+      "table": "Boehringer Ingelheim collaboration revenue",
+      "rowLabel": "Jardiance — 2024",
+      "rawValue": "$3,341 million",
+      "extractionMethod": "deterministic-filing-html-table",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "product-revenue",
+      "definitionId": "issuer-reported-taltz-total-revenue",
+      "period": "FY2025",
+      "periodStart": "2025-01-01",
+      "periodEnd": "2025-12-31",
+      "value": 3563000000,
+      "unit": "USD",
+      "currency": "USD",
+      "sourceDocument": "Eli Lilly and Company 2025 Form 10-K",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/59478/000005947826000013/lly-20251231.htm",
+      "sourceDate": "2026-02-12",
+      "filingDate": "2026-02-12",
+      "section": "Note 2 — Revenue",
+      "table": "Revenue by product and geography",
+      "rowLabel": "Taltz — Total 2025",
+      "rawValue": "$2,333 million U.S. + $1,230 million outside U.S.",
+      "extractionMethod": "deterministic-filing-html-table-sum",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "product-revenue",
+      "definitionId": "issuer-reported-taltz-total-revenue",
+      "period": "FY2024",
+      "periodStart": "2024-01-01",
+      "periodEnd": "2024-12-31",
+      "value": 3260000000,
+      "unit": "USD",
+      "currency": "USD",
+      "sourceDocument": "Eli Lilly and Company 2025 Form 10-K",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/59478/000005947826000013/lly-20251231.htm",
+      "sourceDate": "2026-02-12",
+      "filingDate": "2026-02-12",
+      "section": "Note 2 — Revenue",
+      "table": "Revenue by product and geography",
+      "rowLabel": "Taltz — Total 2024",
+      "rawValue": "$2,152 million U.S. + $1,108 million outside U.S.",
+      "extractionMethod": "deterministic-filing-html-table-sum",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "product-revenue",
+      "definitionId": "issuer-reported-kisunla-total-revenue",
+      "period": "Q1 2026",
+      "periodStart": "2026-01-01",
+      "periodEnd": "2026-03-31",
+      "value": 124000000,
+      "unit": "USD",
+      "currency": "USD",
+      "sourceDocument": "Lilly Q1 2026 Earnings Release",
+      "sourceUrl": "https://investor.lilly.com/node/54176",
+      "sourceDate": "2026-04-30",
+      "filingDate": "2026-04-30",
+      "section": "Selected Revenue Highlights",
+      "table": "Selected products",
+      "rowLabel": "Kisunla — Q1 2026",
+      "rawValue": "$124 million",
+      "extractionMethod": "deterministic-earnings-release-html-table",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "product-revenue",
+      "definitionId": "issuer-reported-kisunla-total-revenue",
+      "period": "Q1 2025",
+      "periodStart": "2025-01-01",
+      "periodEnd": "2025-03-31",
+      "value": 22000000,
+      "unit": "USD",
+      "currency": "USD",
+      "sourceDocument": "Lilly Q1 2026 Earnings Release",
+      "sourceUrl": "https://investor.lilly.com/node/54176",
+      "sourceDate": "2026-04-30",
+      "filingDate": "2026-04-30",
+      "section": "Selected Revenue Highlights",
+      "table": "Selected products",
+      "rowLabel": "Kisunla — Q1 2025",
+      "rawValue": "$22 million",
+      "extractionMethod": "deterministic-earnings-release-html-table",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "quarterly-revenue",
+      "definitionId": "issuer-reported-total-revenue-q1-2026",
+      "period": "Q1 2026",
+      "periodStart": "2026-01-01",
+      "periodEnd": "2026-03-31",
+      "value": 19799000000,
+      "unit": "USD",
+      "currency": "USD",
+      "sourceDocument": "Lilly Q1 2026 Earnings Release",
+      "sourceUrl": "https://investor.lilly.com/node/54176",
+      "sourceDate": "2026-04-30",
+      "filingDate": "2026-04-30",
+      "section": "Financial Results",
+      "table": "First-quarter results",
+      "rowLabel": "Revenue — Q1 2026",
+      "rawValue": "$19,799 million",
+      "extractionMethod": "deterministic-earnings-release-html-table",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "cash-capex",
+      "definitionId": "issuer-reported-cash-capex",
+      "period": "FY2025",
+      "periodStart": "2025-01-01",
+      "periodEnd": "2025-12-31",
+      "value": 7841000000,
+      "unit": "USD",
+      "currency": "USD",
+      "sourceDocument": "Eli Lilly and Company 2025 Form 10-K",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/59478/000005947826000013/lly-20251231.htm",
+      "sourceDate": "2026-02-12",
+      "filingDate": "2026-02-12",
+      "section": "Consolidated Statements of Cash Flows",
+      "table": "Cash flows from investing activities",
+      "rowLabel": "Purchases of property and equipment",
+      "rawValue": "$7,841 million",
+      "extractionMethod": "deterministic-filing-html-table",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "diluted-shares",
+      "definitionId": "issuer-reported-weighted-average-diluted-shares",
+      "period": "FY2025",
+      "periodStart": "2025-01-01",
+      "periodEnd": "2025-12-31",
+      "value": 899300000,
+      "unit": "shares",
+      "currency": null,
+      "sourceDocument": "Eli Lilly and Company 2025 Form 10-K",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/59478/000005947826000013/lly-20251231.htm",
+      "sourceDate": "2026-02-12",
+      "filingDate": "2026-02-12",
+      "section": "Consolidated Statements of Operations",
+      "table": "Shares used in calculation of earnings per share",
+      "rowLabel": "Diluted — 2025",
+      "rawValue": "899.3 million shares",
+      "extractionMethod": "deterministic-filing-html-table",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "diluted-eps",
+      "definitionId": "issuer-reported-diluted-eps",
+      "period": "FY2025",
+      "periodStart": "2025-01-01",
+      "periodEnd": "2025-12-31",
+      "value": 22.95,
+      "unit": "USD/share",
+      "currency": "USD",
+      "sourceDocument": "Eli Lilly and Company 2025 Form 10-K",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/59478/000005947826000013/lly-20251231.htm",
+      "sourceDate": "2026-02-12",
+      "filingDate": "2026-02-12",
+      "section": "Consolidated Statements of Operations",
+      "table": "Earnings per share",
+      "rowLabel": "Diluted — 2025",
+      "rawValue": "$22.95 per share",
+      "extractionMethod": "deterministic-filing-html-table",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "total-debt",
+      "definitionId": "issuer-reported-total-debt",
+      "period": "FY2025",
+      "periodStart": null,
+      "periodEnd": "2025-12-31",
+      "value": 42503000000,
+      "unit": "USD",
+      "currency": "USD",
+      "sourceDocument": "Eli Lilly and Company 2025 Form 10-K",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/59478/000005947826000013/lly-20251231.htm",
+      "sourceDate": "2026-02-12",
+      "filingDate": "2026-02-12",
+      "section": "Consolidated Balance Sheets",
+      "table": "Debt",
+      "rowLabel": "Total debt",
+      "rawValue": "$42.503 billion",
+      "extractionMethod": "deterministic-filing-html-table",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "cash",
+      "definitionId": "issuer-reported-cash-and-equivalents-q1-2026",
+      "period": "Q1 2026",
+      "periodStart": null,
+      "periodEnd": "2026-03-31",
+      "value": 5282000000,
+      "unit": "USD",
+      "currency": "USD",
+      "sourceDocument": "Eli Lilly and Company Q1 2026 Form 10-Q",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/59478/000005947826000045/lly-20260331.htm",
+      "sourceDate": "2026-04-30",
+      "filingDate": "2026-04-30",
+      "section": "Consolidated Condensed Balance Sheets",
+      "table": "Current assets",
+      "rowLabel": "Cash and cash equivalents",
+      "rawValue": "$5,282 million",
+      "extractionMethod": "deterministic-filing-html-table",
+      "confidence": 0.99
+    },
+    {
+      "metricId": "total-debt",
+      "definitionId": "issuer-reported-total-debt-q1-2026",
+      "period": "Q1 2026",
+      "periodStart": null,
+      "periodEnd": "2026-03-31",
+      "value": 43370000000,
+      "unit": "USD",
+      "currency": "USD",
+      "sourceDocument": "Eli Lilly and Company Q1 2026 Form 10-Q",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/59478/000005947826000045/lly-20260331.htm",
+      "sourceDate": "2026-04-30",
+      "filingDate": "2026-04-30",
+      "section": "Financial Condition and Liquidity",
+      "table": "Narrative disclosure",
+      "rowLabel": "Total debt at March 31, 2026",
+      "rawValue": "$43.4 billion",
+      "extractionMethod": "deterministic-filing-text",
+      "confidence": 0.98
+    },
+    {
+      "metricId": "shares-outstanding",
+      "definitionId": "issuer-reported-common-shares-outstanding-april-2026",
+      "period": "As of 2026-04-27",
+      "periodStart": null,
+      "periodEnd": "2026-04-27",
+      "value": 941741406,
+      "unit": "shares",
+      "currency": null,
+      "sourceDocument": "Eli Lilly and Company Q1 2026 Form 10-Q",
+      "sourceUrl": "https://www.sec.gov/Archives/edgar/data/59478/000005947826000045/lly-20260331.htm",
+      "sourceDate": "2026-04-30",
+      "filingDate": "2026-04-30",
+      "section": "Cover page",
+      "table": "Shares outstanding",
+      "rowLabel": "Common shares outstanding as of April 27, 2026",
+      "rawValue": "941,741,406",
+      "extractionMethod": "deterministic-filing-html-table",
+      "confidence": 0.99
+    }
+  ],
+  "companyFacts": {
+    "cik": 59478,
+    "entityName": "ELI LILLY & Co",
+    "facts": {
+      "us-gaap": {
+        "Assets": {
+          "label": "Assets",
+          "description": "Sum of the carrying amounts as of the balance sheet date of all assets that are recognized. Assets are probable future economic benefits obtained or controlled by an entity as a result of past transactions or events.",
+          "units": {
+            "USD": [
+              {
+                "end": "2021-12-31",
+                "val": 48806000000,
+                "form": "10-K",
+                "filed": "2022-02-23",
+                "accn": "0000059478-22-000068"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 48806000000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 49489800000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 49489800000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 64006300000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 64006300000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 78714900000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 78715000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "end": "2025-12-31",
+                "val": 112476000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              }
+            ]
+          }
+        },
+        "AssetsCurrent": {
+          "label": "Assets, Current",
+          "description": "Sum of the carrying amounts as of the balance sheet date of all assets that are expected to be realized in cash, sold, or consumed within one year (or the normal operating cycle, if longer). Assets are probable future economic benefits obtained or controlled by an entity as a result of past transactions or events.",
+          "units": {
+            "USD": [
+              {
+                "end": "2021-12-31",
+                "val": 18452400000,
+                "form": "10-K",
+                "filed": "2022-02-23",
+                "accn": "0000059478-22-000068"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 18452400000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 18034500000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 18034500000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 25727000000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 25727000000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 32739700000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 32740000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "end": "2025-12-31",
+                "val": 55629000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              }
+            ]
+          }
+        },
+        "CashAndCashEquivalentsAtCarryingValue": {
+          "label": "Cash and Cash Equivalents, at Carrying Value",
+          "description": "Amount of currency on hand as well as demand deposits with banks or financial institutions. Includes other kinds of accounts that have the general characteristics of demand deposits. Also includes short-term, highly liquid investments that are both readily convertible to known amounts of cash and so near their maturity that they present insignificant risk of changes in value because of changes in interest rates. Excludes cash and cash equivalents within disposal group and discontinued operation.",
+          "units": {
+            "USD": [
+              {
+                "end": "2021-12-31",
+                "val": 3818500000,
+                "form": "10-K",
+                "filed": "2022-02-23",
+                "accn": "0000059478-22-000068"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 3818500000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 2067000000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 2067000000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 2818600000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 2818600000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 3268400000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 3268000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "end": "2025-12-31",
+                "val": 7268000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              }
+            ]
+          }
+        },
+        "CostOfGoodsAndServicesSold": {
+          "label": "Cost of Goods and Services Sold",
+          "description": "The aggregate costs related to goods produced and sold and services rendered by an entity during the reporting period. This excludes costs incurred during the reporting period related to financial services rendered and other revenue generating activities.",
+          "units": {
+            "USD": [
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 7312800000,
+                "form": "10-K",
+                "filed": "2022-02-23",
+                "accn": "0000059478-22-000068"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 7312800000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 7312800000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 6629800000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 6629800000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 6629800000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 7082200000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 7082200000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 7082000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 8418300000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 8418000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "start": "2025-01-01",
+                "end": "2025-12-31",
+                "val": 11052000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              }
+            ]
+          }
+        },
+        "FiniteLivedIntangibleAssetsNet": {
+          "label": "Finite-Lived Intangible Assets, Net",
+          "description": "Amount after amortization of assets, excluding financial assets and goodwill, lacking physical substance with a finite life.",
+          "units": {
+            "USD": [
+              {
+                "end": "2021-12-31",
+                "val": 5766900000,
+                "form": "10-K",
+                "filed": "2022-02-23",
+                "accn": "0000059478-22-000068"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 5766900000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 5334800000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              }
+            ]
+          }
+        },
+        "Goodwill": {
+          "label": "Goodwill",
+          "description": "Amount after accumulated impairment loss of an asset representing future economic benefits arising from other assets acquired in a business combination that are not individually identified and separately recognized.",
+          "units": {
+            "USD": [
+              {
+                "end": "2021-12-31",
+                "val": 3892000000,
+                "form": "10-K",
+                "filed": "2022-02-23",
+                "accn": "0000059478-22-000068"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 3892000000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 4073000000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 4073000000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 4939700000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 4939700000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 5770300000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 5770000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "end": "2025-12-31",
+                "val": 5898000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              }
+            ]
+          }
+        },
+        "InventoryNet": {
+          "label": "Inventory, Net",
+          "description": "Amount after valuation and LIFO reserves of inventory expected to be sold, or consumed within one year or operating cycle, if longer.",
+          "units": {
+            "USD": [
+              {
+                "end": "2021-12-31",
+                "val": 3886000000,
+                "form": "10-K",
+                "filed": "2022-02-23",
+                "accn": "0000059478-22-000068"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 3886000000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 4309700000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 4309700000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 5772800000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 5772800000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 7589200000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 7589000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "end": "2025-12-31",
+                "val": 13744000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              }
+            ]
+          }
+        },
+        "LiabilitiesCurrent": {
+          "label": "Liabilities, Current",
+          "description": "Total obligations incurred as part of normal operations that are expected to be paid during the following twelve months or within one business cycle, if longer.",
+          "units": {
+            "USD": [
+              {
+                "end": "2021-12-31",
+                "val": 15052700000,
+                "form": "10-K",
+                "filed": "2022-02-23",
+                "accn": "0000059478-22-000068"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 15052700000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 17138200000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 17138200000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 27293200000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 27293200000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 28376600000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 28376000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "end": "2025-12-31",
+                "val": 35228000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              }
+            ]
+          }
+        },
+        "LongTermDebtNoncurrent": {
+          "label": "Long-term Debt, Excluding Current Maturities",
+          "description": "Amount after unamortized (discount) premium and debt issuance costs of long-term debt classified as noncurrent and excluding amounts to be repaid within one year or the normal operating cycle, if longer. Includes, but not limited to, notes payable, bonds payable, debentures, mortgage loans and commercial paper. Excludes capital lease obligations.",
+          "units": {
+            "USD": [
+              {
+                "end": "2021-12-31",
+                "val": 15346400000,
+                "form": "10-K",
+                "filed": "2022-02-23",
+                "accn": "0000059478-22-000068"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 15346400000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 14737500000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 14737500000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 18320800000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 18320800000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 28527100000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 28527000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "end": "2025-12-31",
+                "val": 40868000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              }
+            ]
+          }
+        },
+        "NetCashProvidedByUsedInInvestingActivities": {
+          "label": "Net Cash Provided by (Used in) Investing Activities",
+          "description": "Amount of cash inflow (outflow) from investing activities, including discontinued operations. Investing activity cash flows include making and collecting loans and acquiring and disposing of debt or equity instruments and property, plant, and equipment and other productive assets.",
+          "units": {
+            "USD": [
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": -2762300000,
+                "form": "10-K",
+                "filed": "2022-02-23",
+                "accn": "0000059478-22-000068"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": -2762300000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": -2867500000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": -3261600000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": -3762900000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": -3762900000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": -7152700000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": -7152700000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": -7153000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": -9301500000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": -9302000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "start": "2025-01-01",
+                "end": "2025-12-31",
+                "val": -10972000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              }
+            ]
+          }
+        },
+        "NetCashProvidedByUsedInOperatingActivities": {
+          "label": "Net Cash Provided by (Used in) Operating Activities",
+          "description": "Amount of cash inflow (outflow) from operating activities, including discontinued operations. Operating activity cash flows include transactions, adjustments, and changes in value not defined as investing or financing activities.",
+          "units": {
+            "USD": [
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 7260700000,
+                "form": "10-K",
+                "filed": "2022-02-23",
+                "accn": "0000059478-22-000068"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 7260700000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 7365900000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 7084400000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 7585700000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 7585700000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 4240100000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 4240100000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 4240000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 8817900000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 8818000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "start": "2025-01-01",
+                "end": "2025-12-31",
+                "val": 16813000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              }
+            ]
+          }
+        },
+        "NetIncomeLoss": {
+          "label": "Net Income (Loss) Attributable to Parent",
+          "description": "The portion of profit or loss for the period, net of income taxes, which is attributable to the parent.",
+          "units": {
+            "USD": [
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 5581700000,
+                "form": "10-K",
+                "filed": "2022-02-23",
+                "accn": "0000059478-22-000068"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 5581700000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 5581700000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 6244800000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 6244800000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 6244800000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 5240400000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 5240400000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 5240000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 10590000000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 10590000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "start": "2025-01-01",
+                "end": "2025-12-31",
+                "val": 20640000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              }
+            ]
+          }
+        },
+        "PaymentsForRepurchaseOfCommonStock": {
+          "label": "Payments for Repurchase of Common Stock",
+          "description": "The cash outflow to reacquire common stock during the period.",
+          "units": {
+            "USD": [
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 1250000000,
+                "form": "10-K",
+                "filed": "2022-02-23",
+                "accn": "0000059478-22-000068"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 1250000000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 1250000000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 1500000000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 1500000000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 1500000000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 750000000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 750000000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 750000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 2500000000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 2500000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "start": "2025-01-01",
+                "end": "2025-12-31",
+                "val": 4108000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              }
+            ]
+          }
+        },
+        "PaymentsOfDividends": {
+          "label": "Payments of Dividends",
+          "description": "Cash outflow in the form of capital distributions and dividends to common shareholders, preferred shareholders and noncontrolling interests.",
+          "units": {
+            "USD": [
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 3086800000,
+                "form": "10-K",
+                "filed": "2022-02-23",
+                "accn": "0000059478-22-000068"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 3086800000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 3086800000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 3535800000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 3535800000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 3535800000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 4069300000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 4069300000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 4069000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 4680400000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 4680000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "start": "2025-01-01",
+                "end": "2025-12-31",
+                "val": 5384000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              }
+            ]
+          }
+        },
+        "ResearchAndDevelopmentExpense": {
+          "label": "Research and Development Expense",
+          "description": "The aggregate costs incurred (1) in a planned search or critical investigation aimed at discovery of new knowledge with the hope that such knowledge will be useful in developing a new product or service, a new process or technique, or in bringing about a significant improvement to an existing product or process; or (2) to translate research findings or other knowledge into a plan or design for a new product or process or for a significant improvement to an existing product or process whether intended for sale or the entity's use, during the reporting period charged to research and development projects, including the costs of developing computer software up to the point in time of achieving technological feasibility, and costs allocated in accounting for a business combination to in-process projects deemed to have no alternative future use.",
+          "units": {
+            "USD": [
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 7025900000,
+                "form": "10-K",
+                "filed": "2022-02-23",
+                "accn": "0000059478-22-000068"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 6930700000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 7190800000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              }
+            ]
+          }
+        },
+        "Revenues": {
+          "label": "Revenues",
+          "description": "Amount of revenue recognized from goods sold, services rendered, insurance premiums, or other activities that constitute an earning process. Includes, but is not limited to, investment and interest income before deduction of interest expense when recognized as a component of revenue, and sales and trading gain (loss).",
+          "units": {
+            "USD": [
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 28318400000,
+                "form": "10-K",
+                "filed": "2022-02-23",
+                "accn": "0000059478-22-000068"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 28318400000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 28318400000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 28541400000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 28541400000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 28541400000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 34124100000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 34124100000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 34124000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 45042700000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 45043000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "start": "2025-01-01",
+                "end": "2025-12-31",
+                "val": 65179000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              }
+            ]
+          }
+        },
+        "StockholdersEquity": {
+          "label": "Stockholders' Equity Attributable to Parent",
+          "description": "Total of all stockholders' equity (deficit) items, net of receivables from officers, directors, owners, and affiliates of the entity which are attributable to the parent. The amount of the economic entity's stockholders' equity attributable to the parent excludes the amount of stockholders' equity which is allocable to that ownership interest in subsidiary equity which is not attributable to the parent (noncontrolling interest, minority interest). This excludes temporary equity and is sometimes called permanent equity.",
+          "units": {
+            "USD": [
+              {
+                "end": "2021-12-31",
+                "val": 8979200000,
+                "form": "10-K",
+                "filed": "2022-02-23",
+                "accn": "0000059478-22-000068"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 8979200000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 10649800000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 10649800000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 10771900000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 10771900000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 14192100000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 14272000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "end": "2025-12-31",
+                "val": 26535000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              }
+            ]
+          }
+        },
+        "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest": {
+          "label": "Stockholders' Equity, Including Portion Attributable to Noncontrolling Interest",
+          "description": "Amount of stockholders' equity (deficit), net of receivables from officers, directors, owners, and affiliates of the entity, attributable to both the parent and noncontrolling interests. Amount excludes temporary equity. Alternate caption for the concept is permanent equity.",
+          "units": {
+            "USD": [
+              {
+                "end": "2021-12-31",
+                "val": 9154800000,
+                "form": "10-K",
+                "filed": "2022-02-23",
+                "accn": "0000059478-22-000068"
+              },
+              {
+                "end": "2021-12-31",
+                "val": 9154800000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 10775400000,
+                "form": "10-K",
+                "filed": "2023-02-22",
+                "accn": "0000059478-23-000082"
+              },
+              {
+                "end": "2022-12-31",
+                "val": 10775400000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 10863700000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "end": "2023-12-31",
+                "val": 10863700000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "end": "2024-12-31",
+                "val": 14271600000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              }
+            ]
+          }
+        },
+        "ResearchAndDevelopmentExpenseExcludingAcquiredInProcessCost": {
+          "label": "Research and Development Expense (Excluding Acquired in Process Cost)",
+          "description": "The costs incurred in a planned search or critical investigation aimed at discovery of new knowledge with the hope that such knowledge will be useful in developing a new product or service, a new process or technique, or in bringing about a significant improvement to an existing product or process; or to translate research findings or other knowledge into a plan or design for a new product or process or for a significant improvement to an existing product or process whether intended for sale or the entity's use, during the reporting period charged to research and development projects, excluding in-process research and development acquired in a business combination consummated during the period. Excludes software research and development, which has a separate concept.",
+          "units": {
+            "USD": [
+              {
+                "start": "2021-01-01",
+                "end": "2021-12-31",
+                "val": 6930700000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 7190800000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2022-01-01",
+                "end": "2022-12-31",
+                "val": 7190800000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 9313400000,
+                "form": "10-K",
+                "filed": "2024-02-21",
+                "accn": "0000059478-24-000065"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 9313400000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2023-01-01",
+                "end": "2023-12-31",
+                "val": 9313000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 10990600000,
+                "form": "10-K",
+                "filed": "2025-02-19",
+                "accn": "0000059478-25-000067"
+              },
+              {
+                "start": "2024-01-01",
+                "end": "2024-12-31",
+                "val": 10991000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              },
+              {
+                "start": "2025-01-01",
+                "end": "2025-12-31",
+                "val": 13337000000,
+                "form": "10-K",
+                "filed": "2026-02-12",
+                "accn": "0000059478-26-000013"
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "submissions": {
+    "cik": "0000059478",
+    "name": "ELI LILLY & Co",
+    "sic": "2834",
+    "sicDescription": "Pharmaceutical Preparations",
+    "fiscalYearEnd": "1231",
+    "exchanges": [
+      "NYSE"
+    ],
+    "tickers": [
+      "LLY"
+    ],
+    "entityType": "operating",
+    "category": "Large accelerated filer",
+    "filings": {
+      "recent": {
+        "form": [
+          "10-K",
+          "10-Q"
+        ],
+        "accessionNumber": [
+          "0000059478-26-000013",
+          "0000059478-26-000045"
+        ],
+        "filingDate": [
+          "2026-02-12",
+          "2026-04-30"
+        ],
+        "reportDate": [
+          "2025-12-31",
+          "2026-03-31"
+        ],
+        "primaryDocument": [
+          "lly-20251231.htm",
+          "lly-20260331.htm"
+        ]
+      }
+    }
+  }
+}
