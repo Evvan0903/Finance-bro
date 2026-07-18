@@ -36,15 +36,24 @@ export type FinancialPeriod = {
   netIncome: number | null;
   netInterestIncome: number | null;
   deposits: number | null;
+  depositCost: number | null;
   loans: number | null;
   loanGrowth: number | null;
   creditLossProvision: number | null;
+  netChargeOffs: number | null;
   creditLossAllowance: number | null;
   allowanceCoverage: number | null;
   efficiencyRatio: number | null;
   roeProxy: number | null;
+  returnOnCommonEquity: number | null;
+  returnOnTangibleCommonEquity: number | null;
   tangibleBookValue: number | null;
+  tangibleBookValuePerShare: number | null;
+  dividends: number | null;
+  shareBuybacks: number | null;
   capitalReturns: number | null;
+  investmentBankingFees: number | null;
+  tradingRevenue: number | null;
   operatingCashFlow: number | null;
   investingCashFlow: number | null;
   cashCapex: number | null;
@@ -113,6 +122,11 @@ export type Scenario = {
   multipleLabel: string;
   impliedValueLabel: string;
   modelImpliedEnterpriseValue: number | null;
+  impliedPricePerShare: number | null;
+  impliedPriceToEarnings: number | null;
+  impliedDividendYield: number | null;
+  costOfEquityAssumption: number | null;
+  rotceCostOfEquitySpread: number | null;
   metricReferences: Record<string, string>;
 };
 

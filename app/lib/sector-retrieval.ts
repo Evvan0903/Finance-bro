@@ -86,6 +86,28 @@ function sourcePriority(source: SectorEvidenceSource) {
   return 3;
 }
 
+const BANK_TOPIC_ORDER = [
+  "rates",
+  "deposits",
+  "loans",
+  "credit",
+  "capital",
+  "regulation",
+  "trading",
+  "risk",
+] as const;
+
+function bankTopic(source: SectorEvidenceSource) {
+  if (source.id === "fed-mpr-july-2026") return "rates";
+  if (source.id === "fed-fsr-funding-may-2026") return "deposits";
+  if (source.id === "fed-sloos-april-2026") return "loans";
+  if (source.id === "fdic-qbp-q1-2026") return "credit";
+  if (source.id === "fed-stress-test-2026") return "capital";
+  if (source.id === "fed-bank-capital-proposals-march-2026") return "regulation";
+  if (source.id === "occ-bank-trading-q1-2026") return "trading";
+  return "risk";
+}
+
 function retrieveChunks(
   market: ResearchMarket,
   subindustry: SupportedSubindustry,
@@ -99,7 +121,7 @@ function retrieveChunks(
   ].join(" ");
   const queryVector = embed(query);
 
-  return filteredSources(market, subindustry)
+  const chunks = filteredSources(market, subindustry)
     .flatMap((source): EvidenceChunk[] => {
       const methodChunks = source.generalizedMethods.map((method, index) => ({
         id: `${source.id}:method:${index}`,
@@ -116,7 +138,24 @@ function retrieveChunks(
         score: cosine(queryVector, embed(`${source.topic} ${source.currentEvidence[locale]}`)),
       },
       ...methodChunks];
-    })
+    });
+
+  if (subindustry === "banks") {
+    return chunks
+      .filter((chunk) => chunk.kind === "summary")
+      .sort((a, b) => {
+        const topicDifference =
+          BANK_TOPIC_ORDER.indexOf(bankTopic(a.source)) -
+          BANK_TOPIC_ORDER.indexOf(bankTopic(b.source));
+        return topicDifference ||
+          b.score - a.score ||
+          sourcePriority(a.source) - sourcePriority(b.source) ||
+          b.source.publicationDate.localeCompare(a.source.publicationDate);
+      })
+      .slice(0, 8);
+  }
+
+  return chunks
     .sort((a, b) => b.score - a.score || sourcePriority(a.source) - sourcePriority(b.source))
     .slice(0, 8);
 }
@@ -133,7 +172,8 @@ function buildOutlook(
   for (const chunk of chunks) {
     if (chunk.kind === "summary") sourceById.set(chunk.source.id, chunk.source);
   }
-  const sources = [...sourceById.values()].slice(0, 5);
+  const sourceLimit = subindustry === "banks" ? 8 : 5;
+  const sources = [...sourceById.values()].slice(0, sourceLimit);
   const now = new Date().toISOString();
   const researchWindowEnd =
     eligibleSources.map((source) => source.publicationDate).sort().at(-1) ?? SECTOR_RESEARCH_START_DATE;

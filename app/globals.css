@@ -798,7 +798,7 @@ main {
 .metric-grid {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
 .outlook-toolbar {
@@ -1069,7 +1069,6 @@ main {
   border-bottom: 1px solid #cdd2d1;
   display: grid;
   gap: 28px;
-  grid-template-columns: repeat(5, 1fr);
   min-height: 230px;
 }
 

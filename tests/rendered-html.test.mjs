@@ -1169,12 +1169,12 @@ test("passes the Banks and JPM acceptance gate without an industrial FCF templat
       pdfExport: true,
     },
   };
-  const run = async () => {
+  const run = async (locale = "en") => {
     const response = await builtWorker.fetch(
       new Request("http://localhost/api/research", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({ ...requestBody, locale }),
       }),
       environment,
       context,
@@ -1182,7 +1182,7 @@ test("passes the Banks and JPM acceptance gate without an industrial FCF templat
     assert.equal(response.status, 200);
     return response.json();
   };
-  const [first, second] = await Promise.all([run(), run()]);
+  const [first, second, chinese] = await Promise.all([run(), run(), run("zh")]);
   const report = first.report;
   const latest = report.periods.at(-1);
   const registry = new Map(
@@ -1197,6 +1197,12 @@ test("passes the Banks and JPM acceptance gate without an industrial FCF templat
   assert.equal(latest.loans, 1_467_664_000_000);
   assert.equal(latest.creditLossProvision, 14_212_000_000);
   assert.equal(latest.creditLossAllowance, 25_765_000_000);
+  assert.equal(latest.depositCost, 0.018);
+  assert.equal(latest.netChargeOffs, 9_800_000_000);
+  assert.equal(latest.returnOnTangibleCommonEquity, 0.2);
+  assert.equal(latest.tangibleBookValuePerShare, 107.56);
+  assert.equal(latest.investmentBankingFees, 9_615_000_000);
+  assert.equal(latest.tradingRevenue, 35_782_000_000);
   assert.equal(latest.efficiencyRatio, 95_640_000_000 / 182_447_000_000);
   assert.equal(latest.allowanceCoverage, 25_765_000_000 / 1_467_664_000_000);
   assert.equal(latest.tangibleBookValue, 362_438_000_000 - 52_731_000_000 - 1_300_000_000);
@@ -1211,15 +1217,23 @@ test("passes the Banks and JPM acceptance gate without an industrial FCF templat
     "net-interest-income",
     "net-interest-margin",
     "deposits",
+    "deposit-cost",
     "loan-growth",
     "credit-losses",
+    "net-charge-offs",
     "allowance-coverage",
     "cet1",
     "liquidity",
     "efficiency-ratio",
     "roe",
+    "rotce",
     "tangible-book-value",
+    "tangible-book-value-per-share",
+    "dividends",
+    "share-buybacks",
     "capital-returns",
+    "investment-banking-fees",
+    "trading-revenue",
   ]) assert.ok(kpis.get(id)?.canonicalKey, `missing JPM canonical KPI: ${id}`);
   const metricById = (metricId) =>
     report.metricRegistry.metrics.find(
@@ -1234,6 +1248,7 @@ test("passes the Banks and JPM acceptance gate without an industrial FCF templat
   assert.equal(metricById("cet1-ratio").value, 0.146);
   assert.equal(metricById("liquidity-coverage-ratio").value, 1.11);
   assert.equal(metricById("return-on-common-equity").value, 0.17);
+  assert.equal(metricById("return-on-tangible-common-equity").value, 0.2);
   assert.match(metricById("cet1-ratio").source_url, /sec\.gov\/Archives/);
   assert.match(report.cashFlowProxyFormula, /no industrial-company FCF/i);
   assert.match(report.valuationFormula, /tangible book value.*P\/TBV/i);
@@ -1244,6 +1259,11 @@ test("passes the Banks and JPM acceptance gate without an industrial FCF templat
         scenario.capexFactor === null &&
         scenario.valuationStartingPoint === latest.tangibleBookValue &&
         scenario.metricReferences.valuationStartingPoint === latest.metricKeys.tangibleBookValue &&
+        scenario.impliedPricePerShare > 0 &&
+        scenario.impliedPriceToEarnings > 0 &&
+        scenario.impliedDividendYield > 0 &&
+        scenario.costOfEquityAssumption === 0.1 &&
+        scenario.rotceCostOfEquitySpread === 0.1 &&
         /equity value/i.test(scenario.impliedValueLabel),
     ),
   );
@@ -1258,21 +1278,57 @@ test("passes the Banks and JPM acceptance gate without an industrial FCF templat
     "net-interest-income",
     "net-interest-margin",
     "deposits",
+    "deposit-cost",
     "loan-growth",
     "credit-loss-provision",
+    "net-charge-offs",
     "allowance-coverage",
     "cet1-ratio",
     "liquidity-coverage-ratio",
     "efficiency-ratio",
     "return-on-common-equity",
+    "return-on-tangible-common-equity",
     "tangible-book-value",
+    "tangible-book-value-per-share",
+    "dividends",
+    "share-buybacks",
     "capital-returns",
+    "investment-banking-fees",
+    "trading-revenue",
   ]) assert.ok(referencedIds.has(id), `JPM cross-report references missing ${id}`);
   assert.ok(
     report.sectorOutlook.claims.every(
       (claim) => claim.publisher && claim.publicationDate >= "2025-01-01",
     ),
   );
+  assert.equal(report.sectorOutlook.claims.length, 8);
+  assert.equal(report.driverExposure.length, 4);
+  assert.ok(
+    report.driverExposure.every(
+      (row) =>
+        row.evidenceDate === "2026-07-14" &&
+        /^https:\/\/www\.sec\.gov\/Archives\//.test(row.evidenceUrl),
+    ),
+  );
+  assert.equal(report.dataCoverage.limited, false);
+  assert.match(report.valuationAssessment, /P\/E.*dividend yield.*ROTCE/i);
+  assert.doesNotMatch(
+    [
+      ...report.thesis.map((item) => item.view),
+      ...report.risks.map((item) => item.evidence),
+      report.cashFlowProxyFormula,
+    ].join(" "),
+    /free cash flow|latest revenue growth|net margin/i,
+  );
+  assert.equal(chinese.report.locale, "zh");
+  assert.equal(chinese.consistencyAudit.passed, true);
+  assert.equal(
+    chinese.report.periods.at(-1).metricKeys.returnOnTangibleCommonEquity,
+    latest.metricKeys.returnOnTangibleCommonEquity,
+  );
+  assert.match(chinese.report.valuationAssessment, /P\/E.*现金股息率.*ROTCE/);
+  assert.ok(chinese.report.dashboard.some((item) => item.label === "有形普通股回报率"));
+  assert.ok(chinese.report.dashboard.every((item) => !/\bbillion\b|\btrillion\b/i.test(item.value)));
 
   const { compareResearchReports } = await consistencyAuditorModule();
   const comparison = compareResearchReports(first.report, second.report);

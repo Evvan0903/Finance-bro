@@ -325,7 +325,7 @@ const bankPack: SectorPack = {
   id: "banks",
   sector: "financials",
   sectorLabel: { zh: "金融", en: "Financials" },
-  subindustryLabel: { zh: "银行", en: "Banks" },
+  subindustryLabel: { zh: "多元化银行", en: "Diversified Banks" },
   sicCodes: ["6021", "6022"],
   coreKpis: [
     {
@@ -356,6 +356,17 @@ const bankPack: SectorPack = {
       availability: "notStandardized",
     },
     {
+      id: "deposit-cost",
+      label: { zh: "总存款成本", en: "Total deposit cost" },
+      description: {
+        zh: "发行人披露的总存款平均利率，包括无息存款的融资结构影响。",
+        en: "Issuer-reported average interest rate on total deposits, including the funding-mix effect of noninterest-bearing deposits.",
+      },
+      canonicalMetricId: "deposit-cost",
+      definitionIds: ["issuer-reported-total-deposit-average-interest-rate"],
+      availability: "notStandardized",
+    },
+    {
       id: "loan-growth",
       label: { zh: "贷款增长", en: "Loan growth" },
       description: { zh: "贷款及租赁余额同比变化。", en: "Year-over-year change in loans and leases." },
@@ -369,6 +380,17 @@ const bankPack: SectorPack = {
       description: { zh: "当期贷款、租赁及其他信用损失拨备。", en: "Current provision for loan, lease, and other credit losses." },
       canonicalMetricId: "credit-loss-provision",
       definitionIds: ["reported-credit-loss-provision"],
+      availability: "notStandardized",
+    },
+    {
+      id: "net-charge-offs",
+      label: { zh: "净核销", en: "Net charge-offs" },
+      description: {
+        zh: "当期从信用损失准备中核销的贷款净额。",
+        en: "Loans charged against the allowance for credit losses, net of recoveries, during the period.",
+      },
+      canonicalMetricId: "net-charge-offs",
+      definitionIds: ["issuer-reported-net-charge-offs"],
       availability: "notStandardized",
     },
     {
@@ -412,6 +434,17 @@ const bankPack: SectorPack = {
       availability: "notStandardized",
     },
     {
+      id: "rotce",
+      label: { zh: "有形普通股权益回报率", en: "Return on tangible common equity" },
+      description: {
+        zh: "发行人披露的有形普通股权益回报率；保留其非 GAAP 定义。",
+        en: "Issuer-reported return on tangible common equity; the issuer's non-GAAP definition is preserved.",
+      },
+      canonicalMetricId: "return-on-tangible-common-equity",
+      definitionIds: ["issuer-reported-return-on-tangible-common-equity"],
+      availability: "notStandardized",
+    },
+    {
       id: "tangible-book-value",
       label: { zh: "有形账面价值", en: "Tangible book value" },
       description: { zh: "股东权益减商誉和可识别无形资产。", en: "Stockholders' equity less goodwill and identifiable intangible assets." },
@@ -420,11 +453,66 @@ const bankPack: SectorPack = {
       availability: "notStandardized",
     },
     {
+      id: "tangible-book-value-per-share",
+      label: { zh: "每股有形账面价值", en: "Tangible book value per share" },
+      description: {
+        zh: "发行人披露的每股有形普通股权益；用于 P/TBV 估值。",
+        en: "Issuer-reported tangible common equity per share, used in P/TBV valuation.",
+      },
+      canonicalMetricId: "tangible-book-value-per-share",
+      definitionIds: ["issuer-reported-tangible-book-value-per-share"],
+      availability: "notStandardized",
+    },
+    {
+      id: "dividends",
+      label: { zh: "现金股息", en: "Cash dividends" },
+      description: {
+        zh: "当期支付的现金股息，需结合普通股与优先股口径。",
+        en: "Cash dividends paid during the period, with common and preferred definitions retained.",
+      },
+      canonicalMetricId: "dividends",
+      definitionIds: ["reported-cash-dividends"],
+      availability: "notStandardized",
+    },
+    {
+      id: "share-buybacks",
+      label: { zh: "普通股回购", en: "Common-share buybacks" },
+      description: {
+        zh: "当期用于回购普通股的现金。",
+        en: "Cash paid to repurchase common shares during the period.",
+      },
+      canonicalMetricId: "share-buybacks",
+      definitionIds: ["reported-common-share-buybacks"],
+      availability: "notStandardized",
+    },
+    {
       id: "capital-returns",
       label: { zh: "资本回报", en: "Capital returns" },
       description: { zh: "现金股息加普通股回购。", en: "Cash dividends plus common-share repurchases." },
       canonicalMetricId: "capital-returns",
       definitionIds: ["dividends-plus-share-buybacks"],
+      availability: "notStandardized",
+    },
+    {
+      id: "investment-banking-fees",
+      label: { zh: "投资银行费用", en: "Investment banking fees" },
+      description: {
+        zh: "合并口径的承销与顾问费用。",
+        en: "Consolidated underwriting and advisory fees.",
+      },
+      canonicalMetricId: "investment-banking-fees",
+      definitionIds: ["issuer-reported-investment-banking-fees"],
+      availability: "notStandardized",
+    },
+    {
+      id: "trading-revenue",
+      label: { zh: "市场业务收入", en: "Markets revenue" },
+      description: {
+        zh: "固定收益与股票市场业务的总净收入；不等同于单一交易收入科目。",
+        en: "Total net revenue from Fixed Income and Equity Markets; it is not equivalent to a single trading-income line item.",
+      },
+      canonicalMetricId: "trading-revenue",
+      definitionIds: ["issuer-reported-markets-revenue"],
       availability: "notStandardized",
     },
   ],

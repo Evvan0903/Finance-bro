@@ -51,7 +51,10 @@ export function formatFinancialValue(
   const digits = maximumFractionDigits ?? (
     unit === "trillion" ? 2 : unit === "million" && Math.abs(scaled) >= 100 ? 0 : 1
   );
-  return `${displayPrefix}${number(scaled, locale, digits)} ${unit}`;
+  const unitLabel = locale === "zh"
+    ? { million: "百万", billion: "十亿", trillion: "万亿" }[unit]
+    : unit;
+  return `${displayPrefix}${number(scaled, locale, digits)} ${unitLabel}`;
 }
 
 export function formatFinancialTableValue(
@@ -76,11 +79,12 @@ export function formatFinancialMixedUnitLabel(
   currency: string | null | undefined,
   locale: PresentationLocale,
   unit: FinancialUnit = "billion",
+  percentageKind: "margins" | "rates-ratios" = "margins",
 ) {
   const financial = `${currencyLabel(currency)} ${unit}`.trim();
   return locale === "zh"
-    ? `金额单位：${unit === "million" ? "百万" : unit === "billion" ? "十亿" : "万亿"}${currency === "USD" ? "美元" : currency ?? ""}；利润率单位：%`
-    : `Financial values in ${financial}; margins in %`;
+    ? `金额单位：${unit === "million" ? "百万" : unit === "billion" ? "十亿" : "万亿"}${currency === "USD" ? "美元" : currency ?? ""}；${percentageKind === "rates-ratios" ? "利率及比率" : "利润率"}单位：%`
+    : `Financial values in ${financial}; ${percentageKind === "rates-ratios" ? "rates and ratios" : "margins"} in %`;
 }
 
 export function formatPercentage(value: number | null, locale: PresentationLocale) {
@@ -101,8 +105,27 @@ export function formatPerUnitValue(
 ) {
   const prefix = currencyLabel(currency);
   const displayPrefix = prefix === "US$" ? prefix : prefix ? `${prefix} ` : "";
-  const denominatorLabel = denominator === "unit" ? "unit" : denominator;
-  return `${displayPrefix}${number(value, locale, 2)} per ${denominatorLabel}`;
+  if (locale === "zh") {
+    const denominatorLabel: Record<string, string> = {
+      share: "股",
+      unit: "单位",
+      bbl: "桶",
+      boe: "桶油当量",
+      day: "日",
+    };
+    return `${displayPrefix}${number(value, locale, 2)} / ${denominatorLabel[denominator] ?? denominator}`;
+  }
+  return `${displayPrefix}${number(value, locale, 2)} per ${denominator === "unit" ? "unit" : denominator}`;
+}
+
+export function formatMultiple(
+  value: number | null,
+  locale: PresentationLocale,
+  fractionDigits = 2,
+) {
+  return value === null || !Number.isFinite(value)
+    ? "—"
+    : `${number(value, locale, fractionDigits)}x`;
 }
 
 export function formatCanonicalMetricValue(

@@ -108,6 +108,59 @@ function addFooter(canvas: HTMLCanvasElement, meta: PdfExportMeta, pageNumber: n
   );
 }
 
+function findNaturalBreak(
+  canvas: HTMLCanvasElement,
+  sourceY: number,
+  idealHeight: number,
+) {
+  const context = canvas.getContext("2d");
+  if (!context) return Math.max(1, Math.floor(idealHeight));
+  const maximum = Math.min(canvas.height - sourceY, Math.floor(idealHeight));
+  const minimum = Math.max(1, Math.floor(maximum * 0.58));
+  const start = sourceY + maximum;
+  const end = sourceY + minimum;
+  for (let row = start; row >= end; row -= 4) {
+    const pixels = context.getImageData(0, row, canvas.width, 1).data;
+    let lightSamples = 0;
+    let samples = 0;
+    for (let x = 0; x < canvas.width; x += 24) {
+      const offset = x * 4;
+      samples += 1;
+      if (
+        pixels[offset] >= 246 &&
+        pixels[offset + 1] >= 246 &&
+        pixels[offset + 2] >= 246
+      ) lightSamples += 1;
+    }
+    if (samples && lightSamples / samples >= 0.985) {
+      return Math.max(1, row - sourceY);
+    }
+  }
+  return maximum;
+}
+
+function sliceHasVisibleContent(
+  canvas: HTMLCanvasElement,
+  sourceY: number,
+  sourceHeight: number,
+) {
+  const context = canvas.getContext("2d");
+  if (!context) return true;
+  const end = Math.min(canvas.height, Math.ceil(sourceY + sourceHeight));
+  for (let row = Math.floor(sourceY); row < end; row += 12) {
+    const pixels = context.getImageData(0, row, canvas.width, 1).data;
+    for (let x = 0; x < canvas.width; x += 24) {
+      const offset = x * 4;
+      if (
+        pixels[offset] < 244 ||
+        pixels[offset + 1] < 244 ||
+        pixels[offset + 2] < 244
+      ) return true;
+    }
+  }
+  return false;
+}
+
 async function composePages(root: HTMLElement, meta: PdfExportMeta) {
   const blocks = Array.from(root.querySelectorAll<HTMLElement>("[data-pdf-block]"));
   if (!blocks.length) throw new Error("No printable report blocks were found.");
@@ -118,27 +171,66 @@ async function composePages(root: HTMLElement, meta: PdfExportMeta) {
   const pages: HTMLCanvasElement[] = [];
   let page = newPage();
   let y = PAGE_MARGIN;
+  let pageHasContent = false;
   for (const block of rendered) {
     const naturalScale = CONTENT_WIDTH / block.width;
-    const availableHeight = PAGE_MARGIN + CONTENT_HEIGHT - y;
-    let drawWidth = CONTENT_WIDTH;
-    let drawHeight = block.height * naturalScale;
-    if (drawHeight > availableHeight && y > PAGE_MARGIN) {
-      pages.push(page);
-      page = newPage();
-      y = PAGE_MARGIN;
+    let sourceY = 0;
+    while (sourceY < block.height) {
+      let availableHeight = PAGE_MARGIN + CONTENT_HEIGHT - y;
+      const remainingHeight = (block.height - sourceY) * naturalScale;
+      if (
+        remainingHeight > availableHeight &&
+        y > PAGE_MARGIN &&
+        availableHeight < CONTENT_HEIGHT * 0.35
+      ) {
+        pages.push(page);
+        page = newPage();
+        y = PAGE_MARGIN;
+        pageHasContent = false;
+        availableHeight = CONTENT_HEIGHT;
+      }
+      const idealSourceHeight = Math.min(
+        block.height - sourceY,
+        availableHeight / naturalScale,
+      );
+      const sourceHeight =
+        remainingHeight > availableHeight
+          ? findNaturalBreak(block, sourceY, idealSourceHeight)
+          : idealSourceHeight;
+      if (!sliceHasVisibleContent(block, sourceY, sourceHeight)) {
+        sourceY += sourceHeight;
+        if (block.height - sourceY < 1) sourceY = block.height;
+        continue;
+      }
+      const drawHeight = sourceHeight * naturalScale;
+      const context = page.getContext("2d");
+      if (!context) throw new Error("Canvas rendering is unavailable.");
+      context.drawImage(
+        block,
+        0,
+        sourceY,
+        block.width,
+        sourceHeight,
+        PAGE_MARGIN,
+        y,
+        CONTENT_WIDTH,
+        drawHeight,
+      );
+      sourceY += sourceHeight;
+      if (block.height - sourceY < 1) sourceY = block.height;
+      y += drawHeight;
+      pageHasContent = pageHasContent || drawHeight >= 1;
+      if (sourceY < block.height) {
+        pages.push(page);
+        page = newPage();
+        y = PAGE_MARGIN;
+        pageHasContent = false;
+      } else {
+        y += 18;
+      }
     }
-    if (drawHeight > CONTENT_HEIGHT) {
-      const fitScale = CONTENT_HEIGHT / block.height;
-      drawWidth = block.width * fitScale;
-      drawHeight = CONTENT_HEIGHT;
-    }
-    const context = page.getContext("2d");
-    if (!context) throw new Error("Canvas rendering is unavailable.");
-    context.drawImage(block, PAGE_MARGIN, y, drawWidth, drawHeight);
-    y += drawHeight + 18;
   }
-  pages.push(page);
+  if (pageHasContent) pages.push(page);
   pages.forEach((item, index) => addFooter(item, meta, index + 1));
   return pages;
 }

@@ -19,7 +19,9 @@ import {
   formatFinancialTableValue,
   formatFinancialUnitLabel,
   formatFinancialValue,
+  formatMultiple,
   formatPercentage,
+  formatPerUnitValue,
 } from "./lib/presentation-format";
 
 type Locale = "zh" | "en";
@@ -169,6 +171,7 @@ const COPY = {
     financialNote: "标准化年度实际值；所有计算均使用页面公式。",
     year: "年度",
     revenue: "营收",
+    netRevenue: "净收入",
     grossMargin: "毛利率",
     netIncome: "净利润",
     researchAndDevelopment: "研发支出",
@@ -201,6 +204,7 @@ const COPY = {
     unresolvedReason: "未解决原因",
     researchQuestions: "分析师问题清单",
     cashCapital: "现金流与资本配置",
+    bankCapital: "资本、流动性与股东回报",
     cash: "现金",
     totalDebt: "总债务",
     netDebt: "净债务",
@@ -235,6 +239,10 @@ const COPY = {
     netMarginAssumption: "净利率假设",
     reinvestmentFactor: "资本开支系数",
     valuationMetric: "估值指标",
+    impliedPricePerShare: "模型隐含每股价值",
+    impliedPe: "模型隐含市盈率",
+    impliedDividendYield: "模型隐含现金股息率",
+    rotceCostOfEquity: "ROTCE - 股权成本",
     impliedEv: "模型隐含企业价值",
     valuationAssessment: "估值判断",
     sourcesLimitations: "来源与限制",
@@ -325,6 +333,7 @@ const COPY = {
     financialNote: "Normalized annual actuals; all calculations use displayed formulas.",
     year: "Year",
     revenue: "Revenue",
+    netRevenue: "Net revenue",
     grossMargin: "Gross margin",
     netIncome: "Net income",
     researchAndDevelopment: "R&D expense",
@@ -357,6 +366,7 @@ const COPY = {
     unresolvedReason: "Unresolved reason",
     researchQuestions: "Analyst question set",
     cashCapital: "Cash flow and capital allocation",
+    bankCapital: "Capital, liquidity, and shareholder returns",
     cash: "Cash",
     totalDebt: "Total debt",
     netDebt: "Net debt",
@@ -391,6 +401,10 @@ const COPY = {
     netMarginAssumption: "Net margin assumption",
     reinvestmentFactor: "Capex factor",
     valuationMetric: "Valuation metric",
+    impliedPricePerShare: "Model-implied value per share",
+    impliedPe: "Model-implied P/E",
+    impliedDividendYield: "Model-implied cash-dividend yield",
+    rotceCostOfEquity: "ROTCE less cost of equity",
     impliedEv: "Model-implied enterprise value",
     valuationAssessment: "Valuation assessment",
     sourcesLimitations: "Sources and limitations",
@@ -418,6 +432,31 @@ function formatTableMoney(value: number | null, locale: Locale) {
 
 function formatPercent(value: number | null, locale: Locale) {
   return formatPercentage(value, locale);
+}
+
+type PeerDisplayMetric = {
+  id: string;
+  value: number | null;
+  unit?: string;
+  currency?: string | null;
+  displayType?: "percent" | "multiple" | "money" | "per-share";
+};
+
+function formatPeerMetric(metric: PeerDisplayMetric, locale: Locale) {
+  if (metric.value === null) return "—";
+  if (metric.displayType === "multiple" || metric.unit === "multiple") {
+    return formatMultiple(metric.value, locale);
+  }
+  if (metric.displayType === "money" || (metric.currency && metric.unit === metric.currency)) {
+    return formatFinancialValue(metric.value, metric.currency, locale);
+  }
+  if (
+    metric.displayType === "per-share" ||
+    (metric.currency && metric.unit === `${metric.currency}/share`)
+  ) {
+    return formatPerUnitValue(metric.value, metric.currency, locale, "share");
+  }
+  return formatPercent(metric.value, locale);
 }
 
 function shortYear(periodEnd: string) {
@@ -462,32 +501,44 @@ function TrendChart({
   bank?: boolean;
 }) {
   const copy = COPY[locale];
-  const maxRevenue = Math.max(...periods.map((period) => Math.abs(period.revenue ?? 0)), 1);
   const secondMetric = (period: FinancialPeriod) =>
     bank ? period.netInterestIncome : period.operatingCashFlow;
-  const maxCash = Math.max(...periods.map((period) => Math.abs(secondMetric(period) ?? 0)), 1);
+  const chartPeriods = periods.filter(
+    (period) => period.revenue !== null || secondMetric(period) !== null,
+  );
+  if (!chartPeriods.length) return null;
+  const maxRevenue = Math.max(...chartPeriods.map((period) => Math.abs(period.revenue ?? 0)), 1);
+  const maxCash = Math.max(...chartPeriods.map((period) => Math.abs(secondMetric(period) ?? 0)), 1);
+  const firstLabel = bank ? copy.netRevenue : copy.revenue;
   const secondLabel = bank ? copy.netInterestIncome : copy.operatingCashFlow;
   return (
-    <div className="trend-chart" role="img" aria-label={`${copy.revenue} / ${secondLabel}`}>
+    <div className="trend-chart" role="img" aria-label={`${firstLabel} / ${secondLabel}`}>
       <span className="chart-unit-label">{formatFinancialUnitLabel(currency, locale)}</span>
       <div className="chart-legend">
-        <span><i className="legend-revenue" />{copy.revenue}</span>
+        <span><i className="legend-revenue" />{firstLabel}</span>
         <span><i className="legend-cash" />{secondLabel}</span>
       </div>
-      <div className="chart-grid">
-        {periods.map((period) => (
+      <div
+        className="chart-grid"
+        style={{ gridTemplateColumns: `repeat(${chartPeriods.length}, minmax(0, 1fr))` }}
+      >
+        {chartPeriods.map((period) => (
           <div className="chart-column" key={period.periodEnd}>
             <div className="bar-stage">
-              <div
-                className="bar revenue-bar"
-                style={{ height: `${Math.max(5, (Math.abs(period.revenue ?? 0) / maxRevenue) * 100)}%` }}
-                title={`${copy.revenue} ${formatMoney(period.revenue, currency, locale)}`}
-              />
-              <div
-                className="bar cash-bar"
-                style={{ height: `${Math.max(5, (Math.abs(secondMetric(period) ?? 0) / maxCash) * 82)}%` }}
-                title={`${secondLabel} ${formatMoney(secondMetric(period), currency, locale)}`}
-              />
+              {period.revenue !== null && (
+                <div
+                  className="bar revenue-bar"
+                  style={{ height: `${Math.max(5, (Math.abs(period.revenue) / maxRevenue) * 100)}%` }}
+                  title={`${firstLabel} ${formatMoney(period.revenue, currency, locale)}`}
+                />
+              )}
+              {secondMetric(period) !== null && (
+                <div
+                  className="bar cash-bar"
+                  style={{ height: `${Math.max(5, (Math.abs(secondMetric(period)!) / maxCash) * 82)}%` }}
+                  title={`${secondLabel} ${formatMoney(secondMetric(period), currency, locale)}`}
+                />
+              )}
             </div>
             <span>{shortYear(period.periodEnd)}</span>
           </div>
@@ -525,10 +576,10 @@ function reportToMarkdown(report: ResearchReport, locale: Locale) {
     report.segmentAnalysis,
     "",
     `## 5. ${copy.financials}`,
-    `*${formatFinancialMixedUnitLabel(report.currency, locale)}*`,
+    `*${formatFinancialMixedUnitLabel(report.currency, locale, "billion", report.sectorPack.id === "banks" ? "rates-ratios" : "margins")}*`,
     ...(report.sectorPack.id === "banks"
       ? [
-          `| ${copy.year} | ${copy.revenue} | ${copy.netInterestIncome} | ${copy.deposits} | ${copy.loanGrowth} | ${copy.creditLossProvision} | ${copy.efficiencyRatio} |`,
+          `| ${copy.year} | ${copy.netRevenue} | ${copy.netInterestIncome} | ${copy.deposits} | ${copy.loanGrowth} | ${copy.creditLossProvision} | ${copy.efficiencyRatio} |`,
           "|---|---:|---:|---:|---:|---:|---:|",
           ...report.periods.map(
             (period) =>
@@ -575,19 +626,35 @@ function reportToMarkdown(report: ResearchReport, locale: Locale) {
         `- **${metric.displayName[locale]} — ${metric.status}**${metric.displayValue ? ` · ${metric.displayValue} · ${metric.period}` : ""}\n  - ${metric.sourceDocument ?? metric.reason ?? "—"}${metric.extractionMethod ? `\n  - ${copy.extractionMethod}: ${metric.extractionMethod}` : ""}${metric.formula ? `\n  - ${copy.formula}: ${metric.formula}` : ""}`,
     ),
     "",
-    `## 7. ${copy.cashCapital}`,
+    `## 7. ${report.sectorPack.id === "banks" ? copy.bankCapital : copy.cashCapital}`,
     ...report.earningsQuality.map((item) => `- ${item}`),
     "",
-    `## 8. ${copy.peerComparison}`,
-    ...report.peerComparison.map(
-      (item) => `- **${item.ticker}** — ${item.rationale}; ${item.metrics.map((metric) => `${metric.label} ${formatPercent(metric.value, locale)}`).join("; ")}`,
+    ...(
+      report.peerComparison.some(
+        (peer) => peer.periodEnd && peer.metrics.some((metric) => metric.value !== null),
+      )
+        ? [
+            `## 8. ${copy.peerComparison}`,
+            ...report.peerComparison
+              .filter((peer) => peer.periodEnd && peer.metrics.some((metric) => metric.value !== null))
+              .map(
+                (item) => `- **${item.ticker}** — ${item.rationale}; ${item.metrics.filter((metric) => metric.value !== null).map((metric) => `${metric.label} ${formatPeerMetric(metric, locale)}`).join("; ")}`,
+              ),
+            "",
+          ]
+        : []
     ),
-    "",
-    `## 9. ${copy.debates}`,
-    ...report.investmentDebates.map(
-      (item) => `- **${item.question}**\n  - ${copy.evidenceFor}: ${item.evidenceFor}\n  - ${copy.evidenceAgainst}: ${item.evidenceAgainst}\n  - ${copy.monitor}: ${item.monitor}`,
+    ...(
+      report.investmentDebates.length
+        ? [
+            `## 9. ${copy.debates}`,
+            ...report.investmentDebates.map(
+              (item) => `- **${item.question}**\n  - ${copy.evidenceFor}: ${item.evidenceFor}\n  - ${copy.evidenceAgainst}: ${item.evidenceAgainst}\n  - ${copy.monitor}: ${item.monitor}`,
+            ),
+            "",
+          ]
+        : []
     ),
-    "",
     `## 10. ${copy.catalystsRisks}`,
     ...report.risks.map(
       (item) => `- **${item.title}** — ${item.evidence}\n  - ${copy.thesisBreaker}: ${item.thesisBreaker}`,
@@ -737,6 +804,24 @@ export function ResearchApp() {
   const reportRef = useRef<HTMLElement>(null);
   const copy = COPY[locale];
   const latestPeriod = useMemo(() => report?.periods.at(-1) ?? null, [report]);
+  const visiblePeerComparison = useMemo(
+    () =>
+      report?.peerComparison.filter(
+        (peer) => peer.periodEnd && peer.metrics.some((metric) => metric.value !== null),
+      ) ?? [],
+    [report],
+  );
+  const visiblePeerMetricIds = useMemo(
+    () =>
+      new Set(
+        visiblePeerComparison.flatMap((peer) =>
+          peer.metrics
+            .filter((metric) => metric.value !== null)
+            .map((metric) => metric.id),
+        ),
+      ),
+    [visiblePeerComparison],
+  );
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -1167,13 +1252,20 @@ export function ResearchApp() {
               bank={report.sectorPack.id === "banks"}
             />
             <div className="table-wrap has-unit-label">
-              <span className="table-unit-label">{formatFinancialMixedUnitLabel(report.currency, locale)}</span>
+              <span className="table-unit-label">
+                {formatFinancialMixedUnitLabel(
+                  report.currency,
+                  locale,
+                  "billion",
+                  report.sectorPack.id === "banks" ? "rates-ratios" : "margins",
+                )}
+              </span>
               <table className="financial-table">
                 <caption>{copy.actualKey}</caption>
                 <thead>
                   {report.sectorPack.id === "banks" ? (
                     <tr>
-                      <th>{copy.year}</th><th>{copy.revenue}</th><th>{copy.netInterestIncome}</th>
+                      <th>{copy.year}</th><th>{copy.netRevenue}</th><th>{copy.netInterestIncome}</th>
                       <th>{copy.deposits}</th><th>{copy.loans}</th><th>{copy.loanGrowth}</th>
                       <th>{copy.creditLossProvision}</th><th>{copy.efficiencyRatio}</th>
                     </tr>
@@ -1280,7 +1372,10 @@ export function ResearchApp() {
           </section>
 
           <section className="report-section analysis-grid-section" data-pdf-block>
-            <SectionHeading number="07" title={copy.cashCapital} />
+            <SectionHeading
+              number="07"
+              title={report.sectorPack.id === "banks" ? copy.bankCapital : copy.cashCapital}
+            />
             <div className="balance-panel">
               <div className="balance-grid">
                 {(report.sectorPack.id === "banks"
@@ -1330,51 +1425,55 @@ export function ResearchApp() {
             </div>
           </section>
 
-          <section className="report-section" data-pdf-block>
-            <SectionHeading number="08" title={copy.peerComparison} note={copy.peerNote} />
-            {report.peerComparison.length ? (
+          {visiblePeerComparison.length > 0 && (
+            <section className="report-section" data-pdf-block>
+              <SectionHeading number="08" title={copy.peerComparison} note={copy.peerNote} />
               <div className="table-wrap">
                 <table className="peer-table">
                   <thead>
                     <tr>
                       <th>{copy.peer}</th><th>{copy.rationale}</th><th>{copy.period}</th>
-                      {report.peerComparison[0].metrics.map((metric) => (
-                        <th key={metric.id}>{metric.label}</th>
-                      ))}
+                      {visiblePeerComparison[0].metrics
+                        .filter((metric) => visiblePeerMetricIds.has(metric.id))
+                        .map((metric) => <th key={metric.id}>{metric.label}</th>)}
                     </tr>
                   </thead>
                   <tbody>
-                    {report.peerComparison.map((peer) => (
+                    {visiblePeerComparison.map((peer) => (
                       <tr key={peer.ticker}>
                         <th>{peer.ticker}<small>{peer.name}</small></th>
                         <td>{peer.rationale}</td>
                         <td>{peer.periodEnd ?? "—"}</td>
-                        {peer.metrics.map((metric) => (
-                          <td key={metric.id}>{formatPercent(metric.value, locale)}</td>
-                        ))}
+                        {peer.metrics
+                          .filter((metric) => visiblePeerMetricIds.has(metric.id))
+                          .map((metric) => (
+                            <td key={metric.id}>{formatPeerMetric(metric, locale)}</td>
+                          ))}
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-            ) : <p className="module-not-selected">{locale === "zh" ? "本次未选择同业比较。" : "Peer comparison was not selected."}</p>}
-          </section>
+            </section>
+          )}
 
-          <section className="report-section" data-pdf-block>
-            <SectionHeading number="09" title={copy.debates} />
-            <div className="debate-grid">
-              {report.investmentDebates.map((debate) => (
-                <article key={debate.question}>
-                  <h4>{debate.question}</h4>
-                  <dl>
-                    <div><dt>{copy.evidenceFor}</dt><dd>{debate.evidenceFor}</dd></div>
-                    <div><dt>{copy.evidenceAgainst}</dt><dd>{debate.evidenceAgainst}</dd></div>
-                    <div><dt>{copy.monitor}</dt><dd>{debate.monitor}</dd></div>
-                  </dl>
-                </article>
-              ))}
-            </div>
-          </section>
+          {report.investmentDebates.length > 0 && (
+            <section className="report-section" data-pdf-block>
+              <SectionHeading number="09" title={copy.debates} />
+              <div className="debate-grid">
+                {report.investmentDebates.map((debate) => (
+                  <article key={debate.question}>
+                    <h4>{debate.question}</h4>
+                    <dl>
+                      <div><dt>{copy.evidenceFor}</dt><dd>{debate.evidenceFor}</dd></div>
+                      <div><dt>{copy.evidenceAgainst}</dt><dd>{debate.evidenceAgainst}</dd></div>
+                      <div><dt>{copy.monitor}</dt><dd>{debate.monitor}</dd></div>
+                    </dl>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
 
           <section className="report-section" data-pdf-block>
             <SectionHeading number="10" title={copy.catalystsRisks} />
@@ -1409,7 +1508,13 @@ export function ResearchApp() {
                   <article className={`scenario-card ${scenario.name.toLowerCase()}`} key={scenario.name}>
                     <div className="scenario-title">
                       <span>{copy[scenario.name.toLowerCase() as "bear" | "base" | "bull"]}</span>
-                      <strong>{scenario.enterpriseValueMultiple.toFixed(0)}x {scenario.multipleLabel}</strong>
+                      <strong>
+                        {formatMultiple(
+                          scenario.enterpriseValueMultiple,
+                          locale,
+                          report.sectorPack.id === "banks" ? 2 : 0,
+                        )} {scenario.multipleLabel}
+                      </strong>
                     </div>
                     <dl>
                       <div>
@@ -1427,6 +1532,18 @@ export function ResearchApp() {
                       )}
                       {scenario.valuationMetric !== null && (
                         <div><dt>{copy.valuationMetric}</dt><dd>{formatMoney(scenario.valuationMetric, report.currency, locale)}</dd></div>
+                      )}
+                      {scenario.impliedPricePerShare !== null && (
+                        <div><dt>{copy.impliedPricePerShare}</dt><dd>{formatPerUnitValue(scenario.impliedPricePerShare, report.currency, locale, "share")}</dd></div>
+                      )}
+                      {scenario.impliedPriceToEarnings !== null && (
+                        <div><dt>{copy.impliedPe}</dt><dd>{formatMultiple(scenario.impliedPriceToEarnings, locale, 1)}</dd></div>
+                      )}
+                      {scenario.impliedDividendYield !== null && (
+                        <div><dt>{copy.impliedDividendYield}</dt><dd>{formatPercent(scenario.impliedDividendYield, locale)}</dd></div>
+                      )}
+                      {scenario.rotceCostOfEquitySpread !== null && (
+                        <div><dt>{copy.rotceCostOfEquity}</dt><dd>{formatPercent(scenario.rotceCostOfEquitySpread, locale)}</dd></div>
                       )}
                     </dl>
                     <p>{scenario.impliedValueLabel}</p>

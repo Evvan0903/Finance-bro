@@ -23,6 +23,11 @@ const SCENARIO_DEFINITIONS = {
   valuationMetric: "scenario-valuation-metric",
   enterpriseValue: "scenario-model-implied-enterprise-value",
   equityValue: "scenario-model-implied-equity-value",
+  pricePerShare: "scenario-model-implied-price-per-share",
+  priceToEarnings: "scenario-implied-price-to-earnings",
+  dividendYield: "scenario-implied-dividend-yield",
+  costOfEquity: "scenario-cost-of-equity-assumption",
+  rotceSpread: "scenario-rotce-less-cost-of-equity",
 } as const;
 
 function clamp(value: number, minimum: number, maximum: number) {
@@ -119,7 +124,7 @@ function calculate(input: {
   periodEnd: string;
   metricId: string;
   definitionId: string;
-  formulaId: "multiply" | "scale" | "subtract" | "growth-projection";
+  formulaId: "multiply" | "divide" | "scale" | "subtract" | "growth-projection";
   formula: string;
   inputs: CanonicalMetricObject[];
   unit: string;
@@ -155,6 +160,34 @@ function buildBankScenarios(input: {
     FINANCIAL_DEFINITION_IDS.tangibleBookValue,
   );
   if (!tangibleBook) return [];
+  const tangibleBookPerShare = optionalMetric(
+    input.registry,
+    input.companyId,
+    "tangible-book-value-per-share",
+    input.latest.periodEnd,
+    FINANCIAL_DEFINITION_IDS.tangibleBookValuePerShare,
+  );
+  const netIncome = optionalMetric(
+    input.registry,
+    input.companyId,
+    "net-income",
+    input.latest.periodEnd,
+    FINANCIAL_DEFINITION_IDS.netIncome,
+  );
+  const dividends = optionalMetric(
+    input.registry,
+    input.companyId,
+    "dividends",
+    input.latest.periodEnd,
+    FINANCIAL_DEFINITION_IDS.dividends,
+  );
+  const rotce = optionalMetric(
+    input.registry,
+    input.companyId,
+    "return-on-tangible-common-equity",
+    input.latest.periodEnd,
+    FINANCIAL_DEFINITION_IDS.returnOnTangibleCommonEquity,
+  );
   const nextYear = Number(input.latest.periodEnd.slice(0, 4)) + 1;
   const forecastEnd = `${nextYear}-12-31`;
   const scenarioContext = {
@@ -195,6 +228,64 @@ function buildBankScenarios(input: {
       formula: `Explicit ${input.pack.valuation.multipleLabel} scenario multiple`,
       inputs: [tangibleBook],
     });
+    const costOfEquity = registerAssumption({
+      ...scenarioContext,
+      scenario: assumption.name,
+      period,
+      periodEnd: forecastEnd,
+      metricId: "scenario-cost-of-equity",
+      definitionId: SCENARIO_DEFINITIONS.costOfEquity,
+      value: 0.1,
+      unit: "ratio",
+      currency: null,
+      formula: "Explicit analyst cost-of-equity assumption used only as a ROTCE cross-check",
+      inputs: rotce ? [rotce] : [tangibleBook],
+    });
+    const scenarioNetIncome = netIncome
+      ? registerAssumption({
+          ...scenarioContext,
+          scenario: assumption.name,
+          period,
+          periodEnd: forecastEnd,
+          metricId: "scenario-net-income",
+          definitionId: "scenario-latest-net-income-roll-forward",
+          value: netIncome.value!,
+          unit: netIncome.unit,
+          currency: netIncome.currency,
+          formula: "Latest annual net income held flat solely for the P/E cross-check",
+          inputs: [netIncome],
+        })
+      : null;
+    const scenarioDividends = dividends
+      ? registerAssumption({
+          ...scenarioContext,
+          scenario: assumption.name,
+          period,
+          periodEnd: forecastEnd,
+          metricId: "scenario-cash-dividends",
+          definitionId: "scenario-latest-cash-dividends-roll-forward",
+          value: dividends.value!,
+          unit: dividends.unit,
+          currency: dividends.currency,
+          formula: "Latest annual cash dividends held flat solely for the dividend-yield cross-check",
+          inputs: [dividends],
+        })
+      : null;
+    const scenarioRotce = rotce
+      ? registerAssumption({
+          ...scenarioContext,
+          scenario: assumption.name,
+          period,
+          periodEnd: forecastEnd,
+          metricId: "scenario-rotce",
+          definitionId: "scenario-latest-rotce-roll-forward",
+          value: rotce.value!,
+          unit: rotce.unit,
+          currency: null,
+          formula: "Latest issuer-reported ROTCE held flat solely for the cost-of-equity cross-check",
+          inputs: [rotce],
+        })
+      : null;
     const projectedTangibleBook = calculate({
       ...scenarioContext,
       scenario: assumption.name,
@@ -221,6 +312,81 @@ function buildBankScenarios(input: {
       unit: tangibleBook.unit,
       currency: tangibleBook.currency,
     });
+    const projectedTangibleBookPerShare = tangibleBookPerShare
+      ? calculate({
+          ...scenarioContext,
+          scenario: assumption.name,
+          period,
+          periodEnd: forecastEnd,
+          metricId: "scenario-tangible-book-value-per-share",
+          definitionId: SCENARIO_DEFINITIONS.pricePerShare,
+          formulaId: "growth-projection",
+          formula: "latest_tangible_book_value_per_share * (1 + scenario_tangible_book_growth)",
+          inputs: [tangibleBookPerShare, tangibleBookGrowth],
+          unit: tangibleBookPerShare.unit,
+          currency: tangibleBookPerShare.currency,
+        })
+      : null;
+    const impliedPricePerShare = projectedTangibleBookPerShare
+      ? calculate({
+          ...scenarioContext,
+          scenario: assumption.name,
+          period,
+          periodEnd: forecastEnd,
+          metricId: "model-implied-price-per-share",
+          definitionId: SCENARIO_DEFINITIONS.pricePerShare,
+          formulaId: "scale",
+          formula: "scenario_tangible_book_value_per_share * assumed_price_to_tangible_book_multiple",
+          inputs: [projectedTangibleBookPerShare, valuationMultiple],
+          unit: projectedTangibleBookPerShare.unit,
+          currency: projectedTangibleBookPerShare.currency,
+        })
+      : null;
+    const impliedPriceToEarnings = scenarioNetIncome && scenarioNetIncome.value! > 0
+      ? calculate({
+          ...scenarioContext,
+          scenario: assumption.name,
+          period,
+          periodEnd: forecastEnd,
+          metricId: "scenario-implied-price-to-earnings",
+          definitionId: SCENARIO_DEFINITIONS.priceToEarnings,
+          formulaId: "divide",
+          formula: "model_implied_equity_value / latest_reported_net_income",
+          inputs: [equityValue, scenarioNetIncome],
+          unit: "x",
+          currency: null,
+        })
+      : null;
+    const impliedDividendYield = scenarioDividends && equityValue.value! > 0
+      ? calculate({
+          ...scenarioContext,
+          scenario: assumption.name,
+          period,
+          periodEnd: forecastEnd,
+          metricId: "scenario-implied-cash-dividend-yield",
+          definitionId: SCENARIO_DEFINITIONS.dividendYield,
+          formulaId: "divide",
+          formula: "latest_cash_dividends / model_implied_equity_value",
+          inputs: [scenarioDividends, equityValue],
+          unit: "ratio",
+          currency: null,
+        })
+      : null;
+    const rotceSpread = scenarioRotce
+      ? calculate({
+          ...scenarioContext,
+          scenario: assumption.name,
+          period,
+          periodEnd: forecastEnd,
+          metricId: "scenario-rotce-less-cost-of-equity",
+          definitionId: SCENARIO_DEFINITIONS.rotceSpread,
+          formulaId: "subtract",
+          formula: "issuer_reported_rotce - analyst_cost_of_equity_assumption",
+          inputs: [scenarioRotce, costOfEquity],
+          unit: "ratio",
+          currency: null,
+        })
+      : null;
     return {
       name: assumption.name,
       revenueGrowth: tangibleBookGrowth.value,
@@ -238,12 +404,22 @@ function buildBankScenarios(input: {
       impliedValueLabel:
         input.locale === "zh" ? "模型隐含股权价值" : "Model-implied equity value",
       modelImpliedEnterpriseValue: equityValue.value,
+      impliedPricePerShare: impliedPricePerShare?.value ?? null,
+      impliedPriceToEarnings: impliedPriceToEarnings?.value ?? null,
+      impliedDividendYield: impliedDividendYield?.value ?? null,
+      costOfEquityAssumption: costOfEquity.value,
+      rotceCostOfEquitySpread: rotceSpread?.value ?? null,
       metricReferences: {
         revenueGrowth: tangibleBookGrowth.canonical_key,
         enterpriseValueMultiple: valuationMultiple.canonical_key,
         valuationStartingPoint: tangibleBook.canonical_key,
         valuationMetric: projectedTangibleBook.canonical_key,
         modelImpliedEnterpriseValue: equityValue.canonical_key,
+        ...(impliedPricePerShare ? { impliedPricePerShare: impliedPricePerShare.canonical_key } : {}),
+        ...(impliedPriceToEarnings ? { impliedPriceToEarnings: impliedPriceToEarnings.canonical_key } : {}),
+        ...(impliedDividendYield ? { impliedDividendYield: impliedDividendYield.canonical_key } : {}),
+        costOfEquityAssumption: costOfEquity.canonical_key,
+        ...(rotceSpread ? { rotceCostOfEquitySpread: rotceSpread.canonical_key } : {}),
       },
     };
   });
@@ -550,6 +726,11 @@ export function buildCanonicalScenarios(input: {
       impliedValueLabel:
         input.locale === "zh" ? "模型隐含企业价值" : "Model-implied enterprise value",
       modelImpliedEnterpriseValue: enterpriseValue?.value ?? null,
+      impliedPricePerShare: null,
+      impliedPriceToEarnings: null,
+      impliedDividendYield: null,
+      costOfEquityAssumption: null,
+      rotceCostOfEquitySpread: null,
       metricReferences: Object.fromEntries(
         [
           ["revenueGrowth", growth],

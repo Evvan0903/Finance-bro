@@ -530,15 +530,24 @@ const PERIOD_FIELD_BY_METRIC_ID: Record<string, string> = {
   "net-interest-income": "netInterestIncome",
   "research-and-development": "researchAndDevelopment",
   deposits: "deposits",
+  "deposit-cost": "depositCost",
   loans: "loans",
   "loan-growth": "loanGrowth",
   "credit-loss-provision": "creditLossProvision",
+  "net-charge-offs": "netChargeOffs",
   "credit-loss-allowance": "creditLossAllowance",
   "allowance-coverage": "allowanceCoverage",
   "efficiency-ratio": "efficiencyRatio",
   "roe-proxy": "roeProxy",
+  "return-on-common-equity": "returnOnCommonEquity",
+  "return-on-tangible-common-equity": "returnOnTangibleCommonEquity",
   "tangible-book-value": "tangibleBookValue",
+  "tangible-book-value-per-share": "tangibleBookValuePerShare",
+  dividends: "dividends",
+  "share-buybacks": "shareBuybacks",
   "capital-returns": "capitalReturns",
+  "investment-banking-fees": "investmentBankingFees",
+  "trading-revenue": "tradingRevenue",
   "net-margin": "netMargin",
   "net-margin-change": "netMarginChange",
   "gross-margin": "grossMargin",
@@ -567,10 +576,10 @@ const DRIVER_METRIC_IDS: Record<string, string[]> = {
   capacity: ["gross-margin", "operating-margin", "inventory", "cash-capex"],
   "product-cycle": ["revenue-growth", "gross-margin", "operating-margin", "inventory"],
   "export-controls": ["revenue", "revenue-growth", "inventory"],
-  "rates-deposits": ["net-interest-income", "net-interest-margin", "deposits", "loans", "loan-growth"],
-  "credit-cycle": ["credit-loss-provision", "credit-loss-allowance", "allowance-coverage", "loans"],
-  "capital-liquidity": ["cet1-ratio", "liquidity-coverage-ratio", "tangible-book-value", "capital-returns"],
-  "operating-leverage": ["revenue", "net-interest-income", "net-interest-margin", "efficiency-ratio", "return-on-common-equity"],
+  "rates-deposits": ["net-interest-income", "net-interest-margin", "deposits", "deposit-cost", "loans", "loan-growth"],
+  "credit-cycle": ["credit-loss-provision", "net-charge-offs", "credit-loss-allowance", "allowance-coverage", "loans"],
+  "capital-liquidity": ["cet1-ratio", "liquidity-coverage-ratio", "tangible-book-value", "tangible-book-value-per-share", "return-on-tangible-common-equity", "dividends", "share-buybacks", "capital-returns"],
+  "operating-leverage": ["revenue", "net-interest-income", "net-interest-margin", "efficiency-ratio", "return-on-common-equity", "return-on-tangible-common-equity", "investment-banking-fees", "trading-revenue"],
   "biopharma-product-cycle": ["product-revenue", "product-concentration", "revenue-growth", "gross-margin"],
   "biopharma-pipeline-execution": ["research-and-development", "gross-margin", "operating-cash-flow"],
   "biopharma-pricing-access": ["product-revenue", "product-concentration", "revenue-growth"],
@@ -697,6 +706,88 @@ const NVDA_EXPOSURE_TEMPLATES: CompanyExposureTemplate[] = [
   },
 ];
 
+const JPM_Q2_2026_SUPPLEMENT_URL =
+  "https://www.sec.gov/Archives/edgar/data/19617/000162828026048078/a2q26erfex992supplement.htm";
+
+const JPM_EXPOSURE_TEMPLATES: CompanyExposureTemplate[] = [
+  {
+    driverId: "rates-deposits",
+    title: "JPMorganChase 2Q26 Earnings Supplement",
+    publisher: "JPMorgan Chase & Co.",
+    date: "2026-07-14",
+    url: JPM_Q2_2026_SUPPLEMENT_URL,
+    evidence: {
+      zh: "JPMorganChase 披露 2Q26 管理口径净利息收入 256 亿美元、公司净收益率 2.40%、期末存款 2.71 万亿美元；较低利率与存款重定价共同决定利差路径。",
+      en: "JPMorganChase reported 2Q26 managed net interest income of US$25.6 billion, firmwide net yield of 2.40%, and period-end deposits of US$2.71 trillion; lower rates and deposit repricing jointly determine the margin path.",
+    },
+    companyExposure: {
+      zh: "高：资产收益率、存款成本与存款组合直接影响净利息收入和净收益率。",
+      en: "High: Asset yields, deposit cost, and deposit mix directly affect net interest income and firmwide net yield.",
+    },
+    investmentImplication: {
+      zh: "投资者应同时跟踪净收益率、存款成本和存款增长，避免把规模增长误判为利差改善。",
+      en: "Investors should track net yield, deposit cost, and deposit growth together rather than treating balance-sheet growth as margin improvement.",
+    },
+  },
+  {
+    driverId: "credit-cycle",
+    title: "JPMorganChase 2Q26 Earnings Supplement",
+    publisher: "JPMorgan Chase & Co.",
+    date: "2026-07-14",
+    url: JPM_Q2_2026_SUPPLEMENT_URL,
+    evidence: {
+      zh: "2Q26 信用损失拨备为 25 亿美元，净核销为 24 亿美元，贷款损失准备覆盖率为 1.79%；信用成本仍需按消费和批发组合分别判断。",
+      en: "The 2Q26 credit-loss provision was US$2.5 billion, net charge-offs were US$2.4 billion, and allowance coverage was 1.79%; credit cost still needs to be assessed separately across consumer and wholesale portfolios.",
+    },
+    companyExposure: {
+      zh: "高：信用卡、消费、商业地产和批发贷款的正常化会影响拨备前利润与资本。",
+      en: "High: Normalization in card, consumer, CRE, and wholesale credit affects pre-provision earnings and capital.",
+    },
+    investmentImplication: {
+      zh: "拨备与净核销接近时，准备金变化和组合迁徙比单季损失率更能说明信用拐点。",
+      en: "When provision and charge-offs are close, reserve movement and portfolio migration are more informative than a single-quarter loss rate.",
+    },
+  },
+  {
+    driverId: "capital-liquidity",
+    title: "JPMorganChase 2Q26 Earnings Supplement",
+    publisher: "JPMorgan Chase & Co.",
+    date: "2026-07-14",
+    url: JPM_Q2_2026_SUPPLEMENT_URL,
+    evidence: {
+      zh: "2Q26 标准化 CET1 比率为 14.1%，现金和可变现证券为 1.5 万亿美元；季度普通股股息为每股 1.50 美元，普通股回购为 67 亿美元。",
+      en: "The 2Q26 standardized CET1 ratio was 14.1% and cash plus marketable securities were US$1.5 trillion; the quarterly common dividend was US$1.50 per share and common-share repurchases were US$6.7 billion.",
+    },
+    companyExposure: {
+      zh: "高：压力资本、风险加权资产、流动性缓冲和监管要求共同约束股息与回购。",
+      en: "High: Stress capital, risk-weighted assets, liquidity buffers, and regulation jointly constrain dividends and buybacks.",
+    },
+    investmentImplication: {
+      zh: "资本回报应与最低压力 CET1 和流动性缓冲一并评估，而不能只看期末资本盈余。",
+      en: "Capital returns should be assessed against trough stress CET1 and liquidity buffers, not period-end capital surplus alone.",
+    },
+  },
+  {
+    driverId: "operating-leverage",
+    title: "JPMorganChase 2Q26 Earnings Supplement",
+    publisher: "JPMorgan Chase & Co.",
+    date: "2026-07-14",
+    url: JPM_Q2_2026_SUPPLEMENT_URL,
+    evidence: {
+      zh: "2Q26 投资银行费用为 33 亿美元，Markets 收入为 121 亿美元，管理口径效率比率为 47%，剔除重大项目后的 ROTCE 为 23%。",
+      en: "The 2Q26 investment-banking fees were US$3.3 billion, Markets revenue was US$12.1 billion, the managed efficiency ratio was 47%, and ROTCE excluding significant items was 23%.",
+    },
+    companyExposure: {
+      zh: "高：投行与交易活动提高非息收入，但其质量取决于客户活动、风险消耗和费用纪律。",
+      en: "High: Investment-banking and trading activity lift noninterest revenue, but quality depends on client activity, risk consumption, and expense discipline.",
+    },
+    investmentImplication: {
+      zh: "投行费、Markets 收入、效率比率和 ROTCE 必须共同验证经营杠杆是否转化为股东回报。",
+      en: "Investment-banking fees, Markets revenue, efficiency, and ROTCE should jointly validate whether operating leverage converts to shareholder returns.",
+    },
+  },
+];
+
 function selectedCanonicalMetrics(
   registry: MetricRegistry,
   companyId: string,
@@ -733,7 +824,12 @@ function buildDriverExposure(
   companyId: string,
   latest: FinancialPeriod,
 ): { rows: SectorDriverExposure[]; omittedDrivers: string[] } {
-  const templates = companyId === "NVDA" ? NVDA_EXPOSURE_TEMPLATES : [];
+  const templates =
+    companyId === "NVDA"
+      ? NVDA_EXPOSURE_TEMPLATES
+      : companyId === "JPM"
+        ? JPM_EXPOSURE_TEMPLATES
+        : [];
   const rows = pack.marketDrivers.flatMap((driver) => {
     const template = templates.find((item) => item.driverId === driver.id);
     if (!template) return [];
@@ -819,6 +915,43 @@ function buildNarrative(
   const priceCostImpact = industrialMetric("price-cost-impact");
   const segmentMargin = industrialMetric("segment-margin");
   const workingCapital = industrialMetric("working-capital");
+  const bankMetrics = pack.id === "banks"
+    ? selectedCanonicalMetrics(
+        registry,
+        companyId,
+        latest,
+        [
+          "net-interest-income",
+          "net-interest-margin",
+          "deposits",
+          "deposit-cost",
+          "net-charge-offs",
+          "allowance-coverage",
+          "cet1-ratio",
+          "liquidity-coverage-ratio",
+          "efficiency-ratio",
+          "return-on-tangible-common-equity",
+          "tangible-book-value-per-share",
+          "investment-banking-fees",
+          "trading-revenue",
+        ],
+      )
+    : [];
+  const bankMetric = (metricId: string) =>
+    bankMetrics.find((metric) => metric.metric_id === metricId) ?? null;
+  const bankNetInterestIncome = bankMetric("net-interest-income");
+  const bankNetYield = bankMetric("net-interest-margin");
+  const bankDeposits = bankMetric("deposits");
+  const bankDepositCost = bankMetric("deposit-cost");
+  const bankNetChargeOffs = bankMetric("net-charge-offs");
+  const bankAllowanceCoverage = bankMetric("allowance-coverage");
+  const bankCet1 = bankMetric("cet1-ratio");
+  const bankLiquidity = bankMetric("liquidity-coverage-ratio");
+  const bankEfficiency = bankMetric("efficiency-ratio");
+  const bankRotce = bankMetric("return-on-tangible-common-equity");
+  const bankTbvps = bankMetric("tangible-book-value-per-share");
+  const bankInvestmentBankingFees = bankMetric("investment-banking-fees");
+  const bankTradingRevenue = bankMetric("trading-revenue");
   const primaryNetDebtMetric = latest.metricKeys.netDebt
     ? registry.getByKey(latest.metricKeys.netDebt)
     : null;
@@ -946,7 +1079,66 @@ function buildNarrative(
       metricKey: latest.metricKeys.liabilitiesAssets ?? "",
     },
   ];
-  const visibleDashboard = dashboard.filter((_, index) => [
+  const bankDashboard: DashboardMetric[] = [
+    {
+      label: locale === "zh" ? "净利息收入" : "Net interest income",
+      value: bankNetInterestIncome ? formatMetricForDisplay(bankNetInterestIncome, locale) : "—",
+      detail:
+        locale === "zh"
+          ? `公司净收益率 ${bankNetYield ? formatMetricForDisplay(bankNetYield, locale) : "—"}；需结合资产收益率与存款重定价。`
+          : `Firmwide net yield ${bankNetYield ? formatMetricForDisplay(bankNetYield, locale) : "—"}; assess with asset yields and deposit repricing.`,
+      classification: "Reported fact",
+      tone: "neutral",
+      metricKey: bankNetInterestIncome?.canonical_key ?? "",
+    },
+    {
+      label: locale === "zh" ? "存款与存款成本" : "Deposits and deposit cost",
+      value: bankDeposits ? formatMetricForDisplay(bankDeposits, locale) : "—",
+      detail:
+        locale === "zh"
+          ? `总存款平均利率 ${bankDepositCost ? formatMetricForDisplay(bankDepositCost, locale) : "—"}；规模与价格必须共同验证。`
+          : `Average rate on total deposits ${bankDepositCost ? formatMetricForDisplay(bankDepositCost, locale) : "—"}; volume and pricing must be tested together.`,
+      classification: "Reported fact",
+      tone: "neutral",
+      metricKey: bankDeposits?.canonical_key ?? "",
+    },
+    {
+      label: locale === "zh" ? "标准化 CET1" : "Standardized CET1",
+      value: bankCet1 ? formatMetricForDisplay(bankCet1, locale) : "—",
+      detail:
+        locale === "zh"
+          ? "普通股一级资本相对风险加权资产；资本分配的核心约束。"
+          : "Common equity tier 1 capital relative to risk-weighted assets; a core constraint on distributions.",
+      classification: "Reported fact",
+      tone: "neutral",
+      metricKey: bankCet1?.canonical_key ?? "",
+    },
+    {
+      label: locale === "zh" ? "有形普通股回报率" : "Return on tangible common equity",
+      value: bankRotce ? formatMetricForDisplay(bankRotce, locale) : "—",
+      detail:
+        locale === "zh"
+          ? `FY2025 发行人报告口径；每股有形账面价值 ${bankTbvps ? formatMetricForDisplay(bankTbvps, locale) : "—"}。`
+          : `Issuer-reported FY2025 measure; tangible book value per share was ${bankTbvps ? formatMetricForDisplay(bankTbvps, locale) : "—"}.`,
+      classification: "Reported fact",
+      tone: "positive",
+      metricKey: bankRotce?.canonical_key ?? "",
+    },
+    {
+      label: locale === "zh" ? "资本市场收入" : "Capital-markets revenue",
+      value: bankTradingRevenue ? formatMetricForDisplay(bankTradingRevenue, locale) : "—",
+      detail:
+        locale === "zh"
+          ? `FY2025 Markets 收入；同期投行费 ${bankInvestmentBankingFees ? formatMetricForDisplay(bankInvestmentBankingFees, locale) : "—"}。`
+          : `FY2025 Markets revenue; investment-banking fees were ${bankInvestmentBankingFees ? formatMetricForDisplay(bankInvestmentBankingFees, locale) : "—"}.`,
+      classification: "Reported fact",
+      tone: "positive",
+      metricKey: bankTradingRevenue?.canonical_key ?? "",
+    },
+  ];
+  const visibleDashboard = pack.id === "banks"
+    ? bankDashboard.filter((metric) => metric.metricKey && metric.value !== "—")
+    : dashboard.filter((_, index) => [
     latest.revenue !== null,
     latest.netMargin !== null,
     latest.freeCashFlowProxy !== null,
@@ -994,16 +1186,16 @@ function buildNarrative(
       : pack.id === "banks"
       ? locale === "zh"
         ? [
-            `${companyName} 最新年度净收入为 ${compactMoney(latest.revenue, currency, locale)}，其中净利息收入为 ${compactMoney(latest.netInterestIncome, currency, locale)}。`,
-            `信用损失拨备为 ${compactMoney(latest.creditLossProvision, currency, locale)}；准备金覆盖代理为 ${percentage(latest.allowanceCoverage, locale)}。`,
-            `效率比率为 ${percentage(latest.efficiencyRatio, locale)}，期末权益回报率代理为 ${percentage(latest.roeProxy, locale)}；后者不是平均权益 ROE。`,
-            `有形账面价值为 ${compactMoney(latest.tangibleBookValue, currency, locale)}，资本回报为 ${compactMoney(latest.capitalReturns, currency, locale)}；银行不使用工业公司 FCF 模板。`,
+            `${companyName} FY2025 净利息收入为 ${bankNetInterestIncome ? formatMetricForDisplay(bankNetInterestIncome, locale) : "—"}，公司净收益率为 ${bankNetYield ? formatMetricForDisplay(bankNetYield, locale) : "—"}，总存款平均利率为 ${bankDepositCost ? formatMetricForDisplay(bankDepositCost, locale) : "—"}；利差质量必须与存款定价共同判断。`,
+            `信用损失拨备为 ${compactMoney(latest.creditLossProvision, currency, locale)}、净核销为 ${bankNetChargeOffs ? formatMetricForDisplay(bankNetChargeOffs, locale) : "—"}、准备金覆盖为 ${bankAllowanceCoverage ? formatMetricForDisplay(bankAllowanceCoverage, locale) : "—"}；拨备与核销的差额会改变准备金缓冲。`,
+            `效率比率为 ${bankEfficiency ? formatMetricForDisplay(bankEfficiency, locale) : "—"}，发行人报告 ROTCE 为 ${bankRotce ? formatMetricForDisplay(bankRotce, locale) : "—"}；ROTCE 是非 GAAP 指标，保留发行人口径。`,
+            `标准化 CET1 为 ${bankCet1 ? formatMetricForDisplay(bankCet1, locale) : "—"}、平均 LCR 为 ${bankLiquidity ? formatMetricForDisplay(bankLiquidity, locale) : "—"}，现金股息与普通股回购分别为 ${compactMoney(latest.dividends, currency, locale)} 和 ${compactMoney(latest.shareBuybacks, currency, locale)}；资本回报必须服从压力资本与流动性约束。`,
           ]
         : [
-            `${companyName}'s latest annual net revenue was ${compactMoney(latest.revenue, currency, locale)}, including net interest income of ${compactMoney(latest.netInterestIncome, currency, locale)}.`,
-            `Credit-loss provision was ${compactMoney(latest.creditLossProvision, currency, locale)}; the allowance-coverage proxy was ${percentage(latest.allowanceCoverage, locale)}.`,
-            `The efficiency ratio was ${percentage(latest.efficiencyRatio, locale)} and the period-end equity return proxy was ${percentage(latest.roeProxy, locale)}; the latter is not average-equity ROE.`,
-            `Tangible book value was ${compactMoney(latest.tangibleBookValue, currency, locale)} and capital returns were ${compactMoney(latest.capitalReturns, currency, locale)}; no industrial-company FCF template is used.`,
+            `${companyName}'s FY2025 net interest income was ${bankNetInterestIncome ? formatMetricForDisplay(bankNetInterestIncome, locale) : "—"}, firmwide net yield was ${bankNetYield ? formatMetricForDisplay(bankNetYield, locale) : "—"}, and the average rate on total deposits was ${bankDepositCost ? formatMetricForDisplay(bankDepositCost, locale) : "—"}; spread quality must be assessed with deposit pricing.`,
+            `Credit-loss provision was ${compactMoney(latest.creditLossProvision, currency, locale)}, net charge-offs were ${bankNetChargeOffs ? formatMetricForDisplay(bankNetChargeOffs, locale) : "—"}, and allowance coverage was ${bankAllowanceCoverage ? formatMetricForDisplay(bankAllowanceCoverage, locale) : "—"}; the provision-versus-charge-off gap changes the reserve cushion.`,
+            `The efficiency ratio was ${bankEfficiency ? formatMetricForDisplay(bankEfficiency, locale) : "—"} and issuer-reported ROTCE was ${bankRotce ? formatMetricForDisplay(bankRotce, locale) : "—"}; ROTCE is a non-GAAP measure whose issuer definition is preserved.`,
+            `Standardized CET1 was ${bankCet1 ? formatMetricForDisplay(bankCet1, locale) : "—"}, average LCR was ${bankLiquidity ? formatMetricForDisplay(bankLiquidity, locale) : "—"}, and cash dividends and common-share buybacks were ${compactMoney(latest.dividends, currency, locale)} and ${compactMoney(latest.shareBuybacks, currency, locale)}, respectively; distributions remain constrained by stress capital and liquidity.`,
           ]
       : locale === "zh"
       ? [
@@ -1037,14 +1229,17 @@ function buildNarrative(
       latest,
       [
         ...(DRIVER_METRIC_IDS[driver.id] ?? []),
-        "revenue-growth",
-        "fcf",
+        ...(pack.id === "banks" ? [] : ["revenue-growth", "fcf"]),
       ],
     ).map((metric) => metric.canonical_key);
     return {
       title: driver.name[locale],
       view:
-        locale === "zh"
+        pack.id === "banks"
+          ? locale === "zh"
+            ? `${companyName} 的公司专属敞口已在“公司敞口”中按最新 2Q26 补充材料验证。FY2025 净利息收入为 ${bankNetInterestIncome ? formatMetricForDisplay(bankNetInterestIncome, locale) : "—"}、ROTCE 为 ${bankRotce ? formatMetricForDisplay(bankRotce, locale) : "—"}。行业证据：${claim?.publisher ?? COPY.zh.dataUnavailable} · ${claim?.publicationDate ?? COPY.zh.dataUnavailable}。`
+            : `${companyName}'s company-specific exposure is verified in Company Exposure using the latest 2Q26 supplement. FY2025 net interest income was ${bankNetInterestIncome ? formatMetricForDisplay(bankNetInterestIncome, locale) : "—"} and ROTCE was ${bankRotce ? formatMetricForDisplay(bankRotce, locale) : "—"}. Sector evidence: ${claim?.publisher ?? COPY.en.dataUnavailable} · ${claim?.publicationDate ?? COPY.en.dataUnavailable}.`
+        : locale === "zh"
           ? `${companyName} 的相关敞口是${driver.companyExposure.zh} 最新营收增长 ${percentage(latest.revenueGrowth, locale)}、FCF ${inlineFcfValue}。行业证据：${claim?.publisher ?? COPY.zh.dataUnavailable} · ${claim?.publicationDate ?? COPY.zh.dataUnavailable}。`
           : `${companyName}'s relevant exposure is ${driver.companyExposure.en} Latest revenue growth was ${percentage(latest.revenueGrowth, locale)} and FCF was ${inlineFcfValue}. Sector evidence: ${claim?.publisher ?? COPY.en.dataUnavailable} · ${claim?.publicationDate ?? COPY.en.dataUnavailable}.`,
       counterEvidence: pack.risks[index % pack.risks.length][locale],
@@ -1061,12 +1256,18 @@ function buildNarrative(
       ? ["product-revenue", "product-concentration", "research-and-development", "gross-margin", "patent-expiry-year", "fcf"]
       : pack.id === "industrial-machinery"
         ? ["backlog", "near-term-backlog-share", "price-cost-impact", "segment-margin", "working-capital", "cash-conversion", "fcf"]
+        : pack.id === "banks"
+          ? ["net-interest-income", "deposit-cost", "net-charge-offs", "allowance-coverage", "cet1-ratio", "liquidity-coverage-ratio", "efficiency-ratio", "return-on-tangible-common-equity", "dividends", "share-buybacks"]
         : ["revenue-growth", "net-margin", "fcf", "net-debt"],
   ).map((metric) => metric.canonical_key);
   const risks: RiskPoint[] = pack.risks.map((risk, index) => ({
     title: risk[locale],
     evidence:
-      locale === "zh"
+      pack.id === "banks"
+        ? locale === "zh"
+          ? `${companyName} FY2025 存款成本 ${bankDepositCost ? formatMetricForDisplay(bankDepositCost, locale) : "—"}、净核销 ${bankNetChargeOffs ? formatMetricForDisplay(bankNetChargeOffs, locale) : "—"}、CET1 ${bankCet1 ? formatMetricForDisplay(bankCet1, locale) : "—"}、ROTCE ${bankRotce ? formatMetricForDisplay(bankRotce, locale) : "—"}。`
+          : `${companyName}'s FY2025 deposit cost was ${bankDepositCost ? formatMetricForDisplay(bankDepositCost, locale) : "—"}, net charge-offs were ${bankNetChargeOffs ? formatMetricForDisplay(bankNetChargeOffs, locale) : "—"}, CET1 was ${bankCet1 ? formatMetricForDisplay(bankCet1, locale) : "—"}, and ROTCE was ${bankRotce ? formatMetricForDisplay(bankRotce, locale) : "—"}.`
+      : locale === "zh"
         ? `${companyName} 最新营收增速 ${percentage(latest.revenueGrowth, locale)}、净利润率 ${percentage(latest.netMargin, locale)}、FCF ${inlineFcfValue}。`
         : `${companyName}'s latest revenue growth was ${percentage(latest.revenueGrowth, locale)}, net margin ${percentage(latest.netMargin, locale)}, and FCF ${inlineFcfValue}.`,
     thesisBreaker:
@@ -1176,9 +1377,9 @@ async function buildPeerComparison(
           ticker: peer.ticker,
           name: peer.name,
           rationale: peer.rationale[locale],
-          revenueGrowth: latest?.revenueGrowth ?? null,
-          netMargin: latest?.netMargin ?? null,
-          freeCashFlowMargin: latest?.freeCashFlowMargin ?? null,
+          revenueGrowth: pack.id === "banks" ? null : latest?.revenueGrowth ?? null,
+          netMargin: pack.id === "banks" ? null : latest?.netMargin ?? null,
+          freeCashFlowMargin: pack.id === "banks" ? null : latest?.freeCashFlowMargin ?? null,
           periodEnd: latest?.periodEnd ?? null,
           metrics,
           metricReferences: Object.fromEntries(
@@ -1259,6 +1460,14 @@ function verifiedIssuerMetrics(
   ticker: string,
   latestAnnual: FilingSource | null,
 ): IssuerReportedMetric[] | undefined {
+  if (
+    ticker === "JPM" &&
+    latestAnnual?.form === "10-K" &&
+    latestAnnual.reportDate === "2025-12-31" &&
+    latestAnnual.filed === "2026-02-13"
+  ) {
+    return jpmSourceSnapshot.issuerReportedMetrics as IssuerReportedMetric[];
+  }
   if (
     ticker === "LLY" &&
     latestAnnual?.form === "10-K" &&
@@ -1424,7 +1633,7 @@ async function buildReport(
     record.ticker,
     latest,
     pack.id === "banks"
-      ? ["revenue", "net-interest-income", "net-interest-margin", "deposits", "loans", "cet1-ratio", "liquidity-coverage-ratio", "tangible-book-value"]
+      ? ["revenue", "net-interest-income", "net-interest-margin", "deposits", "deposit-cost", "loans", "loan-growth", "credit-loss-provision", "net-charge-offs", "allowance-coverage", "cet1-ratio", "liquidity-coverage-ratio", "efficiency-ratio", "return-on-tangible-common-equity", "tangible-book-value-per-share", "dividends", "share-buybacks", "investment-banking-fees", "trading-revenue"]
       : pack.id === "biopharma"
         ? ["revenue", "product-revenue", "product-concentration", "research-and-development", "gross-margin", "patent-expiry-year"]
         : pack.id === "industrial-machinery"
@@ -1462,7 +1671,7 @@ async function buildReport(
     pack.id === "integrated-oil-gas"
       ? ["production", "lng", "refining-margin", "major-projects"]
       : pack.id === "banks"
-        ? ["net-interest-income", "net-interest-margin", "deposits", "loan-growth", "efficiency-ratio"]
+        ? ["net-interest-income", "net-interest-margin", "deposits", "deposit-cost", "loans", "loan-growth", "efficiency-ratio", "investment-banking-fees", "trading-revenue"]
       : pack.id === "biopharma"
           ? ["product-revenue", "product-concentration", "research-and-development", "gross-margin"]
           : pack.id === "industrial-machinery"
@@ -1474,7 +1683,7 @@ async function buildReport(
     record.ticker,
     latest,
     pack.id === "banks"
-      ? ["credit-loss-provision", "allowance-coverage", "cet1-ratio", "tangible-book-value", "capital-returns"]
+      ? ["credit-loss-provision", "net-charge-offs", "allowance-coverage", "cet1-ratio", "liquidity-coverage-ratio", "return-on-tangible-common-equity", "tangible-book-value-per-share", "dividends", "share-buybacks"]
       : pack.id === "biopharma"
         ? ["research-and-development", "gross-margin", "operating-cash-flow", "fcf"]
         : pack.id === "industrial-machinery"
@@ -1488,7 +1697,7 @@ async function buildReport(
     pack.id === "integrated-oil-gas"
       ? ["major-projects", "cash-capex"]
       : pack.id === "banks"
-        ? ["credit-loss-provision", "cet1-ratio", "liquidity-coverage-ratio", "tangible-book-value"]
+        ? ["credit-loss-provision", "net-charge-offs", "cet1-ratio", "liquidity-coverage-ratio", "return-on-tangible-common-equity", "dividends", "share-buybacks"]
       : pack.id === "biopharma"
           ? ["product-revenue", "product-concentration", "patent-expiry-year"]
           : pack.id === "industrial-machinery"
@@ -1514,7 +1723,9 @@ async function buildReport(
   const effectiveValuation = useValuationFallback ? pack.valuation.fallback! : pack.valuation;
   const valuationFormula =
     pack.id === "banks"
-      ? effectiveValuation.formula[locale]
+      ? locale === "zh"
+        ? `${effectiveValuation.formula.zh}；模型隐含 P/E = 模型隐含股权价值 ÷ 最新年度净利润；模型隐含现金股息率 = 最新年度现金股息 ÷ 模型隐含股权价值；ROTCE 溢价 = 发行人报告 ROTCE - 10% 分析师股权成本假设。`
+        : `${effectiveValuation.formula.en}; implied P/E = model-implied equity value / latest annual net income; implied cash-dividend yield = latest annual cash dividends / model-implied equity value; ROTCE spread = issuer-reported ROTCE - a 10% analyst cost-of-equity assumption.`
       : `${effectiveValuation.formula[locale]}; ${strictFcfFormula}.`;
   const displayedOutlook = selection.options.sectorOutlook
     ? sectorOutlook
@@ -1526,7 +1737,10 @@ async function buildReport(
     : pack.id === "banks"
       ? [
           ...(latest.tangibleBookValue === null ? ["tangible-book-value"] : []),
+          ...(latest.tangibleBookValuePerShare === null ? ["tangible-book-value-per-share"] : []),
           ...(latest.creditLossProvision === null ? ["credit-loss-provision"] : []),
+          ...(latest.netChargeOffs === null ? ["net-charge-offs"] : []),
+          ...(latest.returnOnTangibleCommonEquity === null ? ["return-on-tangible-common-equity"] : []),
         ]
       : pack.id === "biopharma"
         ? [
@@ -1577,7 +1791,7 @@ async function buildReport(
         record.ticker,
         latest,
         pack.id === "banks"
-          ? ["net-interest-income", "net-interest-margin", "credit-loss-provision", "allowance-coverage", "cet1-ratio", "liquidity-coverage-ratio", "efficiency-ratio", "return-on-common-equity", "tangible-book-value", "capital-returns"]
+          ? ["net-interest-income", "net-interest-margin", "deposits", "deposit-cost", "loans", "loan-growth", "credit-loss-provision", "net-charge-offs", "allowance-coverage", "cet1-ratio", "liquidity-coverage-ratio", "efficiency-ratio", "return-on-common-equity", "return-on-tangible-common-equity", "tangible-book-value", "tangible-book-value-per-share", "dividends", "share-buybacks", "investment-banking-fees", "trading-revenue"]
           : pack.id === "biopharma"
             ? ["product-revenue", "product-concentration", "research-and-development", "gross-margin", "patent-expiry-year", "operating-cash-flow", "fcf"]
             : pack.id === "industrial-machinery"
@@ -1734,8 +1948,12 @@ async function buildReport(
       !selection.options.valuation
         ? locale === "zh" ? "本次未选择估值模块。" : "Valuation was not selected for this run."
         : locale === "zh"
-          ? `采用${effectiveValuation.method.zh}，不使用未注明日期的实时股价，不输出评级或目标价。${useValuationFallback ? "由于现金资本开支不可取得，经营现金流仅作为估值指标，未被表述为 FCF。" : ""}${pack.id === "biopharma" ? "商业收入情景不包含未验证的风险调整管线价值。" : ""}倍数为分析假设，${pack.id === "banks" ? "股权价值" : "企业价值"}用于敏感性而非价格预测。`
-          : `Uses ${effectiveValuation.method.en} without an undated real-time share price, rating, or price target. ${useValuationFallback ? "Because cash capex is unavailable, operating cash flow is used only as the valuation metric and is not presented as FCF. " : ""}${pack.id === "biopharma" ? "The commercial-revenue scenarios exclude unverified risk-adjusted pipeline value. " : ""}Multiples are analyst assumptions and ${pack.id === "banks" ? "equity values" : "enterprise values"} are sensitivities, not forecasts.`,
+          ? pack.id === "banks"
+            ? `采用${effectiveValuation.method.zh}作为主框架，并以模型隐含 P/E、现金股息率及 ROTCE 相对 10% 股权成本的溢价交叉验证。1.20x–2.20x P/TBV 为清晰标注的情景假设，不宣称为未验证的历史或同业交易区间；由于未使用带日期的市场价格，本报告不输出评级或目标价。`
+            : `采用${effectiveValuation.method.zh}，不使用未注明日期的实时股价，不输出评级或目标价。${useValuationFallback ? "由于现金资本开支不可取得，经营现金流仅作为估值指标，未被表述为 FCF。" : ""}${pack.id === "biopharma" ? "商业收入情景不包含未验证的风险调整管线价值。" : ""}倍数为分析假设，企业价值用于敏感性而非价格预测。`
+          : pack.id === "banks"
+            ? `Uses ${effectiveValuation.method.en} as the primary framework, cross-checked against model-implied P/E, cash-dividend yield, and issuer-reported ROTCE relative to a 10% cost-of-equity assumption. The 1.20x–2.20x P/TBV range is a clearly labeled scenario assumption, not a claimed historical or peer trading range; without a dated market price, the report provides no rating or price target.`
+            : `Uses ${effectiveValuation.method.en} without an undated real-time share price, rating, or price target. ${useValuationFallback ? "Because cash capex is unavailable, operating cash flow is used only as the valuation metric and is not presented as FCF. " : ""}${pack.id === "biopharma" ? "The commercial-revenue scenarios exclude unverified risk-adjusted pipeline value. " : ""}Multiples are analyst assumptions and enterprise values are sensitivities, not forecasts.`,
     cashFlowProxyFormula:
       pack.id === "banks"
         ? locale === "zh"
@@ -1779,7 +1997,10 @@ async function buildReport(
             topic: "Issuer filing",
           }]
         : []),
-      ...driverExposure.map((item) => ({
+      ...driverExposure.filter(
+        (item, index, rows) =>
+          rows.findIndex((candidate) => candidate.evidenceUrl === item.evidenceUrl) === index,
+      ).map((item) => ({
         title: item.evidenceTitle,
         url: item.evidenceUrl,
         retrievedAt: companyDataRetrievedAt,
@@ -1805,8 +2026,8 @@ async function buildReport(
         : "Standardized SEC XBRL does not consistently expose every issuer-defined segment and KPI, including NIM, CET1, HQLA, utilization, product revenue, pipeline stage, customer concentration, and market share; missing values remain not yet extracted.",
       pack.id === "banks"
         ? locale === "zh"
-          ? "银行不使用工业公司 FCF；ROE 为净利润除以期末权益的透明代理，不等于平均权益 ROE。"
-          : "Banks do not use industrial-company FCF; the ROE measure is a transparent net-income / period-end-equity proxy, not average-equity ROE."
+          ? "银行不使用工业公司 FCF。报告优先使用发行人报告的 ROE 与非 GAAP ROTCE，并保留其定义；期末权益回报代理仅保留在注册表中，不替代发行人口径。"
+          : "Banks do not use industrial-company FCF. The report prioritizes issuer-reported ROE and non-GAAP ROTCE with their definitions preserved; the period-end-equity return proxy remains in the registry and does not replace issuer measures."
         : pack.id === "biopharma"
           ? locale === "zh"
             ? "商业指标来自申报事实；管线概率、时间和价值未作为事实。公开输入不足以支持候选药级 rNPV，因此未计算风险调整管线价值或现金跑道。"
@@ -1827,8 +2048,12 @@ async function buildReport(
         ? "行业证据仅包含发布日期在 2025-01-01 至研究日之间、可公开访问且通过去重和相关性筛选的来源。"
         : "Sector evidence includes only accessible, deduplicated, relevant sources published from 2025-01-01 through the research date.",
       locale === "zh"
-        ? "未使用实时股价，因此不提供评级、目标价或每股价值；情景价值仅为透明敏感度。"
-        : "No real-time share price is used, so the report does not provide a rating, price target, or per-share value; scenario values are transparent sensitivities only.",
+        ? pack.id === "banks"
+          ? "未使用带日期的市场价格，因此不宣称当前、历史或同业交易倍数，也不提供评级或目标价；每股价值、P/E 与股息率均为显式 P/TBV 情景下的模型敏感度。"
+          : "未使用实时股价，因此不提供评级、目标价或每股价值；情景价值仅为透明敏感度。"
+        : pack.id === "banks"
+          ? "No dated market price is used, so the report does not claim current, historical, or peer trading multiples and provides no rating or price target; per-share values, P/E, and dividend yields are model sensitivities under explicit P/TBV scenarios."
+          : "No real-time share price is used, so the report does not provide a rating, price target, or per-share value; scenario values are transparent sensitivities only.",
     ],
   };
 }
