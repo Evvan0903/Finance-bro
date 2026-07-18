@@ -180,7 +180,7 @@ export function getSectorOutlook(
   locale: ResearchLocale,
   refresh = false,
 ) {
-  const key = `${market}:${subindustry}:${locale}`;
+  const key = `${SECTOR_RESEARCH_AS_OF_DATE}:${market}:${subindustry}:${locale}`;
   if (refresh) outlookCache.delete(key);
   return outlookCache.getOrLoad(key, async () => buildOutlook(market, subindustry, locale));
 }
