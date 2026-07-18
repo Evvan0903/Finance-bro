@@ -1,5 +1,15 @@
 # Institutional Equity Research Refactor and Shell Sample TODO
 
+## FinBro Vercel deployment
+
+- [x] Identify the local-only nested Gitlink as the Vercel source-retrieval blocker.
+- [x] Replace the Gitlink with the existing application source in the GitHub repository.
+- [x] Add the minimal Vercel Next.js/Webpack build configuration.
+- [x] Keep Cloudflare-only adapter code out of Vercel type checking without changing app behavior.
+- [x] Pass the Vercel-compatible production build and ESLint.
+- [x] Commit and push the source to the existing GitHub repository.
+- [x] Deploy to Vercel production and verify the FinBro homepage response.
+
 ## FinBro public shell rebrand
 
 - [x] Read recovery/project architecture, sector packs, canonical metrics/locator, PDF path, `saveToken`, and the Aeye-design-reference location.

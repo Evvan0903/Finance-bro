@@ -1,5 +1,14 @@
 # FinBro Research Worklog
 
+## Vercel compatibility and production deployment — deployed
+
+- Root cause: the GitHub repository contained only a local `site/` Gitlink without a `.gitmodules` mapping or remotely fetchable source repository, so Vercel could not retrieve the actual application.
+- Changes: converted that Gitlink into the existing tracked `site/` source tree; preserved the prior nested Git metadata outside the source tree. Added `site/vercel.json` (`nextjs`, `npm ci`, `npm run vercel-build`), the `vercel-build` script (`next build --webpack`), and ignored local `site/tmp/` artifacts. Cloudflare-only database code is retained but marked/excluded so Vercel’s Next.js type check does not require the Cloudflare virtual runtime module.
+- Validation: the Vercel build command’s underlying `next build --webpack` completed successfully, as did ESLint. The published production homepage returned HTTP 200 from Vercel and server-rendered FinBro and Ethan content.
+- GitHub: exact source commit `437ba0e61e1467f21df1572ed5fe0fe7e9bc84d1` was pushed to `Evvan0903/Finance-bro` on `main`.
+- Deployment: Vercel project `evan-sun/finbro`, deployment `dpl_98ovkSn6uBDyVHgVK5GTAP4ZXQzT`, is production-ready at <https://finbro-seven.vercel.app>.
+- Environment: no variable is required for the application to start. Set `SEC_USER_AGENT` in Vercel to a descriptive contact string (for example, `FinBro research@example.com`) for reliable live SEC requests; without it the retained fallback header is used.
+
 ## FinBro public shell rebrand — deployed
 
 - Objective: rebrand the public website and application shell as **FinBro**, with **Ethan** as the AI junior analyst, while retaining formal, source-backed institutional research output and all existing financial logic.

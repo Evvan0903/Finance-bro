@@ -12,11 +12,14 @@
 - Passed production build, ESLint, 24/24 automated tests, and `git diff --check`.
 - Committed the exact source as nested Sites commit `d20812d54baf0ab454042399da0b4de25bd5c8fb`, saved private Sites version 11 (`appgprj_6a585b81f7708191b13b1c34903345a9~appgver_1cbebbaad32c8191ae0c9f09dc1873e8`), and deployed it successfully as `appgdep_6a5b0ede3df08191afb09ea2f388c0dd` at `https://scopeline-research.evvan.chatgpt.site`.
 - Verified the live authenticated response (HTTP 200; FinBro and Ethan server-rendered) and reviewed the deployment screenshot for the first viewport. Custom owner-only access was preserved; the Sites display title is now `FinBro | Your overworked entry-level analyst.`
+- Made the minimum Vercel compatibility changes: replaced the local-only `site/` Gitlink with tracked source code, added Vercel’s Next.js/Webpack build configuration, and isolated the retained Cloudflare-only type import from Vercel’s build check.
+- Passed the Vercel-compatible production build and ESLint; pushed commit `437ba0e61e1467f21df1572ed5fe0fe7e9bc84d1` to `Evvan0903/Finance-bro` and deployed it successfully to <https://finbro-seven.vercel.app>.
 
 ### Remaining
 
 - No implementation or deployment task remains for the FinBro rebrand.
 - The legacy production URL slug remains `scopeline-research`; change it only if the user explicitly requests a new public URL or custom domain.
+- Configure `SEC_USER_AGENT` in Vercel if reliable live SEC retrieval is required; no environment variable is needed for startup.
 
 ### Current status
 
