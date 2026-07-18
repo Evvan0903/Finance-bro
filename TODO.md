@@ -1,5 +1,19 @@
 # Institutional Equity Research Refactor and Shell Sample TODO
 
+## FinBro public shell rebrand
+
+- [x] Read recovery/project architecture, sector packs, canonical metrics/locator, PDF path, `saveToken`, and the Aeye-design-reference location.
+- [x] Route the work under `saveToken` and preserve the formal report/public-shell tone boundary.
+- [x] Create the Aeye design reference and apply the exact required global color tokens.
+- [x] Rebrand visible product metadata, navigation, request flow, labels, footer, social card, favicon, and PDF footer as FinBro.
+- [x] Present Ethan only as an AI junior analyst / research workflow assistant.
+- [x] Preserve financial calculations, sources, canonical metrics, valuation, and sector logic.
+- [x] Repair the pre-existing JPM scenario canonical-reference omission without changing its value or formula.
+- [x] Pass production build, ESLint, 24/24 automated tests, and whitespace validation.
+- [x] Create a local nested-Sites checkpoint commit for the exact validated source.
+- [x] Push, save, deploy, and verify the updated private Sites version.
+- [x] Record the release identifiers and production verification in recovery notes and `WORKLOG.md`.
+
 ## Completed
 
 - [x] Recover and verify the previous completed checkpoint.

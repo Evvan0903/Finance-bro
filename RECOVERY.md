@@ -1,5 +1,31 @@
 # Recovery Checkpoint
 
+## Current objective — FinBro public shell rebrand
+
+### Completed
+
+- Read the recovery notes, worklog, TODO list, sector-pack and report/PDF architecture, canonical Metric Registry/Locator, `saveToken` skill, and archived-design location.
+- Created the archived Aeye design reference at `docs/design/aeye_design_reference.md` and applied its required token system, including the exact primary blue `#0055FF`.
+- Rebranded public-facing website metadata, navigation, request shell, loading states, footer, social image, favicon, and PDF footer as FinBro; Ethan is the AI junior analyst in the application shell only.
+- Kept generated equity-research reports formal and removed ScopeLine from visible product labels. Financial calculations, sector logic, sources, and valuation methods were not refactored.
+- Restored one existing JPM scenario canonical-reference omission so the consistency gate can publish the previously calculated model-implied equity values without changing those values or formulas.
+- Passed production build, ESLint, 24/24 automated tests, and `git diff --check`.
+- Committed the exact source as nested Sites commit `d20812d54baf0ab454042399da0b4de25bd5c8fb`, saved private Sites version 11 (`appgprj_6a585b81f7708191b13b1c34903345a9~appgver_1cbebbaad32c8191ae0c9f09dc1873e8`), and deployed it successfully as `appgdep_6a5b0ede3df08191afb09ea2f388c0dd` at `https://scopeline-research.evvan.chatgpt.site`.
+- Verified the live authenticated response (HTTP 200; FinBro and Ethan server-rendered) and reviewed the deployment screenshot for the first viewport. Custom owner-only access was preserved; the Sites display title is now `FinBro | Your overworked entry-level analyst.`
+
+### Remaining
+
+- No implementation or deployment task remains for the FinBro rebrand.
+- The legacy production URL slug remains `scopeline-research`; change it only if the user explicitly requests a new public URL or custom domain.
+
+### Current status
+
+The FinBro implementation is complete and deployed. Existing LLY-related work was preserved in the released nested Sites commit; no new sector expansion was initiated for this task.
+
+### Next recommended step
+
+Monitor the existing private FinBro site. Do not alter financial, research, or sector implementation unless a separately requested task requires it.
+
 ## Original objective
 
 Refactor `skills/institutional_equity_research/SKILL.md` into a concise execution guide, then explicitly use the revised skill to create and visually verify a current institutional-style Shell plc research sample in Markdown and PDF.

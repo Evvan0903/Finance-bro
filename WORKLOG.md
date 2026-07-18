@@ -1,4 +1,16 @@
-# ScopeLine Metric Locator Worklog
+# FinBro Research Worklog
+
+## FinBro public shell rebrand — deployed
+
+- Objective: rebrand the public website and application shell as **FinBro**, with **Ethan** as the AI junior analyst, while retaining formal, source-backed institutional research output and all existing financial logic.
+- `saveToken` routing: Sol set the information architecture, public-versus-report tone boundary, and final functional review. The Luna presentation lane handled visual tokens, responsive shell layout, public copy, metadata, social preview, favicon, and routine test updates. Terra was not used because no large-scale content inventory or research extraction was needed.
+- Brand and tone: public navigation, page metadata, product labels, request flow, loading state, footer, social preview, and PDF footer now use FinBro. Ethan is presented only as an AI junior analyst / research workflow assistant. The report body remains formal and objective; humor is confined to the application shell.
+- Design: created `docs/design/aeye_design_reference.md` with the verified Aeye-derived token system. The exact `#0055FF` primary blue and all requested blue, surface, border, and text tokens are now defined globally. The responsive shell uses a white technical-research canvas, compact assignment panel, Ethan status card, original FinBro social image, and a new FinBro favicon.
+- Integrity: no sector pack, source-selection rule, Metric Object, valuation formula, or financial calculation was redesigned. A pre-existing JPM scenario-audit failure was repaired by attaching its already-calculated model-implied equity value to its canonical metric reference; values and formulas were unchanged.
+- Validation passed: production build; ESLint; 24/24 rendered/API/canonical-consistency tests; `git diff --check`. JPM, Shell, NVDA, LLY, and CAT acceptance gates still pass. The local dev-server visual harness could not stay bound in this sandbox, so final visual confirmation will use the existing private production site after release.
+- Deployment: exact validated source commit `d20812d54baf0ab454042399da0b4de25bd5c8fb` (`d20812d`) was pushed to the existing private Sites project, saved as version **11** (`appgprj_6a585b81f7708191b13b1c34903345a9~appgver_1cbebbaad32c8191ae0c9f09dc1873e8`), and published as `appgdep_6a5b0ede3df08191afb09ea2f388c0dd`. The production URL remains <https://scopeline-research.evvan.chatgpt.site>; access is still custom and owner-only. The Sites display title is now `FinBro | Your overworked entry-level analyst.`
+- Production verification: authenticated HTTP response returned 200 and server-rendered FinBro/Ethan content. The private browser correctly showed the normal ChatGPT sign-in gate before authentication; the deployment screenshot provided the owner-visible first viewport and showed the FinBro mark, exact blue shell, Ethan card, task form, Chinese/English control, no clipping, and no large empty region.
+- Remaining issue: the legacy production URL slug remains `scopeline-research`, intentionally preserved because changing it would be a separate public-routing decision. There are no functional or visual release blockers.
 
 ## Financials → Diversified Banks → JPM — validated
 
