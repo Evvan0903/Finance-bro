@@ -82,6 +82,7 @@ const EVIDENCE_LABELS: Record<Locale, Record<EvidenceKind, string>> = {
   zh: {
     "Reported fact": "已披露事实",
     "Derived calculation": "推导计算",
+    "Market-data value": "市场数据",
     "Analyst assumption": "分析假设",
     Interpretation: "研究解读",
     "Management statement": "管理层陈述",
@@ -89,6 +90,7 @@ const EVIDENCE_LABELS: Record<Locale, Record<EvidenceKind, string>> = {
   en: {
     "Reported fact": "Reported fact",
     "Derived calculation": "Derived calculation",
+    "Market-data value": "Market-data value",
     "Analyst assumption": "Analyst assumption",
     Interpretation: "Interpretation",
     "Management statement": "Management statement",
@@ -97,15 +99,21 @@ const EVIDENCE_LABELS: Record<Locale, Record<EvidenceKind, string>> = {
 
 const COPY = {
   zh: {
-    brandHome: "ScopeLine 首页",
+    brandHome: "FinBro 首页",
     languagePicker: "切换报告语言",
-    headerNote: "行业情报 · 申报证据",
-    heroEyebrow: "行业感知型公开市场研究",
-    heroTitle: "一键生成公开信息尽调",
-    heroCopy: "行业情报、申报支持的分析和透明估值，一套流程完成。",
-    featureMarket: "自动市场分析",
-    featureSector: "行业感知研究",
-    featureEvidence: "证据链接洞察",
+    headerNote: "ETHAN · AI 初级分析师",
+    heroEyebrow: "FINBRO 研究工作台",
+    heroTitle: "把股票代码交给 Ethan。",
+    heroCopy: "他会读申报、学习行业、核对数字，并准备一份你可以向上汇报的材料。",
+    featureMarket: "申报优先",
+    featureSector: "行业语境",
+    featureEvidence: "可追溯证据",
+    ethanName: "Ethan · AI 初级分析师",
+    ethanStatus: "在岗。咖啡是虚拟的。",
+    ethanDetail: "负责把公开信息变成有出处、可复核的研究底稿。",
+    assignmentTitle: "给 Ethan 分配任务",
+    assignmentNote: "输入公司名称或代码，选择研究范围。Ethan 负责整理，你负责判断。",
+    assignmentFinePrint: "不会代替持牌顾问，也不会替你做投资决定。",
     market: "市场",
     sector: "行业",
     subindustry: "子行业",
@@ -132,11 +140,11 @@ const COPY = {
     valuationOption: "估值",
     dueDiligenceOption: "公开信息尽调",
     pdfOption: "PDF 导出",
-    generate: "生成行业感知研究",
-    researching: "正在生成…",
+    generate: "交给 Ethan",
+    researching: "Ethan 正在处理…",
     examplesLabel: "已验证示例",
-    progressTitle: "正在连接行业证据与公司申报",
-    progressSteps: "筛选近期证据 → 标准化 SEC 报表 → 加载行业 KPI → 构建估值与论点",
+    progressTitle: "Ethan 正在翻阅申报文件",
+    progressSteps: "筛选近期证据 → 标准化申报数据 → 加载行业 KPI → 构建可复核的研究输出",
     reportUnavailable: "报告暂时无法生成。",
     researchDate: "研究日期",
     researchWindow: "研究窗口",
@@ -144,7 +152,7 @@ const COPY = {
     companyRetrieved: "公司数据检索",
     refreshOutlook: "仅刷新行业展望",
     refreshing: "刷新中…",
-    reportEyebrow: "ScopeLine 行业研究快报",
+    reportEyebrow: "FinBro 股票研究简报",
     actualKey: "A = 已报告实际值",
     unavailable: "数据不可用",
     notDisclosed: "未披露",
@@ -191,6 +199,24 @@ const COPY = {
     fcfConversion: "FCF 转化率",
     netMargin: "净利率",
     sectorKpis: "行业 KPI",
+    productEconomics: "产品经济性",
+    therapeuticArea: "治疗领域",
+    revenueShare: "营收占比",
+    indication: "适应症",
+    geography: "地区",
+    volumePrice: "销量 / 价格",
+    supplyCapacity: "供应 / 产能",
+    approvalStatus: "获批状态",
+    patentLifecycle: "专利生命周期",
+    commercialRisks: "商业化风险",
+    pipelineAssets: "研发管线",
+    stage: "阶段",
+    latestMilestone: "最新里程碑",
+    nextMilestone: "下一里程碑",
+    successProbability: "成功概率",
+    launchTiming: "上市时间",
+    peakSalesAssumption: "峰值销售假设",
+    valuationTreatment: "估值处理",
     kpiDefinition: "定义",
     sourceBoundary: "来源 / 数据边界",
     limitedCoverage: "数据覆盖有限",
@@ -205,6 +231,7 @@ const COPY = {
     researchQuestions: "分析师问题清单",
     cashCapital: "现金流与资本配置",
     bankCapital: "资本、流动性与股东回报",
+    biopharmaCapital: "研发、流动性与资金安排",
     cash: "现金",
     totalDebt: "总债务",
     netDebt: "净债务",
@@ -222,6 +249,7 @@ const COPY = {
     evidenceFor: "支持证据",
     evidenceAgainst: "反方证据",
     monitor: "监测",
+    investmentInterpretation: "投资解读",
     catalystsRisks: "催化剂、申报监测与风险",
     filingWatchlist: "申报监测清单",
     operatingCatalysts: "经营催化剂",
@@ -239,11 +267,24 @@ const COPY = {
     netMarginAssumption: "净利率假设",
     reinvestmentFactor: "资本开支系数",
     valuationMetric: "估值指标",
+    valuationStartingPoint: "估值起点",
     impliedPricePerShare: "模型隐含每股价值",
     impliedPe: "模型隐含市盈率",
     impliedDividendYield: "模型隐含现金股息率",
     rotceCostOfEquity: "ROTCE - 股权成本",
     impliedEv: "模型隐含企业价值",
+    marketValuation: "带日期市场估值",
+    asOfDate: "截至日期",
+    sharePrice: "股价",
+    marketCapitalization: "市值",
+    enterpriseValue: "企业价值",
+    netDebtAdjustment: "净债务调整",
+    dilutedShares: "稀释后股数",
+    currentEvRevenue: "当前 EV / 营收",
+    currentPe: "当前市盈率",
+    currentEvEbitda: "当前 EV / EBITDA",
+    impliedEquityValue: "模型隐含股权价值",
+    valuationBridge: "估值桥",
     valuationAssessment: "估值判断",
     sourcesLimitations: "来源与限制",
     sourceLedger: "来源账本",
@@ -254,20 +295,26 @@ const COPY = {
     downloadMarkdown: "下载 Markdown",
     exportPdf: "导出应用 PDF",
     exportingPdf: "正在生成 PDF…",
-    footerDescriptor: "近期行业证据 · SEC 实际值 · 透明公式",
-    siteFooter: "公开信息自动化研究，不构成投资建议、评级或目标价。",
+    footerDescriptor: "近期行业证据 · 申报实际值 · 透明公式",
+    siteFooter: "FinBro 是研究工作流助手。输出不构成投资建议、评级或目标价。",
     markdownTitle: "行业感知机构研究快报",
   },
   en: {
-    brandHome: "ScopeLine home",
+    brandHome: "FinBro home",
     languagePicker: "Switch report language",
-    headerNote: "Sector intelligence · filing evidence",
-    heroEyebrow: "Sector-aware public-equity research",
-    heroTitle: "One Click to Public-Side Due Diligence",
-    heroCopy: "Sector intelligence, filing-backed analysis, and transparent valuation in one workflow.",
-    featureMarket: "Auto Market Analysis",
-    featureSector: "Sector-Aware Research",
-    featureEvidence: "Evidence-Linked Insights",
+    headerNote: "ETHAN · AI JUNIOR ANALYST",
+    heroEyebrow: "FINBRO RESEARCH DESK",
+    heroTitle: "Give Ethan a ticker.",
+    heroCopy: "He’ll read the filings, learn the sector, check the numbers, and prepare something you can send upstairs.",
+    featureMarket: "Filing-first",
+    featureSector: "Sector-aware",
+    featureEvidence: "Source-linked",
+    ethanName: "Ethan · AI junior analyst",
+    ethanStatus: "At desk. Coffee is fictional.",
+    ethanDetail: "Turns public information into sourced, reviewable research prep.",
+    assignmentTitle: "Assign Ethan a research task",
+    assignmentNote: "Give him a company, set the scope, and keep your judgment where it belongs.",
+    assignmentFinePrint: "He is a research workflow assistant—not a licensed adviser or a decision-maker.",
     market: "Market",
     sector: "Sector",
     subindustry: "Subindustry",
@@ -294,11 +341,11 @@ const COPY = {
     valuationOption: "Valuation",
     dueDiligenceOption: "Public-side due diligence",
     pdfOption: "PDF export",
-    generate: "Generate Sector-Aware Research",
-    researching: "Researching…",
+    generate: "Assign Ethan",
+    researching: "Ethan is on it…",
     examplesLabel: "Validated examples",
-    progressTitle: "Connecting sector evidence with company filings",
-    progressSteps: "Screen recent evidence → normalize SEC statements → load sector KPIs → build valuation and thesis",
+    progressTitle: "Ethan is working through the filings",
+    progressSteps: "Screen recent evidence → normalize filings → load sector KPIs → prepare a reviewable research output",
     reportUnavailable: "The report could not be generated right now.",
     researchDate: "Research date",
     researchWindow: "Research window",
@@ -306,7 +353,7 @@ const COPY = {
     companyRetrieved: "Company data retrieved",
     refreshOutlook: "Refresh sector outlook only",
     refreshing: "Refreshing…",
-    reportEyebrow: "ScopeLine sector research brief",
+    reportEyebrow: "FinBro equity research brief",
     actualKey: "A = reported actual",
     unavailable: "Data unavailable",
     notDisclosed: "Not disclosed",
@@ -353,6 +400,24 @@ const COPY = {
     fcfConversion: "FCF conversion",
     netMargin: "Net margin",
     sectorKpis: "Sector KPIs",
+    productEconomics: "Product economics",
+    therapeuticArea: "Therapeutic area",
+    revenueShare: "Revenue share",
+    indication: "Indication",
+    geography: "Geography",
+    volumePrice: "Volume / price",
+    supplyCapacity: "Supply / capacity",
+    approvalStatus: "Approval status",
+    patentLifecycle: "Patent lifecycle",
+    commercialRisks: "Commercial risks",
+    pipelineAssets: "Pipeline assets",
+    stage: "Stage",
+    latestMilestone: "Latest milestone",
+    nextMilestone: "Next milestone",
+    successProbability: "Success probability",
+    launchTiming: "Launch timing",
+    peakSalesAssumption: "Peak-sales assumption",
+    valuationTreatment: "Valuation treatment",
     kpiDefinition: "Definition",
     sourceBoundary: "Source / data boundary",
     limitedCoverage: "Limited data coverage",
@@ -367,6 +432,7 @@ const COPY = {
     researchQuestions: "Analyst question set",
     cashCapital: "Cash flow and capital allocation",
     bankCapital: "Capital, liquidity, and shareholder returns",
+    biopharmaCapital: "R&D, liquidity, and funding",
     cash: "Cash",
     totalDebt: "Total debt",
     netDebt: "Net debt",
@@ -384,6 +450,7 @@ const COPY = {
     evidenceFor: "Evidence for",
     evidenceAgainst: "Evidence against",
     monitor: "Monitor",
+    investmentInterpretation: "Investment interpretation",
     catalystsRisks: "Catalysts, filing watchlist, and risks",
     filingWatchlist: "Filing watchlist",
     operatingCatalysts: "Operating catalysts",
@@ -401,11 +468,24 @@ const COPY = {
     netMarginAssumption: "Net margin assumption",
     reinvestmentFactor: "Capex factor",
     valuationMetric: "Valuation metric",
+    valuationStartingPoint: "Valuation starting point",
     impliedPricePerShare: "Model-implied value per share",
     impliedPe: "Model-implied P/E",
     impliedDividendYield: "Model-implied cash-dividend yield",
     rotceCostOfEquity: "ROTCE less cost of equity",
     impliedEv: "Model-implied enterprise value",
+    marketValuation: "Dated market valuation",
+    asOfDate: "As of",
+    sharePrice: "Share price",
+    marketCapitalization: "Market capitalization",
+    enterpriseValue: "Enterprise value",
+    netDebtAdjustment: "Net-debt adjustment",
+    dilutedShares: "Diluted shares",
+    currentEvRevenue: "Current EV / revenue",
+    currentPe: "Current P/E",
+    currentEvEbitda: "Current EV / EBITDA",
+    impliedEquityValue: "Model-implied equity value",
+    valuationBridge: "Valuation bridge",
     valuationAssessment: "Valuation assessment",
     sourcesLimitations: "Sources and limitations",
     sourceLedger: "Source ledger",
@@ -416,8 +496,8 @@ const COPY = {
     downloadMarkdown: "Download Markdown",
     exportPdf: "Export application PDF",
     exportingPdf: "Generating PDF…",
-    footerDescriptor: "Recent sector evidence · SEC actuals · transparent formulas",
-    siteFooter: "Automated public-information research. Not investment advice, a rating, or a price target.",
+    footerDescriptor: "Recent sector evidence · filing actuals · transparent formulas",
+    siteFooter: "FinBro is a research workflow assistant. Output is not investment advice, a rating, or a price target.",
     markdownTitle: "Sector-Aware Institutional Research Brief",
   },
 } as const;
@@ -428,6 +508,15 @@ function formatMoney(value: number | null, currency: string, locale: Locale) {
 
 function formatTableMoney(value: number | null, locale: Locale) {
   return formatFinancialTableValue(value, locale);
+}
+
+function formatShareCount(value: number | null, locale: Locale) {
+  if (value === null || !Number.isFinite(value)) return "—";
+  const displayed = new Intl.NumberFormat(locale === "zh" ? "zh-CN" : "en-US", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(value / 1e6);
+  return locale === "zh" ? `${displayed}百万股` : `${displayed} million shares`;
 }
 
 function formatPercent(value: number | null, locale: Locale) {
@@ -550,6 +639,12 @@ function TrendChart({
 
 function reportToMarkdown(report: ResearchReport, locale: Locale) {
   const copy = COPY[locale];
+  const hasBiopharmaOperatingCashFlow = report.periods.some(
+    (period) => period.operatingCashFlow !== null,
+  );
+  const hasBiopharmaFreeCashFlow = report.periods.some(
+    (period) => period.freeCashFlowProxy !== null,
+  );
   const lines = [
     `# ${report.company.name} — ${copy.markdownTitle}`,
     "",
@@ -588,11 +683,11 @@ function reportToMarkdown(report: ResearchReport, locale: Locale) {
         ]
       : report.sectorPack.id === "biopharma"
         ? [
-            `| ${copy.year} | ${copy.revenue} | ${copy.grossMargin} | ${copy.researchAndDevelopment} | ${copy.netIncome} | ${copy.freeCashFlow} |`,
-            "|---|---:|---:|---:|---:|---:|",
+            `| ${copy.year} | ${copy.revenue} | ${copy.grossMargin} | ${copy.researchAndDevelopment} | ${copy.netIncome} |${hasBiopharmaOperatingCashFlow ? ` ${copy.operatingCashFlow} |` : ""}${hasBiopharmaFreeCashFlow ? ` ${copy.freeCashFlow} |` : ""}`,
+            `|---|---:|---:|---:|---:|${hasBiopharmaOperatingCashFlow ? "---:|" : ""}${hasBiopharmaFreeCashFlow ? "---:|" : ""}`,
             ...report.periods.map(
               (period) =>
-              `| ${shortYear(period.periodEnd)}A | ${formatTableMoney(period.revenue, locale)} | ${formatPercent(period.grossMargin, locale)} | ${formatTableMoney(period.researchAndDevelopment, locale)} | ${formatTableMoney(period.netIncome, locale)} | ${formatTableMoney(period.freeCashFlowProxy, locale)} |`,
+              `| ${shortYear(period.periodEnd)}A | ${formatTableMoney(period.revenue, locale)} | ${formatPercent(period.grossMargin, locale)} | ${formatTableMoney(period.researchAndDevelopment, locale)} | ${formatTableMoney(period.netIncome, locale)} |${hasBiopharmaOperatingCashFlow ? ` ${formatTableMoney(period.operatingCashFlow, locale)} |` : ""}${hasBiopharmaFreeCashFlow ? ` ${formatTableMoney(period.freeCashFlowProxy, locale)} |` : ""}`,
             ),
           ]
       : report.sectorPack.id === "industrial-machinery"
@@ -616,6 +711,30 @@ function reportToMarkdown(report: ResearchReport, locale: Locale) {
     `## 6. ${copy.sectorKpis}`,
     ...report.sectorKpis.map(
       (item) => `- **${item.label}: ${item.value}** — ${item.definition}\n  - ${item.sourceNote}\n  - ${copy.whyMatters}: ${item.whyItMatters}`,
+    ),
+    ...(
+      report.productMetrics.length
+        ? [
+            "",
+            `### ${copy.productEconomics}`,
+            ...report.productMetrics.map(
+              (item) =>
+                `- **${item.product} · ${formatMoney(item.revenue, report.currency, locale)} · ${item.period}**${item.revenueGrowth !== null ? ` · ${copy.revenueGrowth} ${formatPercent(item.revenueGrowth, locale)}` : ""}${item.revenueShare !== null ? ` · ${copy.revenueShare} ${formatPercent(item.revenueShare, locale)}` : ""}\n  - ${copy.therapeuticArea}: ${item.therapeuticArea}; ${copy.indication}: ${item.indication}; ${copy.geography}: ${item.geography}\n  - ${copy.volumePrice}: ${item.volumePrice}; ${copy.supplyCapacity}: ${item.supplyCapacity}\n  - ${copy.approvalStatus}: ${item.approvalStatus}; ${copy.patentLifecycle}: ${item.patentLifecycle}\n  - ${copy.commercialRisks}: ${item.commercialRisks}\n  - [${item.sourceTitle} · ${item.sourceDate} · ${copy.viewSource} ↗](${item.sourceUrl})`,
+            ),
+          ]
+        : []
+    ),
+    ...(
+      report.pipelineAssets.length
+        ? [
+            "",
+            `### ${copy.pipelineAssets}`,
+            ...report.pipelineAssets.map(
+              (item) =>
+                `- **${item.asset} · ${item.stage}** — ${item.indication}\n  - ${copy.latestMilestone}: ${item.latestMilestone}\n  - ${copy.nextMilestone}: ${item.nextMilestone}; ${copy.launchTiming}: ${item.launchTiming}\n  - ${copy.successProbability}: ${item.successProbability}; ${copy.peakSalesAssumption}: ${item.peakSalesAssumption}\n  - ${copy.valuationTreatment}: ${item.valuationTreatment}\n  - [${item.sourceTitle} · ${item.sourceDate} · ${copy.viewSource} ↗](${item.sourceUrl})`,
+            ),
+          ]
+        : []
     ),
     "",
     `### ${copy.dataCoverage}`,
@@ -649,7 +768,7 @@ function reportToMarkdown(report: ResearchReport, locale: Locale) {
         ? [
             `## 9. ${copy.debates}`,
             ...report.investmentDebates.map(
-              (item) => `- **${item.question}**\n  - ${copy.evidenceFor}: ${item.evidenceFor}\n  - ${copy.evidenceAgainst}: ${item.evidenceAgainst}\n  - ${copy.monitor}: ${item.monitor}`,
+              (item) => `- **${item.question}**\n  - ${copy.evidenceFor}: ${item.evidenceFor}\n  - ${copy.evidenceAgainst}: ${item.evidenceAgainst}\n  - ${copy.monitor}: ${item.monitor}\n  - ${copy.investmentInterpretation}: ${item.interpretation}`,
             ),
             "",
           ]
@@ -661,6 +780,26 @@ function reportToMarkdown(report: ResearchReport, locale: Locale) {
     ),
     "",
     `## 11. ${copy.scenariosValuation}`,
+    ...(
+      report.marketValuation
+        ? [
+            `### ${copy.marketValuation} · ${report.marketValuation.asOfDate}`,
+            `- ${copy.sharePrice}: ${formatPerUnitValue(report.marketValuation.sharePrice, report.currency, locale, "share")}`,
+            `- ${copy.marketCapitalization}: ${formatMoney(report.marketValuation.marketCapitalization, report.currency, locale)}`,
+            `- ${copy.enterpriseValue}: ${formatMoney(report.marketValuation.enterpriseValue, report.currency, locale)}`,
+            `- ${copy.netDebtAdjustment}: ${formatMoney(report.marketValuation.netDebtAdjustment, report.currency, locale)}`,
+            `- ${copy.dilutedShares}: ${formatShareCount(report.marketValuation.dilutedShares, locale)}`,
+            `- ${copy.currentEvRevenue}: ${formatMultiple(report.marketValuation.currentEvRevenue, locale, 1)}; ${copy.currentPe}: ${formatMultiple(report.marketValuation.currentPe, locale, 1)}${report.marketValuation.currentEvEbitda !== null ? `; ${copy.currentEvEbitda}: ${formatMultiple(report.marketValuation.currentEvEbitda, locale, 1)}` : ""}`,
+            `- [${report.marketValuation.sourceTitle} · ${copy.viewSource} ↗](${report.marketValuation.sourceUrl})`,
+            ...report.marketValuation.formulas.map((formula) => `- ${copy.formula}: ${formula}`),
+            "",
+          ]
+        : []
+    ),
+    ...report.scenarios.map(
+      (scenario) =>
+        `### ${copy[scenario.name.toLowerCase() as "bear" | "base" | "bull"]}\n- ${copy.valuationMetric}: ${scenario.valuationMetric === null ? "—" : formatMoney(scenario.valuationMetric, report.currency, locale)}\n- ${copy.impliedEv}: ${scenario.modelImpliedEnterpriseValue === null ? "—" : formatMoney(scenario.modelImpliedEnterpriseValue, report.currency, locale)}\n- ${copy.netDebtAdjustment}: ${scenario.netDebtAdjustment === null ? "—" : formatMoney(scenario.netDebtAdjustment, report.currency, locale)}\n- ${copy.impliedEquityValue}: ${scenario.modelImpliedEquityValue === null ? "—" : formatMoney(scenario.modelImpliedEquityValue, report.currency, locale)}\n- ${copy.dilutedShares}: ${formatShareCount(scenario.dilutedShares, locale)}\n- ${copy.impliedPricePerShare}: ${scenario.impliedPricePerShare === null ? "—" : formatPerUnitValue(scenario.impliedPricePerShare, report.currency, locale, "share")}`,
+    ),
     report.valuationAssessment,
     "",
     report.valuationFormula,
@@ -822,6 +961,10 @@ export function ResearchApp() {
       ),
     [visiblePeerComparison],
   );
+  const hasBiopharmaOperatingCashFlow =
+    report?.periods.some((period) => period.operatingCashFlow !== null) ?? false;
+  const hasBiopharmaFreeCashFlow =
+    report?.periods.some((period) => period.freeCashFlowProxy !== null) ?? false;
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -997,8 +1140,8 @@ export function ResearchApp() {
     <main>
       <header className="site-header">
         <a className="brand" href="#top" aria-label={copy.brandHome}>
-          <span className="brand-mark">S</span>
-          <span>ScopeLine</span>
+          <span className="brand-mark">F</span>
+          <span>FinBro</span>
         </a>
         <div className="header-actions">
           <span className="header-note">{copy.headerNote}</span>
@@ -1010,19 +1153,34 @@ export function ResearchApp() {
       </header>
 
       <section className="hero" id="top">
-        <div className="hero-glow hero-glow-one" />
-        <div className="hero-glow hero-glow-two" />
+        <div className="hero-grid" aria-hidden="true" />
         <div className="hero-content">
-          <p className="eyebrow">{copy.heroEyebrow}</p>
-          <h1>{copy.heroTitle}</h1>
-          <p className="hero-copy">{copy.heroCopy}</p>
-          <div className="trust-row" aria-label="Features">
-            <span><b>01</b> {copy.featureMarket}</span>
-            <span><b>02</b> {copy.featureSector}</span>
-            <span><b>03</b> {copy.featureEvidence}</span>
+          <div className="hero-intro">
+            <div>
+              <p className="eyebrow">{copy.heroEyebrow}</p>
+              <h1>{copy.heroTitle}</h1>
+              <p className="hero-copy">{copy.heroCopy}</p>
+              <div className="trust-row" aria-label="Features">
+                <span><b>01</b> {copy.featureMarket}</span>
+                <span><b>02</b> {copy.featureSector}</span>
+                <span><b>03</b> {copy.featureEvidence}</span>
+              </div>
+            </div>
+            <aside className="ethan-card" aria-label={copy.ethanName}>
+              <div className="ethan-card-head">
+                <span className="ethan-avatar">E</span>
+                <div><strong>{copy.ethanName}</strong><span>{copy.ethanStatus}</span></div>
+              </div>
+              <p>{copy.ethanDetail}</p>
+              <div className="ethan-live"><i />{locale === "zh" ? "等待任务" : "Available for assignments"}</div>
+            </aside>
           </div>
 
           <form className="research-form" onSubmit={submit}>
+            <div className="assignment-heading">
+              <span>01</span>
+              <div><strong>{copy.assignmentTitle}</strong><p>{copy.assignmentNote}</p></div>
+            </div>
             <div className="selection-grid">
               <label>
                 <span>{copy.market}</span>
@@ -1099,6 +1257,7 @@ export function ResearchApp() {
                 {loading ? copy.researching : copy.generate}
               </button>
             </div>
+            <p className="assignment-fine-print">{copy.assignmentFinePrint}</p>
           </form>
 
           {loading && (
@@ -1273,7 +1432,8 @@ export function ResearchApp() {
                     <tr>
                       <th>{copy.year}</th><th>{copy.revenue}</th><th>{copy.grossMargin}</th>
                       <th>{copy.researchAndDevelopment}</th><th>{copy.netIncome}</th>
-                      <th>{copy.operatingCashFlow}</th><th>{copy.freeCashFlow}</th>
+                      {hasBiopharmaOperatingCashFlow && <th>{copy.operatingCashFlow}</th>}
+                      {hasBiopharmaFreeCashFlow && <th>{copy.freeCashFlow}</th>}
                     </tr>
                   ) : report.sectorPack.id === "industrial-machinery" ? (
                     <tr>
@@ -1309,8 +1469,8 @@ export function ResearchApp() {
                           <td>{formatPercent(period.grossMargin, locale)}</td>
                           <td>{formatTableMoney(period.researchAndDevelopment, locale)}</td>
                           <td>{formatTableMoney(period.netIncome, locale)}</td>
-                          <td>{formatTableMoney(period.operatingCashFlow, locale)}</td>
-                          <td>{formatTableMoney(period.freeCashFlowProxy, locale)}</td>
+                          {hasBiopharmaOperatingCashFlow && <td>{formatTableMoney(period.operatingCashFlow, locale)}</td>}
+                          {hasBiopharmaFreeCashFlow && <td>{formatTableMoney(period.freeCashFlowProxy, locale)}</td>}
                         </>
                       ) : report.sectorPack.id === "industrial-machinery" ? (
                         <>
@@ -1364,6 +1524,64 @@ export function ResearchApp() {
                 </article>
               ))}
             </div>
+            {report.productMetrics.length > 0 && (
+              <div className="report-subsection">
+                <h4>{copy.productEconomics}</h4>
+                <div className="product-metrics-grid">
+                  {report.productMetrics.map((item) => (
+                    <article className="product-metric-card" key={`${item.product}-${item.period}`}>
+                      <header>
+                        <div><h5>{item.product}</h5><span>{item.therapeuticArea}</span></div>
+                        <EvidenceBadge kind={item.classification} locale={locale} />
+                      </header>
+                      <strong>{formatMoney(item.revenue, report.currency, locale)}</strong>
+                      <p className="card-period">{item.period}</p>
+                      <dl>
+                        {item.revenueGrowth !== null && <div><dt>{copy.revenueGrowth}</dt><dd>{formatPercent(item.revenueGrowth, locale)}</dd></div>}
+                        {item.revenueShare !== null && <div><dt>{copy.revenueShare}</dt><dd>{formatPercent(item.revenueShare, locale)}</dd></div>}
+                        {item.indication.trim() && <div><dt>{copy.indication}</dt><dd>{item.indication}</dd></div>}
+                        {item.geography.trim() && <div><dt>{copy.geography}</dt><dd>{item.geography}</dd></div>}
+                        {item.volumePrice.trim() && <div><dt>{copy.volumePrice}</dt><dd>{item.volumePrice}</dd></div>}
+                        {item.supplyCapacity.trim() && <div><dt>{copy.supplyCapacity}</dt><dd>{item.supplyCapacity}</dd></div>}
+                        {item.approvalStatus.trim() && <div><dt>{copy.approvalStatus}</dt><dd>{item.approvalStatus}</dd></div>}
+                        {item.patentLifecycle.trim() && <div><dt>{copy.patentLifecycle}</dt><dd>{item.patentLifecycle}</dd></div>}
+                        {item.commercialRisks.trim() && <div><dt>{copy.commercialRisks}</dt><dd>{item.commercialRisks}</dd></div>}
+                      </dl>
+                      <a href={item.sourceUrl} target="_blank" rel="noreferrer">
+                        {item.sourceTitle} · {item.sourceDate} ↗
+                      </a>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            )}
+            {report.pipelineAssets.length > 0 && (
+              <div className="report-subsection">
+                <h4>{copy.pipelineAssets}</h4>
+                <div className="pipeline-grid">
+                  {report.pipelineAssets.map((item) => (
+                    <article className="pipeline-card" key={`${item.asset}-${item.indication}`}>
+                      <header>
+                        <div><h5>{item.asset}</h5><span>{item.stage}</span></div>
+                        <EvidenceBadge kind={item.classification} locale={locale} />
+                      </header>
+                      <p>{item.indication}</p>
+                      <dl>
+                        {item.latestMilestone.trim() && <div><dt>{copy.latestMilestone}</dt><dd>{item.latestMilestone}</dd></div>}
+                        {item.nextMilestone.trim() && <div><dt>{copy.nextMilestone}</dt><dd>{item.nextMilestone}</dd></div>}
+                        {item.successProbability.trim() && <div><dt>{copy.successProbability}</dt><dd>{item.successProbability}</dd></div>}
+                        {item.launchTiming.trim() && <div><dt>{copy.launchTiming}</dt><dd>{item.launchTiming}</dd></div>}
+                        {item.peakSalesAssumption.trim() && <div><dt>{copy.peakSalesAssumption}</dt><dd>{item.peakSalesAssumption}</dd></div>}
+                        {item.valuationTreatment.trim() && <div><dt>{copy.valuationTreatment}</dt><dd>{item.valuationTreatment}</dd></div>}
+                      </dl>
+                      <a href={item.sourceUrl} target="_blank" rel="noreferrer">
+                        {item.sourceTitle} · {item.sourceDate} ↗
+                      </a>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            )}
             <DataCoveragePanel report={report} locale={locale} />
             <details className="research-questions">
               <summary>{copy.researchQuestions}</summary>
@@ -1374,7 +1592,13 @@ export function ResearchApp() {
           <section className="report-section analysis-grid-section" data-pdf-block>
             <SectionHeading
               number="07"
-              title={report.sectorPack.id === "banks" ? copy.bankCapital : copy.cashCapital}
+              title={
+                report.sectorPack.id === "banks"
+                  ? copy.bankCapital
+                  : report.sectorPack.id === "biopharma"
+                    ? copy.biopharmaCapital
+                    : copy.cashCapital
+              }
             />
             <div className="balance-panel">
               <div className="balance-grid">
@@ -1468,6 +1692,9 @@ export function ResearchApp() {
                       <div><dt>{copy.evidenceFor}</dt><dd>{debate.evidenceFor}</dd></div>
                       <div><dt>{copy.evidenceAgainst}</dt><dd>{debate.evidenceAgainst}</dd></div>
                       <div><dt>{copy.monitor}</dt><dd>{debate.monitor}</dd></div>
+                      {debate.interpretation.trim() && (
+                        <div><dt>{copy.investmentInterpretation}</dt><dd>{debate.interpretation}</dd></div>
+                      )}
                     </dl>
                   </article>
                 ))}
@@ -1502,6 +1729,31 @@ export function ResearchApp() {
               title={copy.scenariosValuation}
               note={<><EvidenceBadge kind="Analyst assumption" locale={locale} /> {copy.scenarioNote}</>}
             />
+            {report.marketValuation && (
+              <div className="market-valuation-panel">
+                <div className="market-valuation-header">
+                  <div><h4>{copy.marketValuation}</h4><time>{copy.asOfDate} {report.marketValuation.asOfDate}</time></div>
+                  <a href={report.marketValuation.sourceUrl} target="_blank" rel="noreferrer">
+                    {report.marketValuation.sourceTitle} ↗
+                  </a>
+                </div>
+                <dl className="valuation-snapshot-grid">
+                  <div><dt>{copy.sharePrice}</dt><dd>{formatPerUnitValue(report.marketValuation.sharePrice, report.currency, locale, "share")}</dd></div>
+                  <div><dt>{copy.marketCapitalization}</dt><dd>{formatMoney(report.marketValuation.marketCapitalization, report.currency, locale)}</dd></div>
+                  <div><dt>{copy.enterpriseValue}</dt><dd>{formatMoney(report.marketValuation.enterpriseValue, report.currency, locale)}</dd></div>
+                  <div><dt>{copy.netDebtAdjustment}</dt><dd>{formatMoney(report.marketValuation.netDebtAdjustment, report.currency, locale)}</dd></div>
+                  <div><dt>{copy.dilutedShares}</dt><dd>{formatShareCount(report.marketValuation.dilutedShares, locale)}</dd></div>
+                  <div><dt>{copy.currentEvRevenue}</dt><dd>{formatMultiple(report.marketValuation.currentEvRevenue, locale, 1)}</dd></div>
+                  <div><dt>{copy.currentPe}</dt><dd>{formatMultiple(report.marketValuation.currentPe, locale, 1)}</dd></div>
+                  {report.marketValuation.currentEvEbitda !== null && (
+                    <div><dt>{copy.currentEvEbitda}</dt><dd>{formatMultiple(report.marketValuation.currentEvEbitda, locale, 1)}</dd></div>
+                  )}
+                </dl>
+                <div className="valuation-formulas">
+                  {report.marketValuation.formulas.map((formula) => <code key={formula}>{formula}</code>)}
+                </div>
+              </div>
+            )}
             {report.scenarios.length ? (
               <div className="scenario-grid">
                 {report.scenarios.map((scenario) => (
@@ -1533,6 +1785,21 @@ export function ResearchApp() {
                       {scenario.valuationMetric !== null && (
                         <div><dt>{copy.valuationMetric}</dt><dd>{formatMoney(scenario.valuationMetric, report.currency, locale)}</dd></div>
                       )}
+                      {scenario.valuationStartingPoint !== null && (
+                        <div><dt>{copy.valuationStartingPoint}</dt><dd>{formatMoney(scenario.valuationStartingPoint, report.currency, locale)}</dd></div>
+                      )}
+                      {scenario.modelImpliedEnterpriseValue !== null && (
+                        <div><dt>{copy.impliedEv}</dt><dd>{formatMoney(scenario.modelImpliedEnterpriseValue, report.currency, locale)}</dd></div>
+                      )}
+                      {scenario.netDebtAdjustment !== null && (
+                        <div><dt>{copy.netDebtAdjustment}</dt><dd>{formatMoney(scenario.netDebtAdjustment, report.currency, locale)}</dd></div>
+                      )}
+                      {scenario.modelImpliedEquityValue !== null && (
+                        <div><dt>{copy.impliedEquityValue}</dt><dd>{formatMoney(scenario.modelImpliedEquityValue, report.currency, locale)}</dd></div>
+                      )}
+                      {scenario.dilutedShares !== null && (
+                        <div><dt>{copy.dilutedShares}</dt><dd>{formatShareCount(scenario.dilutedShares, locale)}</dd></div>
+                      )}
                       {scenario.impliedPricePerShare !== null && (
                         <div><dt>{copy.impliedPricePerShare}</dt><dd>{formatPerUnitValue(scenario.impliedPricePerShare, report.currency, locale, "share")}</dd></div>
                       )}
@@ -1547,8 +1814,8 @@ export function ResearchApp() {
                       )}
                     </dl>
                     <p>{scenario.impliedValueLabel}</p>
-                    {scenario.modelImpliedEnterpriseValue !== null && (
-                      <strong className="scenario-value">{formatMoney(scenario.modelImpliedEnterpriseValue, report.currency, locale)}</strong>
+                    {scenario.impliedPricePerShare !== null && (
+                      <strong className="scenario-value">{formatPerUnitValue(scenario.impliedPricePerShare, report.currency, locale, "share")}</strong>
                     )}
                   </article>
                 ))}
@@ -1595,7 +1862,7 @@ export function ResearchApp() {
           </section>
 
           <footer className="report-actions">
-            <div><strong>ScopeLine Research</strong><span>{copy.footerDescriptor}</span></div>
+            <div><strong>FinBro Equity Research</strong><span>{copy.footerDescriptor}</span></div>
             <div>
               <button type="button" className="secondary-button" onClick={downloadMarkdown}>{copy.downloadMarkdown}</button>
               {report.selection.options.pdfExport && (
@@ -1608,7 +1875,7 @@ export function ResearchApp() {
         </article>
       )}
 
-      <footer className="site-footer"><span>ScopeLine</span><p>{copy.siteFooter}</p></footer>
+      <footer className="site-footer"><span>FinBro</span><p>{copy.siteFooter}</p></footer>
     </main>
   );
 }

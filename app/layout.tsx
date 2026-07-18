@@ -5,7 +5,7 @@ import "./globals.css";
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#071827",
+  themeColor: "#0055FF",
 };
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -16,24 +16,24 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase,
-    title: "ScopeLine｜行业感知研究 · Sector-Aware Research",
-    description: "选择行业并输入公司或代码，生成中英文可切换、来源可追溯的机构级研究报告。 Select a sector and company to generate a bilingual, source-linked institutional research report.",
-    applicationName: "ScopeLine",
+    title: "FinBro | Your overworked entry-level analyst.",
+    description: "Give Ethan a ticker. He’ll read the filings, learn the sector, check the numbers, and prepare something you can send upstairs.",
+    applicationName: "FinBro",
     icons: {
-      icon: "/favicon.png",
-      shortcut: "/favicon.png",
+      icon: "/favicon.svg",
+      shortcut: "/favicon.svg",
     },
     openGraph: {
-      title: "ScopeLine 行业感知研究 · Sector-Aware Research",
-      description: "为能源与半导体公司生成中英文可切换、事实与假设分离、来源可追溯的研究报告。",
+      title: "FinBro | Your overworked entry-level analyst.",
+      description: "Give Ethan a ticker. Filing-backed, source-linked equity research with clear assumptions.",
       type: "website",
       locale: "zh_CN",
-      images: [{ url: "/og.png", width: 1200, height: 630, alt: "ScopeLine 行业感知研究 / Sector-Aware Research" }],
+      images: [{ url: "/og.png", width: 1200, height: 630, alt: "FinBro — Your overworked entry-level analyst" }],
     },
     twitter: {
       card: "summary_large_image",
-      title: "ScopeLine 行业感知研究 · Sector-Aware Research",
-      description: "Bilingual, sector-aware institutional research grounded in public filings and dated industry evidence.",
+      title: "FinBro | Your overworked entry-level analyst.",
+      description: "Give Ethan a ticker. He’ll do the filing work.",
       images: ["/og.png"],
     },
   };

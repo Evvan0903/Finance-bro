@@ -7,6 +7,11 @@ import {
 import { formatFinancialValue, formatPercentage } from "../../lib/presentation-format";
 import type { CanonicalMetricObject } from "../../lib/canonical-metrics";
 import { buildCanonicalScenarios } from "../../lib/canonical-scenarios";
+import {
+  buildLlyMarketValuation,
+  buildPipelineAssets,
+  buildProductMetrics,
+} from "../../lib/biopharma-metrics";
 import { auditResearchReport } from "../../lib/metric-consistency-auditor";
 import { REPORT_RENDERING_MODEL } from "../../lib/report-rendering-model";
 import {
@@ -335,9 +340,12 @@ function kpiValue(
     case "cashCapex":
       return compactMoney(latest.cashCapex, currency, locale);
     case "freeCashFlow":
+    case "freeCashFlowProxy":
       return latest.cashCapex === null || latest.operatingCashFlow === null
         ? "—"
         : compactMoney(latest.freeCashFlowProxy, currency, locale);
+    case "cashConversion":
+      return percentage(latest.cashConversion, locale);
     case "netDebt":
       return compactMoney(latest.netDebt, currency, locale);
     default:
@@ -358,7 +366,10 @@ function kpiHasValue(definition: SectorKpiDefinition, latest: FinancialPeriod) {
     case "cashCapex":
       return latest.cashCapex !== null;
     case "freeCashFlow":
+    case "freeCashFlowProxy":
       return latest.freeCashFlowProxy !== null;
+    case "cashConversion":
+      return latest.cashConversion !== null;
     case "netDebt":
       return latest.netDebt !== null;
     default:
@@ -476,7 +487,7 @@ function buildSectorKpis(
               ].en}`,
       } satisfies SectorKpiResult;
     }
-    const derived = ["grossMargin", "operatingMargin", "freeCashFlow", "netDebt"].includes(definition.availability);
+    const derived = ["grossMargin", "operatingMargin", "freeCashFlow", "freeCashFlowProxy", "cashConversion", "netDebt"].includes(definition.availability);
     const available = kpiHasValue(definition, latest);
     const metricField = {
       revenue: "revenue",
@@ -485,6 +496,8 @@ function buildSectorKpis(
       inventory: "inventory",
       cashCapex: "cashCapex",
       freeCashFlow: "freeCashFlowProxy",
+      freeCashFlowProxy: "freeCashFlowProxy",
+      cashConversion: "cashConversion",
       netDebt: "netDebt",
       notStandardized: "",
     }[definition.availability];
@@ -580,10 +593,17 @@ const DRIVER_METRIC_IDS: Record<string, string[]> = {
   "credit-cycle": ["credit-loss-provision", "net-charge-offs", "credit-loss-allowance", "allowance-coverage", "loans"],
   "capital-liquidity": ["cet1-ratio", "liquidity-coverage-ratio", "tangible-book-value", "tangible-book-value-per-share", "return-on-tangible-common-equity", "dividends", "share-buybacks", "capital-returns"],
   "operating-leverage": ["revenue", "net-interest-income", "net-interest-margin", "efficiency-ratio", "return-on-common-equity", "return-on-tangible-common-equity", "investment-banking-fees", "trading-revenue"],
-  "biopharma-product-cycle": ["product-revenue", "product-concentration", "revenue-growth", "gross-margin"],
-  "biopharma-pipeline-execution": ["research-and-development", "gross-margin", "operating-cash-flow"],
-  "biopharma-pricing-access": ["product-revenue", "product-concentration", "revenue-growth"],
-  "biopharma-patent-cycle": ["patent-expiry-year", "product-concentration", "product-revenue"],
+  "pharma-obesity-demand": ["product-revenue", "product-revenue-growth", "product-concentration", "revenue-growth"],
+  "pharma-glp1-competition": ["product-revenue", "product-revenue-growth", "gross-margin"],
+  "pharma-pipeline": ["research-and-development", "operating-cash-flow", "fcf"],
+  "pharma-manufacturing": ["cash-capex", "operating-cash-flow", "fcf"],
+  "pharma-pricing-access": ["product-revenue", "product-concentration", "gross-margin"],
+  "pharma-patent-cycle": ["patent-expiry-year", "product-revenue", "product-concentration"],
+  "pharma-rd-productivity": ["research-and-development", "revenue", "operating-cash-flow"],
+  "pharma-oncology": ["product-revenue", "product-revenue-growth", "research-and-development"],
+  "pharma-alzheimers": ["product-revenue", "product-revenue-growth", "research-and-development"],
+  "pharma-regulatory": ["product-revenue", "research-and-development"],
+  "pharma-earnings-valuation": ["revenue", "revenue-growth", "gross-margin", "fcf", "net-debt"],
   "industrial-order-cycle": ["backlog", "near-term-backlog-share", "revenue-growth", "inventory"],
   "industrial-price-cost": ["price-realization-impact", "manufacturing-cost-impact", "price-cost-impact", "operating-margin"],
   "industrial-capacity": ["backlog", "inventory", "cash-capex", "operating-margin"],
@@ -788,6 +808,221 @@ const JPM_EXPOSURE_TEMPLATES: CompanyExposureTemplate[] = [
   },
 ];
 
+const LLY_10K_URL =
+  "https://www.sec.gov/Archives/edgar/data/59478/000005947826000013/lly-20251231.htm";
+const LLY_Q1_RELEASE_URL = "https://investor.lilly.com/node/54176";
+const LLY_EXPOSURE_TEMPLATES: CompanyExposureTemplate[] = [
+  {
+    driverId: "pharma-obesity-demand",
+    title: "Lilly Q1 2026 Earnings Release",
+    publisher: "Eli Lilly and Company",
+    date: "2026-04-30",
+    url: LLY_Q1_RELEASE_URL,
+    evidence: {
+      zh: "Q1 2026 Mounjaro 收入 86.62 亿美元、同比增长 125%；Zepbound 收入 41.60 亿美元、同比增长 80%。",
+      en: "Q1 2026 Mounjaro revenue was US$8.662 billion, up 125%, and Zepbound revenue was US$4.160 billion, up 80%.",
+    },
+    companyExposure: {
+      zh: "极高：两款替尔泊肽产品已成为 Lilly 最主要的增长与集中度来源。",
+      en: "Very high: the two tirzepatide brands are Lilly's primary sources of growth and concentration.",
+    },
+    investmentImplication: {
+      zh: "需求持续性必须与实现价格、准入和供应共同验证；收入增长本身不等于单位经济改善。",
+      en: "Demand durability must be tested with realized price, access, and supply; revenue growth alone does not prove better unit economics.",
+    },
+  },
+  {
+    driverId: "pharma-glp1-competition",
+    title: "Lilly Q1 2026 Earnings Release",
+    publisher: "Eli Lilly and Company",
+    date: "2026-04-30",
+    url: LLY_Q1_RELEASE_URL,
+    evidence: {
+      zh: "Lilly 披露销量增长 65%、实现价格下降 13%，并将 Foundayo 的商业化列为 2026 年增长组成。",
+      en: "Lilly reported 65% volume growth, a 13% realized-price decline, and included the Foundayo launch in its 2026 growth profile.",
+    },
+    companyExposure: {
+      zh: "高：注射与口服 GLP-1 的疗效、便利性、供给和净价格竞争会直接影响组合。",
+      en: "High: efficacy, convenience, supply, and net-price competition across injectable and oral GLP-1 products directly affect mix.",
+    },
+    investmentImplication: {
+      zh: "竞争判断应看产品级收入、实现价格和新患者采用，而不是仅看市场规模。",
+      en: "Competition should be judged through product revenue, realized price, and new-patient adoption, not market size alone.",
+    },
+  },
+  {
+    driverId: "pharma-pipeline",
+    title: "Eli Lilly and Company 2025 Form 10-K",
+    publisher: "Eli Lilly and Company",
+    date: "2026-02-12",
+    url: LLY_10K_URL,
+    evidence: {
+      zh: "年报列示 orforglipron、retatrutide、eloralintide、tirzepatide 扩展、remternetug 与 imlunestrant 等后期项目。",
+      en: "The 10-K lists late-stage programs including orforglipron, retatrutide, eloralintide, tirzepatide extensions, remternetug, and imlunestrant.",
+    },
+    companyExposure: {
+      zh: "高：后期读出和监管里程碑决定现有产品集中度能否被新资产分散。",
+      en: "High: late-stage readouts and regulatory milestones determine whether new assets can diversify current product concentration.",
+    },
+    investmentImplication: {
+      zh: "公开输入不足以支持候选药级 rNPV；本报告仅监测阶段和里程碑。",
+      en: "Public inputs do not support candidate-level rNPV; this report monitors stages and milestones only.",
+    },
+  },
+  {
+    driverId: "pharma-manufacturing",
+    title: "Lilly commits an additional $4.5 billion across Indiana manufacturing sites",
+    publisher: "Eli Lilly and Company",
+    date: "2026-05-06",
+    url: "https://investor.lilly.com/news-releases/news-release-details/lilly-commits-additional-45-billion-across-indiana-manufacturing",
+    evidence: {
+      zh: "Lilly 宣布再向印第安纳制造基地投入 45 亿美元，使 2020 年以来美国制造承诺超过 210 亿美元。",
+      en: "Lilly announced another US$4.5 billion for Indiana manufacturing, taking U.S. manufacturing commitments since 2020 above US$21 billion.",
+    },
+    companyExposure: {
+      zh: "高：API 与制剂产能决定高需求能否转化为可交付收入。",
+      en: "High: API and finished-dose capacity determine whether demand converts into deliverable revenue.",
+    },
+    investmentImplication: {
+      zh: "投资承诺不是当前可用产能；用现金资本开支、交付与毛利率检验扩产回报。",
+      en: "Committed investment is not current capacity; test the buildout through cash capex, deliveries, and gross margin.",
+    },
+  },
+  {
+    driverId: "pharma-pricing-access",
+    title: "Lilly Q1 2026 Earnings Release",
+    publisher: "Eli Lilly and Company",
+    date: "2026-04-30",
+    url: LLY_Q1_RELEASE_URL,
+    evidence: {
+      zh: "Q1 收入增长由销量推动，但实现价格下降 13%，显示准入扩张与净价格存在权衡。",
+      en: "Q1 growth was volume-led while realized price fell 13%, demonstrating the trade-off between access expansion and net price.",
+    },
+    companyExposure: {
+      zh: "高：商业保险、Medicare、现金支付和国际定价共同决定净收入。",
+      en: "High: commercial insurance, Medicare, cash-pay channels, and international pricing jointly determine net revenue.",
+    },
+    investmentImplication: {
+      zh: "扩大准入只有在销量与毛利足以抵消价格下降时才增值。",
+      en: "Broader access creates value only when volume and gross profit offset lower realized price.",
+    },
+  },
+  {
+    driverId: "pharma-patent-cycle",
+    title: "Eli Lilly and Company 2025 Form 10-K",
+    publisher: "Eli Lilly and Company",
+    date: "2026-02-12",
+    url: LLY_10K_URL,
+    evidence: {
+      zh: "发行人估计 Mounjaro/Zepbound 美国化合物专利 2036 年到期，Trulicity 2027 年、Verzenio 2031 年。",
+      en: "Issuer-estimated U.S. compound-patent expiries are 2036 for Mounjaro/Zepbound, 2027 for Trulicity, and 2031 for Verzenio.",
+    },
+    companyExposure: {
+      zh: "中高：近期成熟产品侵蚀与远期替尔泊肽集中度需要分别建模。",
+      en: "Medium-high: near-term mature-product erosion and longer-dated tirzepatide concentration require separate treatment.",
+    },
+    investmentImplication: {
+      zh: "产品级收入和到期时间决定替代管线需要填补的现金流缺口。",
+      en: "Product revenue and expiry timing define the cash-flow gap the replacement pipeline must fill.",
+    },
+  },
+  {
+    driverId: "pharma-rd-productivity",
+    title: "Lilly Q1 2026 Earnings Release",
+    publisher: "Eli Lilly and Company",
+    date: "2026-04-30",
+    url: LLY_Q1_RELEASE_URL,
+    evidence: {
+      zh: "Q1 2026 研发支出为 35.10 亿美元；FY2025 研发支出为 133.37 亿美元。",
+      en: "Q1 2026 R&D expense was US$3.510 billion, versus US$13.337 billion for FY2025.",
+    },
+    companyExposure: {
+      zh: "高：研发规模只有在读出、批准和商业回报中兑现才创造价值。",
+      en: "High: R&D scale creates value only when it converts into readouts, approvals, and commercial returns.",
+    },
+    investmentImplication: {
+      zh: "把研发支出与资产阶段、关键终点和批准逐项核对，避免用项目数量替代生产率。",
+      en: "Reconcile R&D spending to asset stage, endpoints, and approvals rather than using candidate count as a productivity proxy.",
+    },
+  },
+  {
+    driverId: "pharma-oncology",
+    title: "Eli Lilly and Company 2025 Form 10-K",
+    publisher: "Eli Lilly and Company",
+    date: "2026-02-12",
+    url: LLY_10K_URL,
+    evidence: {
+      zh: "FY2025 Verzenio 收入 57.23 亿美元、同比增长 8%；Inluriyo 已获批用于特定晚期乳腺癌。",
+      en: "FY2025 Verzenio revenue was US$5.723 billion, up 8%, and Inluriyo is approved for a defined advanced breast-cancer setting.",
+    },
+    companyExposure: {
+      zh: "中高：Verzenio 是主要非肠促胰素产品，生命周期与后续资产影响组合多元化。",
+      en: "Medium-high: Verzenio is a major non-incretin product, and its lifecycle plus successor assets affect diversification.",
+    },
+    investmentImplication: {
+      zh: "肿瘤业务能否保持增长是降低替尔泊肽集中度的重要检验。",
+      en: "Durable oncology growth is an important test of whether Lilly can reduce tirzepatide concentration.",
+    },
+  },
+  {
+    driverId: "pharma-alzheimers",
+    title: "Lilly Q1 2026 Earnings Release",
+    publisher: "Eli Lilly and Company",
+    date: "2026-04-30",
+    url: LLY_Q1_RELEASE_URL,
+    evidence: {
+      zh: "Q1 2026 Kisunla 收入 1.24 亿美元，上年同期为 0.22 亿美元。",
+      en: "Q1 2026 Kisunla revenue was US$124 million, versus US$22 million a year earlier.",
+    },
+    companyExposure: {
+      zh: "中：早期商业化受诊断、输注、监测、安全性和支付基础设施约束。",
+      en: "Medium: early commercialization depends on diagnostic, infusion, monitoring, safety, and payment infrastructure.",
+    },
+    investmentImplication: {
+      zh: "收入爬坡必须与患者启动、基础设施和后续 remternetug 数据共同评估。",
+      en: "The revenue ramp must be evaluated with patient starts, infrastructure, and later remternetug data.",
+    },
+  },
+  {
+    driverId: "pharma-regulatory",
+    title: "FDA approves Lilly's Foundayo",
+    publisher: "Eli Lilly and Company",
+    date: "2026-04-01",
+    url: "https://investor.lilly.com/news-releases/news-release-details/fda-approves-lillys-foundayotm-orforglipron-only-glp-1-pill",
+    evidence: {
+      zh: "FDA 于 2026-04-01 批准 Foundayo（orforglipron）用于肥胖。",
+      en: "The FDA approved Foundayo (orforglipron) for obesity on 2026-04-01.",
+    },
+    companyExposure: {
+      zh: "高：批准扩大 Lilly 的口服肠促胰素组合，但上市执行和标签仍决定经济性。",
+      en: "High: approval broadens Lilly's oral incretin portfolio, but launch execution and label determine economics.",
+    },
+    investmentImplication: {
+      zh: "将批准事实与商业放量分开；不把监管成功自动转换为峰值销售。",
+      en: "Keep approval separate from commercial uptake; regulatory success is not automatically a peak-sales estimate.",
+    },
+  },
+  {
+    driverId: "pharma-earnings-valuation",
+    title: "Eli Lilly and Company 2025 Form 10-K",
+    publisher: "Eli Lilly and Company",
+    date: "2026-02-12",
+    url: LLY_10K_URL,
+    evidence: {
+      zh: "FY2025 营收 651.79 亿美元、净利润 206.40 亿美元、经营现金流 168.13 亿美元、现金资本开支 78.41 亿美元。",
+      en: "FY2025 revenue was US$65.179 billion, net income US$20.640 billion, operating cash flow US$16.813 billion, and cash capex US$7.841 billion.",
+    },
+    companyExposure: {
+      zh: "高：增长、现金转化、资本密集度与产品集中共同决定估值可持续性。",
+      en: "High: growth, cash conversion, capital intensity, and product concentration jointly determine valuation durability.",
+    },
+    investmentImplication: {
+      zh: "估值必须从企业价值扣除净债务并除以稀释股数，同时以带日期的市场值作交叉检查。",
+      en: "Valuation must bridge enterprise value through net debt and diluted shares, with a dated market-value cross-check.",
+    },
+  },
+];
+
 function selectedCanonicalMetrics(
   registry: MetricRegistry,
   companyId: string,
@@ -829,6 +1064,8 @@ function buildDriverExposure(
       ? NVDA_EXPOSURE_TEMPLATES
       : companyId === "JPM"
         ? JPM_EXPOSURE_TEMPLATES
+        : companyId === "LLY"
+          ? LLY_EXPOSURE_TEMPLATES
         : [];
   const rows = pack.marketDrivers.flatMap((driver) => {
     const template = templates.find((item) => item.driverId === driver.id);
@@ -1300,6 +1537,10 @@ function buildDebates(
         (locale === "zh" ? "近期行业证据不足。" : "Recent sector evidence is insufficient."),
       evidenceAgainst: pack.risks[index % pack.risks.length][locale],
       monitor: `${companyName}: ${pack.coreKpis[index % pack.coreKpis.length].label[locale]}`,
+      interpretation:
+        locale === "zh"
+          ? `投资含义：只有当公司指标与带日期的行业证据方向一致时，才提高对该论点的信心；冲突时以公司披露和可复现计算为准。`
+          : `Investor interpretation: confidence rises only when company metrics and dated sector evidence agree; conflicts are resolved in favor of issuer disclosure and reproducible calculations.`,
       metricReferences: selectedCanonicalMetrics(
         registry,
         companyId,
@@ -1340,6 +1581,12 @@ async function buildPeerComparison(
           { id: "roeProxy", label: locale === "zh" ? "期末权益回报代理" : "Period-end equity return proxy" },
           { id: "efficiencyRatio", label: locale === "zh" ? "效率比率" : "Efficiency ratio" },
         ]
+      : pack.id === "biopharma"
+        ? [
+            { id: "revenueGrowth", label: locale === "zh" ? "营收增长" : "Revenue growth" },
+            { id: "grossMargin", label: locale === "zh" ? "毛利率" : "Gross margin" },
+            { id: "freeCashFlowMargin", label: locale === "zh" ? "FCF 利润率" : "FCF margin" },
+          ]
       : [
           { id: "revenueGrowth", label: locale === "zh" ? "营收增长" : "Revenue growth" },
           { id: "netMargin", label: locale === "zh" ? "净利率" : "Net margin" },
@@ -1572,6 +1819,13 @@ async function buildReport(
   const { periods, currency } = financialPeriodsFromRegistry(metricRegistry, record.ticker);
   if (!periods.length) throw new Error("INSUFFICIENT_XBRL");
   const latest = periods.at(-1)!;
+  const productMetrics = buildProductMetrics(metricRegistry, record.ticker, locale);
+  const pipelineAssets = buildPipelineAssets(record.ticker, locale);
+  const marketValuation = buildLlyMarketValuation(
+    metricRegistry,
+    record.ticker,
+    companyDataRetrievedAt,
+  );
   const narrative = buildNarrative(
     companyName,
     periods,
@@ -1804,6 +2058,16 @@ async function buildReport(
     ...driverExposure.map((item) => ({ module: "driver-exposure", keys: item.metricReferences })),
     ...sectorKpis.map((item) => ({ module: "sector-kpis", keys: [item.canonicalKey] })),
     ...investmentDebates.map((item) => ({ module: "investment-debates", keys: item.metricReferences })),
+    ...productMetrics.map((item) => ({
+      module: "product-metrics",
+      keys: Object.values(item.metricReferences),
+    })),
+    ...(marketValuation
+      ? [{
+          module: "market-valuation",
+          keys: Object.values(marketValuation.metricReferences),
+        }]
+      : []),
     ...filingWatchlist.map((item) => ({ module: "filing-watchlist", keys: item.metricReferences })),
     ...Object.values(catalysts).flat().map((item) => ({
       module: "catalysts",
@@ -1874,6 +2138,9 @@ async function buildReport(
     sectorOutlook: displayedOutlook,
     driverExposure,
     sectorKpis,
+    productMetrics,
+    pipelineAssets,
+    marketValuation,
     dataCoverage: {
       limited: criticalMetricIds.length > 0,
       criticalMetricIds,
@@ -1950,9 +2217,13 @@ async function buildReport(
         : locale === "zh"
           ? pack.id === "banks"
             ? `采用${effectiveValuation.method.zh}作为主框架，并以模型隐含 P/E、现金股息率及 ROTCE 相对 10% 股权成本的溢价交叉验证。1.20x–2.20x P/TBV 为清晰标注的情景假设，不宣称为未验证的历史或同业交易区间；由于未使用带日期的市场价格，本报告不输出评级或目标价。`
+            : pack.id === "biopharma" && marketValuation
+              ? `采用${effectiveValuation.method.zh}。截至 ${marketValuation.asOfDate}，带日期的市场桥接显示 EV/营收 ${marketValuation.currentEvRevenue.toFixed(2)}x、P/E ${marketValuation.currentPe.toFixed(2)}x；14x/17x/20x EV/营收为显式情景假设。每个情景均按“企业价值 − 最新可得净债务 = 股权价值；股权价值 ÷ FY2025 稀释股数 = 模型每股价值”桥接。商业收入情景不包含未验证的风险调整管线价值，也不输出评级或目标价。`
             : `采用${effectiveValuation.method.zh}，不使用未注明日期的实时股价，不输出评级或目标价。${useValuationFallback ? "由于现金资本开支不可取得，经营现金流仅作为估值指标，未被表述为 FCF。" : ""}${pack.id === "biopharma" ? "商业收入情景不包含未验证的风险调整管线价值。" : ""}倍数为分析假设，企业价值用于敏感性而非价格预测。`
           : pack.id === "banks"
             ? `Uses ${effectiveValuation.method.en} as the primary framework, cross-checked against model-implied P/E, cash-dividend yield, and issuer-reported ROTCE relative to a 10% cost-of-equity assumption. The 1.20x–2.20x P/TBV range is a clearly labeled scenario assumption, not a claimed historical or peer trading range; without a dated market price, the report provides no rating or price target.`
+            : pack.id === "biopharma" && marketValuation
+              ? `Uses ${effectiveValuation.method.en}. As of ${marketValuation.asOfDate}, the dated market bridge implies ${marketValuation.currentEvRevenue.toFixed(2)}x EV/revenue and ${marketValuation.currentPe.toFixed(2)}x P/E; 14x/17x/20x EV/revenue are explicit scenario assumptions. Each scenario bridges enterprise value less latest available net debt to equity value, then divides by FY2025 diluted shares for model value per share. Commercial-revenue scenarios exclude unverified risk-adjusted pipeline value, and no rating or price target is provided.`
             : `Uses ${effectiveValuation.method.en} without an undated real-time share price, rating, or price target. ${useValuationFallback ? "Because cash capex is unavailable, operating cash flow is used only as the valuation metric and is not presented as FCF. " : ""}${pack.id === "biopharma" ? "The commercial-revenue scenarios exclude unverified risk-adjusted pipeline value. " : ""}Multiples are analyst assumptions and enterprise values are sensitivities, not forecasts.`,
     cashFlowProxyFormula:
       pack.id === "banks"
@@ -2008,6 +2279,32 @@ async function buildReport(
         publicationDate: item.evidenceDate,
         topic: "Company exposure evidence",
       })),
+      ...pipelineAssets.filter(
+        (item, index, rows) =>
+          rows.findIndex((candidate) => candidate.sourceUrl === item.sourceUrl) === index &&
+          !driverExposure.some((candidate) => candidate.evidenceUrl === item.sourceUrl),
+      ).map((item) => ({
+        title: item.sourceTitle,
+        url: item.sourceUrl,
+        retrievedAt: companyDataRetrievedAt,
+        publisher: item.sourceUrl.includes("clinicaltrials.gov")
+          ? "ClinicalTrials.gov"
+          : item.sourceUrl.includes("fda.gov")
+            ? "U.S. Food and Drug Administration"
+            : companyName,
+        publicationDate: item.sourceDate,
+        topic: "Pipeline evidence",
+      })),
+      ...(marketValuation
+        ? [{
+            title: marketValuation.sourceTitle,
+            url: marketValuation.sourceUrl,
+            retrievedAt: companyDataRetrievedAt,
+            publisher: companyName,
+            publicationDate: marketValuation.asOfDate,
+            topic: "Dated market data",
+          }]
+        : []),
       ...evidenceSources.map((source) => ({
         title: source.title,
         url: source.url,
@@ -2050,9 +2347,13 @@ async function buildReport(
       locale === "zh"
         ? pack.id === "banks"
           ? "未使用带日期的市场价格，因此不宣称当前、历史或同业交易倍数，也不提供评级或目标价；每股价值、P/E 与股息率均为显式 P/TBV 情景下的模型敏感度。"
+          : pack.id === "biopharma" && marketValuation
+            ? `市场价格为 ${marketValuation.asOfDate} 收盘价；市值使用 2026-04-27 披露股数，净债务使用 2026-03-31 资产负债表并持有至市场日，因此为带日期的估值代理而非实时值。`
           : "未使用实时股价，因此不提供评级、目标价或每股价值；情景价值仅为透明敏感度。"
         : pack.id === "banks"
           ? "No dated market price is used, so the report does not claim current, historical, or peer trading multiples and provides no rating or price target; per-share values, P/E, and dividend yields are model sensitivities under explicit P/TBV scenarios."
+          : pack.id === "biopharma" && marketValuation
+            ? `The market price is the ${marketValuation.asOfDate} close; market capitalization carries the 2026-04-27 reported share count and net debt carries the 2026-03-31 balance sheet to the market date, so this is a dated valuation proxy rather than real-time data.`
           : "No real-time share price is used, so the report does not provide a rating, price target, or per-share value; scenario values are transparent sensitivities only.",
     ],
   };

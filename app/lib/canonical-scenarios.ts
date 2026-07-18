@@ -404,6 +404,9 @@ function buildBankScenarios(input: {
       impliedValueLabel:
         input.locale === "zh" ? "模型隐含股权价值" : "Model-implied equity value",
       modelImpliedEnterpriseValue: equityValue.value,
+      netDebtAdjustment: null,
+      modelImpliedEquityValue: equityValue.value,
+      dilutedShares: null,
       impliedPricePerShare: impliedPricePerShare?.value ?? null,
       impliedPriceToEarnings: impliedPriceToEarnings?.value ?? null,
       impliedDividendYield: impliedDividendYield?.value ?? null,
@@ -415,6 +418,7 @@ function buildBankScenarios(input: {
         valuationStartingPoint: tangibleBook.canonical_key,
         valuationMetric: projectedTangibleBook.canonical_key,
         modelImpliedEnterpriseValue: equityValue.canonical_key,
+        modelImpliedEquityValue: equityValue.canonical_key,
         ...(impliedPricePerShare ? { impliedPricePerShare: impliedPricePerShare.canonical_key } : {}),
         ...(impliedPriceToEarnings ? { impliedPriceToEarnings: impliedPriceToEarnings.canonical_key } : {}),
         ...(impliedDividendYield ? { impliedDividendYield: impliedDividendYield.canonical_key } : {}),
@@ -500,6 +504,18 @@ export function buildCanonicalScenarios(input: {
     latest.periodEnd,
     FINANCIAL_DEFINITION_IDS.freeCashFlow,
   );
+  const latestNetDebt = latest.metricKeys.netDebt
+    ? input.registry.getByKey(latest.metricKeys.netDebt) ?? null
+    : null;
+  const dilutedShares = input.pack.id === "biopharma"
+    ? optionalMetric(
+        input.registry,
+        input.companyId,
+        "diluted-shares",
+        latest.periodEnd,
+        "issuer-reported-weighted-average-diluted-shares",
+      )
+    : null;
   const capexDefinitionPriority: string[] = [
     FINANCIAL_DEFINITION_IDS.issuerCashCapex,
     FINANCIAL_DEFINITION_IDS.cashCapex,
@@ -708,6 +724,70 @@ export function buildCanonicalScenarios(input: {
           currency: valuationMetric.currency,
         })
       : null;
+    const scenarioNetDebt =
+      input.pack.id === "biopharma" && latestNetDebt
+        ? registerAssumption({
+            ...scenarioContext,
+            scenario: assumption.name,
+            period,
+            periodEnd: forecastEnd,
+            metricId: "scenario-net-debt-adjustment",
+            definitionId: "scenario-latest-net-debt-roll-forward",
+            value: latestNetDebt.value!,
+            unit: latestNetDebt.unit,
+            currency: latestNetDebt.currency,
+            formula: "Latest annual net debt held flat solely for the enterprise-to-equity bridge",
+            inputs: [latestNetDebt],
+          })
+        : null;
+    const scenarioDilutedShares =
+      input.pack.id === "biopharma" && dilutedShares
+        ? registerAssumption({
+            ...scenarioContext,
+            scenario: assumption.name,
+            period,
+            periodEnd: forecastEnd,
+            metricId: "scenario-diluted-shares",
+            definitionId: "scenario-latest-diluted-shares-roll-forward",
+            value: dilutedShares.value!,
+            unit: dilutedShares.unit,
+            currency: dilutedShares.currency,
+            formula: "FY2025 diluted shares held flat solely for the model value-per-share bridge",
+            inputs: [dilutedShares],
+          })
+        : null;
+    const equityValue =
+      input.pack.id === "biopharma" && enterpriseValue && scenarioNetDebt
+        ? calculate({
+            ...scenarioContext,
+            scenario: assumption.name,
+            period,
+            periodEnd: forecastEnd,
+            metricId: "model-implied-equity-value",
+            definitionId: SCENARIO_DEFINITIONS.equityValue,
+            formulaId: "subtract",
+            formula: "model_implied_enterprise_value - latest_net_debt",
+            inputs: [enterpriseValue, scenarioNetDebt],
+            unit: enterpriseValue.unit,
+            currency: enterpriseValue.currency,
+          })
+        : null;
+    const impliedPricePerShare =
+      equityValue && scenarioDilutedShares
+        ? calculate({
+            ...scenarioContext,
+            scenario: assumption.name,
+            period,
+            periodEnd: forecastEnd,
+            metricId: "model-implied-price-per-share",
+            definitionId: SCENARIO_DEFINITIONS.pricePerShare,
+            formulaId: "divide",
+            formula: "model_implied_equity_value / latest_diluted_shares",
+            inputs: [equityValue, scenarioDilutedShares],
+            unit: "USD/share",
+            currency: "USD",
+          })
+        : null;
 
     return {
       name: assumption.name,
@@ -726,7 +806,10 @@ export function buildCanonicalScenarios(input: {
       impliedValueLabel:
         input.locale === "zh" ? "模型隐含企业价值" : "Model-implied enterprise value",
       modelImpliedEnterpriseValue: enterpriseValue?.value ?? null,
-      impliedPricePerShare: null,
+      netDebtAdjustment: scenarioNetDebt?.value ?? null,
+      modelImpliedEquityValue: equityValue?.value ?? null,
+      dilutedShares: scenarioDilutedShares?.value ?? null,
+      impliedPricePerShare: impliedPricePerShare?.value ?? null,
       impliedPriceToEarnings: null,
       impliedDividendYield: null,
       costOfEquityAssumption: null,
@@ -746,6 +829,10 @@ export function buildCanonicalScenarios(input: {
           ["valuationStartingPoint", valuationStartingMetric],
           ["valuationMetric", valuationMetric],
           ["modelImpliedEnterpriseValue", enterpriseValue],
+          ["netDebtAdjustment", scenarioNetDebt],
+          ["modelImpliedEquityValue", equityValue],
+          ["dilutedShares", scenarioDilutedShares],
+          ["impliedPricePerShare", impliedPricePerShare],
         ].filter((entry): entry is [string, CanonicalMetricObject] => entry[1] !== null)
           .map(([field, metric]) => [field, metric.canonical_key]),
       ),

@@ -102,7 +102,7 @@ function addFooter(canvas: HTMLCanvasElement, meta: PdfExportMeta, pageNumber: n
   context.font = "18px Arial, sans-serif";
   context.textBaseline = "middle";
   context.fillText(
-    `ScopeLine Research | ${meta.ticker} | ${meta.researchDate} | Page ${pageNumber}`,
+    `FinBro Equity Research | ${meta.ticker} | ${meta.researchDate} | Page ${pageNumber}`,
     PAGE_MARGIN,
     y,
   );

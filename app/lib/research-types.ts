@@ -1,6 +1,7 @@
 export type EvidenceKind =
   | "Reported fact"
   | "Derived calculation"
+  | "Market-data value"
   | "Analyst assumption"
   | "Interpretation"
   | "Management statement";
@@ -122,6 +123,9 @@ export type Scenario = {
   multipleLabel: string;
   impliedValueLabel: string;
   modelImpliedEnterpriseValue: number | null;
+  netDebtAdjustment: number | null;
+  modelImpliedEquityValue: number | null;
+  dilutedShares: number | null;
   impliedPricePerShare: number | null;
   impliedPriceToEarnings: number | null;
   impliedDividendYield: number | null;
@@ -189,7 +193,63 @@ export type InvestmentDebate = {
   evidenceFor: string;
   evidenceAgainst: string;
   monitor: string;
+  interpretation: string;
   metricReferences: string[];
+};
+
+export type ProductMetricObject = {
+  product: string;
+  therapeuticArea: string;
+  period: string;
+  periodType: "annual" | "quarterly";
+  revenue: number;
+  priorRevenue: number | null;
+  revenueGrowth: number | null;
+  revenueShare: number | null;
+  indication: string;
+  geography: string;
+  volumePrice: string;
+  supplyCapacity: string;
+  approvalStatus: string;
+  patentLifecycle: string;
+  commercialRisks: string;
+  classification: EvidenceKind;
+  sourceTitle: string;
+  sourceDate: string;
+  sourceUrl: string;
+  metricReferences: Record<string, string>;
+};
+
+export type PipelineAsset = {
+  asset: string;
+  indication: string;
+  stage: string;
+  latestMilestone: string;
+  nextMilestone: string;
+  successProbability: string;
+  launchTiming: string;
+  peakSalesAssumption: string;
+  valuationTreatment: string;
+  classification: EvidenceKind;
+  sourceTitle: string;
+  sourceDate: string;
+  sourceUrl: string;
+};
+
+export type MarketValuationSnapshot = {
+  asOfDate: string;
+  sharePrice: number;
+  marketCapitalization: number;
+  enterpriseValue: number;
+  netDebtAdjustment: number;
+  dilutedShares: number;
+  currentEvRevenue: number;
+  currentPe: number;
+  currentEvEbitda: number | null;
+  formulas: string[];
+  sourceTitle: string;
+  sourceUrl: string;
+  metricReferences: Record<string, string>;
 };
 
 export type CatalystPoint = {
@@ -260,6 +320,9 @@ export type ResearchReport = {
   sectorOutlook: SectorOutlook;
   driverExposure: SectorDriverExposure[];
   sectorKpis: SectorKpiResult[];
+  productMetrics: ProductMetricObject[];
+  pipelineAssets: PipelineAsset[];
+  marketValuation: MarketValuationSnapshot | null;
   dataCoverage: DataCoverage;
   overview: string;
   segmentAnalysis: string;

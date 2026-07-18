@@ -47,6 +47,8 @@ export type SectorKpiDefinition = {
     | "inventory"
     | "cashCapex"
     | "freeCashFlow"
+    | "freeCashFlowProxy"
+    | "cashConversion"
     | "netDebt"
     | "notStandardized";
 };

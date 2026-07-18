@@ -62,7 +62,7 @@ const context = {
   passThroughOnException() {},
 };
 
-test("server-renders the bilingual sector-aware research request", async () => {
+test("server-renders the bilingual FinBro research request", async () => {
   const builtWorker = await worker();
   const response = await builtWorker.fetch(
     new Request("http://localhost/", { headers: { accept: "text/html" } }),
@@ -74,10 +74,11 @@ test("server-renders the bilingual sector-aware research request", async () => {
 
   const html = await response.text();
   assert.match(html, /<html lang="zh-CN">/i);
-  assert.match(html, /ScopeLine/);
-  assert.match(html, /一键生成公开信息尽调/);
+  assert.match(html, /FinBro/);
+  assert.match(html, /Ethan/);
+  assert.match(html, /把股票代码交给 Ethan/);
   assert.match(html, /id="company"/);
-  assert.match(html, /生成行业感知研究/);
+  assert.match(html, /交给 Ethan/);
   assert.match(html, /综合石油与天然气/);
   assert.match(html, /半导体/);
   assert.match(html, /工业机械/);
@@ -85,7 +86,7 @@ test("server-renders the bilingual sector-aware research request", async () => {
   assert.match(html, /即将推出/);
   assert.match(html, />中文</);
   assert.match(html, />EN</);
-  assert.doesNotMatch(html, /输入一家公司|生成尽调报告|codex-preview|react-loading-skeleton/i);
+  assert.doesNotMatch(html, /ScopeLine|输入一家公司|生成尽调报告|codex-preview|react-loading-skeleton/i);
 });
 
 test("rejects invalid research requests in Chinese before external data access", async () => {
@@ -1392,8 +1393,8 @@ test("passes the Biopharma and LLY acceptance gate without fabricated pipeline p
   assert.equal(latest.grossProfit, 65_179_000_000 - 11_052_000_000);
   assert.equal(latest.researchAndDevelopment, 13_337_000_000);
   assert.equal(latest.grossMargin, latest.grossProfit / latest.revenue);
-  assert.equal(latest.cashCapex, null);
-  assert.equal(latest.freeCashFlowProxy, null);
+  assert.equal(latest.cashCapex, 7_841_000_000);
+  assert.equal(latest.freeCashFlowProxy, 16_813_000_000 - 7_841_000_000);
 
   const mounjaro = metricByDefinition(
     "product-revenue",
@@ -1451,18 +1452,39 @@ test("passes the Biopharma and LLY acceptance gate without fabricated pipeline p
   assert.ok(
     report.scenarios.every(
       (scenario) =>
-        scenario.projectedFreeCashFlow === null &&
+        scenario.projectedFreeCashFlow !== null &&
         scenario.valuationStartingPoint === latest.revenue &&
         scenario.metricReferences.valuationStartingPoint === latest.metricKeys.revenue &&
         scenario.valuationMetric === scenario.projectedRevenue &&
         scenario.modelImpliedEnterpriseValue ===
-          scenario.valuationMetric * scenario.enterpriseValueMultiple,
+          scenario.valuationMetric * scenario.enterpriseValueMultiple &&
+        scenario.modelImpliedEquityValue ===
+          scenario.modelImpliedEnterpriseValue - scenario.netDebtAdjustment &&
+        scenario.impliedPricePerShare ===
+          scenario.modelImpliedEquityValue / scenario.dilutedShares,
     ),
   );
   assert.deepEqual(
     report.scenarios.map((scenario) => scenario.enterpriseValueMultiple),
-    [4, 7, 10],
+    [14, 17, 20],
   );
+  assert.equal(report.driverExposure.length, 11);
+  assert.equal(report.productMetrics.length, 7);
+  const annualProductRevenue = report.productMetrics
+    .filter((item) => item.period === "FY2025")
+    .reduce((sum, item) => sum + item.revenue, 0);
+  assert.equal(annualProductRevenue, 53_501_000_000);
+  assert.equal(annualProductRevenue / latest.revenue, 53_501_000_000 / 65_179_000_000);
+  assert.equal(report.pipelineAssets.length, 6);
+  assert.ok(report.pipelineAssets.every((asset) => /Not assumed|Excluded/.test(
+    `${asset.successProbability} ${asset.peakSalesAssumption} ${asset.valuationTreatment}`,
+  )));
+  assert.equal(report.marketValuation.asOfDate, "2026-07-14");
+  assert.equal(report.marketValuation.sharePrice, 1152.54);
+  assert.equal(report.marketValuation.netDebtAdjustment, 43_370_000_000 - 5_282_000_000);
+  assert.ok(report.marketValuation.currentEvRevenue > 17);
+  assert.ok(report.marketValuation.currentPe > 50);
+  assert.ok(report.investmentDebates.every((debate) => debate.interpretation));
 
   const referencedIds = new Set(
     [
@@ -1680,7 +1702,7 @@ test("owns PDF pagination and footer instead of browser print metadata", async (
   assert.match(client, /exportReportPdf/);
   assert.match(client, /data-pdf-block/);
   assert.doesNotMatch(client, /window\.print\(\)/);
-  assert.match(pdf, /ScopeLine Research \| \$\{meta\.ticker\} \| \$\{meta\.researchDate\} \| Page \$\{pageNumber\}/);
+  assert.match(pdf, /FinBro Equity Research \| \$\{meta\.ticker\} \| \$\{meta\.researchDate\} \| Page \$\{pageNumber\}/);
   assert.match(pdf, /table \{ min-width: 0 !important/);
   assert.match(css, /\.scenario-grid \{ break-inside: avoid/);
   assert.match(css, /\.source-columns small \{ color: #526878;.*font-size: 10px/s);
@@ -1737,13 +1759,13 @@ test("removes disposable starter assets and keeps private Sites metadata", async
   ]);
   assert.match(page, /<ResearchApp \/>/);
   assert.match(layout, /lang="zh-CN"/);
-  assert.match(layout, /ScopeLine/);
+  assert.match(layout, /FinBro/);
   assert.match(hosting, /appgprj_6a585b81f7708191b13b1c34903345a9/);
   assert.doesNotMatch(page + layout + packageJson, /_sites-preview|codex-preview|react-loading-skeleton/);
 
   await Promise.all([
     assert.rejects(access(new URL("app/_sites-preview/SkeletonPreview.tsx", projectRoot))),
     access(new URL("public/og.png", projectRoot)),
-    access(new URL("public/favicon.png", projectRoot)),
+    access(new URL("public/favicon.svg", projectRoot)),
   ]);
 });

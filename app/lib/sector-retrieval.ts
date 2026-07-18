@@ -97,6 +97,17 @@ const BANK_TOPIC_ORDER = [
   "risk",
 ] as const;
 
+const BIOPHARMA_TOPIC_ORDER = [
+  "demand",
+  "competition",
+  "access",
+  "pricing",
+  "manufacturing",
+  "clinical",
+  "regulatory",
+  "risk",
+] as const;
+
 function bankTopic(source: SectorEvidenceSource) {
   if (source.id === "fed-mpr-july-2026") return "rates";
   if (source.id === "fed-fsr-funding-may-2026") return "deposits";
@@ -106,6 +117,26 @@ function bankTopic(source: SectorEvidenceSource) {
   if (source.id === "fed-bank-capital-proposals-march-2026") return "regulation";
   if (source.id === "occ-bank-trading-q1-2026") return "trading";
   return "risk";
+}
+
+function biopharmaTopic(source: SectorEvidenceSource) {
+  if (source.id === "fda-oral-wegovy-approval-2025") return "competition";
+  if (source.id === "cms-medicare-glp1-bridge-april-2026") return "access";
+  if (
+    source.id === "cms-drug-negotiation-2028-selection" ||
+    source.id === "cms-2028-mfp-effectuation-guidance-july-2026"
+  ) return "pricing";
+  if (source.id === "lilly-indiana-manufacturing-may-2026") return "manufacturing";
+  if (
+    source.id === "clinicaltrials-remternetug-phase3-may-2026" ||
+    source.id === "lilly-foundayo-approval-april-2026"
+  ) return "clinical";
+  if (
+    source.id === "fda-novel-drug-approvals-2025" ||
+    source.id === "fda-clinical-participation-guidance-2025"
+  ) return "regulatory";
+  if (source.id === "iqvia-global-rd-trends-2025") return "risk";
+  return "demand";
 }
 
 function retrieveChunks(
@@ -155,6 +186,20 @@ function retrieveChunks(
       .slice(0, 8);
   }
 
+  if (subindustry === "biopharma") {
+    return chunks
+      .filter((chunk) => chunk.kind === "summary")
+      .sort((a, b) => {
+        const topicDifference =
+          BIOPHARMA_TOPIC_ORDER.indexOf(biopharmaTopic(a.source)) -
+          BIOPHARMA_TOPIC_ORDER.indexOf(biopharmaTopic(b.source));
+        return topicDifference ||
+          b.source.publicationDate.localeCompare(a.source.publicationDate) ||
+          sourcePriority(a.source) - sourcePriority(b.source);
+      })
+      .slice(0, 8);
+  }
+
   return chunks
     .sort((a, b) => b.score - a.score || sourcePriority(a.source) - sourcePriority(b.source))
     .slice(0, 8);
@@ -172,7 +217,8 @@ function buildOutlook(
   for (const chunk of chunks) {
     if (chunk.kind === "summary") sourceById.set(chunk.source.id, chunk.source);
   }
-  const sourceLimit = subindustry === "banks" ? 8 : 5;
+  const sourceLimit =
+    subindustry === "banks" || subindustry === "biopharma" ? 8 : 5;
   const sources = [...sourceById.values()].slice(0, sourceLimit);
   const now = new Date().toISOString();
   const researchWindowEnd =

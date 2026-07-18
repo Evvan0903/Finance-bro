@@ -345,6 +345,7 @@ export const FINANCIAL_DEFINITION_IDS = {
   currentLiabilities: "reported-current-liabilities",
   workingCapital: "current-assets-less-current-liabilities",
   totalDebt: "reported-total-debt",
+  issuerTotalDebt: "issuer-reported-total-debt",
   derivedTotalDebt: "current-plus-noncurrent-debt",
   issuerNetDebt: "issuer-reported-net-debt",
   normalizedNetDebt: "normalized-debt-less-cash",
@@ -701,7 +702,11 @@ export function ensureCoreDerivedMetrics(
       companyId,
       "total-debt",
       periodEnd,
-      [FINANCIAL_DEFINITION_IDS.totalDebt, FINANCIAL_DEFINITION_IDS.derivedTotalDebt],
+      [
+        FINANCIAL_DEFINITION_IDS.issuerTotalDebt,
+        FINANCIAL_DEFINITION_IDS.totalDebt,
+        FINANCIAL_DEFINITION_IDS.derivedTotalDebt,
+      ],
     );
     if (!totalDebt && currentDebt && noncurrentDebt) {
       totalDebt = registerDerived(registry, {
@@ -938,8 +943,8 @@ export function ensureCoreDerivedMetrics(
         formulaId: "subtract",
         formula: "equity_less_goodwill - finite_lived_intangible_assets",
         inputs: [equityLessGoodwill, intangibleAssets],
-        unit: equity.unit,
-        currency: equity.currency,
+        unit: equityLessGoodwill.unit,
+        currency: equityLessGoodwill.currency,
       });
     }
     if (dividends && shareBuybacks) {
@@ -1197,7 +1202,7 @@ export function financialPeriodsFromRegistry(
       currentAssets: selectedMetric(registry, companyId, "current-assets", periodEnd, [FINANCIAL_DEFINITION_IDS.currentAssets]),
       currentLiabilities: selectedMetric(registry, companyId, "current-liabilities", periodEnd, [FINANCIAL_DEFINITION_IDS.currentLiabilities]),
       workingCapital: selectedMetric(registry, companyId, "working-capital", periodEnd, [FINANCIAL_DEFINITION_IDS.workingCapital]),
-      totalDebt: selectedMetric(registry, companyId, "total-debt", periodEnd, [FINANCIAL_DEFINITION_IDS.totalDebt, FINANCIAL_DEFINITION_IDS.derivedTotalDebt]),
+      totalDebt: selectedMetric(registry, companyId, "total-debt", periodEnd, [FINANCIAL_DEFINITION_IDS.issuerTotalDebt, FINANCIAL_DEFINITION_IDS.totalDebt, FINANCIAL_DEFINITION_IDS.derivedTotalDebt]),
       netDebt: selectedMetric(registry, companyId, "net-debt", periodEnd, [FINANCIAL_DEFINITION_IDS.issuerNetDebt, FINANCIAL_DEFINITION_IDS.normalizedNetDebt]),
       revenueGrowth: selectedMetric(registry, companyId, "revenue-growth", periodEnd, [FINANCIAL_DEFINITION_IDS.revenueGrowth]),
       revenueCagr: selectedMetric(registry, companyId, "revenue-cagr", periodEnd, [FINANCIAL_DEFINITION_IDS.revenueCagr]),

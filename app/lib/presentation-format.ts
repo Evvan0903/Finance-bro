@@ -44,6 +44,9 @@ export function formatFinancialValue(
   maximumFractionDigits?: number,
 ) {
   if (value === null || !Number.isFinite(value)) return "—";
+  if (locale === "zh" && currency === "USD" && Math.abs(value) >= 1e8) {
+    return `${number(value / 1e8, locale, maximumFractionDigits ?? 2)}亿美元`;
+  }
   const unit = bestFinancialUnit(value);
   const prefix = currencyLabel(currency);
   const displayPrefix = prefix === "US$" ? prefix : prefix ? `${prefix} ` : "";
@@ -63,6 +66,7 @@ export function formatFinancialTableValue(
   unit: FinancialUnit = "billion",
 ) {
   if (value === null || !Number.isFinite(value)) return "—";
+  if (locale === "zh") return number(value / 1e8, locale, 2);
   return number(value / DIVISOR[unit], locale, 1);
 }
 
@@ -72,7 +76,11 @@ export function formatFinancialUnitLabel(
   unit: FinancialUnit = "billion",
 ) {
   const currencyUnit = `${currencyLabel(currency)} ${unit}`.trim();
-  return locale === "zh" ? `单位：${unit === "million" ? "百万" : unit === "billion" ? "十亿" : "万亿"}${currency === "USD" ? "美元" : currency ?? ""}` : `Unit: ${currencyUnit}`;
+  return locale === "zh"
+    ? currency === "USD"
+      ? "单位：亿美元"
+      : `单位：${unit === "million" ? "百万" : unit === "billion" ? "十亿" : "万亿"}${currency ?? ""}`
+    : `Unit: ${currencyUnit}`;
 }
 
 export function formatFinancialMixedUnitLabel(
@@ -83,7 +91,7 @@ export function formatFinancialMixedUnitLabel(
 ) {
   const financial = `${currencyLabel(currency)} ${unit}`.trim();
   return locale === "zh"
-    ? `金额单位：${unit === "million" ? "百万" : unit === "billion" ? "十亿" : "万亿"}${currency === "USD" ? "美元" : currency ?? ""}；${percentageKind === "rates-ratios" ? "利率及比率" : "利润率"}单位：%`
+    ? `金额单位：${currency === "USD" ? "亿美元" : `${unit === "million" ? "百万" : unit === "billion" ? "十亿" : "万亿"}${currency ?? ""}`}；${percentageKind === "rates-ratios" ? "利率及比率" : "利润率"}单位：%`
     : `Financial values in ${financial}; ${percentageKind === "rates-ratios" ? "rates and ratios" : "margins"} in %`;
 }
 

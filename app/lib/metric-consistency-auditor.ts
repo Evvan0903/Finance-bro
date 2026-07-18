@@ -135,6 +135,9 @@ const SCENARIO_VALUE_FIELDS: Array<keyof Scenario> = [
   "valuationStartingPoint",
   "valuationMetric",
   "modelImpliedEnterpriseValue",
+  "netDebtAdjustment",
+  "modelImpliedEquityValue",
+  "dilutedShares",
 ];
 
 function pushIssue(
@@ -183,6 +186,10 @@ function referenceArray(report: ResearchReport) {
     ...Object.values(report.catalysts ?? {}).flat().flatMap((item) => item.metricReferences),
     ...(report.sectorKpis ?? []).map((item) => item.canonicalKey),
     ...(report.peerComparison ?? []).flatMap((item) => Object.values(item.metricReferences)),
+    ...(report.productMetrics ?? []).flatMap((item) => Object.values(item.metricReferences)),
+    ...(report.marketValuation
+      ? Object.values(report.marketValuation.metricReferences)
+      : []),
     ...(report.scenarios ?? []).flatMap((item) => Object.values(item.metricReferences)),
   ].filter(Boolean);
 }
