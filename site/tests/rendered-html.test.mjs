@@ -397,6 +397,16 @@ test("keeps the client-to-API ticker, locale, and server-classification contract
   assert.match(client, /Technical details/);
 });
 
+test("renders adaptive bilingual data coverage without exposing raw JSON by default", async () => {
+  const app = await readFile(new URL("../app/ResearchApp.tsx", import.meta.url), "utf8");
+  assert.match(app, /核心指标覆盖/);
+  assert.match(app, /Core metric coverage/);
+  assert.match(app, /report\.metricCoverage\.reportMode/);
+  assert.match(app, /coverage-technical-audit/);
+  assert.match(app, /hasSectorDetail &&/);
+  assert.doesNotMatch(app, /JSON\.stringify\(report\.metricExtractionAudit/);
+});
+
 test("enforces strict FCF and sector-specific analyst packs", async () => {
   const [route, financialMetrics, packs, evidence, retrieval, learning, sectorTypes] = await Promise.all([
     readFile(new URL("../app/api/research/route.ts", import.meta.url), "utf8"),

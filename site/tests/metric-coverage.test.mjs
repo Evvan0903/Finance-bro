@@ -18,6 +18,19 @@ async function transpiledModuleUrl(path, replacements = {}) {
 }
 
 async function coverageModules() {
+  const aliasesUrl = await transpiledModuleUrl(
+    "../app/lib/metric-knowledge/standard-concept-aliases.ts",
+  );
+  const rulesUrl = await transpiledModuleUrl(
+    "../app/lib/metric-knowledge/validation-rules.ts",
+  );
+  const definitionsUrl = await transpiledModuleUrl(
+    "../app/lib/metric-knowledge/universal-metric-definitions.ts",
+    {
+      '"./standard-concept-aliases"': JSON.stringify(aliasesUrl),
+      '"./validation-rules"': JSON.stringify(rulesUrl),
+    },
+  );
   const expectationsUrl = await transpiledModuleUrl(
     "../app/lib/metric-coverage/coverage-expectations.ts",
   );
@@ -25,6 +38,7 @@ async function coverageModules() {
     "../app/lib/metric-coverage/extraction-audit.ts",
     {
       '"./coverage-expectations"': JSON.stringify(expectationsUrl),
+      '"../metric-knowledge/universal-metric-definitions"': JSON.stringify(definitionsUrl),
     },
   );
   const scoreUrl = await transpiledModuleUrl(
@@ -186,4 +200,23 @@ test("assigns Full, Standard, and Limited modes from Tier 1 coverage", async () 
   assert.equal(score.scoreMetricCoverage(auditsFor(8, 10)).reportMode, "full");
   assert.equal(score.scoreMetricCoverage(auditsFor(6, 10)).reportMode, "standard");
   assert.equal(score.scoreMetricCoverage(auditsFor(5, 10)).reportMode, "limited");
+});
+
+test("records the 21-company live benchmark and meets the initial non-financial target", async () => {
+  const artifact = JSON.parse(await readFile(
+    new URL("../artifacts/universal_metric_coverage_v1.json", import.meta.url),
+    "utf8",
+  ));
+  assert.equal(artifact.results.length, 21);
+  assert.ok(artifact.nonFinancialInitialBenchmarkAverageTier1Coverage >= 0.8);
+  assert.equal(artifact.knownMateriallyIncorrectPublishedMetrics, 0);
+  for (const result of artifact.results) {
+    assert.equal(result.incorrectMetricCount ?? 0, 0);
+    if (
+      !["banks", "diversified-financials-general"].includes(result.pack) &&
+      result.tier1 < 0.65
+    ) {
+      assert.ok(result.documentedReason, `${result.ticker} requires a documented reason`);
+    }
+  }
 });

@@ -8,6 +8,7 @@ import type {
   MetricCoverageExpectation,
   MetricExtractionAudit,
 } from "./types";
+import { UNIVERSAL_METRIC_DEFINITIONS } from "../metric-knowledge/universal-metric-definitions";
 
 function selectedMetric(
   registry: MetricRegistrySnapshot,
@@ -71,20 +72,36 @@ export function buildMetricExtractionAudit(input: {
       input.periodEnd,
       expectation,
     );
-    const searchedConcepts = input.searchedConcepts?.[expectation.metricId] ?? [];
+    const searchedConcepts = input.searchedConcepts?.[expectation.metricId] ??
+      UNIVERSAL_METRIC_DEFINITIONS
+        .filter((definition) => definition.metricId === expectation.metricId)
+        .flatMap((definition) =>
+          definition.standardConcepts.map(
+            (concept) => `${concept.taxonomy}:${concept.concept}`,
+          ),
+        );
     const candidateConcepts = input.candidateConcepts?.[expectation.metricId] ?? [];
     if (metric) {
       const derived = metric.status === "Derived";
+      const filingEnriched =
+        metric.extraction_method?.startsWith("deterministic-filing-inline-xbrl") ??
+        false;
       return {
         metricId: expectation.metricId,
         definitionId: metric.definition_id,
         tier: expectation.tier,
         applicable: true,
         status: derived ? "derived" : "found",
-        reason: derived ? "derived-from-components" : "standard-concept-match",
+        reason: derived
+          ? "derived-from-components"
+          : filingEnriched
+            ? "standard-concept-match"
+            : "standard-concept-match",
         searchedSources: derived
           ? ["company-facts", "derived-metric-engine"]
-          : ["company-facts"],
+          : filingEnriched
+            ? ["company-facts", "filing-inline-xbrl"]
+            : ["company-facts"],
         searchedConcepts,
         candidateConcepts,
         selectedCanonicalKey: metric.canonical_key,

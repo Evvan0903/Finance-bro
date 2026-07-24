@@ -29,6 +29,7 @@ import { buildMetricExtractionAudit } from "../../lib/metric-coverage/extraction
 import { scoreMetricCoverage } from "../../lib/metric-coverage/coverage-score";
 import { companyTypeForPack } from "../../lib/metric-coverage/coverage-expectations";
 import type { MetricExtractionAudit } from "../../lib/metric-coverage/types";
+import { enrichRegistryFromInlineXbrl } from "../../lib/filing-enrichment/inline-xbrl";
 import {
   runShellMetricValidation,
   SHELL_2025_20F_URL,
@@ -1701,6 +1702,34 @@ async function buildReport(
       sourceSnapshot?.issuerReportedMetrics ??
       verifiedIssuerMetrics(record.ticker, latestAnnual),
   });
+  if (!sourceSnapshot && latestAnnual) {
+    try {
+      const filingHtml = await secClient.getFilingDocument(latestAnnual.url, diagnostics);
+      const filingEnrichment = enrichRegistryFromInlineXbrl({
+        registry: metricRegistry,
+        html: filingHtml,
+        companyId: record.ticker,
+        sector: pack.id,
+        filingUrl: latestAnnual.url,
+        filingDate: latestAnnual.filed,
+        reportDate: latestAnnual.reportDate,
+        form: latestAnnual.form,
+        retrievedAt: companyDataRetrievedAt,
+      });
+      if (filingEnrichment.some((item) => item.status === "published")) {
+        ensureCoreDerivedMetrics(metricRegistry, record.ticker);
+      }
+    } catch (error) {
+      diagnostics.push({
+        endpointCategory: "filing",
+        url: latestAnnual.url,
+        httpStatus: error instanceof SecClientError ? error.httpStatus : null,
+        retryCount: 0,
+        cacheHit: false,
+        elapsedMs: 0,
+      });
+    }
+  }
   const metricAudit = await shellMetricAudit(
     record,
     facts,

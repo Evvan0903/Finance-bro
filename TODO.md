@@ -6,13 +6,13 @@
 - [x] Phase 1: add benchmark registry, applicability-aware extraction audit, missing reasons, and coverage scoring.
 - [x] Phase 2: add Universal Metric Definition Registry V2, verified standard aliases, and validation rules.
 - [x] Phase 3: centralize deterministic derivations with formula/input provenance and reconciliation.
-- [ ] Phase 4: add adaptive Full/Standard/Limited reports and compact bilingual coverage UI.
-- [ ] Phase 5: add cached filing-level Inline XBRL parsing and enrichment.
-- [ ] Phase 6: add validation-gated custom concept mappings.
-- [ ] Phase 7: preserve dimensions and prevent segment/consolidated substitution.
-- [ ] Phase 8: add conservative diagnostic HTML table extraction.
-- [ ] Phase 9: run benchmark coverage, general-pack validation, five-company regression, bilingual Web/PDF checks, and final documentation.
-- [ ] Create final local commit `feat: complete universal metric coverage upgrade v1`; do not push or deploy.
+- [x] Phase 4: add adaptive Full/Standard/Limited reports and compact bilingual coverage UI.
+- [x] Phase 5: add cached filing-level Inline XBRL parsing and enrichment.
+- [x] Phase 6: add validation-gated custom concept mappings.
+- [x] Phase 7: preserve dimensions and prevent segment/consolidated substitution.
+- [x] Phase 8: add conservative diagnostic HTML table extraction.
+- [x] Phase 9: run benchmark coverage, general-pack validation, five-company regression, bilingual Web/PDF checks, and final documentation.
+- [x] Create final local commit `feat: complete universal metric coverage upgrade v1`; do not push or deploy.
 
 ### Deferred V2
 

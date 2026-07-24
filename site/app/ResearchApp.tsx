@@ -227,6 +227,11 @@ const COPY = {
     limitedCoverage: "数据覆盖有限",
     dataCoverage: "数据覆盖",
     coverageSummary: "指标提取与拒绝候选的审计记录",
+    coverageMode: "报告模式",
+    tierOneCoverage: "核心指标覆盖",
+    tierTwoCoverage: "补充指标覆盖",
+    missingMetrics: "未解决核心指标",
+    technicalAudit: "技术提取审计",
     sourceOrder: "检索顺序",
     extractionMethod: "提取方法",
     confidence: "置信度",
@@ -435,6 +440,11 @@ const COPY = {
     limitedCoverage: "Limited data coverage",
     dataCoverage: "Data Coverage",
     coverageSummary: "Audit trail for extracted metrics and rejected candidates",
+    coverageMode: "Report mode",
+    tierOneCoverage: "Core metric coverage",
+    tierTwoCoverage: "Supplemental metric coverage",
+    missingMetrics: "Unresolved core metrics",
+    technicalAudit: "Technical extraction audit",
     sourceOrder: "Search order",
     extractionMethod: "Extraction method",
     confidence: "Confidence",
@@ -873,21 +883,38 @@ function DataCoveragePanel({
   locale: Locale;
 }) {
   const copy = COPY[locale];
-  if (!report.dataCoverage.metrics.length && !report.dataCoverage.limited) return null;
+  const unresolvedCore = report.metricExtractionAudit.filter(
+    (item) => item.tier === 1 && item.applicable && !["found", "derived"].includes(item.status),
+  );
+  if (
+    !report.metricExtractionAudit.length &&
+    !report.dataCoverage.metrics.length &&
+    !report.dataCoverage.limited
+  ) return null;
   return (
     <details className="data-coverage">
       <summary>
         <span>{copy.dataCoverage}</span>
         <small>
-          {report.dataCoverage.metrics.length
-            ? `${report.dataCoverage.metrics.filter((metric) => metric.found).length}/${report.dataCoverage.metrics.length}`
-            : copy.limitedCoverage}
+          {report.metricCoverage.reportMode === "limited"
+            ? copy.limitedCoverage
+            : `${Math.round(report.metricCoverage.tier1.coverage * 100)}%`}
         </small>
       </summary>
       <p>{copy.coverageSummary}</p>
-      <p className="coverage-source-order">
-        <b>{copy.sourceOrder}:</b> {report.dataCoverage.searchedSources.join(" → ")}
-      </p>
+      <dl className="coverage-summary-grid">
+        <div><dt>{copy.coverageMode}</dt><dd>{report.metricCoverage.reportMode}</dd></div>
+        <div><dt>{copy.tierOneCoverage}</dt><dd>{Math.round(report.metricCoverage.tier1.coverage * 100)}%</dd></div>
+        <div><dt>{copy.tierTwoCoverage}</dt><dd>{Math.round(report.metricCoverage.tier2.coverage * 100)}%</dd></div>
+      </dl>
+      {unresolvedCore.length > 0 && (
+        <p><b>{copy.missingMetrics}:</b> {unresolvedCore.map((item) => item.metricId).join(", ")}</p>
+      )}
+      {report.dataCoverage.searchedSources.length > 0 && (
+        <p className="coverage-source-order">
+          <b>{copy.sourceOrder}:</b> {report.dataCoverage.searchedSources.join(" → ")}
+        </p>
+      )}
       {report.dataCoverage.notes.map((note) => <p key={note}>{note}</p>)}
       <div className="coverage-list">
         {report.dataCoverage.metrics.map((metric) => (
@@ -934,6 +961,26 @@ function DataCoveragePanel({
           </article>
         ))}
       </div>
+      {report.metricExtractionAudit.length > 0 && (
+        <details className="coverage-technical-audit">
+          <summary>{copy.technicalAudit} · {report.metricExtractionAudit.length}</summary>
+          <div className="coverage-audit-table-wrap">
+            <table>
+              <thead><tr><th>Metric</th><th>Status</th><th>Source</th><th>Reason</th></tr></thead>
+              <tbody>
+                {report.metricExtractionAudit.map((item) => (
+                  <tr key={`${item.tier}-${item.metricId}`}>
+                    <td>{item.metricId}</td>
+                    <td>{item.status}</td>
+                    <td>{item.searchedSources.join(" → ") || "—"}</td>
+                    <td>{item.reason}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      )}
     </details>
   );
 }
@@ -975,6 +1022,10 @@ export function ResearchApp() {
     report?.periods.some((period) => period.operatingCashFlow !== null) ?? false;
   const hasBiopharmaFreeCashFlow =
     report?.periods.some((period) => period.freeCashFlowProxy !== null) ?? false;
+  const hasSectorDetail =
+    (report?.sectorKpis.some((item) => item.usable) ?? false) ||
+    (report?.productMetrics.length ?? 0) > 0 ||
+    (report?.pipelineAssets.length ?? 0) > 0;
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -1568,6 +1619,7 @@ export function ResearchApp() {
             </p>
           </section>
 
+          {hasSectorDetail && (
           <section className="report-section" data-pdf-block>
             <SectionHeading number="06" title={copy.sectorKpis} />
             <div className="kpi-grid">
@@ -1650,6 +1702,9 @@ export function ResearchApp() {
               <ol>{report.sectorPack.researchQuestions.map((question) => <li key={question}>{question}</li>)}</ol>
             </details>
           </section>
+          )}
+
+          {!hasSectorDetail && <DataCoveragePanel report={report} locale={locale} />}
 
           <section className="report-section analysis-grid-section" data-pdf-block>
             <SectionHeading

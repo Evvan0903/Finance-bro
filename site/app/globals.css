@@ -1432,6 +1432,49 @@ tbody tr:hover { background: #f1f5f2; }
   margin: 0 0 9px;
 }
 
+.coverage-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin: 0.9rem 0;
+}
+
+.coverage-summary-grid > div {
+  border: 1px solid var(--border-light);
+  background: var(--surface-primary);
+  padding: 0.75rem;
+}
+
+.coverage-summary-grid dt {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.coverage-summary-grid dd {
+  margin: 0.25rem 0 0;
+  font-weight: 700;
+}
+
+.coverage-technical-audit {
+  margin-top: 1rem;
+}
+
+.coverage-technical-audit > summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.coverage-audit-table-wrap {
+  overflow-x: auto;
+  margin-top: 0.75rem;
+}
+
+.coverage-audit-table-wrap table {
+  width: 100%;
+  min-width: 620px;
+}
+
 .coverage-source-order {
   overflow-wrap: anywhere;
 }

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "researchDate": "2026-07-24",
+  "source": "Live SEC Submissions, Company Facts, and latest annual filing",
+  "nonFinancialInitialBenchmarkAverageTier1Coverage": 0.8045,
+  "knownMateriallyIncorrectPublishedMetrics": 0,
+  "results": [
+    {"ticker":"AAPL","pack":"technology-hardware-general","tier1":0.9583,"tier2":0.8636,"direct":29,"derived":24,"filingLevel":0,"unresolved":["shares-outstanding"],"mode":"full"},
+    {"ticker":"DELL","pack":"technology-hardware-general","tier1":0.7917,"tier2":0.9091,"direct":29,"derived":24,"filingLevel":0,"unresolved":["cost-of-revenue","short-term-investments","current-debt","total-debt","net-debt"],"mode":"standard"},
+    {"ticker":"HPQ","pack":"technology-hardware-general","tier1":0.8333,"tier2":0.8636,"direct":28,"derived":24,"filingLevel":0,"unresolved":["cost-of-revenue","short-term-investments","liabilities","shares-outstanding"],"mode":"full"},
+    {"ticker":"MSFT","pack":"software-saas-general","tier1":0.9583,"tier2":0.7619,"direct":29,"derived":26,"filingLevel":0,"unresolved":["shares-outstanding"],"mode":"full"},
+    {"ticker":"ORCL","pack":"software-saas-general","tier1":0.5833,"tier2":0.7143,"direct":21,"derived":21,"filingLevel":0,"unresolved":["cost-of-revenue","gross-profit","gross-margin","short-term-investments","current-debt","noncurrent-debt","total-debt","net-debt","liabilities","shares-outstanding"],"mode":"standard","documentedReason":"Latest annual Company Facts did not expose validated consolidated concepts for the unresolved metrics; filing candidates did not pass V1 publication gates."},
+    {"ticker":"ADBE","pack":"software-saas-general","tier1":0.7500,"tier2":0.7143,"direct":25,"derived":22,"filingLevel":0,"unresolved":["cost-of-revenue","noncurrent-debt","total-debt","net-debt","shares-outstanding","dividends"],"mode":"standard"},
+    {"ticker":"GOOGL","pack":"internet-platform-general","tier1":0.8750,"tier2":0.8095,"direct":26,"derived":25,"filingLevel":0,"unresolved":["cost-of-revenue","gross-profit","gross-margin"],"mode":"full"},
+    {"ticker":"META","pack":"internet-platform-general","tier1":0.7083,"tier2":0.7619,"direct":25,"derived":23,"filingLevel":0,"unresolved":["cost-of-revenue","gross-profit","gross-margin","current-debt","total-debt","net-debt","shares-outstanding"],"mode":"standard"},
+    {"ticker":"AMZN","pack":"sector-general","tier1":0.8333,"tier2":0.7273,"direct":25,"derived":24,"filingLevel":0,"unresolved":["liabilities","shares-outstanding","dividends","share-buybacks"],"mode":"full"},
+    {"ticker":"KO","pack":"consumer-products-general","tier1":0.7917,"tier2":0.7273,"direct":25,"derived":22,"filingLevel":0,"unresolved":["short-term-investments","current-debt","noncurrent-debt","liabilities","shares-outstanding"],"mode":"standard"},
+    {"ticker":"PEP","pack":"consumer-products-general","tier1":0.8333,"tier2":0.8636,"direct":30,"derived":24,"filingLevel":0,"unresolved":["current-debt","total-debt","net-debt","shares-outstanding"],"mode":"full"},
+    {"ticker":"NKE","pack":"general-corporate","tier1":0.7917,"tier2":0.7273,"direct":25,"derived":22,"filingLevel":0,"unresolved":["operating-income","operating-margin","short-term-investments","liabilities","shares-outstanding"],"mode":"standard"},
+    {"ticker":"WMT","pack":"sector-general","tier1":0.7500,"tier2":0.6818,"direct":23,"derived":22,"filingLevel":0,"unresolved":["cost-of-revenue","gross-profit","gross-margin","short-term-investments","liabilities","shares-outstanding"],"mode":"standard"},
+    {"ticker":"AXP","pack":"diversified-financials-general","tier1":1.0000,"tier2":0.0000,"direct":23,"derived":20,"filingLevel":0,"unresolved":[],"mode":"full"},
+    {"ticker":"BLK","pack":"diversified-financials-general","tier1":1.0000,"tier2":0.0000,"direct":16,"derived":19,"filingLevel":0,"unresolved":[],"mode":"full"},
+    {"ticker":"SCHW","pack":"diversified-financials-general","tier1":1.0000,"tier2":0.0000,"direct":23,"derived":23,"filingLevel":0,"unresolved":[],"mode":"full"},
+    {"ticker":"NVDA","pack":"semiconductors","tier1":0.8750,"tier2":0.8636,"direct":29,"derived":26,"filingLevel":0,"unresolved":["cost-of-revenue","short-term-investments","shares-outstanding"],"mode":"full"},
+    {"ticker":"JPM","pack":"banks","tier1":1.0000,"tier2":0.0000,"direct":33,"derived":18,"filingLevel":0,"unresolved":[],"mode":"full"},
+    {"ticker":"SHEL","pack":"integrated-oil-gas","tier1":0.5417,"tier2":0.6364,"direct":25,"derived":20,"filingLevel":0,"unresolved":["cost-of-revenue","gross-profit","gross-margin","operating-income","operating-margin","diluted-eps","short-term-investments","current-debt","noncurrent-debt","dividends","share-buybacks"],"mode":"limited","documentedReason":"Foreign-private-issuer Company Facts and the conservative consolidated-only V1 filing rules do not normalize every IFRS/custom-tagged metric; Shell sector KPIs remain separately validated."},
+    {"ticker":"LLY","pack":"biopharma","tier1":0.7500,"tier2":0.8636,"direct":36,"derived":35,"filingLevel":0,"unresolved":["operating-income","operating-margin","short-term-investments","current-debt","liabilities","shares-outstanding"],"mode":"standard"},
+    {"ticker":"CAT","pack":"industrial-machinery","tier1":0.8750,"tier2":0.9091,"direct":37,"derived":28,"filingLevel":0,"unresolved":["gross-profit","gross-margin","short-term-investments"],"mode":"full"}
+  ]
+}

@@ -33,6 +33,16 @@
 - Validation: TypeScript, targeted lint, the production build, and 34/34 tests passed after Phase 2. Phase 3 TypeScript passed; full regression must be rerun after the adaptive UI milestone.
 - Next: Phase 4 adaptive report UI.
 
+### Phases 4–9 adaptive report, filing enrichment, and benchmarks
+
+- Added bilingual compact coverage UI, hidden unsupported KPI sections, collapsed extraction audits, and shared Web/PDF behavior.
+- Added deterministic Inline XBRL parsing and integration, validation-gated custom mapping infrastructure, preserved dimensions, and diagnostic-only HTML table candidates.
+- Live SEC benchmark on 2026-07-24 succeeded for all 21 companies. The initial 13-company applicable non-financial set averaged 80.45% Tier 1 coverage with zero known materially incorrect published values.
+- ORCL is the only initial non-financial benchmark below 65%; unresolved consolidated debt/liability/share/gross-profit inputs did not pass V1 publication gates. SHEL also remains Limited under the universal IFRS core, while its separately validated energy metrics remain intact.
+- Artifact: `site/artifacts/universal_metric_coverage_v1.json`. Architecture: `site/docs/universal-metric-coverage.md`.
+- Final validation: production build and 39/39 tests passed; ESLint, TypeScript, and whitespace checks passed.
+- Remaining: none within V1 after the required local commit. Do not push or deploy. Preserve `.DS_Store`.
+
 ## Current objective — deterministic SEC SIC research-pack routing
 
 ### Original objective

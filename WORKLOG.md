@@ -1,5 +1,17 @@
 # FinBro Research Worklog
 
+## Universal Metric Coverage V1 — Phases 4–9
+
+- Adaptive reporting: added Full/Standard/Limited modes, compact bilingual coverage summaries, collapsed technical audits, automatic KPI-section hiding, and shared Web/PDF rendering.
+- Filing enrichment: added cached latest-filing Inline XBRL parsing with period/unit/scale/sign/decimal/context checks. Consolidated standard facts may publish only when Company Facts has no selected value.
+- Custom/dimensions/tables: custom mappings are validation-gated; dimensions are preserved and rejected as consolidated substitutes; HTML tables remain candidate-only in V1.
+- Benchmark: live SEC run returned 200 for all 21 companies. The 13-company initial applicable non-financial set averaged 80.45% Tier 1 coverage; zero known materially incorrect published metrics. ORCL (58.33%) has an explicit conservative-extraction limitation. Full artifact: `site/artifacts/universal_metric_coverage_v1.json`.
+- General packs validated live: technology hardware, software/SaaS, internet/platform, consumer products, consumer sector general, general corporate, and diversified financials.
+- Regression: NVDA, JPM, SHEL, LLY, and CAT all generated successfully in the live matrix; existing bilingual/canonical/PDF tests remain the final gate.
+- Known limitation: no filing-level metric published in this benchmark pass because no unresolved candidate passed all V1 consolidated publication gates. This is a conservative zero, not candidate suppression from diagnostics.
+- Final validation: 39/39 tests passed with the production build; ESLint, TypeScript, and `git diff --check` passed. Existing bilingual, shared Web/PDF, canonical consistency, reproducibility, and five-company gates remain green.
+- Completion: ready for the required local commit. No push or deployment.
+
 ## Universal Metric Coverage V1 — Phases 2–3
 
 - Centralized standard metric aliases, unit/period/applicability metadata, and validation rules in Metric Definition Registry V2.
