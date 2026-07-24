@@ -1,5 +1,14 @@
 # FinBro Research Worklog
 
+## Universal Metric Coverage V1 — Phase 1
+
+- Added a versioned benchmark registry for 16 new issuers plus the five accepted regressions.
+- Added applicability-aware Tier 1/Tier 2 expectations, extraction-audit records, deterministic missing-reason codes, weighted scores, and Full/Standard/Limited report modes.
+- Published coverage metadata through the research API without treating candidates as coverage or changing Canonical Metric values.
+- Validation: production build and 31/31 tests passed; failures: none.
+- Rollback: `6e4f048`. The unrelated `.DS_Store` remains excluded.
+- Next milestone: central Universal Metric Definition Registry V2 and verified standard concept aliases.
+
 ## Universal Metric Coverage V1 — Phase 0 baseline
 
 - `saveToken` routing: Sol owns architecture, definitions, derivation/validation policy and regression approval; Terra owns repository/coverage/extraction investigation and numerical reconciliation; Luna owns adaptive UI, diagnostics presentation, documentation, fixtures, and routine tests.

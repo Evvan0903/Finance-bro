@@ -20,6 +20,10 @@ import type {
 } from "./metric-locator-types";
 import type { MetricRegistrySnapshot } from "./canonical-metrics";
 import type { CompanyClassification } from "./research-classification/types";
+import type {
+  MetricCoverageSummary,
+  MetricExtractionAudit,
+} from "./metric-coverage/types";
 
 export type FilingSource = {
   title: string;
@@ -327,6 +331,8 @@ export type ResearchReport = {
   productMetrics: ProductMetricObject[];
   pipelineAssets: PipelineAsset[];
   marketValuation: MarketValuationSnapshot | null;
+  metricCoverage: MetricCoverageSummary;
+  metricExtractionAudit: MetricExtractionAudit[];
   dataCoverage: DataCoverage;
   overview: string;
   segmentAnalysis: string;

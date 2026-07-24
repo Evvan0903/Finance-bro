@@ -15,6 +15,15 @@
 - Next phase: implement coverage types, applicability profiles, extraction audit, deterministic scoring, and the versioned benchmark registry.
 - Assumptions: Company Facts remains the first universal source; candidate filing facts cannot publish without deterministic validation; no ML, embeddings, vector database, market prices, consensus estimates, push, or deployment.
 
+### Phase 1 coverage diagnostics
+
+- Completed: added versioned 21-company benchmarks, Tier 1/Tier 2 expectations, issuer applicability profiles, one audit record per expected metric, deterministic missing-reason codes, weighted coverage scores, and Full/Standard/Limited report modes.
+- API state: every generated report now carries `metricCoverage` and `metricExtractionAudit`; the Canonical Metric Registry remains the only source of published quantitative values.
+- Validation: the production build and all 31 tests pass, including applicability, candidate exclusion, missing-reason, scoring-threshold, and five-company regression coverage.
+- Files: `site/app/lib/metric-coverage/*`, `site/app/lib/research-types.ts`, `site/app/api/research/route.ts`, `site/tests/metric-coverage.test.mjs`, `site/tests/rendered-html.test.mjs`, and `site/package.json`.
+- Remaining: Phases 2–9. Phase 2 must centralize metric knowledge and migrate the flat standard-concept configuration without changing accepted values.
+- Rollback: Phase 0 checkpoint is `6e4f048`; the unrelated `.DS_Store` remains unstaged.
+
 ## Current objective — deterministic SEC SIC research-pack routing
 
 ### Original objective

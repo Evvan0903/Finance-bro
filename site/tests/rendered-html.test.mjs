@@ -839,7 +839,8 @@ test("routes every quantitative report module through the canonical registry", a
   assert.match(route, /financialPeriodsFromRegistry/);
   assert.match(route, /buildCanonicalScenarios/);
   assert.match(route, /buildMetricUsage/);
-  assert.match(route, /metricRegistry:\s*metricRegistry\.snapshot\(\)/);
+  assert.match(route, /const registrySnapshot = metricRegistry\.snapshot\(\)/);
+  assert.match(route, /metricRegistry:\s*registrySnapshot/);
   assert.match(route, /module:\s*"dashboard"/);
   assert.match(route, /module:\s*"earnings-quality"/);
   assert.match(route, /module:\s*"driver-exposure"/);

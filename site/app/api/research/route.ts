@@ -25,6 +25,10 @@ import { getSectorPack } from "../../lib/sector-packs";
 import { getSectorOutlook, sectorEvidenceSources } from "../../lib/sector-retrieval";
 import { classifyCompany } from "../../lib/research-classification/classify-company";
 import type { CompanyClassification } from "../../lib/research-classification/types";
+import { buildMetricExtractionAudit } from "../../lib/metric-coverage/extraction-audit";
+import { scoreMetricCoverage } from "../../lib/metric-coverage/coverage-score";
+import { companyTypeForPack } from "../../lib/metric-coverage/coverage-expectations";
+import type { MetricExtractionAudit } from "../../lib/metric-coverage/types";
 import {
   runShellMetricValidation,
   SHELL_2025_20F_URL,
@@ -1780,6 +1784,50 @@ async function buildReport(
     metricRegistry,
     record.ticker,
   );
+  const registrySnapshot = metricRegistry.snapshot();
+  const packSpecificAudits: MetricExtractionAudit[] = sectorKpis.map((kpi) => ({
+    metricId: kpi.id,
+    definitionId: kpi.canonicalKey
+      ? registrySnapshot.metrics.find(
+          (metric) => metric.canonical_key === kpi.canonicalKey,
+        )?.definition_id ?? null
+      : null,
+    tier: 3,
+    applicable: true,
+    status: kpi.usable
+      ? kpi.status === "Derived" ? "derived" : "found"
+      : "missing",
+    reason: kpi.usable
+      ? kpi.status === "Derived"
+        ? "derived-from-components"
+        : "issuer-specific-concept-match"
+      : "custom-tag-not-mapped",
+    searchedSources: kpi.usable
+      ? kpi.status === "Derived"
+        ? ["company-facts", "derived-metric-engine"]
+        : ["company-facts"]
+      : ["company-facts"],
+    searchedConcepts: [],
+    candidateConcepts: [],
+    selectedCanonicalKey: kpi.canonicalKey || undefined,
+    selectedSourceUrl: kpi.sourceUrl ?? undefined,
+    selectedPeriod: kpi.period ?? undefined,
+    selectedValue: kpi.usable ? kpi.value : undefined,
+  }));
+  const metricExtractionAudit = [
+    ...buildMetricExtractionAudit({
+      registry: registrySnapshot,
+      companyId: record.ticker,
+      periodEnd: latest.periodEnd,
+      packId: pack.id,
+      companyType: companyTypeForPack(
+        pack.id,
+        latestAnnual?.form === "20-F" || latestAnnual?.form === "40-F",
+      ),
+    }),
+    ...packSpecificAudits,
+  ];
+  const metricCoverage = scoreMetricCoverage(metricExtractionAudit);
   const investmentDebates = selection.options.dueDiligence
     ? buildDebates(
         companyName,
@@ -2032,7 +2080,7 @@ async function buildReport(
     currency,
     latestAnnual,
     latestInterim,
-    metricRegistry: metricRegistry.snapshot(),
+    metricRegistry: registrySnapshot,
     metricUsage,
     renderingModel: REPORT_RENDERING_MODEL,
     periods,
@@ -2051,6 +2099,8 @@ async function buildReport(
     productMetrics,
     pipelineAssets,
     marketValuation,
+    metricCoverage,
+    metricExtractionAudit,
     dataCoverage: {
       limited: criticalMetricIds.length > 0,
       criticalMetricIds,
@@ -2588,6 +2638,8 @@ export async function POST(request: Request) {
     return Response.json({
       report,
       classification,
+      metricCoverage: report.metricCoverage,
+      extractionAudit: report.metricExtractionAudit,
       consistencyAudit,
       pipeline,
     });
