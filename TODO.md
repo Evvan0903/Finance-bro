@@ -1,5 +1,24 @@
 # Institutional Equity Research Refactor and Shell Sample TODO
 
+## Universal Metric Coverage Upgrade V1
+
+- [x] Phase 0: recover `27d463b`, inspect the current metric/report pipeline, record 27-test/build baseline, and preserve `.DS_Store`.
+- [ ] Phase 1: add benchmark registry, applicability-aware extraction audit, missing reasons, and coverage scoring.
+- [ ] Phase 2: add Universal Metric Definition Registry V2, verified standard aliases, and validation rules.
+- [ ] Phase 3: centralize deterministic derivations with formula/input provenance and reconciliation.
+- [ ] Phase 4: add adaptive Full/Standard/Limited reports and compact bilingual coverage UI.
+- [ ] Phase 5: add cached filing-level Inline XBRL parsing and enrichment.
+- [ ] Phase 6: add validation-gated custom concept mappings.
+- [ ] Phase 7: preserve dimensions and prevent segment/consolidated substitution.
+- [ ] Phase 8: add conservative diagnostic HTML table extraction.
+- [ ] Phase 9: run benchmark coverage, general-pack validation, five-company regression, bilingual Web/PDF checks, and final documentation.
+- [ ] Create final local commit `feat: complete universal metric coverage upgrade v1`; do not push or deploy.
+
+### Deferred V2
+
+- [ ] Broader issuer-specific custom mapping coverage beyond the validated V1 benchmark set.
+- [ ] Additional dimensional taxonomies and table layouts beyond the explicitly validated V1 rules.
+
 ## Deterministic SEC SIC routing
 
 - [x] Preserve and inspect the existing checkpoint, architecture, packs, UI persistence, and recovery notes.

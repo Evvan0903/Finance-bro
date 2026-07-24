@@ -1,5 +1,20 @@
 # Recovery Checkpoint
 
+## Current objective — Universal Metric Coverage Upgrade V1
+
+### Phase 0 baseline checkpoint
+
+- Objective: improve evidence-backed Tier 1 and Tier 2 coverage for arbitrary SEC issuers through a versioned standard-concept registry, deterministic derivations, filing-level enrichment, coverage auditing, and adaptive reports.
+- Rollback point: `27d463b` (`feat: route SEC SIC codes to general research packs`).
+- Current architecture: SEC identity → Submissions/SIC pack → Company Facts → flat financial concept list → Canonical Metric Registry → in-module derivations → report/auditor/PDF.
+- Baseline tests: 27/27 passed. ESLint, TypeScript, vinext production build, Vercel build, and whitespace validation passed.
+- Baseline benchmark coverage: no centralized benchmark runner or Tier 1/Tier 2 denominator exists yet; this is Phase 1.
+- Existing strengths to preserve: annual fact deduplication, strict FCF, Canonical Metric uniqueness/provenance, five validated pack regressions, bilingual Web/PDF output, structured SEC errors, and SIC routing.
+- Known baseline gaps: flat concept configuration, incomplete Tier 1/Tier 2 aliases, no applicability-aware coverage score, no universal extraction audit, and filing enrichment limited to the Shell locator path.
+- Unrelated local state: `.DS_Store` was modified before this task and must remain unstaged and uncommitted.
+- Next phase: implement coverage types, applicability profiles, extraction audit, deterministic scoring, and the versioned benchmark registry.
+- Assumptions: Company Facts remains the first universal source; candidate filing facts cannot publish without deterministic validation; no ML, embeddings, vector database, market prices, consensus estimates, push, or deployment.
+
 ## Current objective — deterministic SEC SIC research-pack routing
 
 ### Original objective

@@ -1,5 +1,15 @@
 # FinBro Research Worklog
 
+## Universal Metric Coverage V1 — Phase 0 baseline
+
+- `saveToken` routing: Sol owns architecture, definitions, derivation/validation policy and regression approval; Terra owns repository/coverage/extraction investigation and numerical reconciliation; Luna owns adaptive UI, diagnostics presentation, documentation, fixtures, and routine tests.
+- Rollback point: local commit `27d463b`. No task files were dirty at start; the pre-existing `.DS_Store` modification remains unrelated and excluded.
+- Baseline flow: `financial-metrics.ts` maps a flat concept list into Canonical Metrics, then `ensureCoreDerivedMetrics` calculates supported ratios and balances. Filing custom-XBRL/HTML parsing exists in the Shell-specific Metric Locator but is not yet a universal enrichment stage.
+- Baseline quality gate: 27/27 tests, ESLint, TypeScript, vinext build, Vercel build, and `git diff --check` passed.
+- Baseline coverage measurement: absent. There is no central applicability model, Tier 1/Tier 2 audit, benchmark registry, weighted score, or adaptive report mode.
+- Rejected approaches: no LLM/embedding metric selection, no automatic custom-tag publication, no segment-as-consolidated substitution, and no broad snapshot rewrites.
+- Next milestone: Phase 1 coverage diagnostics and versioned benchmarks.
+
 ## Deterministic SEC SIC routing — validated locally, not released
 
 - `saveToken` routing: Terra handled repository/test-path inspection and regression inventory; Sol set resolution priority, SIC/fallback architecture, and final decision rules; Luna handled the form simplification, read-only classification panel, routine code edits, documentation, and formatting.
