@@ -11,13 +11,22 @@ export type SupportedSector =
   | "technology"
   | "financials"
   | "healthcare"
-  | "industrials";
+  | "industrials"
+  | "consumer"
+  | "general";
 export type SupportedSubindustry =
   | "integrated-oil-gas"
   | "semiconductors"
   | "banks"
   | "biopharma"
-  | "industrial-machinery";
+  | "industrial-machinery"
+  | "technology-hardware-general"
+  | "software-saas-general"
+  | "internet-platform-general"
+  | "diversified-financials-general"
+  | "consumer-products-general"
+  | "sector-general"
+  | "general-corporate";
 
 export type ResearchOptions = {
   sectorOutlook: boolean;

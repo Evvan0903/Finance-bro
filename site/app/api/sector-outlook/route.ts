@@ -1,4 +1,5 @@
 import { getSectorOutlook } from "../../lib/sector-retrieval";
+import { RESEARCH_PACK_REGISTRY } from "../../lib/research-classification/research-pack-registry";
 import type {
   ResearchMarket,
   SupportedSubindustry,
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
     const subindustry = payload.subindustry ?? "integrated-oil-gas";
     if (
       !["US", "Europe", "Global"].includes(market) ||
-      !["integrated-oil-gas", "semiconductors", "banks", "biopharma", "industrial-machinery"].includes(subindustry)
+      !(subindustry in RESEARCH_PACK_REGISTRY)
     ) {
       return Response.json(
         {

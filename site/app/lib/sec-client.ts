@@ -102,7 +102,7 @@ type SecExchangePayload = {
   data?: Array<Array<string | number | null>>;
 };
 
-type SecTickerRow = {
+export type SecTickerRow = {
   cikNumber: number;
   ticker: string;
   title: string;
@@ -138,6 +138,8 @@ const SEC_TICKER_MAP_URL =
   "https://www.sec.gov/files/company_tickers_exchange.json";
 
 const COMPANY_ALIASES: Record<string, string> = {
+  apple: "AAPL",
+  "apple inc": "AAPL",
   amazon: "AMZN",
   berkshire: "BRK-B",
   facebook: "META",
@@ -154,6 +156,7 @@ const COMPANY_ALIASES: Record<string, string> = {
 // These accepted-company identities are a disclosed availability fallback.
 // Every other issuer is resolved from the current SEC ticker association file.
 export const SUPPORTED_TICKER_RECORDS: SecTickerRow[] = [
+  { cikNumber: 320193, ticker: "AAPL", title: "Apple Inc.", exchange: "Nasdaq" },
   { cikNumber: 1306965, ticker: "SHEL", title: "Shell plc", exchange: "NYSE" },
   { cikNumber: 34088, ticker: "XOM", title: "Exxon Mobil Corp", exchange: "NYSE" },
   { cikNumber: 93410, ticker: "CVX", title: "Chevron Corp", exchange: "NYSE" },
@@ -223,6 +226,79 @@ function tickerCandidate(row: SecTickerRow): SecTickerCandidate {
     cik: padCik(row.cikNumber),
     exchange: row.exchange,
   };
+}
+
+function dedupeRows(rows: SecTickerRow[], identity: "ticker-cik" | "cik") {
+  const unique = new Map<string, SecTickerRow>();
+  for (const row of rows) {
+    const normalizedTicker = normalizeTickerInput(row.ticker);
+    const key = identity === "ticker-cik"
+      ? `${normalizedTicker}|${padCik(row.cikNumber)}`
+      : padCik(row.cikNumber);
+    const existing = unique.get(key);
+    if (!existing) {
+      unique.set(key, { ...row, ticker: normalizedTicker });
+      continue;
+    }
+    unique.set(key, {
+      ...existing,
+      title: existing.title.length <= row.title.length ? existing.title : row.title,
+      exchange: existing.exchange ?? row.exchange,
+    });
+  }
+  return [...unique.values()];
+}
+
+export function resolveCompanyFromRows(input: string, rows: SecTickerRow[]) {
+  const raw = input.trim();
+  const normalizedName = normalizeCompanyName(raw);
+  const aliasTicker = COMPANY_ALIASES[normalizedName];
+  const normalizedTicker = aliasTicker ?? normalizeTickerInput(raw);
+  const looksLikeTicker = /^[A-Z][A-Z0-9-]{0,9}$/.test(normalizedTicker);
+  if (looksLikeTicker) {
+    const exactTickerMatches = dedupeRows(
+      rows.filter((row) => normalizeTickerInput(row.ticker) === normalizedTicker),
+      "ticker-cik",
+    );
+    if (exactTickerMatches.length === 1) return exactTickerMatches[0];
+    if (exactTickerMatches.length > 1) {
+      throw new SecClientError({
+        code: "AMBIGUOUS_TICKER",
+        stage: "ticker_resolution",
+        diagnostic: `Exact ticker ${normalizedTicker} maps to multiple distinct SEC CIKs.`,
+        matchDetails: exactTickerMatches.slice(0, 8).map(tickerCandidate),
+      });
+    }
+  }
+  const exactNameMatches = dedupeRows(
+    rows.filter((row) => normalizeCompanyName(row.title) === normalizedName),
+    "cik",
+  );
+  const controlledMatches = exactNameMatches.length
+    ? exactNameMatches
+    : dedupeRows(
+        rows.filter((row) => {
+          const title = normalizeCompanyName(row.title);
+          return normalizedName.length >= 3 && title.startsWith(normalizedName);
+        }),
+        "cik",
+      );
+  if (!controlledMatches.length) {
+    throw new SecClientError({
+      code: "TICKER_NOT_FOUND",
+      stage: "ticker_resolution",
+      diagnostic: `No SEC ticker association matched normalized input "${normalizedTicker}".`,
+    });
+  }
+  if (controlledMatches.length > 1) {
+    throw new SecClientError({
+      code: "AMBIGUOUS_TICKER",
+      stage: "ticker_resolution",
+      diagnostic: `Multiple SEC reporting identities matched "${normalizedName}".`,
+      matchDetails: controlledMatches.slice(0, 8).map(tickerCandidate),
+    });
+  }
+  return controlledMatches[0];
 }
 
 function errorForHttpStatus(
@@ -470,7 +546,6 @@ export class SecClient {
     const normalizedName = normalizeCompanyName(raw);
     const aliasTicker = COMPANY_ALIASES[normalizedName];
     const normalizedTicker = aliasTicker ?? normalizeTickerInput(raw);
-    const looksLikeTicker = /^[A-Z][A-Z0-9-]{0,9}$/.test(normalizedTicker);
     const supportedMatch = SUPPORTED_TICKER_RECORDS.find(
       (row) =>
         row.ticker === normalizedTicker ||
@@ -498,39 +573,7 @@ export class SecClient {
       throw error;
     }
 
-    let matches = looksLikeTicker
-      ? rows.filter((row) => row.ticker === normalizedTicker)
-      : [];
-    if (!matches.length) {
-      const exactNameMatches = rows.filter(
-        (row) => normalizeCompanyName(row.title) === normalizedName,
-      );
-      matches = exactNameMatches.length
-        ? exactNameMatches
-        : rows.filter((row) => {
-            const title = normalizeCompanyName(row.title);
-            return (
-              normalizedName.length >= 3 &&
-              (title.startsWith(normalizedName) || title.includes(normalizedName))
-            );
-          });
-    }
-    if (!matches.length) {
-      throw new SecClientError({
-        code: "TICKER_NOT_FOUND",
-        stage: "ticker_resolution",
-        diagnostic: `No SEC ticker association matched normalized input "${normalizedTicker}".`,
-      });
-    }
-    if (matches.length > 1) {
-      throw new SecClientError({
-        code: "AMBIGUOUS_TICKER",
-        stage: "ticker_resolution",
-        diagnostic: `Multiple SEC ticker associations matched "${normalizedName}".`,
-        matchDetails: matches.slice(0, 8).map(tickerCandidate),
-      });
-    }
-    const selected = matches[0];
+    const selected = resolveCompanyFromRows(input, rows);
     return {
       cik: padCik(selected.cikNumber),
       cikNumber: selected.cikNumber,

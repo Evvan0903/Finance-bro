@@ -442,7 +442,7 @@ main {
 .selection-grid {
   display: grid;
   gap: 10px;
-  grid-template-columns: .8fr 1fr 1.35fr 1.7fr;
+  grid-template-columns: 1fr;
 }
 
 .selection-grid label {
@@ -622,8 +622,45 @@ main {
   background: var(--paper-bright);
   border-bottom: 1px solid var(--line);
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   padding: 46px 48px 34px;
+}
+
+.classification-details {
+  border-top: 1px solid var(--line);
+  flex-basis: 100%;
+  margin-top: 22px;
+  padding-top: 14px;
+}
+
+.classification-details summary {
+  color: var(--brand-blue);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.classification-details dl {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 14px 0 0;
+}
+
+.classification-details dt {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.classification-details dd {
+  color: var(--text-primary);
+  margin: 3px 0 0;
+  overflow-wrap: anywhere;
 }
 
 .report-cover h2 {
@@ -1931,6 +1968,7 @@ tbody tr:hover { background: #f1f5f2; }
   .trust-row { flex-wrap: wrap; }
   .research-form { padding: 13px; }
   .selection-grid { grid-template-columns: 1fr; }
+  .classification-details dl { grid-template-columns: 1fr; }
   .option-row legend { float: none; margin-bottom: 7px; width: 100%; }
   .option-row label { flex: 1 1 auto; justify-content: center; }
   .form-footer { align-items: stretch; flex-direction: column; }

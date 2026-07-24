@@ -1,5 +1,19 @@
 # Institutional Equity Research Refactor and Shell Sample TODO
 
+## Deterministic SEC SIC routing
+
+- [x] Preserve and inspect the existing checkpoint, architecture, packs, UI persistence, and recovery notes.
+- [x] Add deterministic AAPL aliases/bundled identity and exact ticker+CIK deduplication.
+- [x] Add the centralized SIC registry, 12 broad research-pack registrations, and fallback hierarchy.
+- [x] Make SEC Submissions SIC authoritative in `/api/research`; ignore deprecated client classification fields.
+- [x] Remove Market/Sector/Subindustry selectors and show read-only classification metadata.
+- [x] Preserve validated calculations, evidence, bilingual behavior, PDF model, and annual-fact deduplication.
+- [x] Add universal diluted EPS and shares-outstanding Canonical Metrics where filings support them.
+- [x] Add resolver, classifier, API, UI-contract, and five-company regression tests.
+- [x] Pass 27/27 tests, ESLint, TypeScript, vinext build, Vercel build, and live AAPL verification.
+- [x] Update README, architecture docs, WORKLOG, RECOVERY, and TODO.
+- [x] Create the required local commit; do not push or deploy.
+
 ## Non-default ticker reliability
 
 - [x] Trace arbitrary-ticker requests through resolution, SEC retrieval, sector matching, metric normalization, and report initialization.

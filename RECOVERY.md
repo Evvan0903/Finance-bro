@@ -1,5 +1,61 @@
 # Recovery Checkpoint
 
+## Current objective — deterministic SEC SIC research-pack routing
+
+### Original objective
+
+Simplify FinBro so users enter only a ticker/company name, language, and existing report options. Resolve one SEC identity, use SEC Submissions SIC as the authoritative deterministic classifier, map multiple SIC codes to broad General Research Packs, preserve the Metric Registry/evidence/report architecture, validate AAPL and the five accepted issuers, and create a local commit without pushing or deploying.
+
+### Completed
+
+- Preserved the pre-refactor checkpoint at `8915d5f` and left the unrelated `.DS_Store` change untouched.
+- Added deterministic AAPL/alias resolution, ticker+CIK deduplication, controlled legal-name matching, and distinct-CIK-only ambiguity.
+- Added centralized SIC rules, a 12-pack registry, exact/family/sector/general fallback, and structured classification metadata.
+- Connected SEC Submissions classification to the research API; deprecated client sector/subindustry fields no longer control the result.
+- Removed Market/Sector/Subindustry selectors and added expandable read-only SIC/pack metadata.
+- Reused all five validated packs unchanged, added conservative broad/general packs, and added filing-backed diluted EPS and shares-outstanding metrics to the universal core.
+- Updated README, architecture documentation, tests, worklog, recovery notes, and TODO.
+- Passed 27/27 tests, ESLint, TypeScript, vinext build, Vercel build, and live AAPL SEC integration. The existing SHEL/NVDA/JPM/LLY/CAT numerical acceptance gates remain green.
+
+### Remaining
+
+- Do not push to GitHub or deploy to Vercel.
+
+### Current status
+
+Implementation, validation, and the required local commit are complete. AAPL resolves to CIK `0000320193`, SIC `3571`, and Technology Hardware General; missing specialization no longer blocks report generation.
+
+### Files modified
+
+- `README.md`
+- `WORKLOG.md`
+- `RECOVERY.md`
+- `TODO.md`
+- `site/README.md`
+- `site/docs/research-classification.md`
+- `site/app/ResearchApp.tsx`
+- `site/app/globals.css`
+- `site/app/api/research/route.ts`
+- `site/app/api/sector-outlook/route.ts`
+- `site/app/lib/sec-client.ts`
+- `site/app/lib/sector-types.ts`
+- `site/app/lib/sector-packs.ts`
+- `site/app/lib/financial-metrics.ts`
+- `site/app/lib/research-types.ts`
+- `site/app/lib/research-classification/*`
+- `site/tests/rendered-html.test.mjs`
+
+### Next recommended step
+
+Review the local commit and release only through a separately authorized push/deployment task.
+
+### Assumptions and pending decisions
+
+- SEC SIC is intentionally authoritative even when it is broad or dated.
+- No embedding, vector, ML, LLM, or business-description classification is included.
+- Unmapped/missing SIC uses General Corporate; specialized KPI coverage expands only after evidence-backed validation.
+- No push or deployment is authorized in this task.
+
 ## Current objective — non-default ticker reliability
 
 ### Completed

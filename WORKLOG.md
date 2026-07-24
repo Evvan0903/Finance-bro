@@ -1,5 +1,18 @@
 # FinBro Research Worklog
 
+## Deterministic SEC SIC routing — validated locally, not released
+
+- `saveToken` routing: Terra handled repository/test-path inspection and regression inventory; Sol set resolution priority, SIC/fallback architecture, and final decision rules; Luna handled the form simplification, read-only classification panel, routine code edits, documentation, and formatting.
+- UI: removed Market, Sector, and Subindustry selectors. The request now sends company/ticker, locale, and existing report options only. Versioned persistence retains those fields, and retry still preserves the assignment.
+- Resolution: added bundled AAPL identity and `apple` / `apple inc` aliases. Exact tickers are deduplicated by normalized ticker plus zero-padded CIK; title punctuation or exchange differences do not create ambiguity. BRK.B/BRK-B and GOOG/GOOGL behavior remains covered.
+- Classification: SEC Submissions SIC is authoritative. Added a centralized 12-pack registry and deterministic exact-SIC → SIC-family → sector-general → general-corporate fallback. Deprecated client sector/subindustry fields are accepted but ignored.
+- Metrics: preserved all existing validated formulas and annual-fact deduplication. Added standard filing-backed diluted EPS and shares-outstanding definitions to the universal Canonical Metric core. Pack-specific metrics remain evidence-gated.
+- API/report: added the structured classification object to diagnostics and report metadata; the UI exposes it in an expandable read-only panel. Missing specialization uses a General Pack rather than an SEC-outage error.
+- Validation: 27/27 full tests passed; ESLint passed without warnings; `tsc --noEmit`, vinext production build, Vercel `next build --webpack`, and `git diff --check` passed. Existing SHEL/NVDA/JPM/LLY/CAT numerical and bilingual acceptance gates remained green.
+- Live AAPL check: HTTP 200 from SEC Submissions and Company Facts; `AAPL → Apple Inc. → CIK 0000320193 → SIC 3571 Electronic Computers → Technology Hardware General`; five standardized annual periods generated without fallback.
+- Limitations: SIC can be broad or outdated; no embedding/text classifier is used; unmapped issuers use General Corporate; specialized KPI coverage remains incremental.
+- Next recommended step: review the local commit, then push/deploy only under a separate explicit release request.
+
 ## Non-default ticker pipeline investigation and fix — validated locally
 
 - `saveToken` routing: Terra inspected the request path, ran the non-default ticker matrix, and traced SEC responses; Sol isolated the root cause and approved the error-boundary design; Luna implemented the centralized client, compact error panel, persistence, tests, and documentation cleanup.

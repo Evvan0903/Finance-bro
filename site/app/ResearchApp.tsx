@@ -8,11 +8,8 @@ import type {
   ResearchReport,
 } from "./lib/research-types";
 import type {
-  ResearchMarket,
   ResearchOptions,
   SectorOutlook,
-  SupportedSector,
-  SupportedSubindustry,
 } from "./lib/sector-types";
 import {
   formatFinancialMixedUnitLabel,
@@ -27,7 +24,8 @@ import {
 type Locale = "zh" | "en";
 
 const LOCALE_STORAGE_KEY = "scopeline-locale";
-const RESEARCH_SELECTION_STORAGE_KEY = "finbro-research-selection-v1";
+const RESEARCH_SELECTION_STORAGE_KEY = "finbro-research-selection-v2";
+const LEGACY_RESEARCH_SELECTION_STORAGE_KEY = "finbro-research-selection-v1";
 type ResearchErrorState = {
   code: string;
   title: string;
@@ -43,9 +41,6 @@ type ResearchErrorState = {
 
 type SavedResearchSelection = {
   company: string;
-  market: ResearchMarket;
-  sector: SupportedSector;
-  subindustry: SupportedSubindustry;
   options: ResearchOptions;
 };
 const DEFAULT_OPTIONS: ResearchOptions = {
@@ -58,44 +53,26 @@ const DEFAULT_OPTIONS: ResearchOptions = {
 const EXAMPLES: Array<{
   label: Record<Locale, string>;
   company: string;
-  market: ResearchMarket;
-  sector: SupportedSector;
-  subindustry: SupportedSubindustry;
 }> = [
   {
     label: { zh: "SHEL · 能源", en: "SHEL · Energy" },
     company: "SHEL",
-    market: "Europe",
-    sector: "energy",
-    subindustry: "integrated-oil-gas",
   },
   {
     label: { zh: "NVDA · 半导体", en: "NVDA · Semiconductors" },
     company: "NVDA",
-    market: "US",
-    sector: "technology",
-    subindustry: "semiconductors",
   },
   {
     label: { zh: "JPM · 银行", en: "JPM · Banks" },
     company: "JPM",
-    market: "US",
-    sector: "financials",
-    subindustry: "banks",
   },
   {
     label: { zh: "LLY · 生物制药", en: "LLY · Biopharma" },
     company: "LLY",
-    market: "US",
-    sector: "healthcare",
-    subindustry: "biopharma",
   },
   {
     label: { zh: "CAT · 工业机械", en: "CAT · Industrial Machinery" },
     company: "CAT",
-    market: "US",
-    sector: "industrials",
-    subindustry: "industrial-machinery",
   },
 ];
 
@@ -171,6 +148,13 @@ const COPY = {
     researchWindow: "研究窗口",
     sectorRefresh: "行业最近刷新",
     companyRetrieved: "公司数据检索",
+    classificationDetails: "SEC SIC 分类详情",
+    detectedSector: "检测行业",
+    selectedPack: "研究包",
+    fallbackLevel: "回退级别",
+    classificationReason: "选择依据",
+    sicCode: "SIC 代码",
+    sicDescription: "SIC 描述",
     refreshOutlook: "仅刷新行业展望",
     refreshing: "刷新中…",
     reportEyebrow: "FinBro 股票研究简报",
@@ -372,6 +356,13 @@ const COPY = {
     researchWindow: "Research window",
     sectorRefresh: "Last sector refresh",
     companyRetrieved: "Company data retrieved",
+    classificationDetails: "SEC SIC classification details",
+    detectedSector: "Detected sector",
+    selectedPack: "Research pack",
+    fallbackLevel: "Fallback level",
+    classificationReason: "Selection reason",
+    sicCode: "SIC code",
+    sicDescription: "SIC description",
     refreshOutlook: "Refresh sector outlook only",
     refreshing: "Refreshing…",
     reportEyebrow: "FinBro equity research brief",
@@ -952,10 +943,6 @@ export function ResearchApp() {
   const [locale, setLocale] = useState<Locale>("zh");
   const [localeReady, setLocaleReady] = useState(false);
   const [selectionReady, setSelectionReady] = useState(false);
-  const [market, setMarket] = useState<ResearchMarket>("Europe");
-  const [sector, setSector] = useState<SupportedSector>("energy");
-  const [subindustry, setSubindustry] =
-    useState<SupportedSubindustry>("integrated-oil-gas");
   const [options, setOptions] = useState<ResearchOptions>(DEFAULT_OPTIONS);
   const [report, setReport] = useState<ResearchReport | null>(null);
   const [error, setError] = useState<ResearchErrorState | null>(null);
@@ -994,24 +981,13 @@ export function ResearchApp() {
       try {
         const storedLocale = window.localStorage.getItem(LOCALE_STORAGE_KEY);
         if (storedLocale === "zh" || storedLocale === "en") setLocale(storedLocale);
-        const saved = window.localStorage.getItem(RESEARCH_SELECTION_STORAGE_KEY);
+        const saved =
+          window.localStorage.getItem(RESEARCH_SELECTION_STORAGE_KEY) ??
+          window.localStorage.getItem(LEGACY_RESEARCH_SELECTION_STORAGE_KEY);
         if (saved) {
           const parsed = JSON.parse(saved) as Partial<SavedResearchSelection>;
-          const validSector = ["energy", "technology", "financials", "healthcare", "industrials"].includes(parsed.sector ?? "");
-          const validSubindustry = ["integrated-oil-gas", "semiconductors", "banks", "biopharma", "industrial-machinery"].includes(parsed.subindustry ?? "");
-          const paired =
-            (parsed.sector === "energy" && parsed.subindustry === "integrated-oil-gas") ||
-            (parsed.sector === "technology" && parsed.subindustry === "semiconductors") ||
-            (parsed.sector === "financials" && parsed.subindustry === "banks") ||
-            (parsed.sector === "healthcare" && parsed.subindustry === "biopharma") ||
-            (parsed.sector === "industrials" && parsed.subindustry === "industrial-machinery");
-          if (validSector && validSubindustry && paired) {
-            if (typeof parsed.company === "string") setCompany(parsed.company.slice(0, 100));
-            setMarket(parsed.market === "US" || parsed.market === "Europe" || parsed.market === "Global" ? parsed.market : "Global");
-            setSector(parsed.sector as SupportedSector);
-            setSubindustry(parsed.subindustry as SupportedSubindustry);
-            if (parsed.options) setOptions({ ...DEFAULT_OPTIONS, ...parsed.options });
-          }
+          if (typeof parsed.company === "string") setCompany(parsed.company.slice(0, 100));
+          if (parsed.options) setOptions({ ...DEFAULT_OPTIONS, ...parsed.options });
         }
       } catch {
         // Defaults remain available when browser storage is unavailable or stale.
@@ -1035,12 +1011,12 @@ export function ResearchApp() {
   useEffect(() => {
     if (!selectionReady) return;
     try {
-      const selection: SavedResearchSelection = { company, market, sector, subindustry, options };
+      const selection: SavedResearchSelection = { company, options };
       window.localStorage.setItem(RESEARCH_SELECTION_STORAGE_KEY, JSON.stringify(selection));
     } catch {
       // Retrying in the current page remains available without local storage.
     }
-  }, [company, market, options, sector, selectionReady, subindustry]);
+  }, [company, options, selectionReady]);
 
   function requestBody(query: string, requestedLocale: Locale) {
     const localFixture =
@@ -1050,9 +1026,6 @@ export function ResearchApp() {
     return {
       company: query,
       locale: requestedLocale,
-      market,
-      sector,
-      subindustry,
       options,
       ...(localFixture ? { fixture: true } : {}),
     };
@@ -1129,28 +1102,8 @@ export function ResearchApp() {
     if (shouldRefresh) void loadReport(company.trim(), nextLocale, false);
   }
 
-  function changeSector(next: SupportedSector) {
-    setSector(next);
-    setSubindustry(
-      next === "energy"
-        ? "integrated-oil-gas"
-        : next === "technology"
-          ? "semiconductors"
-          : next === "financials"
-            ? "banks"
-            : next === "healthcare"
-              ? "biopharma"
-              : "industrial-machinery",
-    );
-    setReport(null);
-    setError(null);
-  }
-
   function chooseExample(example: (typeof EXAMPLES)[number]) {
     setCompany(example.company);
-    setMarket(example.market);
-    setSector(example.sector);
-    setSubindustry(example.subindustry);
     setReport(null);
     setError(null);
   }
@@ -1167,7 +1120,12 @@ export function ResearchApp() {
       const response = await fetch("/api/sector-outlook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ market, subindustry, locale, refresh: true }),
+        body: JSON.stringify({
+          market: report.sectorOutlook.market,
+          subindustry: report.selection.subindustry,
+          locale,
+          refresh: true,
+        }),
       });
       const payload = (await response.json()) as { outlook?: SectorOutlook; error?: string };
       if (!response.ok || !payload.outlook) throw new Error(payload.error || copy.reportUnavailable);
@@ -1273,46 +1231,17 @@ export function ResearchApp() {
               <div><strong>{copy.assignmentTitle}</strong><p>{copy.assignmentNote}</p></div>
             </div>
             <div className="selection-grid">
-              <label>
-                <span>{copy.market}</span>
-                <select value={market} onChange={(event) => setMarket(event.target.value as ResearchMarket)} disabled={loading}>
-                  <option value="US">{copy.us}</option>
-                  <option value="Europe">{copy.europe}</option>
-                  <option value="Global">{copy.global}</option>
-                </select>
-              </label>
-              <label>
-                <span>{copy.sector}</span>
-                <select value={sector} onChange={(event) => changeSector(event.target.value as SupportedSector)} disabled={loading}>
-                  <option value="energy">{copy.energy}</option>
-                  <option value="technology">{copy.technology}</option>
-                  <option value="financials">{copy.financialSector}</option>
-                  <option value="healthcare">{copy.healthcare}</option>
-                  <option value="industrials">{copy.industrials}</option>
-                  <option disabled>{copy.consumer} · {copy.comingSoon}</option>
-                </select>
-              </label>
-              <label>
-                <span>{copy.subindustry}</span>
-                <select value={subindustry} onChange={(event) => setSubindustry(event.target.value as SupportedSubindustry)} disabled={loading}>
-                  {sector === "energy"
-                    ? <option value="integrated-oil-gas">{copy.integrated}</option>
-                    : sector === "technology"
-                      ? <option value="semiconductors">{copy.semiconductors}</option>
-                      : sector === "financials"
-                        ? <option value="banks">{copy.banks}</option>
-                        : sector === "healthcare"
-                          ? <option value="biopharma">{copy.biopharma}</option>
-                          : <option value="industrial-machinery">{copy.industrialMachinery}</option>}
-                </select>
-              </label>
               <label className="ticker-field">
                 <span>{copy.ticker}</span>
                 <input
                   id="company"
                   name="company"
                   value={company}
-                  onChange={(event) => setCompany(event.target.value)}
+                  onChange={(event) => {
+                    setCompany(event.target.value);
+                    setReport(null);
+                    setError(null);
+                  }}
                   placeholder={copy.companyPlaceholder}
                   autoComplete="organization"
                   maxLength={100}
@@ -1362,12 +1291,6 @@ export function ResearchApp() {
               <div>
                 <strong>{error.title}</strong>
                 <p>{error.message}</p>
-                {error.code === "SECTOR_CLASSIFICATION_CONFLICT" && error.details && (
-                  <p className="error-context">
-                    {locale === "zh" ? "检测到的分类：" : "Detected classification: "}
-                    {String(error.details.detectedClassification ?? error.details.detectedSic ?? "Not disclosed")}
-                  </p>
-                )}
               </div>
               <div className="research-error-actions">
                 {error.retryable && (
@@ -1424,6 +1347,17 @@ export function ResearchApp() {
                 <div><dt>{copy.sectorRefresh}</dt><dd>{formatTimestamp(report.sectorLastRefreshedAt, locale)} UTC</dd></div>
                 <div><dt>{copy.companyRetrieved}</dt><dd>{formatTimestamp(report.companyDataRetrievedAt, locale)} UTC</dd></div>
               </dl>
+              <details className="classification-details">
+                <summary>{copy.classificationDetails}</summary>
+                <dl>
+                  <div><dt>{copy.sicCode}</dt><dd>{report.classification.sicCode ?? "—"}</dd></div>
+                  <div><dt>{copy.sicDescription}</dt><dd>{report.classification.sicDescription ?? "—"}</dd></div>
+                  <div><dt>{copy.detectedSector}</dt><dd>{report.classification.detectedSector}</dd></div>
+                  <div><dt>{copy.selectedPack}</dt><dd>{report.classification.selectedPackName}</dd></div>
+                  <div><dt>{copy.fallbackLevel}</dt><dd>{report.classification.fallbackLevel}</dd></div>
+                  <div><dt>{copy.classificationReason}</dt><dd>{report.classification.classificationReason}</dd></div>
+                </dl>
+              </details>
             </section>
             <section className="disclosure-banner">
               <div className="disclosure-title">

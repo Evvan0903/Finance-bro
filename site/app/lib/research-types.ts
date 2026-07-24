@@ -19,6 +19,7 @@ import type {
   MetricStatus,
 } from "./metric-locator-types";
 import type { MetricRegistrySnapshot } from "./canonical-metrics";
+import type { CompanyClassification } from "./research-classification/types";
 
 export type FilingSource = {
   title: string;
@@ -35,6 +36,8 @@ export type FinancialPeriod = {
   researchAndDevelopment: number | null;
   operatingIncome: number | null;
   netIncome: number | null;
+  dilutedEps: number | null;
+  sharesOutstanding: number | null;
   netInterestIncome: number | null;
   deposits: number | null;
   depositCost: number | null;
@@ -286,6 +289,7 @@ export type ResearchSource = {
 export type ResearchReport = {
   locale: ResearchLocale;
   selection: ResearchSelection;
+  classification: CompanyClassification;
   company: {
     name: string;
     ticker: string;

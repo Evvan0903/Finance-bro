@@ -981,12 +981,96 @@ const industrialMachineryPack: SectorPack = {
   ],
 };
 
+function generalPack(input: {
+  id: SupportedSubindustry;
+  sector: SectorPack["sector"];
+  sectorLabel: SectorPack["sectorLabel"];
+  subindustryLabel: SectorPack["subindustryLabel"];
+  includeInventory?: boolean;
+}): SectorPack {
+  return {
+    id: input.id,
+    sector: input.sector,
+    sectorLabel: input.sectorLabel,
+    subindustryLabel: input.subindustryLabel,
+    sicCodes: [],
+    coreKpis: [
+      { id: "revenue", label: { zh: "营收", en: "Revenue" }, description: { zh: "发行人报告的合并营收。", en: "Issuer-reported consolidated revenue." }, availability: "revenue" },
+      { id: "gross-margin", label: { zh: "毛利率", en: "Gross margin" }, description: { zh: "毛利润占营收比例。", en: "Gross profit as a percentage of revenue." }, availability: "grossMargin" },
+      { id: "operating-margin", label: { zh: "营业利润率", en: "Operating margin" }, description: { zh: "营业利润占营收比例。", en: "Operating income as a percentage of revenue." }, availability: "operatingMargin" },
+      ...(input.includeInventory ? [{ id: "inventory", label: { zh: "库存", en: "Inventory" }, description: { zh: "库存及其对现金和经营周期的影响。", en: "Inventory and its effect on cash and the operating cycle." }, availability: "inventory" as const }] : []),
+      { id: "cash-capex", label: { zh: "现金资本开支", en: "Cash capex" }, description: { zh: "现金购置固定资产。", en: "Cash purchases of property and equipment." }, availability: "cashCapex" },
+      { id: "fcf", label: { zh: "自由现金流", en: "Free cash flow" }, description: { zh: "经营现金流减现金资本开支。", en: "Operating cash flow less cash capital expenditure." }, availability: "freeCashFlow" },
+      { id: "net-debt", label: { zh: "净债务", en: "Net debt" }, description: { zh: "标准化债务减现金。", en: "Normalized debt less cash." }, availability: "netDebt" },
+    ],
+    researchQuestions: [
+      { zh: "营收增长由销量、价格、组合还是并购驱动？", en: "Is revenue growth driven by volume, price, mix, or acquisitions?" },
+      { zh: "利润率变化来自经营杠杆、组合还是一次性项目？", en: "Are margin changes driven by operating leverage, mix, or one-time items?" },
+      { zh: "利润能否以一致口径转化为自由现金流？", en: "Do earnings convert into free cash flow on a consistent basis?" },
+      { zh: "资产负债表和资本配置是否支持下行情景？", en: "Do the balance sheet and capital allocation support a downside case?" },
+    ],
+    marketDrivers: [
+      {
+        id: "general-demand",
+        name: { zh: "终端需求与定价", en: "End demand and pricing" },
+        companyExposure: { zh: "营收增长、利润率与库存。", en: "Revenue growth, margins, and inventory." },
+        implication: { zh: "需求与定价决定经营杠杆和现金转化。", en: "Demand and pricing determine operating leverage and cash conversion." },
+        query: "industry demand pricing margins cash conversion",
+      },
+      {
+        id: "general-capital",
+        name: { zh: "资本强度与配置", en: "Capital intensity and allocation" },
+        companyExposure: { zh: "资本开支、自由现金流、债务与回购。", en: "Capex, free cash flow, debt, and repurchases." },
+        implication: { zh: "资本纪律决定增长质量和下行韧性。", en: "Capital discipline determines growth quality and downside resilience." },
+        query: "capital expenditure free cash flow debt shareholder returns",
+      },
+    ],
+    peers: [],
+    valuation: {
+      method: { zh: "情景 EV / 自由现金流", en: "Scenario EV / free cash flow" },
+      formula: { zh: "模型隐含企业价值 = 情景自由现金流 × 假设 EV/FCF 倍数", en: "Model-implied enterprise value = scenario free cash flow × assumed EV/FCF multiple" },
+      multipleLabel: "EV / FCF",
+      multiples: { bear: 5, base: 7, bull: 9 },
+      metric: "freeCashFlow",
+      fallback: {
+        method: { zh: "FCF 不可计算时使用情景 EV / 经营现金流", en: "Scenario EV / operating cash flow when FCF is unavailable" },
+        formula: { zh: "模型隐含企业价值 = 情景经营现金流 × 假设倍数。", en: "Model-implied enterprise value = scenario operating cash flow × assumed multiple." },
+        multipleLabel: "EV / OCF",
+        multiples: { bear: 4, base: 6, bull: 8 },
+        metric: "operatingCashFlow",
+      },
+    },
+    risks: [
+      { zh: "需求走弱或价格压力导致营收与利润率低于历史区间。", en: "Demand weakness or pricing pressure drives revenue and margins below historical ranges." },
+      { zh: "资本开支、营运资本或并购使利润无法转化为现金。", en: "Capex, working capital, or acquisitions prevent earnings from converting into cash." },
+      { zh: "债务、稀释或资本配置削弱下行韧性。", en: "Debt, dilution, or capital allocation weakens downside resilience." },
+    ],
+    catalysts: {
+      operating: [{ zh: "需求和利润率改善并得到申报数据确认。", en: "Demand and margins improve with confirmation in reported data." }],
+      financial: [{ zh: "自由现金流和资产负债表改善。", en: "Free cash flow and the balance sheet improve." }],
+      regulatory: [{ zh: "影响经营或资本配置的监管不确定性下降。", en: "Regulatory uncertainty affecting operations or capital allocation declines." }],
+    },
+    reportGuidance: [
+      { zh: "仅显示有申报证据支持的指标，不推测缺失 KPI。", en: "Show only metrics supported by filing evidence; do not infer missing KPIs." },
+      { zh: "将报告事实、计算、假设和研究解读分开。", en: "Keep reported facts, calculations, assumptions, and interpretations separate." },
+      { zh: "FCF 始终使用经营现金流减现金资本开支。", en: "Always calculate FCF as operating cash flow less cash capital expenditure." },
+    ],
+  };
+}
+
 const PACKS: Record<SupportedSubindustry, SectorPack> = {
   "integrated-oil-gas": energyPack,
   semiconductors: semiconductorPack,
   banks: bankPack,
   biopharma: biopharmaPack,
   "industrial-machinery": industrialMachineryPack,
+  "technology-hardware-general": generalPack({ id: "technology-hardware-general", sector: "technology", sectorLabel: { zh: "科技", en: "Technology" }, subindustryLabel: { zh: "科技硬件通用", en: "Technology Hardware General" }, includeInventory: true }),
+  "software-saas-general": generalPack({ id: "software-saas-general", sector: "technology", sectorLabel: { zh: "科技", en: "Technology" }, subindustryLabel: { zh: "软件与 SaaS 通用", en: "Software & SaaS General" } }),
+  "internet-platform-general": generalPack({ id: "internet-platform-general", sector: "technology", sectorLabel: { zh: "科技", en: "Technology" }, subindustryLabel: { zh: "互联网与平台通用", en: "Internet & Platform General" } }),
+  "diversified-financials-general": generalPack({ id: "diversified-financials-general", sector: "financials", sectorLabel: { zh: "金融", en: "Financials" }, subindustryLabel: { zh: "多元金融通用", en: "Diversified Financials General" } }),
+  "consumer-products-general": generalPack({ id: "consumer-products-general", sector: "consumer", sectorLabel: { zh: "消费", en: "Consumer" }, subindustryLabel: { zh: "消费品通用", en: "Consumer Products General" }, includeInventory: true }),
+  "sector-general": generalPack({ id: "sector-general", sector: "general", sectorLabel: { zh: "行业通用", en: "Sector General" }, subindustryLabel: { zh: "行业通用研究", en: "Sector General Research" } }),
+  "general-corporate": generalPack({ id: "general-corporate", sector: "general", sectorLabel: { zh: "公司通用", en: "General Corporate" }, subindustryLabel: { zh: "公司通用研究", en: "General Corporate Research" } }),
 };
 
 export function getSectorPack(id: SupportedSubindustry) {

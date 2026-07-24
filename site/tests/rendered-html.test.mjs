@@ -59,6 +59,23 @@ async function secClientModule() {
   return import(`${url}#${Date.now()}-${Math.random()}`);
 }
 
+async function classificationModule() {
+  const packRegistryUrl = await transpiledModuleUrl(
+    "../app/lib/research-classification/research-pack-registry.ts",
+  );
+  const sicRegistryUrl = await transpiledModuleUrl(
+    "../app/lib/research-classification/sic-registry.ts",
+  );
+  const classifierUrl = await transpiledModuleUrl(
+    "../app/lib/research-classification/classify-company.ts",
+    {
+      '"./research-pack-registry"': JSON.stringify(packRegistryUrl),
+      '"./sic-registry"': JSON.stringify(sicRegistryUrl),
+    },
+  );
+  return import(`${classifierUrl}#${Date.now()}-${Math.random()}`);
+}
+
 const environment = {
   ASSETS: {
     fetch: async () => new Response("Not found", { status: 404 }),
@@ -87,11 +104,8 @@ test("server-renders the bilingual FinBro research request", async () => {
   assert.match(html, /把股票代码交给 Ethan/);
   assert.match(html, /id="company"/);
   assert.match(html, /交给 Ethan/);
-  assert.match(html, /综合石油与天然气/);
-  assert.match(html, /半导体/);
-  assert.match(html, /工业机械/);
   assert.match(html, /CAT/);
-  assert.match(html, /即将推出/);
+  assert.doesNotMatch(html, /<select/i);
   assert.match(html, />中文</);
   assert.match(html, />EN</);
   assert.doesNotMatch(html, /ScopeLine|输入一家公司|生成尽调报告|codex-preview|react-loading-skeleton/i);
@@ -135,7 +149,7 @@ test("rejects invalid research requests in English before external data access",
   assert.ok(payload.error.traceId);
 });
 
-test("rejects unsupported sector combinations before SEC access", async () => {
+test("ignores legacy sector fields and classifies from SEC SIC", async () => {
   const builtWorker = await worker();
   const response = await builtWorker.fetch(
     new Request("http://localhost/api/research", {
@@ -147,21 +161,27 @@ test("rejects unsupported sector combinations before SEC access", async () => {
         market: "US",
         sector: "technology",
         subindustry: "integrated-oil-gas",
+        fixture: true,
       }),
     }),
     environment,
     context,
   );
-  assert.equal(response.status, 400);
+  assert.equal(response.status, 200);
   const payload = await response.json();
-  assert.equal(payload.error.code, "INVALID_INPUT");
-  assert.equal(payload.error.failedStage, "input_validation");
-  assert.equal(payload.error.preservedSelections.sector, "technology");
-  assert.equal(payload.error.preservedSelections.subindustry, "integrated-oil-gas");
+  assert.equal(payload.classification.sicCode, "3674");
+  assert.equal(payload.classification.selectedPackId, "semiconductors");
+  assert.equal(payload.classification.fallbackLevel, "exact-sic");
+  assert.equal(payload.report.selection.subindustry, "semiconductors");
 });
 
 test("uses the centralized SEC resolver for arbitrary tickers, share classes, and classified failures", async () => {
-  const { SecClient, SecClientError, normalizeTickerInput } = await secClientModule();
+  const {
+    SecClient,
+    SecClientError,
+    normalizeTickerInput,
+    resolveCompanyFromRows,
+  } = await secClientModule();
   const tickerMap = {
     fields: ["cik", "name", "ticker", "exchange"],
     data: [
@@ -184,19 +204,72 @@ test("uses the centralized SEC resolver for arbitrary tickers, share classes, an
     minimumIntervalMs: 0,
   });
   assert.equal(normalizeTickerInput("BRK.B"), "BRK-B");
-  const aapl = await client.resolveCompany("aapl");
-  assert.equal(aapl.cik, "0000320193");
-  assert.equal(aapl.mappingSource, "sec-company-tickers-exchange");
+  for (const input of ["AAPL", "aapl", "$AAPL", "Apple", "Apple Inc."]) {
+    const aapl = await client.resolveCompany(input);
+    assert.equal(aapl.cik, "0000320193");
+    assert.equal(aapl.ticker, "AAPL");
+    assert.equal(aapl.mappingSource, "bundled-supported-sec-identities");
+  }
   const brk = await client.resolveCompany("BRK.B");
   assert.equal(brk.ticker, "BRK-B");
   assert.equal(brk.cik, "0001067983");
   assert.equal((await client.resolveCompany("GOOG")).cik, "0001652044");
   assert.equal((await client.resolveCompany("GOOGL")).ticker, "GOOGL");
   assert.equal(calls, 1, "ticker association should be cached");
-  await assert.rejects(
-    () => client.resolveCompany("Alphabet"),
+  const alphabet = await client.resolveCompany("Alphabet");
+  assert.equal(alphabet.cik, "0001652044");
+  assert.equal(
+    resolveCompanyFromRows("DUP", [
+      { cikNumber: 123, title: "Duplicate Corp", ticker: "DUP", exchange: "NYSE" },
+      { cikNumber: 123, title: "Duplicate Corporation", ticker: "DUP", exchange: "NYSE" },
+    ]).cikNumber,
+    123,
+  );
+  assert.equal(
+    resolveCompanyFromRows("AAPL", [
+      { cikNumber: 320193, title: "Apple Inc.", ticker: "AAPL", exchange: "Nasdaq" },
+      { cikNumber: 320193, title: "APPLE INC", ticker: "aapl", exchange: "NASDAQ Global Select" },
+    ]).cikNumber,
+    320193,
+  );
+  assert.throws(
+    () => resolveCompanyFromRows("DUP", [
+      { cikNumber: 123, title: "Duplicate Corp", ticker: "DUP", exchange: "NYSE" },
+      { cikNumber: 456, title: "Different Issuer", ticker: "DUP", exchange: "Nasdaq" },
+    ]),
     (error) => error instanceof SecClientError && error.code === "AMBIGUOUS_TICKER",
   );
+  assert.throws(
+    () => resolveCompanyFromRows("NOTREAL", tickerMap.data.map(
+      ([cikNumber, title, ticker, exchange]) => ({ cikNumber, title, ticker, exchange }),
+    )),
+    (error) => error instanceof SecClientError && error.code === "TICKER_NOT_FOUND",
+  );
+});
+
+test("routes SEC SIC deterministically through exact, family, and general fallbacks", async () => {
+  const { classifyCompany } = await classificationModule();
+  assert.deepEqual(
+    classifyCompany({ sicCode: "3571", sicDescription: "Electronic Computers" }),
+    {
+      sicCode: "3571",
+      sicDescription: "Electronic Computers",
+      detectedSector: "technology",
+      selectedPackId: "technology-hardware-general",
+      selectedPackName: "Technology Hardware General",
+      fallbackLevel: "exact-sic",
+      classificationReason: "SEC SIC 3571 maps directly to Technology Hardware General.",
+    },
+  );
+  assert.equal(classifyCompany({ sicCode: "3674" }).selectedPackId, "semiconductors");
+  assert.equal(classifyCompany({ sicCode: "6021" }).selectedPackId, "banks");
+  assert.equal(classifyCompany({ sicCode: "2834" }).selectedPackId, "biopharma");
+  assert.equal(classifyCompany({ sicCode: "2911" }).selectedPackId, "integrated-oil-gas");
+  assert.equal(classifyCompany({ sicCode: "3531" }).selectedPackId, "industrial-machinery");
+  assert.equal(classifyCompany({ sicCode: "3573" }).fallbackLevel, "sic-family");
+  assert.equal(classifyCompany({ sicCode: "2830" }).fallbackLevel, "sector-general");
+  assert.equal(classifyCompany({ sicCode: "9999" }).fallbackLevel, "general-corporate");
+  assert.equal(classifyCompany({ sicCode: null }).selectedPackId, "general-corporate");
 });
 
 test("keeps SEC 429 and timeout separate from a generic service outage", async () => {
@@ -296,7 +369,7 @@ test("returns distinct screened outlooks without regenerating company data", asy
   );
 });
 
-test("keeps the full client-to-API sector and locale contract explicit", async () => {
+test("keeps the client-to-API ticker, locale, and server-classification contract explicit", async () => {
   const [client, route, types, outlookRoute] = await Promise.all([
     readFile(new URL("../app/ResearchApp.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/api/research/route.ts", import.meta.url), "utf8"),
@@ -306,15 +379,21 @@ test("keeps the full client-to-API sector and locale contract explicit", async (
 
   assert.match(client, /JSON\.stringify\(body\)/);
   assert.match(client, /company:\s*query/);
-  assert.match(client, /\bmarket,\s*\n\s*sector,\s*\n\s*subindustry,\s*\n\s*options,/);
+  assert.doesNotMatch(client, /<select/);
+  assert.doesNotMatch(client, /const \[market,\s*setMarket\]/);
+  assert.doesNotMatch(client, /const \[sector,\s*setSector\]/);
+  assert.doesNotMatch(client, /const \[subindustry,\s*setSubindustry\]/);
   assert.match(route, /type ResearchPayload/);
-  assert.match(route, /selectionFromPayload/);
+  assert.match(route, /selectionFromClassification/);
+  assert.match(route, /classifyCompany/);
   assert.match(types, /selection:\s*ResearchSelection/);
+  assert.match(types, /classification:\s*CompanyClassification/);
   assert.match(client, /scopeline-locale/);
   assert.match(client, /document\.documentElement\.lang/);
   assert.match(outlookRoute, /getSectorOutlook/);
   assert.match(client, /refreshSectorOutlook/);
-  assert.match(client, /finbro-research-selection-v1/);
+  assert.match(client, /finbro-research-selection-v2/);
+  assert.match(client, /classification-details/);
   assert.match(client, /Technical details/);
 });
 

@@ -1,41 +1,50 @@
-# ScopeLine
+# FinBro
 
-ScopeLine is a bilingual Chinese/English, sector-aware institutional research application for ChatGPT Sites. Select a supported market, sector, and subindustry, then enter a company name or ticker to generate a point-in-time research brief from official SEC filings and dated public industry evidence.
+FinBro is a bilingual Chinese/English equity-research application. Give Ethan a ticker or company name; the server resolves one SEC reporting identity, reads the issuer's SIC code from SEC Submissions, selects a broad research methodology, and generates an evidence-backed report.
 
-## What it does
+Users no longer select Market, Sector, or Subindustry. Language and the existing optional report modules remain available.
 
-- resolves the issuer through the SEC company directory;
-- supports U.S.-listed Integrated Oil & Gas and Semiconductors through visibly different modular analyst packs;
-- switches the interface, generated report, errors, Markdown export, and application-owned PDF export between Chinese and English while remembering the user's preference;
-- supports domestic and foreign-private-issuer forms, including 10-K, 10-Q, 20-F, and 6-K;
-- normalizes three to five annual periods from SEC Company Facts;
-- retrieves screened 2025+ sector evidence only after sector, subindustry, geography, and date filtering;
-- keeps reusable research methodology separate from time-sensitive evidence;
-- separates reported facts, derived calculations, analyst assumptions, management statements, and interpretations;
-- produces a compact 12-section report with sector KPIs, peers, earnings quality, debates, filing watchlist, catalysts, risks, scenarios, and transparent valuation;
-- calculates free cash flow only as operating cash flow minus cash capital expenditure and labels it unavailable when either input is missing;
-- refreshes the sector outlook independently without refetching the company;
-- leaves unavailable values visible rather than inventing them;
-- caches reusable SEC payloads, company reports, peer facts, and outlook retrievals;
-- exports the generated report to Markdown or a paginated application-owned PDF with a controlled footer.
+## Deterministic workflow
 
-The application does not use live market prices and therefore does not publish a rating or target price. Scenario valuation uses filing-supported enterprise metrics and intentionally avoids unsupported precision. ScopeLine is research information, not investment advice.
+```text
+Ticker / company name
+→ SEC identity and CIK
+→ SEC Submissions
+→ SIC registry
+→ General Research Pack
+→ Metric Locator
+→ Canonical Metrics
+→ bilingual Web / PDF report
+```
 
-## Supported research packs
+The API returns read-only classification metadata: SIC code and description, detected sector, selected pack, fallback level, and reason. Deprecated client `sector` and `subindustry` fields may still be accepted, but they cannot override SEC SIC classification.
 
-### Energy / Integrated Oil & Gas
+The initial registry contains 12 broad methodologies:
 
-Production, realized prices, LNG, refining, cash capital expenditure, strict free cash flow, net debt, shareholder returns, commodity sensitivity, and major projects. Peer references: Exxon Mobil, Chevron, BP, and TotalEnergies.
+- Technology Hardware General
+- Semiconductor General
+- Software & SaaS General
+- Internet & Platform General
+- Commercial Banking General
+- Diversified Financials General
+- Biopharma General
+- Oil & Gas General
+- Industrial Machinery General
+- Consumer Products General
+- Sector General
+- General Corporate
 
-### Technology / Semiconductors
+The existing validated semiconductor, bank, biopharma, integrated-oil-and-gas, and industrial-machinery packs and their formulas remain unchanged. Technology Hardware General supports AAPL without forcing Apple into the semiconductor methodology. Unmapped or missing SIC values fall back to General Corporate rather than failing.
 
-End-market exposure, AI/data-center mix, gross margin, inventory, capital expenditure, strict free cash flow, product cycles, customer concentration, market share, and export controls. Peer references: AMD, Broadcom, Intel, and TSMC.
+Every report uses the universal filing-based analytical core where evidence is available, including revenue, growth, profitability, diluted EPS, shares outstanding, cash flow, capex, strict free cash flow, cash, debt, repurchases, and deterministically supportable return measures. Pack-specific metrics appear only when verified.
 
-## Evidence and limitations
+See [research-classification.md](docs/research-classification.md) for the architecture, fallback hierarchy, and the separation among classification, pack selection, and metric extraction. Embeddings, machine-learning classification, vector databases, and LLM classification are intentionally not used in this deterministic MVP.
 
-Issuer financials and filing dates come from official SEC submissions and Company Facts. Current sector context uses dated, public evidence from EIA, IEA, SIA, SEMI, and the U.S. Bureau of Industry and Security. Retrieval stores metadata and original summaries rather than full reports.
+## Data and evidence
 
-The current scope is limited to supported U.S.-listed issuers with sufficient standardized SEC XBRL. Market prices, sell-side estimates, consensus target prices, and proprietary research are not used. Peer tables may be partial when a peer request fails or standardized facts are unavailable.
+Issuer identity, SIC, filing dates, and financial facts come from official SEC Submissions and Company Facts. The Metric Locator and Canonical Metric Registry preserve source links, definitions, periods, units, currencies, formulas, and reproducibility checks. Missing values are not fabricated.
+
+The application supports domestic and foreign-private-issuer filing paths, bilingual Web and PDF output, compact missing-data presentation, screened dated industry evidence, and structured stage-aware errors.
 
 ## Local development
 
@@ -45,11 +54,15 @@ Requires Node.js 22.13 or newer.
 npm install
 npm run dev
 npm run lint
+npx tsc --noEmit
+npm run vercel-build
 npm test
 ```
 
-Set `SEC_USER_AGENT` to a descriptive contact string for production SEC requests. The application does not require D1, R2, or an OpenAI API key.
+Set `SEC_USER_AGENT` to a descriptive application/contact value for reliable production SEC requests. No OpenAI API key, embedding service, D1 database, or R2 bucket is required.
 
 ## Vercel
 
-Set Vercel's Root Directory to `site`. Vercel uses `npm ci` and `npm run vercel-build`, which builds the existing App Router application with Next.js and Webpack. Set `SEC_USER_AGENT` in Vercel to a descriptive contact string for live SEC requests, for example `FinBro research@example.com`.
+Set Vercel's Root Directory to `site`. The project uses `npm ci` and `npm run vercel-build` (`next build --webpack`). This change set is validated locally only; it is not pushed or deployed.
+
+FinBro provides research information, not investment advice, a rating, or a target price.

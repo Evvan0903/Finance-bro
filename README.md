@@ -1,5 +1,9 @@
 # SEC Financial Report Agent
 
+## FinBro web application
+
+The active bilingual web application is under [`site/`](site/). FinBro now requires only a ticker or company name, resolves one SEC identity, reads the issuer's SEC Submissions SIC code, and deterministically selects one of 12 broad General Research Packs. Users no longer choose Market, Sector, or Subindustry. See [`site/docs/research-classification.md`](site/docs/research-classification.md) for the SIC registry, fallback hierarchy, and separation between classification, pack selection, Metric Locator extraction, and Canonical Metrics.
+
 SEC Financial Report Agent turns a U.S. public-company ticker into a source-backed institutional-style equity research preview. The upgraded application preserves the original modular SEC/XBRL/metrics/chart/HTML flow and extends it with quarterly analysis, filing discovery and text extraction, provenance, transparent scenarios, deterministic valuation, report QA, and HTML/PDF/CSV/JSON exports.
 
 The output is independent software-generated analysis for educational use. It is not investment advice, a Buy/Hold/Sell rating, or affiliated with any financial institution.

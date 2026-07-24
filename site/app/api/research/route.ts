@@ -23,6 +23,8 @@ import type { IssuerReportedMetric } from "../../lib/financial-metrics";
 import { getSectorMethods } from "../../lib/sector-methodology";
 import { getSectorPack } from "../../lib/sector-packs";
 import { getSectorOutlook, sectorEvidenceSources } from "../../lib/sector-retrieval";
+import { classifyCompany } from "../../lib/research-classification/classify-company";
+import type { CompanyClassification } from "../../lib/research-classification/types";
 import {
   runShellMetricValidation,
   SHELL_2025_20F_URL,
@@ -96,6 +98,7 @@ type Submissions = {
 type ResearchPayload = {
   company?: string;
   locale?: ResearchLocale;
+  // Deprecated compatibility fields: SEC SIC classification is authoritative.
   market?: ResearchMarket;
   sector?: SupportedSector;
   subindustry?: SupportedSubindustry;
@@ -1329,7 +1332,9 @@ function buildNarrative(
             : `FCF = 经营现金流 - 现金资本开支 = ${compactMoney(latest.freeCashFlowProxy, currency, locale)}；FCF / 净利润为 ${cashConversion === null ? COPY.zh.dataUnavailable : `${cashConversion.toFixed(2)}x`}。`,
           pack.id === "semiconductors"
             ? `毛利率 ${percentage(latest.grossMargin, locale)}，库存 ${compactMoney(latest.inventory, currency, locale)}；需结合产品换代和供给承诺判断周期质量。`
-            : `现金资本开支 ${compactMoney(latest.cashCapex, currency, locale)}，净债务 ${compactMoney(latest.netDebt, currency, locale)}；需结合商品价格与分配政策判断覆盖。`,
+            : pack.id === "integrated-oil-gas"
+              ? `现金资本开支 ${compactMoney(latest.cashCapex, currency, locale)}，净债务 ${compactMoney(latest.netDebt, currency, locale)}；需结合商品价格与分配政策判断覆盖。`
+              : `现金资本开支 ${compactMoney(latest.cashCapex, currency, locale)}，净债务 ${compactMoney(latest.netDebt, currency, locale)}；需结合经营韧性与资本配置判断覆盖。`,
           "标准化 XBRL 不足以识别所有重组、减值、一次性项目或管理层调整项，需回到年报附注复核。",
         ]
       : [
@@ -1339,7 +1344,9 @@ function buildNarrative(
             : `FCF = operating cash flow - cash capital expenditure = ${compactMoney(latest.freeCashFlowProxy, currency, locale)}; FCF / net income was ${cashConversion === null ? COPY.en.dataUnavailable : `${cashConversion.toFixed(2)}x`}.`,
           pack.id === "semiconductors"
             ? `Gross margin was ${percentage(latest.grossMargin, locale)} and inventory was ${compactMoney(latest.inventory, currency, locale)}; assess both with product transitions and supply commitments.`
-            : `Cash capex was ${compactMoney(latest.cashCapex, currency, locale)} and net debt was ${compactMoney(latest.netDebt, currency, locale)}; assess coverage with commodity prices and distribution policy.`,
+            : pack.id === "integrated-oil-gas"
+              ? `Cash capex was ${compactMoney(latest.cashCapex, currency, locale)} and net debt was ${compactMoney(latest.netDebt, currency, locale)}; assess coverage with commodity prices and distribution policy.`
+              : `Cash capex was ${compactMoney(latest.cashCapex, currency, locale)} and net debt was ${compactMoney(latest.netDebt, currency, locale)}; assess coverage with operating resilience and capital allocation.`,
           "Standardized XBRL cannot identify every restructuring, impairment, one-off, or management adjustment; verify them in the annual-filing notes.",
         ];
 
@@ -1570,24 +1577,22 @@ function buildMetricUsage(
   return usage;
 }
 
-function selectionFromPayload(payload: ResearchPayload): ResearchSelection | null {
-  const market = payload.market ?? "Global";
-  const sector = payload.sector ?? "energy";
-  const subindustry = payload.subindustry ?? "integrated-oil-gas";
-  if (!["US", "Europe", "Global"].includes(market)) return null;
-  if (!["energy", "technology", "financials", "healthcare", "industrials"].includes(sector)) return null;
-  if (!["integrated-oil-gas", "semiconductors", "banks", "biopharma", "industrial-machinery"].includes(subindustry)) return null;
-  if (
-    (sector === "energy" && subindustry !== "integrated-oil-gas") ||
-    (sector === "technology" && subindustry !== "semiconductors") ||
-    (sector === "financials" && subindustry !== "banks") ||
-    (sector === "healthcare" && subindustry !== "biopharma") ||
-    (sector === "industrials" && subindustry !== "industrial-machinery")
-  ) return null;
+function selectionFromClassification(
+  classification: CompanyClassification,
+  payload: ResearchPayload,
+  record: TickerRecord,
+): ResearchSelection {
+  const pack = getSectorPack(classification.selectedPackId);
+  const market: ResearchMarket =
+    record.ticker === "SHEL"
+      ? "Europe"
+      : record.exchange && /nasdaq|nyse|amex/i.test(record.exchange)
+        ? "US"
+        : "Global";
   return {
     market,
-    sector,
-    subindustry,
+    sector: pack.sector,
+    subindustry: pack.id,
     options: { ...DEFAULT_OPTIONS, ...payload.options },
   };
 }
@@ -1654,34 +1659,22 @@ function isTemporaryPublicDataFailure(error: unknown) {
 async function buildReport(
   record: TickerRecord,
   selection: ResearchSelection,
+  classification: CompanyClassification,
+  submissions: Submissions,
   locale: ResearchLocale,
   sourceSnapshot?: ReportSourceSnapshot,
   diagnostics: SecRequestDiagnostic[] = [],
 ): Promise<ResearchReport> {
   const cik = record.cik;
-  const [submissions, sectorOutlook] = await Promise.all([
-    sourceSnapshot
-      ? Promise.resolve(sourceSnapshot.submissions)
-      : secClient.getSubmissions<Submissions>(cik, diagnostics),
-    getSectorOutlook(selection.market, selection.subindustry, locale),
-  ]);
+  const sectorOutlook = await getSectorOutlook(
+    selection.market,
+    selection.subindustry,
+    locale,
+  );
   const facts = sourceSnapshot
     ? sourceSnapshot.companyFacts
     : await secClient.getCompanyFacts<CompanyFacts>(cik, diagnostics);
   const pack = getSectorPack(selection.subindustry);
-  if (submissions.sic && !pack.sicCodes.includes(submissions.sic)) {
-    throw new SecClientError({
-      code: "SECTOR_CLASSIFICATION_CONFLICT",
-      stage: "sector_detection",
-      diagnostic: `Selected ${selection.sector}/${selection.subindustry}; SEC SIC ${submissions.sic} (${submissions.sicDescription ?? "description unavailable"}) is outside the selected pack.`,
-      details: {
-        selectedSector: selection.sector,
-        selectedSubindustry: selection.subindustry,
-        detectedSic: submissions.sic,
-        detectedClassification: submissions.sicDescription ?? null,
-      },
-    });
-  }
 
   const companyName = submissions.name || facts.entityName || record.title;
   const companyDataRetrievedAt =
@@ -2020,6 +2013,7 @@ async function buildReport(
   return {
     locale,
     selection,
+    classification,
     company: {
       name: companyName,
       ticker: submissions.tickers?.[0] || record.ticker,
@@ -2279,9 +2273,6 @@ async function buildReport(
 type PreservedSelections = {
   company: string;
   locale: ResearchLocale;
-  market: ResearchMarket;
-  sector: SupportedSector;
-  subindustry: SupportedSubindustry;
   options: ResearchOptions;
 };
 
@@ -2336,11 +2327,11 @@ function userErrorCopy(code: ResearchErrorCode, locale: ResearchLocale) {
       message: "Enter a company name or ticker between 2 and 100 characters.",
     },
     TICKER_NOT_FOUND: {
-      title: "Ethan cannot find that ticker.",
-      message: "Check the ticker or try the issuer's legal company name.",
+      title: "Ethan could not match that ticker to an SEC reporting company.",
+      message: "Check the exact ticker or try the issuer's legal company name.",
     },
     AMBIGUOUS_TICKER: {
-      title: "Ethan found more than one possible company.",
+      title: "Ethan found more than one possible SEC reporting company.",
       message: "Use an exact ticker or choose from the matched SEC identities.",
     },
     CIK_RESOLUTION_FAILED: {
@@ -2407,8 +2398,8 @@ function userErrorCopy(code: ResearchErrorCode, locale: ResearchLocale) {
   if (locale === "en") return english[code];
   const chinese: Partial<typeof english> = {
     INVALID_INPUT: { title: "Ethan 需要一项有效任务。", message: "请输入 2–100 个字符的公司名或交易代码。" },
-    TICKER_NOT_FOUND: { title: "Ethan 找不到这个交易代码。", message: "请核对代码，或输入发行人的法定公司名。" },
-    AMBIGUOUS_TICKER: { title: "Ethan 找到了多个可能的公司。", message: "请输入精确代码，或根据 SEC 身份候选项确认。" },
+    TICKER_NOT_FOUND: { title: "Ethan 无法把该代码匹配到 SEC 申报公司。", message: "请核对精确代码，或输入发行人的法定公司名。" },
+    AMBIGUOUS_TICKER: { title: "Ethan 找到了多个可能的 SEC 申报公司。", message: "请输入精确代码，或根据 SEC 身份候选项确认。" },
     CIK_RESOLUTION_FAILED: { title: "Ethan 找到公司，但弄丢了文件编号。", message: "无法把 SEC 公司身份解析为有效 CIK。" },
     SEC_RATE_LIMITED: { title: "Ethan 正在等 SEC。", message: "SEC 要求服务器降低请求速度，请稍后重试。" },
     SEC_TIMEOUT: { title: "Ethan 正在等 SEC。", message: "SEC 响应超时；当前任务选择已保留。" },
@@ -2429,9 +2420,6 @@ function preservedSelections(
   return {
     company: payload.company?.trim() ?? "",
     locale,
-    market: payload.market ?? "Global",
-    sector: payload.sector ?? "energy",
-    subindustry: payload.subindustry ?? "integrated-oil-gas",
     options: { ...DEFAULT_OPTIONS, ...payload.options },
   };
 }
@@ -2462,9 +2450,7 @@ function errorResponse(
       filingFallback:
         classified.details?.filingFallbackAttempted === true &&
         classified.code === "NO_STANDARDIZED_XBRL_FACTS",
-      limitedCoverage:
-        classified.code === "UNSUPPORTED_SECTOR_PACK" ||
-        classified.code === "SECTOR_CLASSIFICATION_CONFLICT",
+      limitedCoverage: false,
     },
     diagnostics,
   };
@@ -2472,8 +2458,6 @@ function errorResponse(
     event: "research_pipeline_error",
     traceId: requestTraceId,
     normalizedInput: selections.company.trim().toUpperCase().replace(/[./]/g, "-"),
-    selectedSector: selections.sector,
-    selectedSubindustry: selections.subindustry,
     code: payload.code,
     failedStage: payload.failedStage,
     retryable: payload.retryable,
@@ -2511,14 +2495,6 @@ export async function POST(request: Request) {
         diagnostic: "Company input must contain between 2 and 100 characters.",
       });
     }
-    const selection = selectionFromPayload(payload);
-    if (!selection) {
-      throw new SecClientError({
-        code: "INVALID_INPUT",
-        stage: "input_validation",
-        diagnostic: "Market, sector, and subindustry did not form a supported selection.",
-      });
-    }
     record = await secClient.resolveCompany(company, diagnostics);
     const requestHostname = new URL(request.url).hostname;
     const localFixtureAllowed =
@@ -2532,15 +2508,36 @@ export async function POST(request: Request) {
       ? reportSourceSnapshot(selectedFixture, "explicit-test-snapshot")
       : undefined;
     let report: ResearchReport;
+    let classification: CompanyClassification;
     let fallbackUsed = false;
-    try {
-      report = await buildReport(
-        record,
-        selection,
-        locale,
-        sourceSnapshot,
-        diagnostics,
+    const buildFromSource = async (snapshot?: ReportSourceSnapshot) => {
+      const submissions = snapshot
+        ? snapshot.submissions
+        : await secClient.getSubmissions<Submissions>(record!.cik, diagnostics);
+      const nextClassification = classifyCompany({
+        sicCode: submissions.sic ?? null,
+        sicDescription: submissions.sicDescription ?? null,
+      });
+      const nextSelection = selectionFromClassification(
+        nextClassification,
+        payload,
+        record!,
       );
+      return {
+        report: await buildReport(
+          record!,
+          nextSelection,
+          nextClassification,
+          submissions,
+          locale,
+          snapshot,
+          diagnostics,
+        ),
+        classification: nextClassification,
+      };
+    };
+    try {
+      ({ report, classification } = await buildFromSource(sourceSnapshot));
     } catch (error) {
       const verifiedFallback =
         fixtureByTicker[record.ticker as keyof typeof fixtureByTicker];
@@ -2554,18 +2551,14 @@ export async function POST(request: Request) {
         (!isTemporaryPublicDataFailure(error) && !filingFallbackSupported)
       ) throw error;
       fallbackUsed = true;
-      report = await buildReport(
-        record,
-        selection,
-        locale,
+      ({ report, classification } = await buildFromSource(
         reportSourceSnapshot(
           verifiedFallback,
           filingFallbackSupported
             ? "verified-filing-fallback"
             : "verified-runtime-fallback",
         ),
-        diagnostics,
-      );
+      ));
     }
     const consistencyAudit = auditResearchReport(report);
     if (!consistencyAudit.passed) {
@@ -2587,14 +2580,14 @@ export async function POST(request: Request) {
         reportingStatus: record.reportingStatus,
         resolvedAt: record.resolvedAt,
       },
-      selectedSector: selection.sector,
-      selectedSubindustry: selection.subindustry,
+      classification,
       fallbackUsed,
       diagnostics,
     };
     console.info(JSON.stringify({ event: "research_pipeline_complete", ...pipeline }));
     return Response.json({
       report,
+      classification,
       consistencyAudit,
       pipeline,
     });
