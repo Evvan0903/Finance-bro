@@ -24,6 +24,15 @@
 - Remaining: Phases 2–9. Phase 2 must centralize metric knowledge and migrate the flat standard-concept configuration without changing accepted values.
 - Rollback: Phase 0 checkpoint is `6e4f048`; the unrelated `.DS_Store` remains unstaged.
 
+### Phases 2–3 metric knowledge and derivations
+
+- Added Metric Definition Registry V2 with prioritized US GAAP/IFRS/DEI aliases, period types, accepted unit classes, applicability, labels, and deterministic validation rules.
+- Company Facts extraction now consumes the central registry and rejects incompatible unit classes before candidate selection. The V1 flat table remains exported only as a temporary migration reference and is not executed.
+- Added a versioned derivation-rule catalog and implemented effective tax rate, capex/R&D intensity, share-count growth, average assets/equity, and ROA/ROE over average balances. Existing strict FCF, debt, liquidity, margin, and growth formulas remain unchanged.
+- Formula provenance continues to use canonical input keys; denominator/sign guards suppress economically meaningless ratios.
+- Validation: TypeScript, targeted lint, the production build, and 34/34 tests passed after Phase 2. Phase 3 TypeScript passed; full regression must be rerun after the adaptive UI milestone.
+- Next: Phase 4 adaptive report UI.
+
 ## Current objective — deterministic SEC SIC research-pack routing
 
 ### Original objective

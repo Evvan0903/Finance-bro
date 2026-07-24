@@ -4,8 +4,8 @@
 
 - [x] Phase 0: recover `27d463b`, inspect the current metric/report pipeline, record 27-test/build baseline, and preserve `.DS_Store`.
 - [x] Phase 1: add benchmark registry, applicability-aware extraction audit, missing reasons, and coverage scoring.
-- [ ] Phase 2: add Universal Metric Definition Registry V2, verified standard aliases, and validation rules.
-- [ ] Phase 3: centralize deterministic derivations with formula/input provenance and reconciliation.
+- [x] Phase 2: add Universal Metric Definition Registry V2, verified standard aliases, and validation rules.
+- [x] Phase 3: centralize deterministic derivations with formula/input provenance and reconciliation.
 - [ ] Phase 4: add adaptive Full/Standard/Limited reports and compact bilingual coverage UI.
 - [ ] Phase 5: add cached filing-level Inline XBRL parsing and enrichment.
 - [ ] Phase 6: add validation-gated custom concept mappings.

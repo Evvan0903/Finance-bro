@@ -6,6 +6,7 @@ import {
 import type { CanonicalMetricObject, MetricQuery } from "./canonical-metrics";
 import type { CompanyFactsPayload, CompanyFactEntry } from "./metric-locator-types";
 import type { FinancialPeriod } from "./research-types";
+import { UNIVERSAL_METRIC_DEFINITIONS } from "./metric-knowledge/universal-metric-definitions";
 
 const ANNUAL_FORMS = new Set(["10-K", "10-K/A", "20-F", "20-F/A", "40-F", "40-F/A"]);
 
@@ -15,6 +16,7 @@ type MetricConfig = {
   definitionId: string;
   duration: boolean;
   concepts: Concept[];
+  acceptedUnits?: string[];
 };
 type SelectedFact = {
   value: number;
@@ -53,7 +55,8 @@ export type IssuerReportedMetric = {
   confidence: number;
 };
 
-const FINANCIAL_METRICS: MetricConfig[] = [
+/** @deprecated Retained only as a V1 migration reference; extraction uses the V2 registry below. */
+export const FINANCIAL_METRICS_V1: MetricConfig[] = [
   {
     metricId: "revenue",
     definitionId: "reported-revenue",
@@ -314,6 +317,19 @@ const FINANCIAL_METRICS: MetricConfig[] = [
   },
 ];
 
+const CENTRAL_FINANCIAL_METRICS: MetricConfig[] =
+  UNIVERSAL_METRIC_DEFINITIONS
+    .filter((definition) => definition.standardConcepts.length > 0)
+    .map((definition) => ({
+      metricId: definition.metricId,
+      definitionId: definition.definitionId,
+      duration: definition.periodType === "duration",
+      concepts: definition.standardConcepts.map(
+        ({ taxonomy, concept }) => [taxonomy, concept] as Concept,
+      ),
+      acceptedUnits: definition.acceptedUnits,
+    }));
+
 export const FINANCIAL_DEFINITION_IDS = {
   revenue: "reported-revenue",
   grossProfit: "reported-gross-profit",
@@ -378,6 +394,14 @@ export const FINANCIAL_DEFINITION_IDS = {
   operatingCashFlowMargin: "operating-cash-flow-over-revenue",
   freeCashFlowMargin: "free-cash-flow-over-revenue",
   cashConversion: "free-cash-flow-over-net-income",
+  capexIntensity: "cash-capex-over-revenue",
+  researchAndDevelopmentIntensity: "research-and-development-over-revenue",
+  effectiveTaxRate: "income-tax-expense-over-pretax-income",
+  averageAssets: "average-current-and-prior-assets",
+  returnOnAverageAssets: "net-income-over-average-assets",
+  averageEquity: "average-current-and-prior-equity",
+  returnOnAverageEquity: "net-income-over-average-equity",
+  shareCountGrowth: "year-over-year-share-count-growth",
   currentRatio: "current-assets-over-current-liabilities",
   liabilitiesAssets: "liabilities-over-assets",
   priceCostImpact: "price-realization-plus-manufacturing-cost-impact",
@@ -393,6 +417,7 @@ function selectFacts(
     const fact = facts.facts[taxonomy]?.[concept];
     if (!fact?.units) return;
     for (const [unit, entries] of Object.entries(fact.units)) {
+      if (!acceptedUnit(unit, config.acceptedUnits)) continue;
       for (const entry of entries) {
         if (!usableFact(entry, config.duration)) continue;
         const durationDistance = config.duration
@@ -464,6 +489,15 @@ function selectFacts(
   return selectedByFiscalYear;
 }
 
+function acceptedUnit(unit: string, acceptedUnits?: string[]) {
+  if (!acceptedUnits?.length) return true;
+  return acceptedUnits.some((accepted) => {
+    if (accepted === "currency") return /^[A-Z]{3}$/.test(unit);
+    if (accepted === "currency/shares") return /^[A-Z]{3}\/shares$/.test(unit);
+    return accepted === unit;
+  });
+}
+
 function usableFact(entry: CompanyFactEntry, duration: boolean) {
   if (
     !entry.end ||
@@ -495,7 +529,7 @@ export function buildFinancialMetricRegistry(input: {
   issuerReportedMetrics?: IssuerReportedMetric[];
 }) {
   const registry = new MetricRegistry(input.dataVersion);
-  for (const config of FINANCIAL_METRICS) {
+  for (const config of CENTRAL_FINANCIAL_METRICS) {
     for (const fact of selectFacts(input.facts, config).values()) {
       registry.register(createCanonicalMetric({
         metric_id: config.metricId,
@@ -608,7 +642,8 @@ function registerDerived(
       | "divide"
       | "growth-rate"
       | "period-change"
-      | "cagr";
+      | "cagr"
+      | "average";
     formula: string;
     inputs: CanonicalMetricObject[];
     unit: string;
@@ -713,6 +748,27 @@ export function ensureCoreDerivedMetrics(
       "net-income",
       periodEnd,
       [FINANCIAL_DEFINITION_IDS.netIncome],
+    );
+    const researchAndDevelopment = firstDefinition(
+      registry,
+      companyId,
+      "research-and-development",
+      periodEnd,
+      [FINANCIAL_DEFINITION_IDS.researchAndDevelopment],
+    );
+    const incomeTaxExpense = firstDefinition(
+      registry,
+      companyId,
+      "income-tax-expense",
+      periodEnd,
+      ["reported-income-tax-expense"],
+    );
+    const pretaxIncome = firstDefinition(
+      registry,
+      companyId,
+      "pretax-income",
+      periodEnd,
+      ["reported-pretax-income"],
     );
     const operatingCashFlow = firstDefinition(
       registry,
@@ -1052,6 +1108,29 @@ export function ensureCoreDerivedMetrics(
         numerator: freeCashFlow,
         denominator: netIncome,
         formula: "free_cash_flow / net_income",
+        valid: typeof netIncome?.value === "number" && netIncome.value > 0,
+      },
+      {
+        metricId: "capex-intensity",
+        definitionId: FINANCIAL_DEFINITION_IDS.capexIntensity,
+        numerator: cashCapex,
+        denominator: revenue,
+        formula: "cash_capex / revenue",
+      },
+      {
+        metricId: "rd-intensity",
+        definitionId: FINANCIAL_DEFINITION_IDS.researchAndDevelopmentIntensity,
+        numerator: researchAndDevelopment,
+        denominator: revenue,
+        formula: "research_and_development / revenue",
+      },
+      {
+        metricId: "effective-tax-rate",
+        definitionId: FINANCIAL_DEFINITION_IDS.effectiveTaxRate,
+        numerator: incomeTaxExpense,
+        denominator: pretaxIncome,
+        formula: "income_tax_expense / pretax_income",
+        valid: typeof pretaxIncome?.value === "number" && pretaxIncome.value > 0,
       },
       {
         metricId: "current-ratio",
@@ -1089,7 +1168,12 @@ export function ensureCoreDerivedMetrics(
         formula: "net_income / period_end_stockholders_equity",
       },
     ]) {
-      if (ratio.numerator && ratio.denominator && ratio.denominator.value !== 0) {
+      if (
+        ratio.numerator &&
+        ratio.denominator &&
+        ratio.denominator.value !== 0 &&
+        ratio.valid !== false
+      ) {
         registerDerived(registry, {
           metricId: ratio.metricId,
           companyId,
@@ -1150,6 +1234,91 @@ export function ensureCoreDerivedMetrics(
       unit: "ratio",
       currency: null,
     });
+  }
+  const shares = registry.getMetricHistory(
+    companyId,
+    "shares-outstanding",
+    FINANCIAL_DEFINITION_IDS.sharesOutstanding,
+  );
+  for (let index = 1; index < shares.length; index += 1) {
+    const current = shares[index];
+    const prior = shares[index - 1];
+    registerDerived(registry, {
+      metricId: "share-count-growth",
+      companyId,
+      sector: current.sector,
+      period: current.period,
+      periodEnd: current.period_end,
+      definitionId: FINANCIAL_DEFINITION_IDS.shareCountGrowth,
+      formulaId: "growth-rate",
+      formula: "current_shares / prior_shares - 1",
+      inputs: [current, prior],
+      unit: "ratio",
+      currency: null,
+    });
+  }
+  for (const balance of [
+    {
+      metricId: "assets",
+      reportedDefinitionId: FINANCIAL_DEFINITION_IDS.assets,
+      averageMetricId: "average-assets",
+      averageDefinitionId: FINANCIAL_DEFINITION_IDS.averageAssets,
+      returnMetricId: "roa-proxy",
+      returnDefinitionId: FINANCIAL_DEFINITION_IDS.returnOnAverageAssets,
+    },
+    {
+      metricId: "equity",
+      reportedDefinitionId: FINANCIAL_DEFINITION_IDS.equity,
+      averageMetricId: "average-equity",
+      averageDefinitionId: FINANCIAL_DEFINITION_IDS.averageEquity,
+      returnMetricId: "roe-proxy",
+      returnDefinitionId: FINANCIAL_DEFINITION_IDS.returnOnAverageEquity,
+    },
+  ]) {
+    const history = registry.getMetricHistory(
+      companyId,
+      balance.metricId,
+      balance.reportedDefinitionId,
+    );
+    for (let index = 1; index < history.length; index += 1) {
+      const current = history[index];
+      const prior = history[index - 1];
+      const average = registerDerived(registry, {
+        metricId: balance.averageMetricId,
+        companyId,
+        sector: current.sector,
+        period: current.period,
+        periodEnd: current.period_end,
+        definitionId: balance.averageDefinitionId,
+        formulaId: "average",
+        formula: `(current_${balance.metricId} + prior_${balance.metricId}) / 2`,
+        inputs: [current, prior],
+        unit: current.unit,
+        currency: current.currency,
+      });
+      const netIncome = firstDefinition(
+        registry,
+        companyId,
+        "net-income",
+        current.period_end,
+        [FINANCIAL_DEFINITION_IDS.netIncome],
+      );
+      if (netIncome && typeof average.value === "number" && average.value > 0) {
+        registerDerived(registry, {
+          metricId: balance.returnMetricId,
+          companyId,
+          sector: current.sector,
+          period: current.period,
+          periodEnd: current.period_end,
+          definitionId: balance.returnDefinitionId,
+          formulaId: "divide",
+          formula: `net_income / ${balance.averageMetricId.replaceAll("-", "_")}`,
+          inputs: [netIncome, average],
+          unit: "ratio",
+          currency: null,
+        });
+      }
+    }
   }
   if (revenues.length >= 2) {
     const latest = revenues.at(-1)!;

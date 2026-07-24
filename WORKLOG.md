@@ -1,5 +1,13 @@
 # FinBro Research Worklog
 
+## Universal Metric Coverage V1 — Phases 2–3
+
+- Centralized standard metric aliases, unit/period/applicability metadata, and validation rules in Metric Definition Registry V2.
+- Migrated live Company Facts extraction to the registry and added deterministic unit filtering.
+- Added a versioned derivation catalog plus guarded tax, capital-intensity, R&D-intensity, share-growth, average-balance ROA, and average-balance ROE calculations.
+- Validation to date: 34/34 tests passed after registry migration; TypeScript passes after derivation expansion.
+- Next milestone: adaptive Full/Standard/Limited report presentation.
+
 ## Universal Metric Coverage V1 — Phase 1
 
 - Added a versioned benchmark registry for 16 new issuers plus the five accepted regressions.
