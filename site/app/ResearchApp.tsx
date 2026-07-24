@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import type {
   DashboardMetric,
   EvidenceKind,
@@ -1239,10 +1240,10 @@ export function ResearchApp() {
   return (
     <main>
       <header className="site-header">
-        <a className="brand" href="#top" aria-label={copy.brandHome}>
+        <Link className="brand" href="/" aria-label={copy.brandHome}>
           <span className="brand-mark">F</span>
           <span>FinBro</span>
-        </a>
+        </Link>
         <div className="header-actions">
           <span className="header-note">{copy.headerNote}</span>
           <div className="locale-toggle" role="group" aria-label={copy.languagePicker}>

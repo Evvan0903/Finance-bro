@@ -1,5 +1,15 @@
 # Institutional Equity Research Refactor and Shell Sample TODO
 
+## FinBro analyst-team workspace homepage
+
+- [x] Inspect the existing root route, Public Company Research shell, tests, and private Sites configuration.
+- [x] Add the six-member FinBro workspace with professional CSS pixel-art desk scenes and clear statuses.
+- [x] Add accessible profile modals with role-specific responsibilities, deliverables, and CTA states.
+- [x] Route Ethan to the existing Public Company Research component at `/workflows/public-company`.
+- [x] Keep Mason, Clara, Felix, Parker, and Nora as honest non-working placeholder modules.
+- [x] Add root/workflow route regressions and verify desktop/mobile interaction in a local browser.
+- [x] Pass the full validation gate and create `feat: add finbro team workspace homepage`; do not push or deploy.
+
 ## Universal Metric Coverage Upgrade V1
 
 - [x] Phase 0: recover `27d463b`, inspect the current metric/report pipeline, record 27-test/build baseline, and preserve `.DS_Store`.

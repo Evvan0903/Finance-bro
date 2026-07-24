@@ -397,3 +397,15 @@ Sign in as the Site owner, generate an NVDA report in each language, export one 
 - Limitations: the artifact's all-21 live-HTTP claim was inspected as an artifact rather than rerun for all 21 in this session. Live SEC route checks covered 12 representatives; unvalidated custom tags, incremental dimensions, HTML candidates, and SEC availability remain limitations.
 - Status: implementation correction and validation complete; create local `fix: verify universal metric coverage v1` commit, and do not push/deploy.
 - Files modified in this verification: `site/app/lib/canonical-metrics.ts`, `site/app/lib/filing-enrichment/inline-xbrl.ts`, `site/app/lib/metric-coverage/{extraction-audit.ts,types.ts}`, `site/app/ResearchApp.tsx`, `site/tests/{filing-enrichment.test.mjs,rendered-html.test.mjs}`, `WORKLOG.md`, `RECOVERY.md`, `TODO.md`, and `WORKLOAD.md`.
+# FinBro analyst-team workspace homepage
+
+- Objective: make the root route a professional FinBro AI analyst-team workspace while preserving the validated Public Company Research engine as Ethan's active workflow.
+- Completed: added six team-member cards, CSS pixel-art desk scenes, status badges, role-specific profile modals, responsive layouts, keyboard/focus behavior, and updated team-oriented metadata.
+- Routing: `/` now renders `TeamWorkspace`; `/workflows/public-company` renders the existing `ResearchApp` without duplicating or modifying the report engine. Research navigation returns to `/`.
+- Placeholder boundaries: Mason is In Development; Clara, Felix, Parker, and Nora are Planned. Their CTAs are disabled and no unimplemented backend capability is claimed.
+- Functional preservation: no SEC retrieval, SIC classification, research-pack selection, canonical metric, valuation, report-generation, or PDF logic changed.
+- Browser verification: desktop and 390px mobile layouts are readable with no horizontal overflow; Ethan's modal and CTA reach the existing ticker form; planned CTA disablement and Escape closure were confirmed.
+- Validation: ESLint, TypeScript, vinext production build, 41/41 tests, Vercel-compatible Next.js Webpack build, and `git diff --check` all passed.
+- Checkpoint: the validated handoff is committed locally as `feat: add finbro team workspace homepage`; resume with review or an explicitly authorized push/deployment.
+- Files: `site/app/TeamWorkspace.tsx`, `site/app/page.tsx`, `site/app/workflows/public-company/page.tsx`, `site/app/ResearchApp.tsx`, `site/app/layout.tsx`, `site/app/globals.css`, `site/tests/rendered-html.test.mjs`, `WORKLOG.md`, `RECOVERY.md`, and `TODO.md`.
+- Deployment: not pushed or deployed. Preserve the pre-existing uncommitted `.DS_Store`.

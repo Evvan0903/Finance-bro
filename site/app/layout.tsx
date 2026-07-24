@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase,
     title: "FinBro | Your overworked entry-level analyst.",
-    description: "Give Ethan a ticker. He’ll read the filings, learn the sector, check the numbers, and prepare something you can send upstairs.",
+    description: "A team of AI analysts for repeatable financial research, diligence, modeling, monitoring, and reporting workflows.",
     applicationName: "FinBro",
     icons: {
       icon: "/favicon.svg",
@@ -25,7 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     openGraph: {
       title: "FinBro | Your overworked entry-level analyst.",
-      description: "Give Ethan a ticker. Filing-backed, source-linked equity research with clear assumptions.",
+      description: "Assign Ethan’s team a repeatable financial research, diligence, modeling, monitoring, or reporting workflow.",
       type: "website",
       locale: "zh_CN",
       images: [{ url: "/og.png", width: 1200, height: 630, alt: "FinBro — Your overworked entry-level analyst" }],
@@ -33,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
     twitter: {
       card: "summary_large_image",
       title: "FinBro | Your overworked entry-level analyst.",
-      description: "Give Ethan a ticker. He’ll do the filing work.",
+      description: "A professional AI analyst team for repeatable financial workflows.",
       images: ["/og.png"],
     },
   };

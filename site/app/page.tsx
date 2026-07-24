@@ -1,5 +1,5 @@
-import { ResearchApp } from "./ResearchApp";
+import { TeamWorkspace } from "./TeamWorkspace";
 
 export default function Home() {
-  return <ResearchApp />;
+  return <TeamWorkspace />;
 }

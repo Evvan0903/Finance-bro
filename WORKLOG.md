@@ -1,5 +1,15 @@
 # FinBro Research Worklog
 
+## FinBro analyst-team workspace homepage
+
+- Added a new blue-and-white FinBro workspace homepage with a restrained grid background, six cohesive CSS pixel-art analysts, a responsive 3-column / 2-row team layout, and compact availability summary.
+- Added profile-card modals for Ethan, Mason, Clara, Felix, Parker, and Nora with role-specific responsibilities, deliverables, status, keyboard dismissal, focus restoration, and mobile presentation.
+- Routed Ethan to `/workflows/public-company`, which reuses the existing `ResearchApp` and preserves the ticker → SEC SIC → research pack → report pipeline. The FinBro mark in the research workflow now returns to the team workspace.
+- Mason is explicitly In Development; Clara, Felix, Parker, and Nora are Planned. Their modal CTAs are visibly disabled, with no simulated backend workflow.
+- No research calculations, Metric Registry definitions, source logic, sector logic, report structure, or PDF styling changed.
+- Browser QA passed at desktop and 390px mobile: six cards render, modals open/close, Escape dismissal works, Ethan reaches the live research form, planned actions remain disabled, and no horizontal overflow is present.
+- Final validation passed: ESLint, TypeScript, vinext production build, 41/41 tests, Vercel-compatible Next.js Webpack build, and `git diff --check`. The validated handoff is recorded in the required local commit; no push or deployment occurred.
+
 ## Universal Metric Coverage V1 — verification correction
 
 - Verified the live-path architecture, benchmark artifact, coverage math, representative canonical values, and existing regression controls without changing methodology or sector logic.

@@ -87,7 +87,7 @@ const context = {
   passThroughOnException() {},
 };
 
-test("server-renders the bilingual FinBro research request", async () => {
+test("server-renders the FinBro analyst-team workspace", async () => {
   const builtWorker = await worker();
   const response = await builtWorker.fetch(
     new Request("http://localhost/", { headers: { accept: "text/html" } }),
@@ -99,6 +99,32 @@ test("server-renders the bilingual FinBro research request", async () => {
 
   const html = await response.text();
   assert.match(html, /<html lang="zh-CN">/i);
+  assert.match(html, /FINBRO/);
+  assert.match(html, /Assign Ethan’s team a financial task/);
+  assert.match(html, /Public Company Research Analyst/);
+  assert.match(html, /Market &amp; Industry Analyst/);
+  assert.match(html, /Private Company Diligence Analyst/);
+  assert.match(html, /Financial Modeling Analyst/);
+  assert.match(html, /Portfolio Monitoring Analyst/);
+  assert.match(html, /Corporate Reporting Analyst/);
+  assert.match(html, /Available/);
+  assert.match(html, /In Development/);
+  assert.match(html, /Planned/);
+  assert.doesNotMatch(html, /id="company"/);
+  assert.doesNotMatch(html, /ScopeLine|codex-preview|react-loading-skeleton/i);
+});
+
+test("keeps the bilingual public-company research workflow on Ethan's route", async () => {
+  const builtWorker = await worker();
+  const response = await builtWorker.fetch(
+    new Request("http://localhost/workflows/public-company", {
+      headers: { accept: "text/html" },
+    }),
+    environment,
+    context,
+  );
+  assert.equal(response.status, 200);
+  const html = await response.text();
   assert.match(html, /FinBro/);
   assert.match(html, /Ethan/);
   assert.match(html, /把股票代码交给 Ethan/);
@@ -108,6 +134,7 @@ test("server-renders the bilingual FinBro research request", async () => {
   assert.doesNotMatch(html, /<select/i);
   assert.match(html, />中文</);
   assert.match(html, />EN</);
+  assert.match(html, /href="\/"/);
   assert.doesNotMatch(html, /ScopeLine|输入一家公司|生成尽调报告|codex-preview|react-loading-skeleton/i);
 });
 
@@ -1957,17 +1984,19 @@ test("publishes a complete machine-readable Phase 9 consistency artifact", async
 });
 
 test("removes disposable starter assets and keeps private Sites metadata", async () => {
-  const [page, layout, packageJson, hosting] = await Promise.all([
+  const [page, publicCompanyPage, layout, packageJson, hosting] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/workflows/public-company/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
     readFile(new URL("../.openai/hosting.json", import.meta.url), "utf8"),
   ]);
-  assert.match(page, /<ResearchApp \/>/);
+  assert.match(page, /<TeamWorkspace \/>/);
+  assert.match(publicCompanyPage, /<ResearchApp \/>/);
   assert.match(layout, /lang="zh-CN"/);
   assert.match(layout, /FinBro/);
   assert.match(hosting, /appgprj_6a585b81f7708191b13b1c34903345a9/);
-  assert.doesNotMatch(page + layout + packageJson, /_sites-preview|codex-preview|react-loading-skeleton/);
+  assert.doesNotMatch(page + publicCompanyPage + layout + packageJson, /_sites-preview|codex-preview|react-loading-skeleton/);
 
   await Promise.all([
     assert.rejects(access(new URL("app/_sites-preview/SkeletonPreview.tsx", projectRoot))),
