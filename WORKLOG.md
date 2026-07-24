@@ -1,5 +1,16 @@
 # FinBro Research Worklog
 
+## FinBro analyst-team visual correction
+
+- Replaced the temporary CSS figures with six original transparent workstation SVGs and aligned the homepage to the approved compact, centered 3×2 team concept; tablet and mobile reflow to 2×3 and 1-column layouts.
+- Rebuilt the employee profile modal around the full workstation artwork, role-specific capabilities, visible status, and a full-width action. The dialog now traps keyboard focus and supports Escape, backdrop dismissal, body locking, and focus restoration.
+- Preserved Ethan’s live `/workflows/public-company` path. Added honest status-overview routes for Mason, Clara, Felix, Parker, and Nora rather than simulating unavailable workflows.
+- Renamed Nora to **Regulatory & Compliance Analyst** across the public experience and added explicit boundaries that she does not provide legal advice or replace attorneys, auditors, or regulatory professionals.
+- Browser QA passed at desktop, tablet, and 390px mobile: six assets load, grid breakpoints reflow, all six modals open correctly, Ethan reaches the existing research form, Nora reaches her Planned overview, keyboard dismissal/wrapping works, the mobile CTA remains visible, and there is no horizontal overflow.
+- Final validation passed: ESLint, TypeScript, SVG parsing, vinext production build, 42/42 tests, and the Vercel-compatible Next.js Webpack build.
+- Research logic, SEC retrieval, Canonical Metrics, sector packs, valuation, generated reports, and PDF styling were not changed.
+- Release: the validated correction was committed with the requested message and pushed to the existing private GitHub repository on `main`. No manual Vercel deployment was performed.
+
 ## FinBro analyst-team workspace homepage
 
 - Added a new blue-and-white FinBro workspace homepage with a restrained grid background, six cohesive CSS pixel-art analysts, a responsive 3-column / 2-row team layout, and compact availability summary.

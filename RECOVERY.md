@@ -1,5 +1,40 @@
 # Recovery Checkpoint
 
+## Current objective — FinBro analyst-team visual correction
+
+### Completed
+
+- Corrected the homepage to the approved centered, compact FinBro workspace with six original image-based workstation assets and responsive 3×2, 2×3, and 1-column layouts.
+- Rebuilt all employee profile dialogs with complete workstation visuals, responsibilities, expected outputs, status, full-width actions, focus trapping, Escape/backdrop dismissal, and focus restoration.
+- Preserved Ethan’s existing Public Company Research workflow and added truthful status-overview pages for the five unfinished modules.
+- Renamed Nora to Regulatory & Compliance Analyst and added the required legal/compliance boundaries.
+- Added rendered-route and asset regression coverage. Desktop, tablet, and mobile browser QA passed without clipping or horizontal overflow.
+- No financial, SEC, Metric Registry, sector-pack, valuation, report, or PDF logic changed.
+
+### Current status
+
+Implementation, browser validation, the full automated gate, local commit, and authorized push to `origin/main` are complete. ESLint, TypeScript, SVG parsing, vinext production build, 42/42 tests, and the Vercel-compatible Next.js Webpack build passed. No manual Vercel deployment was performed.
+
+### Files modified
+
+- `site/app/TeamWorkspace.tsx`
+- `site/app/globals.css`
+- `site/app/workflows/[workflow]/page.tsx`
+- `site/public/team/*-workstation.svg`
+- `site/tests/rendered-html.test.mjs`
+- `WORKLOG.md`
+- `RECOVERY.md`
+- `TODO.md`
+
+### Next recommended step
+
+Let the existing GitHub/Vercel integration handle any configured automatic deployment, then smoke-test the production homepage only if a separate deployment-verification task is requested.
+
+### Assumptions and pending decisions
+
+- The five unfinished employee modules remain status pages until their real workflows are separately implemented.
+- A GitHub push may trigger the repository’s existing Vercel integration automatically; this task does not authorize or require a manual Vercel deployment.
+
 ## Current objective — Universal Metric Coverage Upgrade V1
 
 ### Phase 0 baseline checkpoint

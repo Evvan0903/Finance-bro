@@ -1,7 +1,7 @@
 "use client";
 
-import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 
 type MemberId = "ethan" | "mason" | "clara" | "felix" | "parker" | "nora";
@@ -16,6 +16,8 @@ type TeamMember = {
   responsibilities: string[];
   deliverables: string[];
   cta: string;
+  route: string;
+  boundary?: string;
 };
 
 const TEAM: TeamMember[] = [
@@ -38,168 +40,143 @@ const TEAM: TeamMember[] = [
       "PDF / Markdown output",
     ],
     cta: "Open Public Company Research",
+    route: "/workflows/public-company",
   },
   {
     id: "mason",
     name: "Mason",
     title: "Market & Industry Analyst",
     status: "In Development",
-    intro: "Tracks the market structure, competitive landscape, and dated industry evidence behind a company’s operating environment.",
+    intro: "Analyzes markets, industries, competitive landscapes, value chains, and structural growth drivers using evidence-backed research.",
     responsibilities: [
-      "Screens current industry research",
-      "Maps competitors and market structure",
-      "Tracks demand, pricing, and regulation",
-      "Organizes catalysts and industry risks",
+      "Defines markets and industry boundaries",
+      "Analyzes market structure and value chains",
+      "Identifies competitors, trends, and growth drivers",
+      "Reviews regulation, risks, and recent developments",
     ],
     deliverables: [
-      "Industry outlook",
+      "Market and industry report",
       "Competitive landscape",
-      "Market driver brief",
-      "Dated source pack",
+      "Industry KPI framework",
+      "Source-backed market outlook",
     ],
-    cta: "Workflow In Development",
+    cta: "Explore Market & Industry Analysis",
+    route: "/workflows/market-industry",
   },
   {
     id: "clara",
     name: "Clara",
     title: "Private Company Diligence Analyst",
     status: "Planned",
-    intro: "Designed for structured private-company diligence across commercial evidence, operating metrics, and document requests.",
+    intro: "Reviews private-company financial, operating, and data-room materials to identify business quality, financial risks, and diligence gaps.",
     responsibilities: [
-      "Organizes diligence requests",
-      "Reviews management materials",
-      "Normalizes private-company KPIs",
-      "Flags evidence gaps and open questions",
+      "Reviews financial statements and data-room documents",
+      "Analyzes revenue quality and customer concentration",
+      "Identifies accounting, liquidity, and operating risks",
+      "Builds management questions and missing-document lists",
     ],
     deliverables: [
-      "Diligence checklist",
-      "KPI normalization",
-      "Open-issues log",
-      "Management question set",
+      "Private company diligence report",
+      "Red-flag review",
+      "Document-gap checklist",
+      "Management question list",
     ],
-    cta: "Planned Workflow",
+    cta: "View Private Company Diligence",
+    route: "/workflows/private-company",
   },
   {
     id: "felix",
     name: "Felix",
     title: "Financial Modeling Analyst",
     status: "Planned",
-    intro: "Designed to turn validated operating assumptions into transparent, versioned financial models and scenario outputs.",
+    intro: "Transforms historical financial data and operating assumptions into structured models, forecasts, budgets, and scenario analyses.",
     responsibilities: [
-      "Structures operating assumptions",
-      "Builds linked model schedules",
-      "Runs sensitivities and scenarios",
-      "Checks formulas and reconciliations",
+      "Normalizes historical financial statements",
+      "Builds revenue and expense forecasts",
+      "Creates cash-flow and financial models",
+      "Runs scenarios and sensitivity analyses",
     ],
     deliverables: [
-      "Three-statement model",
-      "Scenario analysis",
-      "Sensitivity tables",
-      "Model QA summary",
+      "Financial model",
+      "Cash-flow forecast",
+      "Budget-versus-actual analysis",
+      "Excel-ready workbook",
     ],
-    cta: "Planned Workflow",
+    cta: "View Financial Modeling",
+    route: "/workflows/financial-modeling",
   },
   {
     id: "parker",
     name: "Parker",
     title: "Portfolio Monitoring Analyst",
     status: "Planned",
-    intro: "Designed to monitor portfolio signals, thesis changes, filing updates, and recurring performance checkpoints.",
+    intro: "Tracks holdings, filings, earnings, catalysts, risks, and investment-thesis changes across a portfolio or watchlist.",
     responsibilities: [
-      "Tracks portfolio KPIs",
-      "Monitors filings and events",
-      "Compares results with expectations",
-      "Escalates thesis-relevant changes",
+      "Monitors filings and earnings updates",
+      "Tracks catalysts and risk events",
+      "Compares new evidence with the investment thesis",
+      "Prepares scheduled portfolio summaries",
     ],
     deliverables: [
-      "Monitoring dashboard",
-      "Event digest",
-      "Variance review",
-      "Thesis-change alerts",
+      "Weekly portfolio digest",
+      "Event alerts",
+      "Thesis-change summary",
+      "Portfolio monitoring report",
     ],
-    cta: "Planned Workflow",
+    cta: "View Portfolio Monitoring",
+    route: "/workflows/portfolio-monitoring",
   },
   {
     id: "nora",
     name: "Nora",
-    title: "Corporate Reporting Analyst",
+    title: "Regulatory & Compliance Analyst",
     status: "Planned",
-    intro: "Designed to assemble consistent management reporting from governed metrics, commentary, and approved source material.",
+    intro: "Reviews regulatory requirements, internal policies, reporting obligations, and supporting evidence to identify compliance and disclosure gaps.",
     responsibilities: [
-      "Standardizes reporting packages",
-      "Organizes management commentary",
-      "Maintains recurring KPI definitions",
-      "Checks cross-report consistency",
+      "Reviews regulatory and reporting requirements",
+      "Compares company documents with compliance checklists",
+      "Identifies missing policies, controls, and evidence",
+      "Prepares remediation and filing-readiness materials",
     ],
     deliverables: [
-      "Management report",
-      "Board-ready summary",
-      "KPI commentary",
-      "Reporting QA log",
+      "Regulatory gap analysis",
+      "Compliance readiness report",
+      "Evidence and control checklist",
+      "Reporting and filing preparation package",
     ],
-    cta: "Planned Workflow",
+    cta: "View Regulatory & Compliance",
+    route: "/workflows/regulatory-compliance",
+    boundary: "Nora supports compliance analysis and readiness. She does not provide legal advice, guarantee compliance, or replace attorneys, auditors, or regulatory professionals.",
   },
 ];
 
-const CHARACTER_STYLE: Record<MemberId, {
-  skin: string;
-  hair: string;
-  suit: string;
-  accent: string;
-}> = {
-  ethan: { skin: "#d9a37d", hair: "#2b211f", suit: "#1d2d4f", accent: "#0055FF" },
-  mason: { skin: "#b97956", hair: "#171717", suit: "#283650", accent: "#4f72b8" },
-  clara: { skin: "#e0aa80", hair: "#5a3426", suit: "#263857", accent: "#0055FF" },
-  felix: { skin: "#c78b63", hair: "#3d2a22", suit: "#192b4b", accent: "#4773c7" },
-  parker: { skin: "#8f5d43", hair: "#191919", suit: "#26334a", accent: "#0055FF" },
-  nora: { skin: "#e1b08d", hair: "#231d1c", suit: "#243655", accent: "#5879ba" },
+const WORKSTATION_ASSETS: Record<MemberId, string> = {
+  ethan: "/team/ethan-workstation.svg",
+  mason: "/team/mason-workstation.svg",
+  clara: "/team/clara-workstation.svg",
+  felix: "/team/felix-workstation.svg",
+  parker: "/team/parker-workstation.svg",
+  nora: "/team/nora-workstation.svg",
 };
 
 function PixelAnalyst({ id }: { id: MemberId }) {
-  const palette = CHARACTER_STYLE[id];
-  const isLongHair = id === "clara" || id === "nora";
+  const member = TEAM.find((candidate) => candidate.id === id)!;
   return (
-    <div
+    <Image
       className="workspace-pixel-analyst"
-      role="img"
-      aria-label={`${TEAM.find((member) => member.id === id)?.name} at an analyst desk`}
-      style={{
-        "--pixel-skin": palette.skin,
-        "--pixel-hair": palette.hair,
-        "--pixel-suit": palette.suit,
-        "--pixel-accent": palette.accent,
-      } as CSSProperties}
-    >
-      <span className="pixel-chair" />
-      <span className={`pixel-person ${isLongHair ? "pixel-person-long-hair" : ""}`}>
-        <i className="pixel-head"><b /><b /><em /></i>
-        <i className="pixel-hair" />
-        <i className="pixel-hair-side pixel-hair-side-left" />
-        <i className="pixel-hair-side pixel-hair-side-right" />
-        <i className="pixel-body"><b /><em /></i>
-        <i className="pixel-arm pixel-arm-left" />
-        <i className="pixel-arm pixel-arm-right" />
-      </span>
-      <span className={`pixel-accessory pixel-accessory-${id}`}>
-        <i /><i /><i />
-      </span>
-      <span className="pixel-monitor">
-        <i className={`pixel-screen pixel-screen-${id}`}>
-          <b /><b /><b /><b />
-        </i>
-        <i className="pixel-monitor-stand" />
-      </span>
-      <span className="pixel-keyboard" />
-      <span className="pixel-desk">
-        <i /><i />
-      </span>
-    </div>
+      src={WORKSTATION_ASSETS[id]}
+      alt={`${member.name} seated at a ${member.title.toLowerCase()} workstation`}
+      width={560}
+      height={360}
+      priority={id === "ethan"}
+    />
   );
 }
 
 export function TeamWorkspace() {
   const [selected, setSelected] = useState<TeamMember | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (!selected) return;
@@ -212,6 +189,20 @@ export function TeamWorkspace() {
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") setSelected(null);
+      if (event.key !== "Tab" || !dialogRef.current) return;
+      const focusable = [...dialogRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      )].filter((element) => !element.hasAttribute("disabled"));
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => {
@@ -233,12 +224,10 @@ export function TeamWorkspace() {
 
       <section className="workspace-hero" aria-labelledby="workspace-title">
         <div className="workspace-hero-copy">
-          <p className="workspace-eyebrow">YOUR ANALYST BENCH</p>
+          <p className="workspace-eyebrow">FINBRO</p>
           <h1 id="workspace-title">Assign Ethan’s team a financial task.</h1>
-          <p>
-            A team of AI analysts for repeatable financial research, diligence,
-            modeling, monitoring, and reporting workflows.
-          </p>
+          <p>An AI analyst team that helps you complete repeatable financial work.</p>
+          <p>Research, diligence, modeling, monitoring, compliance, and financial analysis — all in one team.</p>
         </div>
         <div className="workspace-summary" aria-label="Workflow availability">
           <span><strong>1</strong> Available</span>
@@ -299,6 +288,7 @@ export function TeamWorkspace() {
             aria-modal="true"
             aria-labelledby="workspace-modal-title"
             aria-describedby="workspace-modal-intro"
+            ref={dialogRef}
           >
             <button
               className="workspace-modal-close"
@@ -309,47 +299,45 @@ export function TeamWorkspace() {
             >
               ×
             </button>
-            <div className="workspace-modal-profile">
-              <div className="workspace-modal-avatar" aria-hidden="true">
-                {selected.name.charAt(0)}
-              </div>
-              <div>
+            <div className="workspace-modal-layout">
+              <div className="workspace-modal-visual">
+                <div className="workspace-modal-workstation">
+                  <PixelAnalyst id={selected.id} />
+                </div>
                 <span>{selected.status}</span>
                 <h2 id="workspace-modal-title">{selected.name}</h2>
-                <p>{selected.title}</p>
+                <h3>{selected.title}</h3>
+                <p className="workspace-modal-intro" id="workspace-modal-intro">
+                  {selected.intro}
+                </p>
+                {selected.boundary && <p className="workspace-modal-boundary">{selected.boundary}</p>}
               </div>
-            </div>
-            <p className="workspace-modal-intro" id="workspace-modal-intro">
-              {selected.intro}
-            </p>
-            <div className="workspace-modal-columns">
-              <div>
-                <h3>What {selected.name} Does</h3>
-                <ul>
-                  {selected.responsibilities.map((item) => <li key={item}>{item}</li>)}
-                </ul>
-              </div>
-              <div>
-                <h3>Deliverables</h3>
-                <ul>
-                  {selected.deliverables.map((item) => <li key={item}>{item}</li>)}
-                </ul>
+              <div className="workspace-modal-details">
+                <div>
+                  <h3>What {selected.name} Does</h3>
+                  <ul>
+                    {selected.responsibilities.map((item) => <li key={item}>{item}</li>)}
+                  </ul>
+                </div>
+                <div>
+                  <h3>Deliverables</h3>
+                  <ul>
+                    {selected.deliverables.map((item) => <li key={item}>{item}</li>)}
+                  </ul>
+                </div>
+                <div className="workspace-modal-status">
+                  <span>
+                    <i data-status={selected.status} />
+                    Status
+                  </span>
+                  <strong>{selected.status}</strong>
+                </div>
               </div>
             </div>
             <div className="workspace-modal-footer">
-              <span>
-                <i data-status={selected.status} />
-                Status: {selected.status}
-              </span>
-              {selected.id === "ethan" ? (
-                <Link className="workspace-modal-cta" href="/workflows/public-company">
-                  {selected.cta}
-                </Link>
-              ) : (
-                <button className="workspace-modal-cta" type="button" disabled>
-                  {selected.cta}
-                </button>
-              )}
+              <Link className="workspace-modal-cta" href={selected.route}>
+                {selected.cta}
+              </Link>
             </div>
           </section>
         </div>

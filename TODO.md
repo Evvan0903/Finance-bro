@@ -1,5 +1,18 @@
 # Institutional Equity Research Refactor and Shell Sample TODO
 
+## FinBro analyst-team visual correction
+
+- [x] Read the existing recovery notes, architecture, homepage implementation, tests, and `saveToken` routing skill.
+- [x] Replace temporary CSS figures with six original transparent workstation assets.
+- [x] Align the homepage to the approved compact centered 3×2 / 2×3 / 1-column team layout.
+- [x] Rebuild the accessible image-led profile modal for all six employees.
+- [x] Preserve Ethan’s live research route and add honest status-overview routes for the five unfinished modules.
+- [x] Rename Nora to Regulatory & Compliance Analyst and add legal/compliance boundaries.
+- [x] Complete desktop, tablet, mobile, keyboard, route, image-loading, and overflow browser QA.
+- [x] Pass the final automated validation suite.
+- [x] Commit the exact requested change and push `main` to GitHub.
+- [x] Record the final commit and push result without manually deploying Vercel.
+
 ## FinBro analyst-team workspace homepage
 
 - [x] Inspect the existing root route, Public Company Research shell, tests, and private Sites configuration.

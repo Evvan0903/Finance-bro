@@ -106,7 +106,8 @@ test("server-renders the FinBro analyst-team workspace", async () => {
   assert.match(html, /Private Company Diligence Analyst/);
   assert.match(html, /Financial Modeling Analyst/);
   assert.match(html, /Portfolio Monitoring Analyst/);
-  assert.match(html, /Corporate Reporting Analyst/);
+  assert.match(html, /Regulatory &amp; Compliance Analyst/);
+  assert.doesNotMatch(html, /Corporate Reporting Analyst/);
   assert.match(html, /Available/);
   assert.match(html, /In Development/);
   assert.match(html, /Planned/);
@@ -136,6 +137,32 @@ test("keeps the bilingual public-company research workflow on Ethan's route", as
   assert.match(html, />EN</);
   assert.match(html, /href="\/"/);
   assert.doesNotMatch(html, /ScopeLine|输入一家公司|生成尽调报告|codex-preview|react-loading-skeleton/i);
+});
+
+test("serves status-accurate overview pages for the five unfinished workflows", async () => {
+  const builtWorker = await worker();
+  const expected = [
+    ["market-industry", "Mason", "In Development"],
+    ["private-company", "Clara", "Planned"],
+    ["financial-modeling", "Felix", "Planned"],
+    ["portfolio-monitoring", "Parker", "Planned"],
+    ["regulatory-compliance", "Nora", "Planned"],
+  ];
+  for (const [route, name, status] of expected) {
+    const response = await builtWorker.fetch(
+      new Request(`http://localhost/workflows/${route}`, {
+        headers: { accept: "text/html" },
+      }),
+      environment,
+      context,
+    );
+    assert.equal(response.status, 200, `${route} did not render`);
+    const html = await response.text();
+    assert.match(html, new RegExp(name));
+    assert.match(html, new RegExp(status));
+    assert.match(html, /This status page does not simulate an unfinished workflow/);
+    assert.doesNotMatch(html, /id="company"/);
+  }
 });
 
 test("rejects invalid research requests in Chinese before external data access", async () => {
@@ -2002,5 +2029,8 @@ test("removes disposable starter assets and keeps private Sites metadata", async
     assert.rejects(access(new URL("app/_sites-preview/SkeletonPreview.tsx", projectRoot))),
     access(new URL("public/og.png", projectRoot)),
     access(new URL("public/favicon.svg", projectRoot)),
+    ...["ethan", "mason", "clara", "felix", "parker", "nora"].map((name) =>
+      access(new URL(`public/team/${name}-workstation.svg`, projectRoot))
+    ),
   ]);
 });
