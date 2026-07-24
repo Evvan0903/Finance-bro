@@ -1,5 +1,20 @@
 # Recovery Checkpoint
 
+## Current objective — non-default ticker reliability
+
+### Completed
+
+- Read `WORKLOG.md`, `RECOVERY.md`, `TODO.md`, README, `/api/research`, SEC helpers/resolver, snapshot fallback, sector/SIC matching, Metric Registry, peers, scenarios, valuation, audit, frontend request flow, and `saveToken`.
+- Diagnosed the actual non-default failure with MCHP and PNC: SEC ticker resolution, Submissions, and Company Facts all returned HTTP 200; annual facts sharing a calendar year generated duplicate `FY<year>` canonical keys during metric normalization, then the outer route mislabeled the internal error as SEC unavailability.
+- Added the centralized server-side SEC client, dynamic exchange-aware ticker map resolver, CIK padding, share-class normalization, explicit ambiguity, cache/retry/rate/timeout handling, health route, structured errors, structured diagnostics, persisted selections, and compact frontend details/retry actions.
+- Preserved the default five issuer snapshot gates, report methodology, canonical definitions, formulas, valuation, sector logic, bilingual output, and PDF presentation. The annual selection change only chooses one valid fact per year before the existing canonical key is formed.
+- Passed ESLint, `next build --webpack`, `git diff --check`, and all 26 automated tests. Created the latest local checkpoint (`fix: classify non-default ticker failures`). No deployment was requested or performed.
+
+### Remaining
+
+- Do not deploy or push unless explicitly requested.
+- If released later, smoke-test MCHP, PNC, and an unsupported but valid issuer in production, verifying classified results rather than a generic SEC outage.
+
 ## Current objective — FinBro public shell rebrand
 
 ### Completed

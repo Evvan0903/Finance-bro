@@ -27,6 +27,27 @@ import {
 type Locale = "zh" | "en";
 
 const LOCALE_STORAGE_KEY = "scopeline-locale";
+const RESEARCH_SELECTION_STORAGE_KEY = "finbro-research-selection-v1";
+type ResearchErrorState = {
+  code: string;
+  title: string;
+  message: string;
+  technicalDiagnostic?: string;
+  retryable?: boolean;
+  failedStage?: string;
+  traceId?: string;
+  httpStatus?: number | null;
+  details?: Record<string, string | number | boolean | null>;
+  capabilities?: { filingFallback?: boolean; limitedCoverage?: boolean };
+};
+
+type SavedResearchSelection = {
+  company: string;
+  market: ResearchMarket;
+  sector: SupportedSector;
+  subindustry: SupportedSubindustry;
+  options: ResearchOptions;
+};
 const DEFAULT_OPTIONS: ResearchOptions = {
   sectorOutlook: true,
   peerComparison: true,
@@ -930,17 +951,19 @@ export function ResearchApp() {
   const [company, setCompany] = useState("SHEL");
   const [locale, setLocale] = useState<Locale>("zh");
   const [localeReady, setLocaleReady] = useState(false);
+  const [selectionReady, setSelectionReady] = useState(false);
   const [market, setMarket] = useState<ResearchMarket>("Europe");
   const [sector, setSector] = useState<SupportedSector>("energy");
   const [subindustry, setSubindustry] =
     useState<SupportedSubindustry>("integrated-oil-gas");
   const [options, setOptions] = useState<ResearchOptions>(DEFAULT_OPTIONS);
   const [report, setReport] = useState<ResearchReport | null>(null);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<ResearchErrorState | null>(null);
   const [loading, setLoading] = useState(false);
   const [refreshingOutlook, setRefreshingOutlook] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
   const reportRef = useRef<HTMLElement>(null);
+  const lastRequestRef = useRef<{ body: ReturnType<typeof requestBody>; query: string; locale: Locale } | null>(null);
   const copy = COPY[locale];
   const latestPeriod = useMemo(() => report?.periods.at(-1) ?? null, [report]);
   const visiblePeerComparison = useMemo(
@@ -971,10 +994,30 @@ export function ResearchApp() {
       try {
         const storedLocale = window.localStorage.getItem(LOCALE_STORAGE_KEY);
         if (storedLocale === "zh" || storedLocale === "en") setLocale(storedLocale);
+        const saved = window.localStorage.getItem(RESEARCH_SELECTION_STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved) as Partial<SavedResearchSelection>;
+          const validSector = ["energy", "technology", "financials", "healthcare", "industrials"].includes(parsed.sector ?? "");
+          const validSubindustry = ["integrated-oil-gas", "semiconductors", "banks", "biopharma", "industrial-machinery"].includes(parsed.subindustry ?? "");
+          const paired =
+            (parsed.sector === "energy" && parsed.subindustry === "integrated-oil-gas") ||
+            (parsed.sector === "technology" && parsed.subindustry === "semiconductors") ||
+            (parsed.sector === "financials" && parsed.subindustry === "banks") ||
+            (parsed.sector === "healthcare" && parsed.subindustry === "biopharma") ||
+            (parsed.sector === "industrials" && parsed.subindustry === "industrial-machinery");
+          if (validSector && validSubindustry && paired) {
+            if (typeof parsed.company === "string") setCompany(parsed.company.slice(0, 100));
+            setMarket(parsed.market === "US" || parsed.market === "Europe" || parsed.market === "Global" ? parsed.market : "Global");
+            setSector(parsed.sector as SupportedSector);
+            setSubindustry(parsed.subindustry as SupportedSubindustry);
+            if (parsed.options) setOptions({ ...DEFAULT_OPTIONS, ...parsed.options });
+          }
+        }
       } catch {
-        // Chinese remains the SSR default when browser storage is unavailable.
+        // Defaults remain available when browser storage is unavailable or stale.
       }
       setLocaleReady(true);
+      setSelectionReady(true);
     });
     return () => window.cancelAnimationFrame(frame);
   }, []);
@@ -988,6 +1031,16 @@ export function ResearchApp() {
       // Language switching remains available without persistent browser storage.
     }
   }, [locale, localeReady]);
+
+  useEffect(() => {
+    if (!selectionReady) return;
+    try {
+      const selection: SavedResearchSelection = { company, market, sector, subindustry, options };
+      window.localStorage.setItem(RESEARCH_SELECTION_STORAGE_KEY, JSON.stringify(selection));
+    } catch {
+      // Retrying in the current page remains available without local storage.
+    }
+  }, [company, market, options, sector, selectionReady, subindustry]);
 
   function requestBody(query: string, requestedLocale: Locale) {
     const localFixture =
@@ -1005,19 +1058,35 @@ export function ResearchApp() {
     };
   }
 
-  async function loadReport(query: string, requestedLocale: Locale, scrollAfter: boolean) {
+  async function loadReport(
+    query: string,
+    requestedLocale: Locale,
+    scrollAfter: boolean,
+    preservedBody?: ReturnType<typeof requestBody>,
+  ) {
     if (!query || loading) return;
+    const body = preservedBody ?? requestBody(query, requestedLocale);
+    lastRequestRef.current = { body, query, locale: requestedLocale };
     setLoading(true);
-    setError("");
+    setError(null);
     setReport(null);
     try {
       const response = await fetch("/api/research", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody(query, requestedLocale)),
+        body: JSON.stringify(body),
       });
-      const payload = (await response.json()) as { report?: ResearchReport; error?: string };
+      let payload: { report?: ResearchReport; error?: ResearchErrorState | string } = {};
+      try {
+        payload = await response.json() as typeof payload;
+      } catch {
+        throw new Error(COPY[requestedLocale].reportUnavailable);
+      }
       if (!response.ok || !payload.report) {
+        if (payload.error && typeof payload.error !== "string") {
+          setError(payload.error);
+          return;
+        }
         throw new Error(payload.error || COPY[requestedLocale].reportUnavailable);
       }
       setReport(payload.report);
@@ -1027,10 +1096,24 @@ export function ResearchApp() {
         });
       }
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : COPY[requestedLocale].reportUnavailable);
+      setError({
+        code: "INTERNAL_PIPELINE_ERROR",
+        title: requestedErrorTitle(requestedLocale),
+        message: caught instanceof Error ? caught.message : COPY[requestedLocale].reportUnavailable,
+      });
     } finally {
       setLoading(false);
     }
+  }
+
+  function requestedErrorTitle(requestedLocale: Locale) {
+    return requestedLocale === "zh" ? "Ethan 暂时无法完成这项任务。" : "Ethan could not complete that assignment.";
+  }
+
+  function retryLastRequest() {
+    const saved = lastRequestRef.current;
+    if (!saved) return;
+    void loadReport(saved.query, saved.locale, false, saved.body);
   }
 
   function submit(event?: FormEvent) {
@@ -1042,7 +1125,7 @@ export function ResearchApp() {
     if (nextLocale === locale || loading) return;
     const shouldRefresh = report !== null;
     setLocale(nextLocale);
-    setError("");
+    setError(null);
     if (shouldRefresh) void loadReport(company.trim(), nextLocale, false);
   }
 
@@ -1060,7 +1143,7 @@ export function ResearchApp() {
               : "industrial-machinery",
     );
     setReport(null);
-    setError("");
+    setError(null);
   }
 
   function chooseExample(example: (typeof EXAMPLES)[number]) {
@@ -1069,7 +1152,7 @@ export function ResearchApp() {
     setSector(example.sector);
     setSubindustry(example.subindustry);
     setReport(null);
-    setError("");
+    setError(null);
   }
 
   function toggleOption(key: keyof ResearchOptions) {
@@ -1079,7 +1162,7 @@ export function ResearchApp() {
   async function refreshSectorOutlook() {
     if (!report || refreshingOutlook) return;
     setRefreshingOutlook(true);
-    setError("");
+    setError(null);
     try {
       const response = await fetch("/api/sector-outlook", {
         method: "POST",
@@ -1099,7 +1182,11 @@ export function ResearchApp() {
           : current,
       );
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : copy.reportUnavailable);
+      setError({
+        code: "INTERNAL_PIPELINE_ERROR",
+        title: requestedErrorTitle(locale),
+        message: caught instanceof Error ? caught.message : copy.reportUnavailable,
+      });
     } finally {
       setRefreshingOutlook(false);
     }
@@ -1121,7 +1208,7 @@ export function ResearchApp() {
   async function downloadPdf() {
     if (!report || !reportRef.current || exportingPdf) return;
     setExportingPdf(true);
-    setError("");
+    setError(null);
     try {
       const { exportReportPdf } = await import("./lib/pdf-export");
       await exportReportPdf(reportRef.current, {
@@ -1130,7 +1217,11 @@ export function ResearchApp() {
         filename: `${report.company.ticker.toLowerCase()}-sector-research-${locale}.pdf`,
       });
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : copy.reportUnavailable);
+      setError({
+        code: "INTERNAL_PIPELINE_ERROR",
+        title: requestedErrorTitle(locale),
+        message: caught instanceof Error ? caught.message : copy.reportUnavailable,
+      });
     } finally {
       setExportingPdf(false);
     }
@@ -1266,7 +1357,44 @@ export function ResearchApp() {
               <div><strong>{copy.progressTitle}</strong><p>{copy.progressSteps}</p></div>
             </div>
           )}
-          {error && <p className="error-message" role="alert">{error}</p>}
+          {error && (
+            <section className="error-message research-error" role="alert">
+              <div>
+                <strong>{error.title}</strong>
+                <p>{error.message}</p>
+                {error.code === "SECTOR_CLASSIFICATION_CONFLICT" && error.details && (
+                  <p className="error-context">
+                    {locale === "zh" ? "检测到的分类：" : "Detected classification: "}
+                    {String(error.details.detectedClassification ?? error.details.detectedSic ?? "Not disclosed")}
+                  </p>
+                )}
+              </div>
+              <div className="research-error-actions">
+                {error.retryable && (
+                  <button type="button" onClick={retryLastRequest} disabled={loading}>
+                    {locale === "zh" ? "重试" : "Retry"}
+                  </button>
+                )}
+                {(error.code === "TICKER_NOT_FOUND" || error.code === "AMBIGUOUS_TICKER") && (
+                  <button type="button" onClick={() => document.getElementById("company")?.focus()}>
+                    {locale === "zh" ? "修改代码" : "Edit ticker"}
+                  </button>
+                )}
+              </div>
+              {(error.technicalDiagnostic || error.traceId) && (
+                <details>
+                  <summary>{locale === "zh" ? "技术详情" : "Technical details"}</summary>
+                  <dl>
+                    <div><dt>{locale === "zh" ? "错误代码" : "Code"}</dt><dd>{error.code}</dd></div>
+                    {error.failedStage && <div><dt>{locale === "zh" ? "失败阶段" : "Failed stage"}</dt><dd>{error.failedStage}</dd></div>}
+                    {error.httpStatus !== undefined && error.httpStatus !== null && <div><dt>HTTP</dt><dd>{error.httpStatus}</dd></div>}
+                    {error.traceId && <div><dt>Trace ID</dt><dd>{error.traceId}</dd></div>}
+                    {error.technicalDiagnostic && <div><dt>{locale === "zh" ? "诊断" : "Diagnostic"}</dt><dd>{error.technicalDiagnostic}</dd></div>}
+                  </dl>
+                </details>
+              )}
+            </section>
+          )}
         </div>
       </section>
 

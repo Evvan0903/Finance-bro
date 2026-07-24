@@ -1,5 +1,17 @@
 # FinBro Research Worklog
 
+## Non-default ticker pipeline investigation and fix — validated locally
+
+- `saveToken` routing: Terra inspected the request path, ran the non-default ticker matrix, and traced SEC responses; Sol isolated the root cause and approved the error-boundary design; Luna implemented the centralized client, compact error panel, persistence, tests, and documentation cleanup.
+- Confirmed root cause: MCHP and PNC completed ticker resolution, SEC Submissions, and Company Facts retrieval successfully (HTTP 200) but failed during Metric Registry construction. Multiple valid annual endpoints in one calendar year were all labeled `FY<year>`, causing a duplicate canonical key. The route then incorrectly converted that internal metric-normalization exception into a generic SEC-unavailable response.
+- Changes: added `site/app/lib/sec-client.ts` as the only SEC transport for research and Shell locator traffic. It uses a declared User-Agent, server-side request boundary, controlled memory caches, sub-10 rps scheduling, bounded retries/backoff for retryable errors, timeout handling, SEC ticker/exchange association lookup, zero-padded CIKs, share-class normalization (`BRK.B` → `BRK-B`), ambiguity detection, and safe diagnostics. Added cached `GET /api/sec-health`.
+- Error behavior: `/api/research` now returns structured stage-aware failures (code, safe message, technical diagnostic, retryability, trace ID, preserved selections, safe request diagnostics, and sector details) rather than masking all unexpected exceptions as an SEC outage. Missing/inadequate Company Facts and unsupported sector classification are distinct outcomes; Shell retains its verified filing fallback only where supported.
+- UI: preserved company/market/sector/subindustry/options in versioned local storage, added compact retry/edit-ticker actions and expandable technical details, and retained the existing FinBro/Ethan visual shell and report/PDF styles.
+- Metrics: annual fact selection now deterministically chooses one valid reported endpoint per calendar year before generating existing `FY<year>` canonical keys. This fixes the collision without changing formulas, registry definitions, existing snapshot values, valuation assumptions, or report methodology.
+- Tests passed: ESLint, Vercel-compatible `next build --webpack`, `git diff --check`, and 26/26 rendered/API/canonical tests. New tests cover arbitrary AAPL resolution, BRK.B/BRK-B and GOOG/GOOGL normalization, ambiguity, CIK padding, ticker-map caching, SEC 429, and SEC timeout classification. Existing SHEL/NVDA/JPM/LLY/CAT bilingual consistency acceptance gates remain green.
+- Known limitations: only the five existing sector packs can produce full institutional reports. A successfully retrieved issuer outside those SIC-backed packs now receives a sector-classification/coverage result rather than a false SEC outage; no new sector pack was added. The SEC ticker association cache remains process-local in serverless cold starts, as intended for this small focused fix.
+- Next recommended step: deploy this validated local checkpoint only after the owner requests release; then test MCHP and PNC plus one unsupported but valid issuer against production and inspect the structured diagnostic panel.
+
 ## Vercel compatibility and production deployment — deployed
 
 - Root cause: the GitHub repository contained only a local `site/` Gitlink without a `.gitmodules` mapping or remotely fetchable source repository, so Vercel could not retrieve the actual application.

@@ -1,4 +1,3 @@
-import { MemoryCache } from "../../lib/cache";
 import {
   MetricRegistry,
   formatMetricForDisplay,
@@ -28,6 +27,17 @@ import {
   runShellMetricValidation,
   SHELL_2025_20F_URL,
 } from "../../lib/shell-metric-validation";
+import {
+  SecClientError,
+  secClient,
+  toSecClientError,
+} from "../../lib/sec-client";
+import type {
+  ResearchErrorCode,
+  SecCompanyRecord,
+  SecPipelineStage,
+  SecRequestDiagnostic,
+} from "../../lib/sec-client";
 import type {
   CompanyFactsPayload,
   MetricLocatorAudit,
@@ -64,19 +74,12 @@ import catSourceSnapshot from "../../../tests/fixtures/cat-source-snapshot.json"
 
 export const dynamic = "force-dynamic";
 
-const SEC_HEADERS = {
-  Accept: "application/json, text/html;q=0.9, */*;q=0.8",
-  "Accept-Encoding": "gzip, deflate",
-  "User-Agent": process.env.SEC_USER_AGENT ?? "ScopeLine Research contact@example.com",
-};
 const ANNUAL_FORMS = new Set(["10-K", "10-K/A", "20-F", "20-F/A", "40-F", "40-F/A"]);
 const INTERIM_FORMS = new Set(["10-Q", "10-Q/A", "6-K"]);
-const SEC_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
-const TICKER_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const RESEARCH_DATE = "2026-07-17";
 const FREE_CASH_FLOW_UNAVAILABLE = "Unable to calculate free cash flow from available filings.";
 
-type TickerRecord = { cik_str: number; ticker: string; title: string };
+type TickerRecord = SecCompanyRecord;
 type CompanyFacts = CompanyFactsPayload;
 type Submissions = {
   cik: string;
@@ -104,7 +107,10 @@ type ReportSourceSnapshot = {
   submissions: Submissions;
   retrievedAt: string;
   issuerReportedMetrics?: IssuerReportedMetric[];
-  sourceMode: "explicit-test-snapshot" | "verified-runtime-fallback";
+  sourceMode:
+    | "explicit-test-snapshot"
+    | "verified-runtime-fallback"
+    | "verified-filing-fallback";
 };
 
 const COPY = {
@@ -133,129 +139,6 @@ const DEFAULT_OPTIONS: ResearchOptions = {
   dueDiligence: true,
   pdfExport: true,
 };
-
-const ALIASES: Record<string, string> = {
-  google: "GOOGL",
-  facebook: "META",
-  meta: "META",
-  shell: "SHEL",
-  nvidia: "NVDA",
-  jpmorgan: "JPM",
-  "jp morgan": "JPM",
-  lilly: "LLY",
-  "eli lilly": "LLY",
-  caterpillar: "CAT",
-  amazon: "AMZN",
-  berkshire: "BRK-B",
-};
-
-// Resolve the currently supported research universe without spending a remote
-// SEC request on the ticker directory. The CIK identifiers are public SEC
-// identifiers; all filings and financial facts still come from SEC endpoints.
-const SUPPORTED_TICKER_RECORDS: TickerRecord[] = [
-  { cik_str: 1306965, ticker: "SHEL", title: "Shell plc" },
-  { cik_str: 34088, ticker: "XOM", title: "Exxon Mobil Corp" },
-  { cik_str: 93410, ticker: "CVX", title: "Chevron Corp" },
-  { cik_str: 313807, ticker: "BP", title: "BP p.l.c." },
-  { cik_str: 879764, ticker: "TTE", title: "TotalEnergies SE" },
-  { cik_str: 1045810, ticker: "NVDA", title: "NVIDIA Corp" },
-  { cik_str: 2488, ticker: "AMD", title: "Advanced Micro Devices Inc" },
-  { cik_str: 1730168, ticker: "AVGO", title: "Broadcom Inc" },
-  { cik_str: 50863, ticker: "INTC", title: "Intel Corp" },
-  { cik_str: 1046179, ticker: "TSM", title: "Taiwan Semiconductor Manufacturing Co Ltd" },
-  { cik_str: 19617, ticker: "JPM", title: "JPMorgan Chase & Co" },
-  { cik_str: 70858, ticker: "BAC", title: "Bank of America Corp" },
-  { cik_str: 831001, ticker: "C", title: "Citigroup Inc" },
-  { cik_str: 72971, ticker: "WFC", title: "Wells Fargo & Co" },
-  { cik_str: 886982, ticker: "GS", title: "Goldman Sachs Group Inc" },
-  { cik_str: 59478, ticker: "LLY", title: "Eli Lilly and Co" },
-  { cik_str: 310158, ticker: "MRK", title: "Merck & Co Inc" },
-  { cik_str: 78003, ticker: "PFE", title: "Pfizer Inc" },
-  { cik_str: 1551152, ticker: "ABBV", title: "AbbVie Inc" },
-  { cik_str: 14272, ticker: "BMY", title: "Bristol-Myers Squibb Co" },
-  { cik_str: 18230, ticker: "CAT", title: "Caterpillar Inc" },
-  { cik_str: 315189, ticker: "DE", title: "Deere & Co" },
-  { cik_str: 26172, ticker: "CMI", title: "Cummins Inc" },
-  { cik_str: 75362, ticker: "PCAR", title: "PACCAR Inc" },
-  { cik_str: 97216, ticker: "TEX", title: "Terex Corp" },
-];
-
-const secCache = new MemoryCache<unknown>(SEC_CACHE_TTL_MS);
-const tickerCache = new MemoryCache<TickerRecord[]>(TICKER_CACHE_TTL_MS);
-
-function normalize(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/&/g, " and ")
-    .replace(/\b(incorporated|inc|corp|corporation|company|co|plc|limited|ltd|holdings?)\b/g, " ")
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim()
-    .replace(/\s+/g, " ");
-}
-
-async function secFetch<T>(url: string): Promise<T> {
-  return secCache.getOrLoad(url, async () => {
-    const response = await fetch(url, {
-      headers: SEC_HEADERS,
-      cache: "no-store",
-      signal: AbortSignal.timeout(20_000),
-    });
-    if (!response.ok) throw new Error(`SEC_HTTP_${response.status}`);
-    return response.json();
-  }) as Promise<T>;
-}
-
-async function secTextFetch(url: string): Promise<string> {
-  return secCache.getOrLoad(`text:${url}`, async () => {
-    const response = await fetch(url, {
-      headers: SEC_HEADERS,
-      cache: "no-store",
-      signal: AbortSignal.timeout(20_000),
-    });
-    if (!response.ok) throw new Error(`SEC_HTTP_${response.status}`);
-    return response.text();
-  }) as Promise<string>;
-}
-
-async function getTickerRecords() {
-  return tickerCache.getOrLoad("sec-tickers", async () => {
-    const payload = await secFetch<Record<string, TickerRecord>>(
-      "https://www.sec.gov/files/company_tickers.json",
-    );
-    return Object.values(payload);
-  });
-}
-
-async function resolveCompany(query: string) {
-  const normalizedQuery = normalize(query);
-  const upperQuery = query.trim().toUpperCase();
-  const aliasTicker = ALIASES[normalizedQuery];
-  const supportedRecord = SUPPORTED_TICKER_RECORDS.find(
-    (record) =>
-      record.ticker === (aliasTicker ?? upperQuery) ||
-      normalize(record.title) === normalizedQuery,
-  );
-  if (supportedRecord) return supportedRecord;
-
-  const records = await getTickerRecords();
-  const exactTicker = records.find(
-    (record) => record.ticker.toUpperCase() === (aliasTicker ?? upperQuery),
-  );
-  if (exactTicker) return exactTicker;
-
-  return records
-    .map((record) => {
-      const title = normalize(record.title);
-      let score = 99;
-      if (title === normalizedQuery) score = 0;
-      else if (title.startsWith(normalizedQuery)) score = 1;
-      else if (title.includes(normalizedQuery)) score = 2;
-      else if (normalizedQuery.includes(title) && title.length > 3) score = 3;
-      return { record, score, titleLength: title.length };
-    })
-    .filter((candidate) => candidate.score < 99)
-    .sort((a, b) => a.score - b.score || a.titleLength - b.titleLength)[0]?.record ?? null;
-}
 
 function compactMoney(value: number | null, currency: string, locale: ResearchLocale) {
   return formatFinancialValue(value, currency, locale);
@@ -299,6 +182,7 @@ async function shellMetricAudit(
   record: TickerRecord,
   facts: CompanyFacts,
   verifiedSnapshot = false,
+  diagnostics: SecRequestDiagnostic[] = [],
 ): Promise<MetricLocatorAudit | null> {
   if (record.ticker !== "SHEL") return null;
   if (verifiedSnapshot) {
@@ -308,7 +192,10 @@ async function shellMetricAudit(
     });
   }
   try {
-    const filingHtml = await secTextFetch(SHELL_2025_20F_URL);
+    const filingHtml = await secClient.getFilingDocument(
+      SHELL_2025_20F_URL,
+      diagnostics,
+    );
     return runShellMetricValidation({
       companyFacts: facts as CompanyFactsPayload,
       filingHtml,
@@ -1573,6 +1460,7 @@ async function buildPeerComparison(
   reportRegistry: MetricRegistry,
   dataVersion: string,
   retrievedAt: string,
+  diagnostics: SecRequestDiagnostic[],
 ): Promise<PeerComparisonItem[]> {
   const metricSpecs =
     pack.id === "banks"
@@ -1595,8 +1483,9 @@ async function buildPeerComparison(
   return Promise.all(
     pack.peers.map(async (peer) => {
       try {
-        const facts = await secFetch<CompanyFacts>(
-          `https://data.sec.gov/api/xbrl/companyfacts/CIK${peer.cik}.json`,
+        const facts = await secClient.getCompanyFacts<CompanyFacts>(
+          peer.cik,
+          diagnostics,
         );
         const peerRegistry = buildFinancialMetricRegistry({
           facts: facts as CompanyFactsPayload,
@@ -1759,8 +1648,7 @@ function reportSourceSnapshot(
 }
 
 function isTemporaryPublicDataFailure(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
-  return /SEC_HTTP_\d{3}|fetch failed|timed? ?out|network|EAI_AGAIN|ECONNRESET|UND_ERR/i.test(message);
+  return error instanceof SecClientError && error.retryable;
 }
 
 async function buildReport(
@@ -1768,20 +1656,31 @@ async function buildReport(
   selection: ResearchSelection,
   locale: ResearchLocale,
   sourceSnapshot?: ReportSourceSnapshot,
+  diagnostics: SecRequestDiagnostic[] = [],
 ): Promise<ResearchReport> {
-  const cik = String(record.cik_str).padStart(10, "0");
-  const [submissions, facts, sectorOutlook] = await Promise.all([
+  const cik = record.cik;
+  const [submissions, sectorOutlook] = await Promise.all([
     sourceSnapshot
       ? Promise.resolve(sourceSnapshot.submissions)
-      : secFetch<Submissions>(`https://data.sec.gov/submissions/CIK${cik}.json`),
-    sourceSnapshot
-      ? Promise.resolve(sourceSnapshot.companyFacts)
-      : secFetch<CompanyFacts>(`https://data.sec.gov/api/xbrl/companyfacts/CIK${cik}.json`),
+      : secClient.getSubmissions<Submissions>(cik, diagnostics),
     getSectorOutlook(selection.market, selection.subindustry, locale),
   ]);
+  const facts = sourceSnapshot
+    ? sourceSnapshot.companyFacts
+    : await secClient.getCompanyFacts<CompanyFacts>(cik, diagnostics);
   const pack = getSectorPack(selection.subindustry);
   if (submissions.sic && !pack.sicCodes.includes(submissions.sic)) {
-    throw new Error("SECTOR_MISMATCH");
+    throw new SecClientError({
+      code: "SECTOR_CLASSIFICATION_CONFLICT",
+      stage: "sector_detection",
+      diagnostic: `Selected ${selection.sector}/${selection.subindustry}; SEC SIC ${submissions.sic} (${submissions.sicDescription ?? "description unavailable"}) is outside the selected pack.`,
+      details: {
+        selectedSector: selection.sector,
+        selectedSubindustry: selection.subindustry,
+        detectedSic: submissions.sic,
+        detectedClassification: submissions.sicDescription ?? null,
+      },
+    });
   }
 
   const companyName = submissions.name || facts.entityName || record.title;
@@ -1805,7 +1704,12 @@ async function buildReport(
       sourceSnapshot?.issuerReportedMetrics ??
       verifiedIssuerMetrics(record.ticker, latestAnnual),
   });
-  const metricAudit = await shellMetricAudit(record, facts, Boolean(sourceSnapshot));
+  const metricAudit = await shellMetricAudit(
+    record,
+    facts,
+    Boolean(sourceSnapshot),
+    diagnostics,
+  );
   if (metricAudit) {
     publishLocatorAuditToRegistry({
       registry: metricRegistry,
@@ -1817,7 +1721,18 @@ async function buildReport(
     ensureCoreDerivedMetrics(metricRegistry, record.ticker);
   }
   const { periods, currency } = financialPeriodsFromRegistry(metricRegistry, record.ticker);
-  if (!periods.length) throw new Error("INSUFFICIENT_XBRL");
+  if (!periods.length) {
+    throw new SecClientError({
+      code: "NO_STANDARDIZED_XBRL_FACTS",
+      stage: "metric_normalization",
+      diagnostic: `Company Facts was retrieved for ${record.ticker}, but no verified annual periods passed deterministic normalization.`,
+      details: {
+        latestAnnualForm: latestAnnual?.form ?? null,
+        latestAnnualFiled: latestAnnual?.filed ?? null,
+        filingFallbackAttempted: record.ticker === "SHEL",
+      },
+    });
+  }
   const latest = periods.at(-1)!;
   const productMetrics = buildProductMetrics(metricRegistry, record.ticker, locale);
   const pipelineAssets = buildPipelineAssets(record.ticker, locale);
@@ -1846,13 +1761,14 @@ async function buildReport(
       })
     : [];
   const peerComparison = selection.options.peerComparison
-    ? await buildPeerComparison(
-        pack,
-        locale,
-        metricRegistry,
-        dataVersion,
-        companyDataRetrievedAt,
-      )
+      ? await buildPeerComparison(
+          pack,
+          locale,
+          metricRegistry,
+          dataVersion,
+          companyDataRetrievedAt,
+          diagnostics,
+        )
     : [];
   const exposureBuild = buildDriverExposure(
     pack,
@@ -2147,11 +2063,12 @@ async function buildReport(
       searchedSources: metricAudit?.searchedSources ?? ["standard-sec-xbrl"],
       metrics: metricAudit?.results ?? [],
       notes: [
-        ...(sourceSnapshot?.sourceMode === "verified-runtime-fallback"
+        ...(sourceSnapshot?.sourceMode === "verified-runtime-fallback" ||
+        sourceSnapshot?.sourceMode === "verified-filing-fallback"
           ? [
               locale === "zh"
-                ? `SEC 实时端点暂时不可用；本报告使用检索于 ${sourceSnapshot.retrievedAt.slice(0, 10)} 的已验证官方来源快照。申报身份和期间仍按来源记录显示。`
-                : `The live SEC endpoint was temporarily unavailable, so this report uses a verified official-source snapshot retrieved ${sourceSnapshot.retrievedAt.slice(0, 10)}. Filing identity and period remain disclosed from the source record.`,
+                ? `SEC 实时标准化数据未能完整返回；本报告使用检索于 ${sourceSnapshot.retrievedAt.slice(0, 10)} 的已验证官方申报与文件提取快照。申报身份和期间仍按来源记录显示。`
+                : `The live standardized SEC data did not return completely, so this report uses a verified official filing and extraction snapshot retrieved ${sourceSnapshot.retrievedAt.slice(0, 10)}. Filing identity and period remain disclosed from the source record.`,
             ]
           : []),
         ...(metricAudit
@@ -2359,47 +2276,250 @@ async function buildReport(
   };
 }
 
+type PreservedSelections = {
+  company: string;
+  locale: ResearchLocale;
+  market: ResearchMarket;
+  sector: SupportedSector;
+  subindustry: SupportedSubindustry;
+  options: ResearchOptions;
+};
+
+type ResearchPipelineError = {
+  code: ResearchErrorCode;
+  title: string;
+  message: string;
+  technicalDiagnostic: string;
+  retryable: boolean;
+  failedStage: SecPipelineStage;
+  traceId: string;
+  preservedSelections: PreservedSelections;
+  httpStatus: number | null;
+  endpointCategory?: SecRequestDiagnostic["endpointCategory"];
+  matchDetails?: SecClientError["matchDetails"];
+  details?: SecClientError["details"];
+  capabilities: {
+    filingFallback: boolean;
+    limitedCoverage: boolean;
+  };
+  diagnostics: SecRequestDiagnostic[];
+};
+
+function traceId() {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `finbro-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function errorStatus(code: ResearchErrorCode) {
+  if (code === "INVALID_INPUT") return 400;
+  if (code === "TICKER_NOT_FOUND" || code === "SUBMISSIONS_NOT_FOUND") return 404;
+  if (code === "AMBIGUOUS_TICKER") return 409;
+  if (
+    code === "NO_STANDARDIZED_XBRL_FACTS" ||
+    code === "COMPANY_FACTS_NOT_FOUND" ||
+    code === "UNSUPPORTED_REPORTING_ENTITY" ||
+    code === "UNSUPPORTED_SECTOR_PACK" ||
+    code === "SECTOR_CLASSIFICATION_CONFLICT" ||
+    code === "INSUFFICIENT_VERIFIED_METRICS"
+  ) return 422;
+  if (code === "SEC_TIMEOUT") return 504;
+  if (code === "SEC_RATE_LIMITED" || code === "SEC_SERVICE_UNAVAILABLE") return 503;
+  if (code === "SEC_FORBIDDEN") return 502;
+  return 500;
+}
+
+function userErrorCopy(code: ResearchErrorCode, locale: ResearchLocale) {
+  const english: Record<ResearchErrorCode, { title: string; message: string }> = {
+    INVALID_INPUT: {
+      title: "Ethan needs a valid assignment.",
+      message: "Enter a company name or ticker between 2 and 100 characters.",
+    },
+    TICKER_NOT_FOUND: {
+      title: "Ethan cannot find that ticker.",
+      message: "Check the ticker or try the issuer's legal company name.",
+    },
+    AMBIGUOUS_TICKER: {
+      title: "Ethan found more than one possible company.",
+      message: "Use an exact ticker or choose from the matched SEC identities.",
+    },
+    CIK_RESOLUTION_FAILED: {
+      title: "Ethan found the company but lost the paperwork.",
+      message: "The SEC identity could not be resolved to a valid CIK.",
+    },
+    SEC_FORBIDDEN: {
+      title: "Ethan cannot access the SEC right now.",
+      message: "The SEC rejected the server request. The assignment is preserved.",
+    },
+    SEC_RATE_LIMITED: {
+      title: "Ethan is waiting on the SEC.",
+      message: "The SEC asked the server to slow down. Retry in a moment.",
+    },
+    SEC_TIMEOUT: {
+      title: "Ethan is waiting on the SEC.",
+      message: "The SEC took too long to respond. Your assignment is preserved.",
+    },
+    SEC_SERVICE_UNAVAILABLE: {
+      title: "Ethan does not want to work right now.",
+      message: "The SEC or FinBro backend is genuinely unavailable. Retry shortly.",
+    },
+    SUBMISSIONS_NOT_FOUND: {
+      title: "Ethan found the ticker, but not its filing history.",
+      message: "No SEC Submissions record was available for the resolved CIK.",
+    },
+    COMPANY_FACTS_NOT_FOUND: {
+      title: "Ethan found the filings, but the numbers are not standardized.",
+      message: "SEC Company Facts is unavailable for this issuer. No values were fabricated.",
+    },
+    NO_STANDARDIZED_XBRL_FACTS: {
+      title: "Ethan found the filings, but the numbers are not standardized.",
+      message: "The available XBRL facts did not meet the verified metric threshold.",
+    },
+    FILING_NOT_FOUND: {
+      title: "Ethan cannot find the filing document.",
+      message: "The filing index exists, but the selected SEC document was not available.",
+    },
+    FILING_PARSE_FAILED: {
+      title: "Ethan found the filing but could not read the table.",
+      message: "The filing was preserved for review; no values were guessed.",
+    },
+    UNSUPPORTED_REPORTING_ENTITY: {
+      title: "Ethan cannot use this reporting format yet.",
+      message: "The issuer's filing framework is not supported by the current extractor.",
+    },
+    UNSUPPORTED_SECTOR_PACK: {
+      title: "Ethan has not been staffed on this sector yet.",
+      message: "Company retrieval succeeded, but the selected research pack is unsupported.",
+    },
+    SECTOR_CLASSIFICATION_CONFLICT: {
+      title: "Selected sector differs from the detected company classification.",
+      message: "Confirm the company and choose the sector pack that matches its SEC classification.",
+    },
+    INSUFFICIENT_VERIFIED_METRICS: {
+      title: "Ethan needs more verified numbers.",
+      message: "The minimum evidence threshold for a full report was not met.",
+    },
+    INTERNAL_PIPELINE_ERROR: {
+      title: "Ethan hit an internal review exception.",
+      message: "The failure occurred after retrieval and was not an SEC service outage.",
+    },
+  };
+  if (locale === "en") return english[code];
+  const chinese: Partial<typeof english> = {
+    INVALID_INPUT: { title: "Ethan 需要一项有效任务。", message: "请输入 2–100 个字符的公司名或交易代码。" },
+    TICKER_NOT_FOUND: { title: "Ethan 找不到这个交易代码。", message: "请核对代码，或输入发行人的法定公司名。" },
+    AMBIGUOUS_TICKER: { title: "Ethan 找到了多个可能的公司。", message: "请输入精确代码，或根据 SEC 身份候选项确认。" },
+    CIK_RESOLUTION_FAILED: { title: "Ethan 找到公司，但弄丢了文件编号。", message: "无法把 SEC 公司身份解析为有效 CIK。" },
+    SEC_RATE_LIMITED: { title: "Ethan 正在等 SEC。", message: "SEC 要求服务器降低请求速度，请稍后重试。" },
+    SEC_TIMEOUT: { title: "Ethan 正在等 SEC。", message: "SEC 响应超时；当前任务选择已保留。" },
+    SEC_SERVICE_UNAVAILABLE: { title: "Ethan 现在不想干活。", message: "SEC 或 FinBro 后端确实不可用，请稍后重试。" },
+    COMPANY_FACTS_NOT_FOUND: { title: "Ethan 找到了申报，但数字没有标准化。", message: "该发行人的 SEC Company Facts 不可用；系统没有编造数值。" },
+    NO_STANDARDIZED_XBRL_FACTS: { title: "Ethan 找到了申报，但数字没有标准化。", message: "现有 XBRL 事实未达到经验证指标门槛。" },
+    UNSUPPORTED_SECTOR_PACK: { title: "Ethan 还没有被安排到这个行业。", message: "公司检索成功，但当前不支持所选研究包。" },
+    SECTOR_CLASSIFICATION_CONFLICT: { title: "所选行业与检测到的公司分类不同。", message: "请确认公司，并选择与 SEC 分类一致的行业研究包。" },
+    INTERNAL_PIPELINE_ERROR: { title: "Ethan 遇到了内部复核异常。", message: "故障发生在数据检索之后，不是 SEC 服务中断。" },
+  };
+  return chinese[code] ?? english[code];
+}
+
+function preservedSelections(
+  payload: ResearchPayload,
+  locale: ResearchLocale,
+): PreservedSelections {
+  return {
+    company: payload.company?.trim() ?? "",
+    locale,
+    market: payload.market ?? "Global",
+    sector: payload.sector ?? "energy",
+    subindustry: payload.subindustry ?? "integrated-oil-gas",
+    options: { ...DEFAULT_OPTIONS, ...payload.options },
+  };
+}
+
+function errorResponse(
+  error: unknown,
+  locale: ResearchLocale,
+  selections: PreservedSelections,
+  requestTraceId: string,
+  diagnostics: SecRequestDiagnostic[],
+) {
+  const classified = toSecClientError(error, "report_initialization");
+  const copy = userErrorCopy(classified.code, locale);
+  const payload: ResearchPipelineError = {
+    code: classified.code,
+    title: copy.title,
+    message: copy.message,
+    technicalDiagnostic: classified.diagnostic,
+    retryable: classified.retryable,
+    failedStage: classified.stage,
+    traceId: requestTraceId,
+    preservedSelections: selections,
+    httpStatus: classified.httpStatus,
+    endpointCategory: classified.endpointCategory,
+    matchDetails: classified.matchDetails,
+    details: classified.details,
+    capabilities: {
+      filingFallback:
+        classified.details?.filingFallbackAttempted === true &&
+        classified.code === "NO_STANDARDIZED_XBRL_FACTS",
+      limitedCoverage:
+        classified.code === "UNSUPPORTED_SECTOR_PACK" ||
+        classified.code === "SECTOR_CLASSIFICATION_CONFLICT",
+    },
+    diagnostics,
+  };
+  console.error(JSON.stringify({
+    event: "research_pipeline_error",
+    traceId: requestTraceId,
+    normalizedInput: selections.company.trim().toUpperCase().replace(/[./]/g, "-"),
+    selectedSector: selections.sector,
+    selectedSubindustry: selections.subindustry,
+    code: payload.code,
+    failedStage: payload.failedStage,
+    retryable: payload.retryable,
+    httpStatus: payload.httpStatus,
+    diagnostics,
+  }));
+  return Response.json({ error: payload }, { status: errorStatus(payload.code) });
+}
+
 export async function POST(request: Request) {
+  const requestTraceId = traceId();
+  const diagnostics: SecRequestDiagnostic[] = [];
   let locale: ResearchLocale = "zh";
+  let payload: ResearchPayload = {};
+  let selections = preservedSelections(payload, locale);
+  let record: TickerRecord | null = null;
   try {
-    const payload = (await request.json()) as ResearchPayload;
+    try {
+      payload = (await request.json()) as ResearchPayload;
+    } catch (error) {
+      throw new SecClientError({
+        code: "INVALID_INPUT",
+        stage: "input_validation",
+        diagnostic: "Request body was not valid JSON.",
+        cause: error,
+      });
+    }
     locale = payload.locale === "en" ? "en" : "zh";
-    const company = payload.company?.trim() ?? "";
+    selections = preservedSelections(payload, locale);
+    const company = selections.company;
     if (company.length < 2 || company.length > 100) {
-      return Response.json(
-        {
-          error:
-            locale === "zh"
-              ? "请输入 2-100 个字符的公司名或交易代码。"
-              : "Enter a company name or ticker between 2 and 100 characters.",
-        },
-        { status: 400 },
-      );
+      throw new SecClientError({
+        code: "INVALID_INPUT",
+        stage: "input_validation",
+        diagnostic: "Company input must contain between 2 and 100 characters.",
+      });
     }
     const selection = selectionFromPayload(payload);
     if (!selection) {
-      return Response.json(
-        {
-          error:
-            locale === "zh"
-              ? "请选择当前支持的市场、行业和子行业组合。"
-              : "Select a currently supported market, sector, and subindustry combination.",
-        },
-        { status: 400 },
-      );
+      throw new SecClientError({
+        code: "INVALID_INPUT",
+        stage: "input_validation",
+        diagnostic: "Market, sector, and subindustry did not form a supported selection.",
+      });
     }
-    const record = await resolveCompany(company);
-    if (!record) {
-      return Response.json(
-        {
-          error:
-            locale === "zh"
-              ? "在 SEC 公司目录中未找到匹配项。请尝试法定公司名或交易代码。"
-              : "No match was found in the SEC company directory. Try the legal company name or ticker.",
-        },
-        { status: 404 },
-      );
-    }
+    record = await secClient.resolveCompany(company, diagnostics);
     const requestHostname = new URL(request.url).hostname;
     const localFixtureAllowed =
       ["localhost", "127.0.0.1"].includes(requestHostname);
@@ -2412,73 +2532,79 @@ export async function POST(request: Request) {
       ? reportSourceSnapshot(selectedFixture, "explicit-test-snapshot")
       : undefined;
     let report: ResearchReport;
+    let fallbackUsed = false;
     try {
-      report = await buildReport(record, selection, locale, sourceSnapshot);
-    } catch (error) {
-      const verifiedFallback =
-        fixtureByTicker[record.ticker as keyof typeof fixtureByTicker];
-      if (
-        sourceSnapshot ||
-        !verifiedFallback ||
-        !isTemporaryPublicDataFailure(error)
-      ) throw error;
       report = await buildReport(
         record,
         selection,
         locale,
-        reportSourceSnapshot(verifiedFallback, "verified-runtime-fallback"),
+        sourceSnapshot,
+        diagnostics,
+      );
+    } catch (error) {
+      const verifiedFallback =
+        fixtureByTicker[record.ticker as keyof typeof fixtureByTicker];
+      const classified = error instanceof SecClientError ? error : null;
+      const filingFallbackSupported =
+        record.ticker === "SHEL" &&
+        classified?.code === "COMPANY_FACTS_NOT_FOUND";
+      if (
+        sourceSnapshot ||
+        !verifiedFallback ||
+        (!isTemporaryPublicDataFailure(error) && !filingFallbackSupported)
+      ) throw error;
+      fallbackUsed = true;
+      report = await buildReport(
+        record,
+        selection,
+        locale,
+        reportSourceSnapshot(
+          verifiedFallback,
+          filingFallbackSupported
+            ? "verified-filing-fallback"
+            : "verified-runtime-fallback",
+        ),
+        diagnostics,
       );
     }
     const consistencyAudit = auditResearchReport(report);
     if (!consistencyAudit.passed) {
-      return Response.json(
-        {
-          error:
-            locale === "zh"
-              ? "报告一致性检查未通过，未发布可能不一致的财务结果。"
-              : "The report consistency check failed, so potentially inconsistent financial results were not published.",
-          consistencyAudit,
-        },
-        { status: 500 },
-      );
+      throw new SecClientError({
+        code: "INTERNAL_PIPELINE_ERROR",
+        stage: "report_initialization",
+        diagnostic: "Canonical metric consistency audit failed; report publication was blocked.",
+      });
     }
+    const pipeline = {
+      traceId: requestTraceId,
+      normalizedInput: company.trim().toUpperCase().replace(/[./]/g, "-"),
+      resolvedCompany: {
+        ticker: record.ticker,
+        name: record.title,
+        cik: record.cik,
+        exchange: record.exchange,
+        mappingSource: record.mappingSource,
+        reportingStatus: record.reportingStatus,
+        resolvedAt: record.resolvedAt,
+      },
+      selectedSector: selection.sector,
+      selectedSubindustry: selection.subindustry,
+      fallbackUsed,
+      diagnostics,
+    };
+    console.info(JSON.stringify({ event: "research_pipeline_complete", ...pipeline }));
     return Response.json({
       report,
       consistencyAudit,
+      pipeline,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unexpected error";
-    if (message === "SECTOR_MISMATCH") {
-      return Response.json(
-        {
-          error:
-            locale === "zh"
-              ? "所选行业与该发行人的 SEC 行业分类不匹配。请核对行业和子行业。"
-              : "The selected sector does not match the issuer's SEC industry classification. Check the sector and subindustry.",
-        },
-        { status: 422 },
-      );
-    }
-    if (message === "INSUFFICIENT_XBRL") {
-      return Response.json(
-        {
-          error:
-            locale === "zh"
-              ? "该公司缺少足够的标准化年度申报数据。请尝试另一家公司或交易代码。"
-              : "This company does not have enough standardized annual filing data. Try another company or ticker.",
-        },
-        { status: 422 },
-      );
-    }
-    const statusMatch = message.match(/SEC_HTTP_(\d+)/);
-    return Response.json(
-      {
-        error:
-          locale === "zh"
-            ? `SEC 公开数据服务暂时不可用${statusMatch ? `（HTTP ${statusMatch[1]}）` : ""}。已保留行业选择，请稍后重试。`
-            : `The SEC public-data service is temporarily unavailable${statusMatch ? ` (HTTP ${statusMatch[1]})` : ""}. Your sector selection is preserved; please try again later.`,
-      },
-      { status: 502 },
+    return errorResponse(
+      error,
+      locale,
+      selections,
+      requestTraceId,
+      diagnostics,
     );
   }
 }

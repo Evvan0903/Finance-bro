@@ -51,6 +51,14 @@ async function cacheModule() {
   return import(`${url}#${Date.now()}-${Math.random()}`);
 }
 
+async function secClientModule() {
+  const cacheUrl = await transpiledModuleUrl("../app/lib/cache.ts");
+  const url = await transpiledModuleUrl("../app/lib/sec-client.ts", {
+    '"./cache"': JSON.stringify(cacheUrl),
+  });
+  return import(`${url}#${Date.now()}-${Math.random()}`);
+}
+
 const environment = {
   ASSETS: {
     fetch: async () => new Response("Not found", { status: 404 }),
@@ -101,9 +109,11 @@ test("rejects invalid research requests in Chinese before external data access",
     context,
   );
   assert.equal(response.status, 400);
-  assert.deepEqual(await response.json(), {
-    error: "请输入 2-100 个字符的公司名或交易代码。",
-  });
+  const payload = await response.json();
+  assert.equal(payload.error.code, "INVALID_INPUT");
+  assert.equal(payload.error.failedStage, "input_validation");
+  assert.equal(payload.error.message, "请输入 2–100 个字符的公司名或交易代码。");
+  assert.ok(payload.error.traceId);
 });
 
 test("rejects invalid research requests in English before external data access", async () => {
@@ -118,9 +128,11 @@ test("rejects invalid research requests in English before external data access",
     context,
   );
   assert.equal(response.status, 400);
-  assert.deepEqual(await response.json(), {
-    error: "Enter a company name or ticker between 2 and 100 characters.",
-  });
+  const payload = await response.json();
+  assert.equal(payload.error.code, "INVALID_INPUT");
+  assert.equal(payload.error.failedStage, "input_validation");
+  assert.equal(payload.error.message, "Enter a company name or ticker between 2 and 100 characters.");
+  assert.ok(payload.error.traceId);
 });
 
 test("rejects unsupported sector combinations before SEC access", async () => {
@@ -141,9 +153,74 @@ test("rejects unsupported sector combinations before SEC access", async () => {
     context,
   );
   assert.equal(response.status, 400);
-  assert.deepEqual(await response.json(), {
-    error: "Select a currently supported market, sector, and subindustry combination.",
+  const payload = await response.json();
+  assert.equal(payload.error.code, "INVALID_INPUT");
+  assert.equal(payload.error.failedStage, "input_validation");
+  assert.equal(payload.error.preservedSelections.sector, "technology");
+  assert.equal(payload.error.preservedSelections.subindustry, "integrated-oil-gas");
+});
+
+test("uses the centralized SEC resolver for arbitrary tickers, share classes, and classified failures", async () => {
+  const { SecClient, SecClientError, normalizeTickerInput } = await secClientModule();
+  const tickerMap = {
+    fields: ["cik", "name", "ticker", "exchange"],
+    data: [
+      [320193, "Apple Inc.", "AAPL", "Nasdaq"],
+      [1067983, "Berkshire Hathaway Inc", "BRK-B", "NYSE"],
+      [1652044, "Alphabet Inc.", "GOOG", "Nasdaq"],
+      [1652044, "Alphabet Inc.", "GOOGL", "Nasdaq"],
+      [827054, "Microchip Technology Inc", "MCHP", "Nasdaq"],
+      [713676, "PNC Financial Services Group Inc", "PNC", "NYSE"],
+    ],
+  };
+  let calls = 0;
+  const client = new SecClient({
+    fetchImpl: async (url) => {
+      calls += 1;
+      assert.match(String(url), /company_tickers_exchange/);
+      return Response.json(tickerMap);
+    },
+    sleep: async () => {},
+    minimumIntervalMs: 0,
   });
+  assert.equal(normalizeTickerInput("BRK.B"), "BRK-B");
+  const aapl = await client.resolveCompany("aapl");
+  assert.equal(aapl.cik, "0000320193");
+  assert.equal(aapl.mappingSource, "sec-company-tickers-exchange");
+  const brk = await client.resolveCompany("BRK.B");
+  assert.equal(brk.ticker, "BRK-B");
+  assert.equal(brk.cik, "0001067983");
+  assert.equal((await client.resolveCompany("GOOG")).cik, "0001652044");
+  assert.equal((await client.resolveCompany("GOOGL")).ticker, "GOOGL");
+  assert.equal(calls, 1, "ticker association should be cached");
+  await assert.rejects(
+    () => client.resolveCompany("Alphabet"),
+    (error) => error instanceof SecClientError && error.code === "AMBIGUOUS_TICKER",
+  );
+});
+
+test("keeps SEC 429 and timeout separate from a generic service outage", async () => {
+  const { SecClient, SecClientError } = await secClientModule();
+  const rateLimited = new SecClient({
+    fetchImpl: async () => new Response("slow down", { status: 429 }),
+    sleep: async () => {},
+    maxAttempts: 2,
+    minimumIntervalMs: 0,
+  });
+  await assert.rejects(
+    () => rateLimited.getSubmissions("0000320193"),
+    (error) => error instanceof SecClientError && error.code === "SEC_RATE_LIMITED" && error.retryable,
+  );
+  const timedOut = new SecClient({
+    fetchImpl: async () => { throw new DOMException("aborted", "AbortError"); },
+    sleep: async () => {},
+    maxAttempts: 1,
+    minimumIntervalMs: 0,
+  });
+  await assert.rejects(
+    () => timedOut.getCompanyFacts("0000320193"),
+    (error) => error instanceof SecClientError && error.code === "SEC_TIMEOUT" && error.retryable,
+  );
 });
 
 test("returns distinct screened outlooks without regenerating company data", async () => {
@@ -227,7 +304,7 @@ test("keeps the full client-to-API sector and locale contract explicit", async (
     readFile(new URL("../app/api/sector-outlook/route.ts", import.meta.url), "utf8"),
   ]);
 
-  assert.match(client, /JSON\.stringify\(requestBody\(query,\s*requestedLocale\)\)/);
+  assert.match(client, /JSON\.stringify\(body\)/);
   assert.match(client, /company:\s*query/);
   assert.match(client, /\bmarket,\s*\n\s*sector,\s*\n\s*subindustry,\s*\n\s*options,/);
   assert.match(route, /type ResearchPayload/);
@@ -237,6 +314,8 @@ test("keeps the full client-to-API sector and locale contract explicit", async (
   assert.match(client, /document\.documentElement\.lang/);
   assert.match(outlookRoute, /getSectorOutlook/);
   assert.match(client, /refreshSectorOutlook/);
+  assert.match(client, /finbro-research-selection-v1/);
+  assert.match(client, /Technical details/);
 });
 
 test("enforces strict FCF and sector-specific analyst packs", async () => {
@@ -253,10 +332,10 @@ test("enforces strict FCF and sector-specific analyst packs", async () => {
   assert.match(route, /Free cash flow = operating cash flow - cash capital expenditure/);
   assert.match(financialMetrics, /formula:\s*"operating_cash_flow - cash_capex"/);
   assert.match(financialMetrics, /formulaId:\s*"subtract"/);
+  assert.match(financialMetrics, /selectedByFiscalYear/);
   assert.doesNotMatch(route + financialMetrics, /operatingCashFlow(?:Value)?\s*\+\s*investingCashFlow/);
   assert.match(route, /Unable to calculate free cash flow from available filings\./);
-  assert.match(route, /SUPPORTED_TICKER_RECORDS/);
-  assert.match(route, /if \(supportedRecord\) return supportedRecord/);
+  assert.match(route, /secClient\.resolveCompany/);
 
   for (const required of [
     "Production",
@@ -664,7 +743,7 @@ test("hides unusable cards and moves missing detail into Data Coverage", async (
   assert.match(route, /criticalMetricIds/);
   assert.match(route, /shellMetricAudit/);
   assert.match(route, /if \(!consistencyAudit\.passed\)/);
-  assert.match(route, /potentially inconsistent financial results were not published/);
+  assert.match(route, /Canonical metric consistency audit failed/);
   assert.match(types, /dataCoverage:\s*DataCoverage/);
 });
 
@@ -721,8 +800,8 @@ test("keeps five official-source regression snapshots and a disclosed runtime fa
   assert.match(route, /VERIFIED_SOURCE_SNAPSHOTS/);
   assert.match(route, /isTemporaryPublicDataFailure/);
   assert.match(route, /verified-runtime-fallback/);
-  assert.match(route, /live SEC endpoint was temporarily unavailable/i);
-  assert.match(route, /if \(\s*sourceSnapshot \|\|\s*!verifiedFallback \|\|\s*!isTemporaryPublicDataFailure\(error\)/);
+  assert.match(route, /verified official filing and extraction snapshot/i);
+  assert.match(route, /filingFallbackSupported/);
   assert.doesNotMatch(route, /verifiedFallback\s*\?\?\s*shellSourceSnapshot/);
 });
 

@@ -2,33 +2,23 @@ import { NextResponse } from "next/server";
 import {
   runShellMetricValidation,
   SHELL_2025_20F_URL,
-  SHELL_COMPANY_FACTS_URL,
   SHELL_VERIFIED_COMPANY_FACTS,
   SHELL_VERIFIED_FILING_EXCERPT,
 } from "../../lib/shell-metric-validation";
 import type { CompanyFactsPayload } from "../../lib/metric-locator-types";
 import { registryFromLocatorAudit } from "../../lib/canonical-metrics";
+import { secClient } from "../../lib/sec-client";
 
-export const runtime = "edge";
-
-const SEC_HEADERS = {
-  Accept: "application/json, text/html;q=0.9, */*;q=0.8",
-  "User-Agent": "ScopeLine Research contact: research@example.com",
-};
+export const runtime = "nodejs";
 
 async function officialShellInputs() {
-  const [factsResponse, filingResponse] = await Promise.all([
-    fetch(SHELL_COMPANY_FACTS_URL, { headers: SEC_HEADERS }),
-    fetch(SHELL_2025_20F_URL, { headers: SEC_HEADERS }),
+  const [companyFacts, filingHtml] = await Promise.all([
+    secClient.getCompanyFacts<CompanyFactsPayload>("0001306965"),
+    secClient.getFilingDocument(SHELL_2025_20F_URL),
   ]);
-  if (!factsResponse.ok || !filingResponse.ok) {
-    throw new Error(
-      `Official source request failed: Company Facts ${factsResponse.status}; 20-F ${filingResponse.status}`,
-    );
-  }
   return {
-    companyFacts: await factsResponse.json() as CompanyFactsPayload,
-    filingHtml: await filingResponse.text(),
+    companyFacts,
+    filingHtml,
   };
 }
 

@@ -368,7 +368,7 @@ function selectFacts(
   facts: CompanyFactsPayload,
   config: MetricConfig,
 ) {
-  const selected = new Map<string, SelectedFact>();
+  const selectedByEndDate = new Map<string, SelectedFact>();
   config.concepts.forEach(([taxonomy, concept], priority) => {
     const fact = facts.facts[taxonomy]?.[concept];
     if (!fact?.units) return;
@@ -396,7 +396,7 @@ function selectFacts(
           priority,
           durationDistance,
         };
-        const existing = selected.get(candidate.end);
+        const existing = selectedByEndDate.get(candidate.end);
         if (
           !existing ||
           candidate.priority < existing.priority ||
@@ -409,11 +409,39 @@ function selectFacts(
             candidate.durationDistance === existing.durationDistance &&
             candidate.filed > existing.filed
           )
-        ) selected.set(candidate.end, candidate);
+        ) selectedByEndDate.set(candidate.end, candidate);
       }
     }
   });
-  return selected;
+  // SEC Company Facts can retain both a 52/53-week endpoint and a nearby
+  // comparative endpoint in the same calendar year. The report uses one
+  // annual period per year, so select one source fact deterministically before
+  // creating FY labels and canonical keys.
+  const selectedByFiscalYear = new Map<string, SelectedFact>();
+  for (const candidate of selectedByEndDate.values()) {
+    const fiscalYear = candidate.end.slice(0, 4);
+    const existing = selectedByFiscalYear.get(fiscalYear);
+    if (
+      !existing ||
+      candidate.priority < existing.priority ||
+      (
+        candidate.priority === existing.priority &&
+        candidate.filed > existing.filed
+      ) ||
+      (
+        candidate.priority === existing.priority &&
+        candidate.filed === existing.filed &&
+        candidate.durationDistance < existing.durationDistance
+      ) ||
+      (
+        candidate.priority === existing.priority &&
+        candidate.filed === existing.filed &&
+        candidate.durationDistance === existing.durationDistance &&
+        candidate.end > existing.end
+      )
+    ) selectedByFiscalYear.set(fiscalYear, candidate);
+  }
+  return selectedByFiscalYear;
 }
 
 function usableFact(entry: CompanyFactEntry, duration: boolean) {

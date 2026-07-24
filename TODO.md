@@ -1,5 +1,14 @@
 # Institutional Equity Research Refactor and Shell Sample TODO
 
+## Non-default ticker reliability
+
+- [x] Trace arbitrary-ticker requests through resolution, SEC retrieval, sector matching, metric normalization, and report initialization.
+- [x] Confirm the MCHP/PNC canonical-period collision and prevent it without changing formulas or existing validated values.
+- [x] Centralize SEC transport, dynamic ticker/CIK resolution, cache, rate limiting, retry, timeout, and structured errors.
+- [x] Preserve research selections and show compact retryable Ethan error details.
+- [x] Add resolver/error regression coverage and pass lint, production build, and 26/26 tests.
+- [ ] Deploy only when the owner requests a release; then smoke-test MCHP, PNC, and one unsupported sector on production.
+
 ## FinBro Vercel deployment
 
 - [x] Identify the local-only nested Gitlink as the Vercel source-retrieval blocker.
