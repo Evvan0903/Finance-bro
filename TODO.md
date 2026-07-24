@@ -14,6 +14,13 @@
 - [x] Phase 9: run benchmark coverage, general-pack validation, five-company regression, bilingual Web/PDF checks, and final documentation.
 - [x] Create final local commit `feat: complete universal metric coverage upgrade v1`; do not push or deploy.
 
+### Verification and targeted correction
+
+- [x] Inspect the V1 architecture, artifact, representative canonical values, source precedence, and existing regression controls.
+- [x] Correct later-amendment supersession and dependent-derived invalidation without changing coverage methodology or mappings.
+- [x] Add narrow regression tests and create the concise reviewer handoff in `WORKLOAD.md`.
+- [x] Run the final full validation gate and create `fix: verify universal metric coverage v1`; do not push or deploy.
+
 ### Deferred V2
 
 - [ ] Broader issuer-specific custom mapping coverage beyond the validated V1 benchmark set.

@@ -1,5 +1,13 @@
 # FinBro Research Worklog
 
+## Universal Metric Coverage V1 — verification correction
+
+- Verified the live-path architecture, benchmark artifact, coverage math, representative canonical values, and existing regression controls without changing methodology or sector logic.
+- Confirmed a narrow source-precedence defect: a later validated amendment could not supersede an earlier Company Facts value, and pre-existing derived dependents could remain stale after a replacement.
+- Fixed only that defect: later amendments may replace matching-period/unit Company Facts values, record an audit reason, and invalidate direct/transitive derived dependents for deterministic recomputation.
+- Validation passed: `pnpm test` (40/40 with vinext build), ESLint, TypeScript, Vercel-compatible Next.js Webpack build, and `git diff --check`; no skipped or failed tests.
+- No push or deployment occurred. See `WORKLOAD.md` for the reviewer-oriented benchmark, validation, and limitations summary.
+
 ## Universal Metric Coverage V1 — Phases 4–9
 
 - Adaptive reporting: added Full/Standard/Limited modes, compact bilingual coverage summaries, collapsed technical audits, automatic KPI-section hiding, and shared Web/PDF rendering.

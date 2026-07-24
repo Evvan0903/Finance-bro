@@ -662,6 +662,43 @@ test("enforces canonical schema, key uniqueness, definitions, and dependencies",
       error instanceof CanonicalMetricError &&
       error.code === "PERIOD_MISMATCH",
   );
+
+  registry.register(ocf);
+  registry.register(capex);
+  const fcf = registry.calculateDerived({
+    metric_id: "fcf",
+    company_id: "SHEL",
+    sector: "integrated-oil-gas",
+    period: "FY2025",
+    period_end: "2025-12-31",
+    definition_id: "ocf-less-cash-capex",
+    formula_id: "subtract",
+    formula: "Operating cash flow - cash capital expenditure",
+    input_metric_keys: [ocf.canonical_key, capex.canonical_key],
+    unit: "USD",
+    currency: "USD",
+  });
+  const fcfMargin = registry.calculateDerived({
+    metric_id: "fcf-margin",
+    company_id: "SHEL",
+    sector: "integrated-oil-gas",
+    period: "FY2025",
+    period_end: "2025-12-31",
+    definition_id: "free-cash-flow-margin",
+    formula_id: "divide",
+    formula: "Free cash flow / operating cash flow",
+    input_metric_keys: [fcf.canonical_key, ocf.canonical_key],
+    unit: "ratio",
+    currency: null,
+  });
+  registry.replace(ocf.canonical_key, createCanonicalMetric({
+    ...ocf,
+    value: 43_000_000_000,
+    source_document: "Shell FY2025 Form 20-F/A",
+    filing_date: "2026-04-01",
+  }));
+  assert.throws(() => registry.getByKey(fcf.canonical_key));
+  assert.throws(() => registry.getByKey(fcfMargin.canonical_key));
 });
 
 test("rejects mixed units and currencies while preserving full calculation precision", async () => {

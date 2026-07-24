@@ -108,6 +108,29 @@ function unitAccepted(unit: string, accepted: string[]) {
   );
 }
 
+export function shouldSupersedeCompanyFacts(input: {
+  existing: {
+    source_document: string | null;
+    filing_date: string | null;
+    period_end: string;
+    unit: string;
+    value: number | null;
+  };
+  candidate: Pick<FilingFactCandidate, "periodEnd" | "unit" | "value">;
+  filingForm: string;
+  filingDate: string;
+}) {
+  return (
+    /\/A$/i.test(input.filingForm) &&
+    input.existing.source_document?.startsWith("SEC Company Facts") === true &&
+    input.existing.filing_date !== null &&
+    input.filingDate > input.existing.filing_date &&
+    input.existing.period_end === input.candidate.periodEnd &&
+    input.existing.unit === input.candidate.unit &&
+    input.existing.value !== input.candidate.value
+  );
+}
+
 export function enrichRegistryFromInlineXbrl(input: {
   registry: MetricRegistry;
   html: string;
@@ -145,19 +168,7 @@ export function enrichRegistryFromInlineXbrl(input: {
           diagnostics.push({ metricId: definition.metricId, source: "filing-inline-xbrl", concept: candidate.rawLabel, status: "rejected", reasons });
           continue;
         }
-        try {
-          input.registry.getMetric({
-            company_id: input.companyId,
-            metric_id: definition.metricId,
-            period_end: candidate.periodEnd,
-            definition_id: definition.definitionId,
-          });
-          diagnostics.push({ metricId: definition.metricId, source: "filing-inline-xbrl", concept: candidate.rawLabel, status: "candidate-only", reasons: ["Company Facts value already selected"] });
-          break;
-        } catch (error) {
-          if (!(error instanceof CanonicalMetricError) || error.code !== "METRIC_NOT_FOUND") throw error;
-        }
-        input.registry.register(createCanonicalMetric({
+        const filingMetric = createCanonicalMetric({
           metric_id: definition.metricId,
           company_id: input.companyId,
           sector: input.sector,
@@ -186,7 +197,39 @@ export function enrichRegistryFromInlineXbrl(input: {
           retrieved_at: input.retrievedAt,
           data_version: input.registry.dataVersion,
           calculation_version: input.registry.calculationVersion,
-        }));
+        });
+        try {
+          const existing = input.registry.getMetric({
+            company_id: input.companyId,
+            metric_id: definition.metricId,
+            period_end: candidate.periodEnd,
+            definition_id: definition.definitionId,
+          });
+          if (shouldSupersedeCompanyFacts({
+            existing,
+            candidate,
+            filingForm: input.form,
+            filingDate: input.filingDate,
+          })) {
+            input.registry.replace(existing.canonical_key, {
+              ...filingMetric,
+              extraction_method: `deterministic-filing-inline-xbrl-superseding-company-facts:${candidate.rawLabel}`,
+            });
+            diagnostics.push({
+              metricId: definition.metricId,
+              source: "filing-inline-xbrl",
+              concept: candidate.rawLabel,
+              status: "published",
+              reasons: ["Superseded an earlier Company Facts value using a later amended filing."],
+            });
+            break;
+          }
+          diagnostics.push({ metricId: definition.metricId, source: "filing-inline-xbrl", concept: candidate.rawLabel, status: "candidate-only", reasons: ["Company Facts value already selected"] });
+          break;
+        } catch (error) {
+          if (!(error instanceof CanonicalMetricError) || error.code !== "METRIC_NOT_FOUND") throw error;
+        }
+        input.registry.register(filingMetric);
         diagnostics.push({ metricId: definition.metricId, source: "filing-inline-xbrl", concept: candidate.rawLabel, status: "published", reasons: [] });
         break;
       }

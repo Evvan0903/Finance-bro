@@ -86,6 +86,8 @@ export function buildMetricExtractionAudit(input: {
       const filingEnriched =
         metric.extraction_method?.startsWith("deterministic-filing-inline-xbrl") ??
         false;
+      const supersededCompanyFacts =
+        metric.extraction_method?.includes("superseding-company-facts") ?? false;
       return {
         metricId: expectation.metricId,
         definitionId: metric.definition_id,
@@ -109,6 +111,9 @@ export function buildMetricExtractionAudit(input: {
         selectedPeriod: metric.period,
         selectedUnit: metric.unit,
         selectedValue: metric.value ?? undefined,
+        selectedSelectionReason: supersededCompanyFacts
+          ? "A later amended filing superseded an earlier Company Facts value after period, unit, duration, definition, and consolidated-context validation."
+          : undefined,
         traceId: input.traceId,
       };
     }

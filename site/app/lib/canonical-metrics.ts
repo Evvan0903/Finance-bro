@@ -381,6 +381,56 @@ export class MetricRegistry {
     return existing;
   }
 
+  replace(existingCanonicalKey: string, metric: CanonicalMetricObject) {
+    const existing = this.metrics.get(existingCanonicalKey);
+    if (!existing) {
+      throw new CanonicalMetricError(
+        "METRIC_NOT_FOUND",
+        `Cannot replace missing canonical metric: ${existingCanonicalKey}`,
+      );
+    }
+    if (metric.canonical_key !== existingCanonicalKey) {
+      throw new CanonicalMetricError(
+        "DEFINITION_CONFLICT",
+        "Replacement must preserve the canonical metric key",
+      );
+    }
+    validateCanonicalMetric(metric);
+    if (
+      metric.data_version !== this.dataVersion ||
+      metric.calculation_version !== this.calculationVersion
+    ) {
+      throw new CanonicalMetricError(
+        "INVALID_METRIC",
+        "Replacement metric version does not match the registry",
+      );
+    }
+    this.metrics.set(existingCanonicalKey, Object.freeze({
+      ...metric,
+      input_metric_keys: Object.freeze([...metric.input_metric_keys]) as unknown as string[],
+    }));
+    this.invalidateDerivedDependents(existingCanonicalKey);
+    return metric;
+  }
+
+  private invalidateDerivedDependents(changedCanonicalKey: string) {
+    const invalidated = new Set([changedCanonicalKey]);
+    let removed = true;
+    while (removed) {
+      removed = false;
+      for (const [canonicalKey, metric] of [...this.metrics.entries()]) {
+        if (
+          metric.status === "Derived" &&
+          metric.input_metric_keys.some((inputKey) => invalidated.has(inputKey))
+        ) {
+          this.metrics.delete(canonicalKey);
+          invalidated.add(canonicalKey);
+          removed = true;
+        }
+      }
+    }
+  }
+
   getByKey(canonicalKey: string) {
     const metric = this.metrics.get(canonicalKey);
     if (!metric) {

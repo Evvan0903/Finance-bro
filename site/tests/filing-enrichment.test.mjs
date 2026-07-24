@@ -64,7 +64,37 @@ test("keeps custom mappings validation-gated and HTML tables diagnostic-only", a
   assert.doesNotMatch(tables, /createCanonicalMetric/);
 });
 
-test("integrates filing enrichment without replacing successful Company Facts values", async () => {
+test("allows only a later amended filing to supersede a Company Facts value", async () => {
+  const { shouldSupersedeCompanyFacts } = await parserModule();
+  const existing = {
+    source_document: "SEC Company Facts — 10-K",
+    filing_date: "2025-02-01",
+    period_end: "2024-12-31",
+    unit: "USD",
+    value: 100,
+  };
+  const candidate = { periodEnd: "2024-12-31", unit: "USD", value: 102 };
+  assert.equal(shouldSupersedeCompanyFacts({
+    existing,
+    candidate,
+    filingForm: "10-K/A",
+    filingDate: "2025-03-01",
+  }), true);
+  assert.equal(shouldSupersedeCompanyFacts({
+    existing,
+    candidate,
+    filingForm: "10-K",
+    filingDate: "2025-03-01",
+  }), false);
+  assert.equal(shouldSupersedeCompanyFacts({
+    existing,
+    candidate: { ...candidate, unit: "EUR" },
+    filingForm: "10-K/A",
+    filingDate: "2025-03-01",
+  }), false);
+});
+
+test("integrates filing enrichment without replacing valid non-amended Company Facts values", async () => {
   const route = await readFile(
     new URL("../app/api/research/route.ts", import.meta.url),
     "utf8",
@@ -75,5 +105,6 @@ test("integrates filing enrichment without replacing successful Company Facts va
   );
   assert.match(route, /enrichRegistryFromInlineXbrl/);
   assert.match(parser, /Company Facts value already selected/);
+  assert.match(parser, /superseding-company-facts/);
   assert.match(parser, /candidate\.dimensions\.length/);
 });

@@ -79,6 +79,7 @@ export type MetricExtractionAudit = {
   selectedPeriod?: string;
   selectedUnit?: string;
   selectedValue?: number | string;
+  selectedSelectionReason?: string;
   rejectionReasons?: string[];
   traceId?: string;
 };

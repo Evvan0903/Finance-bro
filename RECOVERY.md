@@ -387,3 +387,13 @@ Sign in as the Site owner, generate an NVDA report in each language, export one 
 3. Treat the repository as the source of truth.
 4. Resume only the first unchecked task.
 5. Preserve existing code and do not push checkpoint commits.
+# Universal Metric Coverage V1 — verification and targeted correction
+
+- Objective: verify the existing V1 architecture and published benchmark claims, correct only confirmed source-precedence defects, and leave a concise reviewer handoff.
+- Confirmed implementation: Registry V2, applicability-aware coverage, provenance-bearing derivations, filing candidate gates, dimension rejection, custom/table publication controls, adaptive reports, and bilingual Data Coverage are active in code.
+- Correction: a later matching-period/unit amendment can now supersede an earlier Company Facts value only after deterministic checks. Its audit states why it was selected, and all direct/transitive derived dependents are invalidated before `ensureCoreDerivedMetrics` recalculates them.
+- Verification: targeted TypeScript and ESLint checks passed; 32/32 focused tests passed. Final gates also passed: `pnpm test` (40/40 with vinext build), ESLint, TypeScript, Next.js Webpack Vercel build, and `git diff --check`. The runtime has `pnpm` but no `npm` / `npx`, so equivalent commands were used.
+- Benchmark: the checked artifact still contains 21 rows; the 13-company initial non-financial Tier 1 mean is 80.45%; ORCL (58.33%) and SHEL (54.17%) remain the only below-65% entries.
+- Limitations: the artifact's all-21 live-HTTP claim was inspected as an artifact rather than rerun for all 21 in this session. Live SEC route checks covered 12 representatives; unvalidated custom tags, incremental dimensions, HTML candidates, and SEC availability remain limitations.
+- Status: implementation correction and validation complete; create local `fix: verify universal metric coverage v1` commit, and do not push/deploy.
+- Files modified in this verification: `site/app/lib/canonical-metrics.ts`, `site/app/lib/filing-enrichment/inline-xbrl.ts`, `site/app/lib/metric-coverage/{extraction-audit.ts,types.ts}`, `site/app/ResearchApp.tsx`, `site/tests/{filing-enrichment.test.mjs,rendered-html.test.mjs}`, `WORKLOG.md`, `RECOVERY.md`, `TODO.md`, and `WORKLOAD.md`.

@@ -973,7 +973,7 @@ function DataCoveragePanel({
                     <td>{item.metricId}</td>
                     <td>{item.status}</td>
                     <td>{item.searchedSources.join(" → ") || "—"}</td>
-                    <td>{item.reason}</td>
+                    <td>{item.selectedSelectionReason ?? item.reason}</td>
                   </tr>
                 ))}
               </tbody>
