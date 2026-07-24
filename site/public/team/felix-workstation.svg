@@ -1,26 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="560" height="360" viewBox="0 0 560 360" shape-rendering="crispEdges">
-  <title>Felix financial modeling workstation</title>
-  <g opacity=".16" fill="#0055ff"><rect x="68" y="314" width="424" height="8"/><rect x="92" y="322" width="376" height="6"/></g>
-  <g>
-    <rect x="116" y="154" width="108" height="116" fill="#c9d6e8"/><rect x="126" y="164" width="88" height="106" fill="#e7edf6"/>
-    <rect x="106" y="176" width="14" height="78" fill="#95a8c3"/><rect x="220" y="176" width="14" height="78" fill="#95a8c3"/>
-    <rect x="142" y="76" width="72" height="78" fill="#c78b63"/><rect x="134" y="68" width="88" height="24" fill="#3d2a22"/>
-    <rect x="134" y="88" width="16" height="38" fill="#3d2a22"/><rect x="151" y="104" width="10" height="9" fill="#20242d"/>
-    <rect x="195" y="104" width="10" height="9" fill="#20242d"/><rect x="174" y="122" width="16" height="6" fill="#8c523d"/>
-    <rect x="164" y="145" width="28" height="18" fill="#eac1a5"/><path d="M126 168h104v96H126z" fill="#192b4b"/>
-    <path d="m156 168 22 34 22-34z" fill="#fff"/><path d="m176 186h10l8 42-13 17-13-17z" fill="#4773c7"/>
-    <rect x="102" y="184" width="36" height="56" fill="#192b4b"/><rect x="218" y="184" width="36" height="56" fill="#192b4b"/>
-    <rect x="94" y="226" width="42" height="18" fill="#c78b63"/><rect x="220" y="226" width="42" height="18" fill="#c78b63"/>
-    <rect x="54" y="196" width="48" height="58" fill="#29384f"/><rect x="62" y="204" width="32" height="10" fill="#e9f0fb"/>
-    <rect x="62" y="220" width="8" height="8" fill="#6f8fff"/><rect x="74" y="220" width="8" height="8" fill="#6f8fff"/>
-    <rect x="86" y="220" width="8" height="8" fill="#0055ff"/><rect x="62" y="232" width="8" height="8" fill="#6f8fff"/>
-    <rect x="74" y="232" width="8" height="8" fill="#0055ff"/><rect x="86" y="232" width="8" height="8" fill="#6f8fff"/>
-    <rect x="302" y="70" width="194" height="140" fill="#192538"/><rect x="314" y="82" width="170" height="112" fill="#eef4ff"/>
-    <path d="M330 84v108M364 84v108M398 84v108M432 84v108M466 84v108M314 108h170M314 132h170M314 156h170M314 180h170" stroke="#6f8fff" stroke-width="4"/>
-    <rect x="366" y="110" width="30" height="20" fill="#0055ff" opacity=".38"/><rect x="434" y="158" width="30" height="20" fill="#0055ff" opacity=".6"/>
-    <rect x="384" y="210" width="28" height="28" fill="#192538"/><rect x="354" y="234" width="88" height="10" fill="#192538"/>
-    <rect x="252" y="232" width="78" height="10" fill="#adbbce"/><rect x="42" y="254" width="476" height="24" fill="#5d6c85"/>
-    <rect x="42" y="254" width="476" height="7" fill="#8391a7"/><rect x="64" y="278" width="22" height="64" fill="#394962"/>
-    <rect x="474" y="278" width="22" height="64" fill="#394962"/><rect x="76" y="290" width="398" height="10" fill="#475873"/>
-  </g>
+  <title>Felix building a spreadsheet model across two monitors</title>
+  <g opacity=".14" fill="#0055ff"><rect x="44" y="326" width="472" height="7"/><rect x="78" y="335" width="404" height="4"/></g>
+  <!-- dual monitor modeling rig -->
+  <path fill="#142238" d="M22 70h178v130H22z"/><path fill="#edf4ff" d="M34 82h154v106H34z"/>
+  <path d="M34 108h154M34 134h154M34 160h154M72 82v106M110 82v106M148 82v106" stroke="#8ba6d0" stroke-width="3"/>
+  <rect x="74" y="110" width="34" height="22" fill="#0055ff" opacity=".55"/><rect x="150" y="136" width="36" height="22" fill="#0055ff" opacity=".28"/>
+  <path fill="#142238" d="M360 58h178v142H360z"/><path fill="#edf4ff" d="M372 70h154v118H372z"/>
+  <rect x="384" y="84" width="58" height="6" fill="#0055ff"/><path d="m384 164 28-28 24 12 28-42 42 21" fill="none" stroke="#0055ff" stroke-width="6"/>
+  <rect x="384" y="174" width="122" height="5" fill="#b5c4d9"/><rect x="96" y="200" width="30" height="29" fill="#142238"/>
+  <rect x="66" y="228" width="90" height="9" fill="#142238"/><rect x="434" y="200" width="30" height="29" fill="#142238"/>
+  <rect x="404" y="228" width="90" height="9" fill="#142238"/>
+  <!-- low task chair -->
+  <path fill="#9fb1ca" d="M222 170h112v12h14v98h-18v24H208v-28h-14v-76h28z"/>
+  <path fill="#e4eaf3" d="M234 182h84v92h-84z"/>
+  <!-- Felix hunched, rolled sleeves, curly hair -->
+  <path fill="#c78961" d="M226 94h12V82h70v10h12v58h-12v14h-70v-12h-12z"/>
+  <path fill="#3a2925" d="M226 84h10V70h14V62h54v8h16v26h-14V84h-12v10h-16V82h-14v12h-14V82h-14v20h-12z"/>
+  <rect x="242" y="111" width="12" height="8" fill="#1d2531"/><rect x="290" y="111" width="12" height="8" fill="#1d2531"/>
+  <path fill="#7d4a3b" d="M258 135h26v6h-26z"/><rect x="252" y="154" width="38" height="20" fill="#e1b191"/>
+  <!-- sweater vest and forward arms -->
+  <path fill="#1d3152" d="M206 172h128l18 88H192z"/><path fill="#f6f8fb" d="m236 172 36 39 35-39z"/>
+  <path fill="#4773c7" d="m267 196h11l10 44-16 18-16-18z"/>
+  <path fill="#f6f8fb" d="M194 190h34l-11 39h-36zm127 0h34l17 38-36 8z"/>
+  <path fill="#c78961" d="m174 219 75 14-4 19-78-13zm123 14 77-15 5 20-78 15z"/>
+  <!-- keyboard, calculator and scribble notebook -->
+  <path fill="#b4c0d1" d="m215 231 124 2 9 22H203z"/><path fill="#eef3f8" d="M222 237h108l4 8H216z"/>
+  <path fill="#293b55" d="M58 206h50v47H58z"/><rect x="66" y="213" width="34" height="9" fill="#eaf1fb"/>
+  <rect x="66" y="228" width="8" height="7" fill="#6f8fff"/><rect x="79" y="228" width="8" height="7" fill="#0055ff"/>
+  <rect x="92" y="228" width="8" height="7" fill="#6f8fff"/><rect x="66" y="240" width="8" height="7" fill="#0055ff"/>
+  <path fill="#fff" d="M452 211h68v42h-68z"/><path d="m461 242 12-12 11 7 18-17" fill="none" stroke="#0055ff" stroke-width="4"/>
+  <!-- cable-tray modeling desk -->
+  <path fill="#4b607d" d="M18 252h524v27H18z"/><rect x="18" y="252" width="524" height="7" fill="#8496ae"/>
+  <path fill="#30455f" d="M42 279h25v66H42zm451 0h25v66h-25z"/><rect x="67" y="292" width="426" height="10" fill="#3a506c"/>
+  <rect x="182" y="286" width="196" height="9" fill="#233850"/>
 </svg>

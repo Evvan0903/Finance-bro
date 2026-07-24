@@ -1,5 +1,16 @@
 # FinBro Research Worklog
 
+## FinBro pixel-team and business-card refinement
+
+- `saveToken` routing: Sol owned the visual hierarchy, interaction boundaries, and final review; Terra audited routing, tests, and regression risk; Luna audited asset individuality, modal direction, status treatment, and responsive presentation.
+- Redrew all six transparent workstation SVGs as distinct scenes rather than shared body/desk templates. Characters now vary by face shape, skin tone, hair, glasses, posture, clothing, chair, desk geometry, monitor placement, screen content, hands, and workflow-specific accessories.
+- Refined the homepage interaction treatment with visible dot-plus-text statuses, blue-name hover/focus behavior, a subtle `View profile →` reveal, and explicit keyboard focus rings while preserving the compact 3×2 information architecture.
+- Rebuilt the dialog as a digital business card: complete profile content, duties, deliverables, status, boundary text, and CTA on the left; a large workstation portrait area on the upper right; image-first stacking on mobile.
+- Preserved Ethan’s live Public Company Research route and the five honest status-overview routes. No SEC, Metric Registry, research-pack, valuation, report-generation, or PDF logic changed.
+- Desktop browser QA confirmed that every asset loads, all six dialogs show the correct large image/content/route, the right-side visual hierarchy is intact, CTA actions are visible, focus trapping wraps, Escape/backdrop dismissal works, focus returns, Ethan opens the live research input, and Nora opens the Planned compliance overview with the legal boundary.
+- Final validation passed: SVG parsing, ESLint, TypeScript, vinext production build, 43/43 automated tests, the Vercel-compatible Next.js Webpack build, and whitespace validation.
+- Release: committed with the requested message and pushed to the existing private GitHub repository on `main`; no manual Vercel deployment was performed.
+
 ## FinBro analyst-team visual correction
 
 - Replaced the temporary CSS figures with six original transparent workstation SVGs and aligned the homepage to the approved compact, centered 3×2 team concept; tablet and mobile reflow to 2×3 and 1-column layouts.

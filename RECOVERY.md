@@ -1,5 +1,40 @@
 # Recovery Checkpoint
 
+## Current objective — FinBro pixel-team and business-card refinement
+
+### Completed
+
+- Used `saveToken` to route design/final judgment to Sol, repository and test audit to Terra, and routine visual audit to Luna.
+- Substantively redrew all six reusable transparent SVG workstation scenes with different people, poses, desks, displays, and workflow-specific props.
+- Added visible status labels, consistent hover/focus affordances, and the `View profile →` hint without changing the accepted 3×2 homepage structure.
+- Reoriented the profile dialog to business-card hierarchy: information and CTA left, prominent employee image right, image-first single-column presentation at the mobile breakpoint.
+- Preserved all six exact roles, copy, statuses, routes, Ethan’s live workflow, five placeholder status pages, and Nora’s legal/compliance boundary.
+- Added a regression contract for unique local assets, route coverage, keyboard/backdrop behavior, responsive modal grid areas, and image-led profile ordering.
+- Desktop browser QA passed for all assets, six dialogs, image loading, route accuracy, modal hierarchy, focus trap, Escape, outside dismissal, focus restoration, Ethan routing, and Nora’s compliance-status page.
+
+### Current status
+
+Implementation, desktop browser QA, the full automated validation gate, local commit, and authorized push to `origin/main` are complete. SVG parsing, ESLint, TypeScript, vinext production build, 43/43 tests, the Vercel-compatible Next.js Webpack build, and whitespace validation passed. No manual Vercel deployment was performed.
+
+### Files modified
+
+- `site/app/TeamWorkspace.tsx`
+- `site/app/globals.css`
+- `site/public/team/*-workstation.svg`
+- `site/tests/rendered-html.test.mjs`
+- `WORKLOG.md`
+- `RECOVERY.md`
+- `TODO.md`
+
+### Next recommended step
+
+Allow the existing GitHub/Vercel integration to handle any configured automatic deployment. Verify production only in a separate deployment-verification task.
+
+### Assumptions and pending decisions
+
+- Full workstation scenes remain the reusable modal portraits because the large right-side treatment is visually strong; separate portrait files are unnecessary.
+- The five unfinished modules remain truthful status pages until separately implemented.
+
 ## Current objective — FinBro analyst-team visual correction
 
 ### Completed

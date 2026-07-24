@@ -1,5 +1,18 @@
 # Institutional Equity Research Refactor and Shell Sample TODO
 
+## FinBro pixel-team and business-card refinement
+
+- [x] Read `saveToken`, current recovery notes, homepage code, route structure, tests, and all six existing assets.
+- [x] Audit the visual implementation through Sol, Terra, and Luna responsibilities.
+- [x] Redraw all six workstation assets with distinct faces, posture, desks, screens, and workflow props.
+- [x] Restore visible dot-plus-text statuses and add shared hover/focus/profile-hint treatment.
+- [x] Rebuild the modal with profile information and CTA left and a prominent workstation image right.
+- [x] Preserve Ethan’s live workflow, five honest status pages, exact team content, and Nora’s boundary.
+- [x] Verify desktop assets, six dialogs, large profile images, keyboard behavior, backdrop dismissal, focus restoration, and route behavior in the browser.
+- [x] Pass the full lint, type, test, production-build, Vercel-build, SVG, and whitespace gates.
+- [x] Create the requested local commit and push `main` to GitHub.
+- [x] Record final completion without manually deploying Vercel.
+
 ## FinBro analyst-team visual correction
 
 - [x] Read the existing recovery notes, architecture, homepage implementation, tests, and `saveToken` routing skill.

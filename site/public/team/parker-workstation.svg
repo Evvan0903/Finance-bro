@@ -1,25 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="560" height="360" viewBox="0 0 560 360" shape-rendering="crispEdges">
-  <title>Parker portfolio monitoring workstation</title>
-  <g opacity=".16" fill="#0055ff"><rect x="68" y="314" width="424" height="8"/><rect x="92" y="322" width="376" height="6"/></g>
-  <g>
-    <rect x="116" y="154" width="108" height="116" fill="#c9d6e8"/><rect x="126" y="164" width="88" height="106" fill="#e7edf6"/>
-    <rect x="106" y="176" width="14" height="78" fill="#95a8c3"/><rect x="220" y="176" width="14" height="78" fill="#95a8c3"/>
-    <rect x="142" y="76" width="72" height="78" fill="#8f5d43"/><rect x="134" y="68" width="88" height="24" fill="#191919"/>
-    <rect x="134" y="88" width="16" height="34" fill="#191919"/><rect x="151" y="104" width="10" height="9" fill="#111827"/>
-    <rect x="195" y="104" width="10" height="9" fill="#111827"/><rect x="174" y="122" width="16" height="6" fill="#6b402f"/>
-    <rect x="164" y="145" width="28" height="18" fill="#c89a80"/><path d="M126 168h104v96H126z" fill="#26334a"/>
-    <path d="m156 168 22 34 22-34z" fill="#fff"/><path d="m176 186h10l8 42-13 17-13-17z" fill="#0055ff"/>
-    <rect x="102" y="184" width="36" height="56" fill="#26334a"/><rect x="218" y="184" width="36" height="56" fill="#26334a"/>
-    <rect x="94" y="226" width="42" height="18" fill="#8f5d43"/><rect x="220" y="226" width="42" height="18" fill="#8f5d43"/>
-    <rect x="48" y="188" width="56" height="66" fill="#1d2a3f"/><rect x="56" y="198" width="40" height="30" fill="#eef4ff"/>
-    <rect x="60" y="216" width="8" height="8" fill="#9eb1d0"/><rect x="72" y="208" width="8" height="16" fill="#6f8fff"/>
-    <rect x="84" y="198" width="8" height="26" fill="#0055ff"/><rect x="56" y="236" width="32" height="6" fill="#ffb020"/>
-    <rect x="302" y="70" width="194" height="140" fill="#192538"/><rect x="314" y="82" width="170" height="112" fill="#eef4ff"/>
-    <path d="m330 164 26-30 30 14 34-48 30 18 24-28" fill="none" stroke="#0055ff" stroke-width="10"/>
-    <rect x="330" y="174" width="132" height="6" fill="#c5d2e5"/><rect x="452" y="96" width="18" height="18" fill="#ffb020"/>
-    <rect x="384" y="210" width="28" height="28" fill="#192538"/><rect x="354" y="234" width="88" height="10" fill="#192538"/>
-    <rect x="252" y="232" width="78" height="10" fill="#adbbce"/><rect x="42" y="254" width="476" height="24" fill="#5d6c85"/>
-    <rect x="42" y="254" width="476" height="7" fill="#8391a7"/><rect x="64" y="278" width="22" height="64" fill="#394962"/>
-    <rect x="474" y="278" width="22" height="64" fill="#394962"/><rect x="76" y="290" width="398" height="10" fill="#475873"/>
-  </g>
+  <title>Parker monitoring a portfolio watchlist and live risk alerts</title>
+  <g opacity=".14" fill="#0055ff"><rect x="46" y="326" width="468" height="7"/><rect x="84" y="335" width="392" height="4"/></g>
+  <!-- panoramic monitoring display -->
+  <path fill="#142238" d="M34 62h282v142H34z"/><path fill="#edf4ff" d="M46 74h258v118H46z"/>
+  <rect x="58" y="86" width="62" height="7" fill="#0055ff"/><rect x="58" y="105" width="70" height="7" fill="#a5b5cc"/>
+  <path d="m58 169 31-27 29 11 31-43 34 18 33-35 35 21 35-26" fill="none" stroke="#0055ff" stroke-width="7"/>
+  <rect x="58" y="177" width="228" height="5" fill="#c1ccdc"/><rect x="252" y="84" width="32" height="20" fill="#ffb020"/>
+  <path fill="#fff" d="m264 88 12 12h-24z"/><rect x="160" y="204" width="32" height="28" fill="#142238"/>
+  <rect x="126" y="231" width="100" height="9" fill="#142238"/>
+  <!-- relaxed angled chair -->
+  <path fill="#9baec7" d="M348 162h110v12h14v102h-18v28H334v-25h-18v-72h24z"/>
+  <path fill="#e2e9f2" d="m360 174 82-4 8 102-90 4z"/><path fill="#7388a6" d="M321 210h15v56h-15zm136-18h15v66h-15z"/>
+  <!-- Parker, close crop hair and expressive brow -->
+  <path fill="#8d5b43" d="M350 84h12V72h70v12h12v60h-12v14h-70v-12h-12z"/>
+  <path fill="#15171c" d="M350 74h12V60h68v8h14v28h-12V84h-18v-8h-20v9h-32v17h-12z"/>
+  <path fill="#774b39" d="M362 136h70v12h-14v12h-42v-8h-14z"/>
+  <rect x="366" y="108" width="12" height="8" fill="#121826"/><rect x="414" y="105" width="12" height="8" fill="#121826"/>
+  <path d="m365 101 16-4m30 1 17 3" stroke="#15171c" stroke-width="5"/><rect x="388" y="132" width="20" height="5" fill="#633c31"/>
+  <rect x="378" y="152" width="38" height="21" fill="#c08a70"/>
+  <!-- open jacket, one arm stretched to keyboard, one hand at chin -->
+  <path fill="#26344c" d="M324 171h134l18 94H316z"/><path fill="#f6f8fb" d="m358 171 39 37 37-37z"/>
+  <path fill="#0055ff" d="m391 195h11l10 42-16 20-15-20z"/>
+  <path fill="#26344c" d="m318 188 31 2-23 54-44-5zM448 181l27 10 30-45 23 16-46 82-41-11z"/>
+  <path fill="#8d5b43" d="m272 227 64 6-2 20-67-5zm225-84 25 13-10 19-25-15z"/>
+  <!-- watchlist tablet and alert -->
+  <path fill="#1c2a40" d="M42 199h74v54H42z"/><path fill="#edf4ff" d="M50 207h58v38H50z"/>
+  <rect x="57" y="214" width="18" height="5" fill="#0055ff"/><rect x="81" y="214" width="18" height="5" fill="#37a967"/>
+  <rect x="57" y="226" width="16" height="5" fill="#9daec6"/><rect x="80" y="226" width="19" height="5" fill="#ffb020"/>
+  <!-- keyboard and angular desk -->
+  <path fill="#b5c1d2" d="m190 234 134 2 8 18H181z"/><path fill="#f0f4f8" d="M199 239h120l3 7H195z"/>
+  <path fill="#4e627f" d="M26 253h508v27H26z"/><rect x="26" y="253" width="508" height="7" fill="#8496ae"/>
+  <path fill="#30455f" d="m48 280 29 0-6 65H46zm431 0h30l5 65h-26z"/><path fill="#3c526d" d="M77 292h402v10H77z"/>
+  <!-- subtle sneaker under desk -->
+  <path fill="#17253a" d="M372 322h76l15 17h-91z"/><rect x="377" y="323" width="47" height="5" fill="#0055ff"/>
 </svg>

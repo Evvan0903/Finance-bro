@@ -1,49 +1,42 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="560" height="360" viewBox="0 0 560 360" shape-rendering="crispEdges">
-  <title>Ethan public company research workstation</title>
-  <g opacity=".16" fill="#0055ff">
-    <rect x="68" y="314" width="424" height="8"/><rect x="92" y="322" width="376" height="6"/>
-  </g>
-  <g>
-    <rect x="116" y="154" width="108" height="116" fill="#c9d6e8"/>
-    <rect x="126" y="164" width="88" height="106" fill="#e7edf6"/>
-    <rect x="106" y="176" width="14" height="78" fill="#95a8c3"/>
-    <rect x="220" y="176" width="14" height="78" fill="#95a8c3"/>
-    <rect x="142" y="76" width="72" height="78" fill="#dda47e"/>
-    <rect x="134" y="68" width="88" height="24" fill="#27201e"/>
-    <rect x="134" y="86" width="16" height="42" fill="#27201e"/>
-    <rect x="150" y="92" width="8" height="8" fill="#b77955"/>
-    <rect x="198" y="92" width="8" height="8" fill="#b77955"/>
-    <rect x="154" y="106" width="10" height="8" fill="#20242d"/>
-    <rect x="192" y="106" width="10" height="8" fill="#20242d"/>
-    <rect x="174" y="122" width="14" height="6" fill="#9f624e"/>
-    <rect x="164" y="145" width="28" height="18" fill="#f5d8c2"/>
-    <path d="M126 168h104v96H126z" fill="#172c52"/>
-    <path d="m156 168 22 34 22-34z" fill="#fff"/>
-    <path d="m176 186 10 0 8 42-13 17-13-17z" fill="#0055ff"/>
-    <rect x="102" y="184" width="36" height="56" fill="#172c52"/>
-    <rect x="218" y="184" width="36" height="56" fill="#172c52"/>
-    <rect x="94" y="226" width="42" height="18" fill="#dda47e"/>
-    <rect x="220" y="226" width="42" height="18" fill="#dda47e"/>
-    <rect x="62" y="214" width="40" height="48" fill="#fff"/>
-    <rect x="68" y="220" width="28" height="5" fill="#0055ff"/>
-    <rect x="68" y="231" width="22" height="4" fill="#9aa9be"/>
-    <rect x="68" y="241" width="25" height="4" fill="#9aa9be"/>
-    <rect x="68" y="251" width="17" height="4" fill="#9aa9be"/>
-    <rect x="302" y="70" width="194" height="140" fill="#192538"/>
-    <rect x="314" y="82" width="170" height="112" fill="#eef4ff"/>
-    <rect x="330" y="164" width="18" height="18" fill="#9bb6e9"/>
-    <rect x="356" y="144" width="18" height="38" fill="#648de0"/>
-    <rect x="382" y="116" width="18" height="66" fill="#0055ff"/>
-    <rect x="418" y="102" width="48" height="8" fill="#0055ff"/>
-    <rect x="418" y="120" width="34" height="8" fill="#6f8fff"/>
-    <rect x="418" y="138" width="42" height="8" fill="#a8b9d8"/>
-    <rect x="384" y="210" width="28" height="28" fill="#192538"/>
-    <rect x="354" y="234" width="88" height="10" fill="#192538"/>
-    <rect x="252" y="232" width="78" height="10" fill="#adbbce"/>
-    <rect x="42" y="254" width="476" height="24" fill="#5d6c85"/>
-    <rect x="42" y="254" width="476" height="7" fill="#8391a7"/>
-    <rect x="64" y="278" width="22" height="64" fill="#394962"/>
-    <rect x="474" y="278" width="22" height="64" fill="#394962"/>
-    <rect x="76" y="290" width="398" height="10" fill="#475873"/>
-  </g>
+  <title>Ethan reviewing filings at his public company research workstation</title>
+  <g opacity=".14" fill="#0055ff"><rect x="52" y="324" width="456" height="7"/><rect x="88" y="333" width="384" height="4"/></g>
+  <!-- chair -->
+  <path fill="#aabbd3" d="M132 154h110v12h12v100h-16v30H124v-30h-14V178h22z"/>
+  <path fill="#e8eef7" d="M144 166h82v100h-82z"/><path fill="#7d92b2" d="M118 190h12v65h-12zm122 0h12v65h-12z"/>
+  <!-- head, ears, dimensional hair -->
+  <path fill="#d89a72" d="M148 78h12V66h62v10h10v62h-10v14h-62v-12h-12z"/>
+  <path fill="#b97855" d="M148 98h8v22h-8zm78 0h8v22h-8z"/>
+  <path fill="#201c22" d="M150 66h10V56h54v6h16v22h-12V74h-18v-8h-40v24h-12z"/>
+  <path fill="#32262b" d="M158 74h60v12h-60z"/><path fill="#c98963" d="M160 128h62v12h-62z"/>
+  <!-- focused face -->
+  <rect x="164" y="98" width="12" height="8" fill="#182235"/><rect x="204" y="98" width="12" height="8" fill="#182235"/>
+  <rect x="176" y="102" width="28" height="4" fill="#aa6b52"/><rect x="184" y="120" width="18" height="5" fill="#8b4c41"/>
+  <rect x="170" y="142" width="40" height="22" fill="#efc9aa"/>
+  <!-- tailored torso leaning toward screen -->
+  <path fill="#172c52" d="M126 166h110l18 86-122 12-18-76z"/>
+  <path fill="#f8fbff" d="m158 166 34 43 31-43z"/><path fill="#0055ff" d="m187 190h12l12 48-17 20-16-20z"/>
+  <path fill="#28466f" d="M116 182h28l8 58-38 7-16-46zM228 179h27l29 43-29 15-31-35z"/>
+  <!-- arms and typing hands -->
+  <path fill="#d89a72" d="m100 224 52 5v20l-58-3zM258 218l45 12-5 20-48-13z"/>
+  <rect x="142" y="230" width="34" height="19" fill="#d89a72"/><rect x="294" y="231" width="32" height="18" fill="#d89a72"/>
+  <!-- filing pile -->
+  <path fill="#ffffff" d="M42 198h64v58H42z"/><path fill="#0055ff" d="M42 198h64v8H42z"/>
+  <rect x="51" y="216" width="44" height="5" fill="#8298b8"/><rect x="51" y="228" width="36" height="5" fill="#b5c3d6"/>
+  <rect x="51" y="240" width="41" height="5" fill="#b5c3d6"/><rect x="50" y="186" width="64" height="8" fill="#8fa5c5"/>
+  <rect x="58" y="176" width="64" height="8" fill="#0055ff"/><rect x="68" y="168" width="54" height="6" fill="#c4d1e3"/>
+  <!-- monitor with filing + chart split -->
+  <path fill="#16243a" d="M318 58h190v150H318z"/><path fill="#eaf2ff" d="M330 70h166v126H330z"/>
+  <rect x="342" y="82" width="64" height="7" fill="#0055ff"/><rect x="342" y="98" width="48" height="5" fill="#9db0cb"/>
+  <rect x="342" y="111" width="57" height="5" fill="#c1ccdc"/><rect x="342" y="124" width="50" height="5" fill="#c1ccdc"/>
+  <rect x="342" y="145" width="15" height="35" fill="#a6bce1"/><rect x="364" y="132" width="15" height="48" fill="#6e94d5"/>
+  <rect x="386" y="112" width="15" height="68" fill="#0055ff"/><path d="m420 160 18-22 16 10 24-38" fill="none" stroke="#0055ff" stroke-width="6"/>
+  <rect x="397" y="208" width="32" height="28" fill="#16243a"/><rect x="365" y="234" width="96" height="9" fill="#16243a"/>
+  <!-- keyboard, desk and under-desk geometry -->
+  <path fill="#aab8cc" d="m205 232 126 6-8 17H192z"/><path fill="#eef3f9" d="M214 237h104l-4 8h-96z"/>
+  <path fill="#4b5f7d" d="M34 254h492v25H34z"/><rect x="34" y="254" width="492" height="7" fill="#7f91aa"/>
+  <path fill="#314660" d="M56 279h24v66H56zm424 0h24v66h-24z"/><rect x="80" y="291" width="400" height="10" fill="#3d526d"/>
+  <!-- small investor mug -->
+  <path fill="#ffffff" d="M458 216h36v38h-36z"/><path d="M494 225h10v19h-10" fill="none" stroke="#0055ff" stroke-width="6"/>
+  <rect x="466" y="222" width="20" height="5" fill="#0055ff"/>
 </svg>

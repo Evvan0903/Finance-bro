@@ -165,6 +165,42 @@ test("serves status-accurate overview pages for the five unfinished workflows", 
   }
 });
 
+test("keeps the refined team profiles interactive, image-led, and route-accurate", async () => {
+  const [workspace, styles, ...assets] = await Promise.all([
+    readFile(new URL("../app/TeamWorkspace.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    ...["ethan", "mason", "clara", "felix", "parker", "nora"].map((name) =>
+      readFile(new URL(`../public/team/${name}-workstation.svg`, import.meta.url), "utf8")
+    ),
+  ]);
+
+  assert.match(workspace, /View profile →/);
+  assert.match(workspace, /event\.key === "Escape"/);
+  assert.match(workspace, /event\.key !== "Tab"/);
+  assert.match(workspace, /previousFocus\?\.focus\(\)/);
+  assert.match(workspace, /event\.target === event\.currentTarget/);
+  assert.match(workspace, /workspace-modal-profile[\s\S]+workspace-modal-visual/);
+  for (const route of [
+    "/workflows/public-company",
+    "/workflows/market-industry",
+    "/workflows/private-company",
+    "/workflows/financial-modeling",
+    "/workflows/portfolio-monitoring",
+    "/workflows/regulatory-compliance",
+  ]) assert.match(workspace, new RegExp(route.replaceAll("/", "\\/")));
+
+  assert.match(styles, /\.workspace-profile-hint/);
+  assert.match(styles, /\.workspace-member-card:focus-visible/);
+  assert.match(styles, /grid-template-areas:\s*"profile visual"/);
+  assert.match(styles, /grid-template-areas:\s*"visual"\s*"profile"/);
+  assert.equal(new Set(assets).size, 6);
+  for (const asset of assets) {
+    assert.match(asset, /shape-rendering="crispEdges"/);
+    assert.match(asset, /<title>.+<\/title>/);
+    assert.doesNotMatch(asset, /<image\b/);
+  }
+});
+
 test("rejects invalid research requests in Chinese before external data access", async () => {
   const builtWorker = await worker();
   const response = await builtWorker.fetch(

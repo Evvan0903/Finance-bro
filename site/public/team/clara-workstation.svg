@@ -1,27 +1,38 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="560" height="360" viewBox="0 0 560 360" shape-rendering="crispEdges">
-  <title>Clara private company diligence workstation</title>
-  <g opacity=".16" fill="#0055ff"><rect x="68" y="314" width="424" height="8"/><rect x="92" y="322" width="376" height="6"/></g>
-  <g>
-    <rect x="116" y="154" width="108" height="116" fill="#c9d6e8"/><rect x="126" y="164" width="88" height="106" fill="#e7edf6"/>
-    <rect x="106" y="176" width="14" height="78" fill="#95a8c3"/><rect x="220" y="176" width="14" height="78" fill="#95a8c3"/>
-    <rect x="142" y="76" width="72" height="78" fill="#e0aa80"/><rect x="132" y="66" width="92" height="26" fill="#5a3426"/>
-    <rect x="132" y="86" width="18" height="72" fill="#5a3426"/><rect x="206" y="86" width="18" height="72" fill="#5a3426"/>
-    <rect x="151" y="104" width="10" height="9" fill="#20242d"/><rect x="195" y="104" width="10" height="9" fill="#20242d"/>
-    <rect x="174" y="122" width="16" height="6" fill="#9f624e"/><rect x="164" y="145" width="28" height="18" fill="#f5d8c2"/>
-    <path d="M126 168h104v96H126z" fill="#263857"/><path d="m156 168 22 34 22-34z" fill="#fff"/>
-    <path d="m176 186h10l8 42-13 17-13-17z" fill="#0055ff"/><rect x="102" y="184" width="36" height="56" fill="#263857"/>
-    <rect x="218" y="184" width="36" height="56" fill="#263857"/><rect x="94" y="226" width="42" height="18" fill="#e0aa80"/>
-    <rect x="220" y="226" width="42" height="18" fill="#e0aa80"/><rect x="52" y="204" width="52" height="56" fill="#fff"/>
-    <rect x="60" y="214" width="8" height="8" fill="#0055ff"/><rect x="74" y="216" width="22" height="4" fill="#9aabc2"/>
-    <rect x="60" y="230" width="8" height="8" fill="#0055ff"/><rect x="74" y="232" width="18" height="4" fill="#9aabc2"/>
-    <circle cx="64" cy="188" r="19" fill="none" stroke="#0055ff" stroke-width="9"/><path d="m76 202 22 22" stroke="#0055ff" stroke-width="9"/>
-    <rect x="302" y="70" width="194" height="140" fill="#192538"/><rect x="314" y="82" width="170" height="112" fill="#eef4ff"/>
-    <rect x="330" y="98" width="14" height="14" fill="#0055ff"/><rect x="352" y="102" width="104" height="6" fill="#9db1ce"/>
-    <rect x="330" y="126" width="14" height="14" fill="#6f8fff"/><rect x="352" y="130" width="82" height="6" fill="#9db1ce"/>
-    <rect x="330" y="154" width="14" height="14" fill="#c5d2e5"/><rect x="352" y="158" width="96" height="6" fill="#9db1ce"/>
-    <rect x="384" y="210" width="28" height="28" fill="#192538"/><rect x="354" y="234" width="88" height="10" fill="#192538"/>
-    <rect x="252" y="232" width="78" height="10" fill="#adbbce"/><rect x="42" y="254" width="476" height="24" fill="#5d6c85"/>
-    <rect x="42" y="254" width="476" height="7" fill="#8391a7"/><rect x="64" y="278" width="22" height="64" fill="#394962"/>
-    <rect x="474" y="278" width="22" height="64" fill="#394962"/><rect x="76" y="290" width="398" height="10" fill="#475873"/>
-  </g>
+  <title>Clara reviewing a diligence checklist and private company data room</title>
+  <g opacity=".14" fill="#0055ff"><rect x="54" y="326" width="452" height="7"/><rect x="98" y="335" width="364" height="4"/></g>
+  <!-- organized narrow desk with drawers -->
+  <path fill="#52647d" d="M38 250h480v26H38z"/><rect x="38" y="250" width="480" height="7" fill="#8798ad"/>
+  <path fill="#364b65" d="M54 276h100v67H54zm406 0h36v67h-36z"/><rect x="66" y="288" width="76" height="16" fill="#49617c"/>
+  <rect x="66" y="312" width="76" height="16" fill="#49617c"/><rect x="126" y="294" width="8" height="4" fill="#aebcd0"/>
+  <!-- monitor on left: diligence data room -->
+  <path fill="#17253a" d="M48 64h196v142H48z"/><path fill="#edf4ff" d="M60 76h172v118H60z"/>
+  <rect x="73" y="88" width="62" height="7" fill="#0055ff"/><rect x="73" y="108" width="14" height="14" fill="#0055ff"/>
+  <path d="m76 115 5 5 9-13" fill="none" stroke="#fff" stroke-width="3"/><rect x="97" y="112" width="112" height="6" fill="#9bafcb"/>
+  <rect x="73" y="135" width="14" height="14" fill="#6f90cc"/><path d="m76 142 5 5 9-13" fill="none" stroke="#fff" stroke-width="3"/>
+  <rect x="97" y="139" width="86" height="6" fill="#b5c2d5"/><rect x="73" y="162" width="14" height="14" fill="#d1dae7"/>
+  <rect x="97" y="166" width="102" height="6" fill="#b5c2d5"/><rect x="130" y="206" width="30" height="27" fill="#17253a"/>
+  <rect x="100" y="232" width="90" height="9" fill="#17253a"/>
+  <!-- Clara chair and upright posture on right -->
+  <path fill="#a9bad1" d="M328 154h110v12h14v110h-16v24H318v-30h-14v-91h24z"/>
+  <path fill="#e7edf6" d="M340 166h82v104h-82z"/><rect x="306" y="194" width="14" height="64" fill="#768baa"/>
+  <!-- ponytail and shaped face -->
+  <path fill="#5b3226" d="M402 72h28v18h14v56h-20V94h-22z"/><rect x="422" y="134" width="24" height="58" fill="#5b3226"/>
+  <path fill="#dfaa82" d="M326 78h12V66h68v12h12v62h-12v14h-68v-12h-12z"/>
+  <path fill="#5b3226" d="M328 68h12V56h58v8h18v28h-14V78h-62v20h-14z"/><rect x="326" y="88" width="14" height="52" fill="#5b3226"/>
+  <!-- cat-eye glasses and attentive expression -->
+  <path d="M342 99h28v17h-28zm42 0h28v17h-28z" fill="#26334a"/><path d="M348 103h16v8h-16zm42 0h16v8h-16z" fill="#eef4ff"/>
+  <rect x="370" y="104" width="14" height="4" fill="#26334a"/><rect x="364" y="127" width="20" height="5" fill="#99584b"/>
+  <rect x="350" y="145" width="38" height="21" fill="#efcbae"/>
+  <!-- blazer, asymmetric reviewing pose -->
+  <path fill="#2a3e60" d="M304 166h128l18 88H302z"/><path fill="#fff" d="m336 166 34 40 35-40z"/>
+  <path fill="#0055ff" d="m365 192h11l10 43-16 17-15-17z"/>
+  <path fill="#2a3e60" d="m300 181 30 2-20 57-39-5zM424 176l26 12-4 52-34-6z"/>
+  <path fill="#dfaa82" d="m266 224 51 7-4 20-52-8zm144 5 52-6 3 20-54 7z"/>
+  <!-- checklist folder and magnifier -->
+  <path fill="#fff" d="M216 202h76v49h-76z"/><path fill="#0055ff" d="M216 202h76v8h-76z"/>
+  <rect x="227" y="219" width="9" height="9" fill="#6f90cc"/><rect x="244" y="221" width="35" height="5" fill="#a6b6cd"/>
+  <rect x="227" y="236" width="9" height="9" fill="#0055ff"/><rect x="244" y="238" width="29" height="5" fill="#a6b6cd"/>
+  <circle cx="487" cy="208" r="20" fill="none" stroke="#0055ff" stroke-width="8"/><path d="m500 223 21 21" stroke="#0055ff" stroke-width="8"/>
+  <path fill="#c5d0df" d="m310 235 99 0 9 16H298z"/><rect x="317" y="239" width="83" height="6" fill="#eef3f8"/>
 </svg>

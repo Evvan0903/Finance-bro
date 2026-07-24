@@ -265,6 +265,7 @@ export function TeamWorkspace() {
                 </div>
                 <small data-status={member.status}>{member.status}</small>
               </div>
+              <span className="workspace-profile-hint" aria-hidden="true">View profile →</span>
             </button>
           ))}
         </div>
@@ -300,30 +301,26 @@ export function TeamWorkspace() {
               ×
             </button>
             <div className="workspace-modal-layout">
-              <div className="workspace-modal-visual">
-                <div className="workspace-modal-workstation">
-                  <PixelAnalyst id={selected.id} />
-                </div>
+              <div className="workspace-modal-profile">
                 <span>{selected.status}</span>
                 <h2 id="workspace-modal-title">{selected.name}</h2>
                 <h3>{selected.title}</h3>
                 <p className="workspace-modal-intro" id="workspace-modal-intro">
                   {selected.intro}
                 </p>
-                {selected.boundary && <p className="workspace-modal-boundary">{selected.boundary}</p>}
-              </div>
-              <div className="workspace-modal-details">
-                <div>
-                  <h3>What {selected.name} Does</h3>
-                  <ul>
-                    {selected.responsibilities.map((item) => <li key={item}>{item}</li>)}
-                  </ul>
-                </div>
-                <div>
-                  <h3>Deliverables</h3>
-                  <ul>
-                    {selected.deliverables.map((item) => <li key={item}>{item}</li>)}
-                  </ul>
+                <div className="workspace-modal-details">
+                  <div>
+                    <h3>What {selected.name} Does</h3>
+                    <ul>
+                      {selected.responsibilities.map((item) => <li key={item}>{item}</li>)}
+                    </ul>
+                  </div>
+                  <div>
+                    <h3>Deliverables</h3>
+                    <ul>
+                      {selected.deliverables.map((item) => <li key={item}>{item}</li>)}
+                    </ul>
+                  </div>
                 </div>
                 <div className="workspace-modal-status">
                   <span>
@@ -332,12 +329,17 @@ export function TeamWorkspace() {
                   </span>
                   <strong>{selected.status}</strong>
                 </div>
+                {selected.boundary && <p className="workspace-modal-boundary">{selected.boundary}</p>}
+                <Link className="workspace-modal-cta" href={selected.route}>
+                  {selected.cta}
+                </Link>
               </div>
-            </div>
-            <div className="workspace-modal-footer">
-              <Link className="workspace-modal-cta" href={selected.route}>
-                {selected.cta}
-              </Link>
+              <div className="workspace-modal-visual">
+                <div className="workspace-modal-workstation">
+                  <PixelAnalyst id={selected.id} />
+                </div>
+                <p>{selected.name} · FinBro workflow owner</p>
+              </div>
             </div>
           </section>
         </div>
