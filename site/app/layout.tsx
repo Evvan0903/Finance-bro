@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import "./globals.css";
+import { UI_HEADING_COPY } from "./lib/ui-copy";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -16,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase,
-    title: "FinBro | Your overworked entry-level analyst.",
+    title: UI_HEADING_COPY.en.metadataTitle,
     description: "A team of AI analysts for repeatable financial research, diligence, modeling, monitoring, and reporting workflows.",
     applicationName: "FinBro",
     icons: {
@@ -24,7 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
       shortcut: "/favicon.svg",
     },
     openGraph: {
-      title: "FinBro | Your overworked entry-level analyst.",
+      title: UI_HEADING_COPY.en.metadataTitle,
       description: "Assign Ethan’s team a repeatable financial research, diligence, modeling, monitoring, or reporting workflow.",
       type: "website",
       locale: "zh_CN",
@@ -32,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: "FinBro | Your overworked entry-level analyst.",
+      title: UI_HEADING_COPY.en.metadataTitle,
       description: "A professional AI analyst team for repeatable financial workflows.",
       images: ["/og.png"],
     },

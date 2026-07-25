@@ -21,6 +21,7 @@ import {
   formatPercentage,
   formatPerUnitValue,
 } from "./lib/presentation-format";
+import { UI_HEADING_COPY } from "./lib/ui-copy";
 
 type Locale = "zh" | "en";
 
@@ -102,8 +103,8 @@ const COPY = {
     languagePicker: "切换报告语言",
     headerNote: "ETHAN · AI 初级分析师",
     heroEyebrow: "FINBRO 研究工作台",
-    heroTitle: "把股票代码交给 Ethan。",
-    heroCopy: "他会读申报、学习行业、核对数字，并准备一份你可以向上汇报的材料。",
+    heroTitle: UI_HEADING_COPY.zh.researchHeroTitle,
+    heroCopy: UI_HEADING_COPY.zh.researchHeroSubheading,
     featureMarket: "申报优先",
     featureSector: "行业语境",
     featureEvidence: "可追溯证据",
@@ -142,7 +143,7 @@ const COPY = {
     generate: "交给 Ethan",
     researching: "Ethan 正在处理…",
     examplesLabel: "已验证示例",
-    progressTitle: "Ethan 正在翻阅申报文件",
+    progressTitle: UI_HEADING_COPY.zh.loadingTitle,
     progressSteps: "筛选近期证据 → 标准化申报数据 → 加载行业 KPI → 构建可复核的研究输出",
     reportUnavailable: "报告暂时无法生成。",
     researchDate: "研究日期",
@@ -315,8 +316,8 @@ const COPY = {
     languagePicker: "Switch report language",
     headerNote: "ETHAN · AI JUNIOR ANALYST",
     heroEyebrow: "FINBRO RESEARCH DESK",
-    heroTitle: "Give Ethan a ticker.",
-    heroCopy: "He’ll read the filings, learn the sector, check the numbers, and prepare something you can send upstairs.",
+    heroTitle: UI_HEADING_COPY.en.researchHeroTitle,
+    heroCopy: UI_HEADING_COPY.en.researchHeroSubheading,
     featureMarket: "Filing-first",
     featureSector: "Sector-aware",
     featureEvidence: "Source-linked",
@@ -355,7 +356,7 @@ const COPY = {
     generate: "Assign Ethan",
     researching: "Ethan is on it…",
     examplesLabel: "Validated examples",
-    progressTitle: "Ethan is working through the filings",
+    progressTitle: UI_HEADING_COPY.en.loadingTitle,
     progressSteps: "Screen recent evidence → normalize filings → load sector KPIs → prepare a reviewable research output",
     reportUnavailable: "The report could not be generated right now.",
     researchDate: "Research date",
@@ -1132,7 +1133,7 @@ export function ResearchApp() {
   }
 
   function requestedErrorTitle(requestedLocale: Locale) {
-    return requestedLocale === "zh" ? "Ethan 暂时无法完成这项任务。" : "Ethan could not complete that assignment.";
+    return UI_HEADING_COPY[requestedLocale].genericErrorTitle;
   }
 
   function retryLastRequest() {

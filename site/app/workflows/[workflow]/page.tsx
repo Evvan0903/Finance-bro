@@ -1,6 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { UI_HEADING_COPY } from "../../lib/ui-copy";
+
+const workflowCopy = UI_HEADING_COPY.en;
 
 const WORKFLOWS = {
   "market-industry": {
@@ -93,7 +96,7 @@ export default async function WorkflowOverviewPage({
           <span>F</span>
           FINBRO
         </Link>
-        <span>WORKFLOW STATUS · {workflowDefinition.status.toUpperCase()}</span>
+        <span>{workflowCopy.workflowStatus.toUpperCase()} · {workflowDefinition.status.toUpperCase()}</span>
       </header>
       <div className="workflow-overview-main">
         <section className="workflow-overview-card" aria-labelledby="workflow-overview-title">

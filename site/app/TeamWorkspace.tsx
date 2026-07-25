@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { UI_HEADING_COPY } from "./lib/ui-copy";
 
 type MemberId = "ethan" | "mason" | "clara" | "felix" | "parker" | "nora";
 type MemberStatus = "Available" | "In Development" | "Planned";
@@ -159,6 +160,8 @@ const WORKSTATION_ASSETS: Record<MemberId, string> = {
   nora: "/team/nora-workstation.svg",
 };
 
+const workspaceCopy = UI_HEADING_COPY.en;
+
 function PixelAnalyst({ id }: { id: MemberId }) {
   const member = TEAM.find((candidate) => candidate.id === id)!;
   return (
@@ -225,9 +228,9 @@ export function TeamWorkspace() {
       <section className="workspace-hero" aria-labelledby="workspace-title">
         <div className="workspace-hero-copy">
           <p className="workspace-eyebrow">FINBRO</p>
-          <h1 id="workspace-title">Assign Ethan’s team a financial task.</h1>
-          <p>An AI analyst team that helps you complete repeatable financial work.</p>
-          <p>Research, diligence, modeling, monitoring, compliance, and financial analysis — all in one team.</p>
+          <h1 id="workspace-title">{workspaceCopy.homeHeroTitle}</h1>
+          <p>{workspaceCopy.homeHeroSubheading}</p>
+          <p>{workspaceCopy.homeHeroScope}</p>
         </div>
         <div className="workspace-summary" aria-label="Workflow availability">
           <span><strong>1</strong> Available</span>
@@ -240,9 +243,9 @@ export function TeamWorkspace() {
         <div className="workspace-section-heading">
           <div>
             <span>THE TEAM</span>
-            <h2 id="team-title">Choose a workflow owner.</h2>
+            <h2 id="team-title">{workspaceCopy.teamSectionTitle}</h2>
           </div>
-          <p>Click an analyst to review the assignment desk.</p>
+          <p>{workspaceCopy.teamInstruction}</p>
         </div>
 
         <div className="workspace-team-grid">
@@ -265,7 +268,7 @@ export function TeamWorkspace() {
                 </div>
                 <small data-status={member.status}>{member.status}</small>
               </div>
-              <span className="workspace-profile-hint" aria-hidden="true">View profile →</span>
+              <span className="workspace-profile-hint" aria-hidden="true">{workspaceCopy.profileHint}</span>
             </button>
           ))}
         </div>
@@ -316,7 +319,7 @@ export function TeamWorkspace() {
                     </ul>
                   </div>
                   <div>
-                    <h3>Deliverables</h3>
+                    <h3>{workspaceCopy.modalDeliverables}</h3>
                     <ul>
                       {selected.deliverables.map((item) => <li key={item}>{item}</li>)}
                     </ul>
@@ -325,7 +328,7 @@ export function TeamWorkspace() {
                 <div className="workspace-modal-status">
                   <span>
                     <i data-status={selected.status} />
-                    Status
+                    {workspaceCopy.modalStatus}
                   </span>
                   <strong>{selected.status}</strong>
                 </div>

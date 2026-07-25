@@ -101,6 +101,8 @@ test("server-renders the FinBro analyst-team workspace", async () => {
   assert.match(html, /<html lang="zh-CN">/i);
   assert.match(html, /FINBRO/);
   assert.match(html, /Assign Ethan’s team a financial task/);
+  assert.doesNotMatch(html, /Assign Ethan’s team a financial task\./);
+  assert.doesNotMatch(html, /repeatable financial work\./);
   assert.match(html, /Public Company Research Analyst/);
   assert.match(html, /Market &amp; Industry Analyst/);
   assert.match(html, /Private Company Diligence Analyst/);
@@ -129,6 +131,8 @@ test("keeps the bilingual public-company research workflow on Ethan's route", as
   assert.match(html, /FinBro/);
   assert.match(html, /Ethan/);
   assert.match(html, /把股票代码交给 Ethan/);
+  assert.doesNotMatch(html, /把股票代码交给 Ethan。/);
+  assert.doesNotMatch(html, /向上汇报的材料。/);
   assert.match(html, /id="company"/);
   assert.match(html, /交给 Ethan/);
   assert.match(html, /CAT/);
@@ -174,7 +178,7 @@ test("keeps the refined team profiles interactive, image-led, and route-accurate
     ),
   ]);
 
-  assert.match(workspace, /View profile →/);
+  assert.match(workspace, /workspaceCopy\.profileHint/);
   assert.match(workspace, /event\.key === "Escape"/);
   assert.match(workspace, /event\.key !== "Tab"/);
   assert.match(workspace, /previousFocus\?\.focus\(\)/);
@@ -201,6 +205,35 @@ test("keeps the refined team profiles interactive, image-led, and route-accurate
   }
 });
 
+test("keeps known English and Chinese heading and CTA copy free of terminal periods", async () => {
+  const copyUrl = await transpiledModuleUrl("../app/lib/ui-copy.ts");
+  const { UI_HEADING_COPY, findTerminalHeadingPunctuation } = await import(copyUrl);
+  assert.deepEqual(findTerminalHeadingPunctuation(UI_HEADING_COPY.en), []);
+  assert.deepEqual(findTerminalHeadingPunctuation(UI_HEADING_COPY.zh), []);
+  assert.deepEqual(
+    findTerminalHeadingPunctuation({ good: "Give Ethan a ticker", bad: "Give Ethan a ticker." }),
+    ["bad"],
+  );
+  assert.deepEqual(
+    findTerminalHeadingPunctuation({ good: "给 Ethan 一个股票代码", bad: "给 Ethan 一个股票代码。" }),
+    ["bad"],
+  );
+
+  const knownCopySources = (
+    await Promise.all([
+      "../app/TeamWorkspace.tsx",
+      "../app/ResearchApp.tsx",
+      "../app/workflows/[workflow]/page.tsx",
+      "../app/api/research/route.ts",
+      "../app/layout.tsx",
+    ].map((path) => readFile(new URL(path, import.meta.url), "utf8")))
+  ).join("\n");
+  assert.doesNotMatch(
+    knownCopySources,
+    /\b(?:title|heroTitle|cta):\s*["'`][^"'`\n]*[。.]["'`]/u,
+  );
+});
+
 test("rejects invalid research requests in Chinese before external data access", async () => {
   const builtWorker = await worker();
   const response = await builtWorker.fetch(
@@ -216,6 +249,7 @@ test("rejects invalid research requests in Chinese before external data access",
   const payload = await response.json();
   assert.equal(payload.error.code, "INVALID_INPUT");
   assert.equal(payload.error.failedStage, "input_validation");
+  assert.equal(payload.error.title, "Ethan 需要一项有效任务");
   assert.equal(payload.error.message, "请输入 2–100 个字符的公司名或交易代码。");
   assert.ok(payload.error.traceId);
 });
@@ -235,6 +269,7 @@ test("rejects invalid research requests in English before external data access",
   const payload = await response.json();
   assert.equal(payload.error.code, "INVALID_INPUT");
   assert.equal(payload.error.failedStage, "input_validation");
+  assert.equal(payload.error.title, "Ethan needs a valid assignment");
   assert.equal(payload.error.message, "Enter a company name or ticker between 2 and 100 characters.");
   assert.ok(payload.error.traceId);
 });

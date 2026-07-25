@@ -2402,92 +2402,92 @@ function errorStatus(code: ResearchErrorCode) {
 function userErrorCopy(code: ResearchErrorCode, locale: ResearchLocale) {
   const english: Record<ResearchErrorCode, { title: string; message: string }> = {
     INVALID_INPUT: {
-      title: "Ethan needs a valid assignment.",
+      title: "Ethan needs a valid assignment",
       message: "Enter a company name or ticker between 2 and 100 characters.",
     },
     TICKER_NOT_FOUND: {
-      title: "Ethan could not match that ticker to an SEC reporting company.",
+      title: "Ethan could not match that ticker to an SEC reporting company",
       message: "Check the exact ticker or try the issuer's legal company name.",
     },
     AMBIGUOUS_TICKER: {
-      title: "Ethan found more than one possible SEC reporting company.",
+      title: "Ethan found more than one possible SEC reporting company",
       message: "Use an exact ticker or choose from the matched SEC identities.",
     },
     CIK_RESOLUTION_FAILED: {
-      title: "Ethan found the company but lost the paperwork.",
+      title: "Ethan found the company but lost the paperwork",
       message: "The SEC identity could not be resolved to a valid CIK.",
     },
     SEC_FORBIDDEN: {
-      title: "Ethan cannot access the SEC right now.",
+      title: "Ethan cannot access the SEC right now",
       message: "The SEC rejected the server request. The assignment is preserved.",
     },
     SEC_RATE_LIMITED: {
-      title: "Ethan is waiting on the SEC.",
+      title: "Ethan is waiting on the SEC",
       message: "The SEC asked the server to slow down. Retry in a moment.",
     },
     SEC_TIMEOUT: {
-      title: "Ethan is waiting on the SEC.",
+      title: "Ethan is waiting on the SEC",
       message: "The SEC took too long to respond. Your assignment is preserved.",
     },
     SEC_SERVICE_UNAVAILABLE: {
-      title: "Ethan does not want to work right now.",
+      title: "Ethan does not want to work right now",
       message: "The SEC or FinBro backend is genuinely unavailable. Retry shortly.",
     },
     SUBMISSIONS_NOT_FOUND: {
-      title: "Ethan found the ticker, but not its filing history.",
+      title: "Ethan found the ticker, but not its filing history",
       message: "No SEC Submissions record was available for the resolved CIK.",
     },
     COMPANY_FACTS_NOT_FOUND: {
-      title: "Ethan found the filings, but the numbers are not standardized.",
+      title: "Ethan found the filings, but the numbers are not standardized",
       message: "SEC Company Facts is unavailable for this issuer. No values were fabricated.",
     },
     NO_STANDARDIZED_XBRL_FACTS: {
-      title: "Ethan found the filings, but the numbers are not standardized.",
+      title: "Ethan found the filings, but the numbers are not standardized",
       message: "The available XBRL facts did not meet the verified metric threshold.",
     },
     FILING_NOT_FOUND: {
-      title: "Ethan cannot find the filing document.",
+      title: "Ethan cannot find the filing document",
       message: "The filing index exists, but the selected SEC document was not available.",
     },
     FILING_PARSE_FAILED: {
-      title: "Ethan found the filing but could not read the table.",
+      title: "Ethan found the filing but could not read the table",
       message: "The filing was preserved for review; no values were guessed.",
     },
     UNSUPPORTED_REPORTING_ENTITY: {
-      title: "Ethan cannot use this reporting format yet.",
+      title: "Ethan cannot use this reporting format yet",
       message: "The issuer's filing framework is not supported by the current extractor.",
     },
     UNSUPPORTED_SECTOR_PACK: {
-      title: "Ethan has not been staffed on this sector yet.",
+      title: "Ethan has not been staffed on this sector yet",
       message: "Company retrieval succeeded, but the selected research pack is unsupported.",
     },
     SECTOR_CLASSIFICATION_CONFLICT: {
-      title: "Selected sector differs from the detected company classification.",
+      title: "Selected sector differs from the detected company classification",
       message: "Confirm the company and choose the sector pack that matches its SEC classification.",
     },
     INSUFFICIENT_VERIFIED_METRICS: {
-      title: "Ethan needs more verified numbers.",
+      title: "Ethan needs more verified numbers",
       message: "The minimum evidence threshold for a full report was not met.",
     },
     INTERNAL_PIPELINE_ERROR: {
-      title: "Ethan hit an internal review exception.",
+      title: "Ethan hit an internal review exception",
       message: "The failure occurred after retrieval and was not an SEC service outage.",
     },
   };
   if (locale === "en") return english[code];
   const chinese: Partial<typeof english> = {
-    INVALID_INPUT: { title: "Ethan 需要一项有效任务。", message: "请输入 2–100 个字符的公司名或交易代码。" },
-    TICKER_NOT_FOUND: { title: "Ethan 无法把该代码匹配到 SEC 申报公司。", message: "请核对精确代码，或输入发行人的法定公司名。" },
-    AMBIGUOUS_TICKER: { title: "Ethan 找到了多个可能的 SEC 申报公司。", message: "请输入精确代码，或根据 SEC 身份候选项确认。" },
-    CIK_RESOLUTION_FAILED: { title: "Ethan 找到公司，但弄丢了文件编号。", message: "无法把 SEC 公司身份解析为有效 CIK。" },
-    SEC_RATE_LIMITED: { title: "Ethan 正在等 SEC。", message: "SEC 要求服务器降低请求速度，请稍后重试。" },
-    SEC_TIMEOUT: { title: "Ethan 正在等 SEC。", message: "SEC 响应超时；当前任务选择已保留。" },
-    SEC_SERVICE_UNAVAILABLE: { title: "Ethan 现在不想干活。", message: "SEC 或 FinBro 后端确实不可用，请稍后重试。" },
-    COMPANY_FACTS_NOT_FOUND: { title: "Ethan 找到了申报，但数字没有标准化。", message: "该发行人的 SEC Company Facts 不可用；系统没有编造数值。" },
-    NO_STANDARDIZED_XBRL_FACTS: { title: "Ethan 找到了申报，但数字没有标准化。", message: "现有 XBRL 事实未达到经验证指标门槛。" },
-    UNSUPPORTED_SECTOR_PACK: { title: "Ethan 还没有被安排到这个行业。", message: "公司检索成功，但当前不支持所选研究包。" },
-    SECTOR_CLASSIFICATION_CONFLICT: { title: "所选行业与检测到的公司分类不同。", message: "请确认公司，并选择与 SEC 分类一致的行业研究包。" },
-    INTERNAL_PIPELINE_ERROR: { title: "Ethan 遇到了内部复核异常。", message: "故障发生在数据检索之后，不是 SEC 服务中断。" },
+    INVALID_INPUT: { title: "Ethan 需要一项有效任务", message: "请输入 2–100 个字符的公司名或交易代码。" },
+    TICKER_NOT_FOUND: { title: "Ethan 无法把该代码匹配到 SEC 申报公司", message: "请核对精确代码，或输入发行人的法定公司名。" },
+    AMBIGUOUS_TICKER: { title: "Ethan 找到了多个可能的 SEC 申报公司", message: "请输入精确代码，或根据 SEC 身份候选项确认。" },
+    CIK_RESOLUTION_FAILED: { title: "Ethan 找到公司，但弄丢了文件编号", message: "无法把 SEC 公司身份解析为有效 CIK。" },
+    SEC_RATE_LIMITED: { title: "Ethan 正在等 SEC", message: "SEC 要求服务器降低请求速度，请稍后重试。" },
+    SEC_TIMEOUT: { title: "Ethan 正在等 SEC", message: "SEC 响应超时；当前任务选择已保留。" },
+    SEC_SERVICE_UNAVAILABLE: { title: "Ethan 现在不想干活", message: "SEC 或 FinBro 后端确实不可用，请稍后重试。" },
+    COMPANY_FACTS_NOT_FOUND: { title: "Ethan 找到了申报，但数字没有标准化", message: "该发行人的 SEC Company Facts 不可用；系统没有编造数值。" },
+    NO_STANDARDIZED_XBRL_FACTS: { title: "Ethan 找到了申报，但数字没有标准化", message: "现有 XBRL 事实未达到经验证指标门槛。" },
+    UNSUPPORTED_SECTOR_PACK: { title: "Ethan 还没有被安排到这个行业", message: "公司检索成功，但当前不支持所选研究包。" },
+    SECTOR_CLASSIFICATION_CONFLICT: { title: "所选行业与检测到的公司分类不同", message: "请确认公司，并选择与 SEC 分类一致的行业研究包。" },
+    INTERNAL_PIPELINE_ERROR: { title: "Ethan 遇到了内部复核异常", message: "故障发生在数据检索之后，不是 SEC 服务中断。" },
   };
   return chinese[code] ?? english[code];
 }
