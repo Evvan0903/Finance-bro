@@ -6,6 +6,8 @@ type PdfExportMeta = {
   ticker: string;
   researchDate: string;
   filename: string;
+  footerLabel?: string;
+  subject?: string;
 };
 
 const PAGE_WIDTH = 1240;
@@ -102,7 +104,7 @@ function addFooter(canvas: HTMLCanvasElement, meta: PdfExportMeta, pageNumber: n
   context.font = "18px Arial, sans-serif";
   context.textBaseline = "middle";
   context.fillText(
-    `FinBro Equity Research | ${meta.ticker} | ${meta.researchDate} | Page ${pageNumber}`,
+    `${meta.footerLabel ?? "FinBro Equity Research"} | ${meta.subject ?? meta.ticker} | ${meta.researchDate} | Page ${pageNumber}`,
     PAGE_MARGIN,
     y,
   );

@@ -131,23 +131,24 @@ const TEAM: TeamMember[] = [
     id: "nora",
     name: "Nora",
     title: "Regulatory & Compliance Analyst",
-    status: "Planned",
-    intro: "Reviews regulatory requirements, internal policies, reporting obligations, and supporting evidence to identify compliance and disclosure gaps.",
+    status: "In Development",
+    intro: "Explores regulatory requirements and proposes reference-backed structures for investment, licensing, localization, and supply-chain planning.",
     responsibilities: [
-      "Reviews regulatory and reporting requirements",
-      "Compares company documents with compliance checklists",
-      "Identifies missing policies, controls, and evidence",
-      "Prepares remediation and filing-readiness materials",
+      "Identifies potentially applicable regulatory requirements",
+      "Compares possible investment and operating structures",
+      "Displays relevant statutory thresholds",
+      "Generates reference-backed proposals for professional review",
     ],
     deliverables: [
-      "Regulatory gap analysis",
-      "Compliance readiness report",
-      "Evidence and control checklist",
-      "Reporting and filing preparation package",
+      "Proposed structure comparison",
+      "Applicable legal threshold summary",
+      "Regulatory risk explanation",
+      "Professional review question list",
+      "Official source references",
     ],
-    cta: "View Regulatory & Compliance",
+    cta: "Explore Regulatory & Compliance",
     route: "/workflows/regulatory-compliance",
-    boundary: "Nora supports compliance analysis and readiness. She does not provide legal advice, guarantee compliance, or replace attorneys, auditors, or regulatory professionals.",
+    boundary: "Nora is a scenario-based regulatory strategy assistant. She does not provide legal or tax advice, guarantee compliance, determine final credit eligibility, or replace qualified professionals.",
   },
 ];
 
@@ -234,8 +235,8 @@ export function TeamWorkspace() {
         </div>
         <div className="workspace-summary" aria-label="Workflow availability">
           <span><strong>1</strong> Available</span>
-          <span><strong>1</strong> In Development</span>
-          <span><strong>4</strong> Planned</span>
+          <span><strong>2</strong> In Development</span>
+          <span><strong>3</strong> Planned</span>
         </div>
       </section>
 

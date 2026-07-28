@@ -2059,6 +2059,403 @@ tbody tr:hover { background: #f1f5f2; }
   .site-footer { align-items: flex-start; flex-direction: column; gap: 3px; }
 }
 
+/* Nora · scenario-based regulatory strategy workflow */
+.nora-shell {
+  background:
+    linear-gradient(rgba(0, 85, 255, .035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 85, 255, .035) 1px, transparent 1px),
+    #fff;
+  background-size: 36px 36px;
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow: visible;
+}
+
+.nora-header {
+  align-items: center;
+  background: rgba(255,255,255,.96);
+  border-bottom: 1px solid var(--border-light);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  min-height: 72px;
+  padding: 12px max(24px, calc((100vw - 1220px) / 2));
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.nora-header > a {
+  align-items: center;
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 800;
+  gap: 9px;
+  letter-spacing: .08em;
+  text-decoration: none;
+}
+
+.nora-header > a span {
+  align-items: center;
+  background: var(--brand-blue);
+  color: #fff;
+  display: inline-flex;
+  height: 30px;
+  justify-content: center;
+  width: 30px;
+}
+
+.nora-header > div:nth-child(2) {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.nora-header > div:nth-child(2) strong { font-size: 15px; }
+.nora-header > div:nth-child(2) small { color: var(--text-muted); font-size: 11px; letter-spacing: .04em; }
+
+.nora-locale {
+  background: var(--surface-muted);
+  border: 1px solid var(--border-light);
+  border-radius: 999px;
+  display: flex;
+  justify-self: end;
+  padding: 3px;
+}
+
+.nora-locale button {
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+  min-height: 30px;
+  min-width: 44px;
+}
+
+.nora-locale button[aria-pressed="true"] { background: var(--brand-blue); color: #fff; }
+
+.nora-hero {
+  align-items: center;
+  border-bottom: 1px solid var(--border-light);
+  display: grid;
+  gap: 42px;
+  grid-template-columns: 1.2fr .8fr;
+  margin: 0 auto;
+  max-width: 1220px;
+  min-height: 390px;
+  padding: 62px 24px 48px;
+}
+
+.nora-hero > div > span,
+.nora-report-cover > span {
+  color: var(--brand-blue);
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.nora-hero h1,
+.nora-report-cover h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(40px, 6vw, 74px);
+  letter-spacing: -.045em;
+  line-height: .98;
+  margin: 18px 0 22px;
+}
+
+.nora-hero p {
+  color: var(--text-secondary);
+  font-size: clamp(17px, 2vw, 22px);
+  line-height: 1.55;
+  margin: 0 0 18px;
+  max-width: 720px;
+}
+
+.nora-hero small { color: var(--text-muted); font-family: ui-monospace, monospace; }
+.nora-hero img { height: auto; max-height: 300px; object-fit: contain; width: 100%; }
+
+.nora-workflow-panel {
+  display: grid;
+  gap: 36px;
+  grid-template-columns: 230px minmax(0, 1fr);
+  margin: 0 auto;
+  max-width: 1220px;
+  padding: 56px 24px 80px;
+}
+
+.nora-progress {
+  align-self: start;
+  border-left: 3px solid var(--brand-blue);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 5px 0 5px 20px;
+  position: sticky;
+  top: 112px;
+}
+
+.nora-progress span { color: var(--text-muted); font: 11px ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; }
+.nora-progress strong { font-size: 14px; line-height: 1.4; }
+.nora-progress > div { background: var(--brand-blue-08); height: 4px; overflow: hidden; width: 100%; }
+.nora-progress i { background: var(--brand-blue); display: block; height: 100%; transition: width .2s ease; }
+
+.nora-step {
+  background: #fff;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 18px 60px rgba(0,0,0,.06);
+  min-height: 500px;
+  padding: clamp(24px, 5vw, 54px);
+}
+
+.nora-step > h2 {
+  font-family: var(--font-serif);
+  font-size: clamp(30px, 4vw, 48px);
+  letter-spacing: -.035em;
+  line-height: 1.06;
+  margin: 0 0 34px;
+}
+
+.nora-option-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.nora-option,
+.nora-year-grid button {
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--border-medium);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  font-weight: 680;
+  justify-content: space-between;
+  min-height: 76px;
+  padding: 17px 20px;
+  text-align: left;
+}
+
+.nora-option:hover,
+.nora-option[data-selected="true"],
+.nora-year-grid button:hover,
+.nora-year-grid button[data-selected="true"] {
+  background: var(--brand-blue-04);
+  border-color: var(--brand-blue);
+  box-shadow: inset 4px 0 0 var(--brand-blue);
+}
+
+.nora-option small {
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-size: 10px;
+  letter-spacing: .06em;
+  margin-left: 12px;
+  padding: 4px 7px;
+  text-transform: uppercase;
+}
+
+.nora-option[data-planned="true"] { color: var(--text-muted); }
+
+.nora-year-grid { display: grid; gap: 10px; grid-template-columns: repeat(5, 1fr); }
+.nora-year-grid button { justify-content: center; min-height: 62px; text-align: center; }
+.nora-year-grid p { color: var(--text-muted); grid-column: 1 / -1; margin: 12px 0 0; }
+
+.nora-questionnaire { display: grid; gap: 14px; }
+.nora-questionnaire fieldset { border: 1px solid var(--border-light); margin: 0; padding: 18px; }
+.nora-questionnaire legend { font-weight: 650; line-height: 1.45; padding: 0 8px; }
+.nora-questionnaire legend span { color: var(--brand-blue); font: 11px ui-monospace, monospace; margin-right: 10px; }
+.nora-questionnaire fieldset > div { display: flex; gap: 8px; margin-top: 14px; }
+.nora-questionnaire button {
+  background: #fff;
+  border: 1px solid var(--border-medium);
+  cursor: pointer;
+  min-height: 38px;
+  padding: 7px 18px;
+}
+.nora-questionnaire button[data-selected="true"] { background: var(--brand-blue); border-color: var(--brand-blue); color: #fff; }
+
+.nora-step-actions {
+  align-items: center;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+  padding-top: 20px;
+}
+
+.nora-step-actions button,
+.nora-report-actions button {
+  background: #fff;
+  border: 1px solid var(--border-medium);
+  cursor: pointer;
+  font-weight: 750;
+  min-height: 44px;
+  padding: 10px 18px;
+}
+
+.nora-step-actions button:last-child { background: var(--brand-blue); border-color: var(--brand-blue); color: #fff; }
+.nora-step-actions button:disabled, .nora-report-actions button:disabled { cursor: not-allowed; opacity: .45; }
+.nora-error { background: #fff3f2; border-left: 3px solid var(--red); color: var(--red); padding: 12px 15px; }
+
+.nora-boundary {
+  background: var(--surface-subtle);
+  border-top: 1px solid var(--border-light);
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 24px max(24px, calc((100vw - 1172px) / 2));
+}
+.nora-boundary p { margin: 4px 0; }
+
+.nora-summary-grid {
+  display: grid;
+  gap: 1px;
+  grid-template-columns: repeat(2, 1fr);
+  margin: 0;
+}
+.nora-summary-grid > div { background: var(--surface-subtle); padding: 14px 16px; }
+.nora-summary-grid dt { color: var(--text-muted); font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.nora-summary-grid dd { font-weight: 700; margin: 5px 0 0; }
+.nora-answer-summary { margin-top: 28px; }
+.nora-answer-summary h3 { font-size: 14px; margin: 0 0 10px; }
+.nora-answer-summary p { align-items: start; border-bottom: 1px solid var(--border-light); display: grid; gap: 20px; grid-template-columns: 1fr auto; margin: 0; padding: 12px 0; }
+.nora-answer-summary strong { color: var(--brand-blue); }
+.nora-callout, .nora-warning { background: var(--brand-blue-04); border-left: 3px solid var(--brand-blue); margin-top: 24px; padding: 16px 20px; }
+.nora-callout h3, .nora-warning strong { margin: 0 0 8px; }
+.nora-callout ul { margin-bottom: 0; }
+
+.nora-results { margin: 0 auto; max-width: 1220px; padding: 36px 24px 90px; }
+.nora-report-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-bottom: 18px; }
+.nora-report-actions button:nth-child(3) { background: var(--brand-blue); border-color: var(--brand-blue); color: #fff; }
+.nora-report { background: #fff; border: 1px solid var(--border-light); }
+
+.nora-report-cover {
+  background:
+    linear-gradient(135deg, var(--brand-blue-04), transparent 65%),
+    #fff;
+  border-bottom: 8px solid var(--brand-blue);
+  min-height: 530px;
+  padding: clamp(36px, 7vw, 88px);
+}
+.nora-report-cover h1 { max-width: 850px; }
+.nora-report-cover > p { color: var(--brand-blue); font-size: 18px; font-weight: 750; }
+.nora-report-cover dl { display: flex; gap: 36px; margin-top: 58px; }
+.nora-report-cover dt { color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.nora-report-cover dd { margin: 4px 0 0; }
+.nora-disclaimer { border-top: 1px solid var(--border-light); color: var(--text-muted); font-size: 12px; margin-top: 36px; padding-top: 18px; }
+.nora-disclaimer p { margin: 3px 0; }
+
+.nora-report-section { border-bottom: 1px solid var(--border-light); padding: clamp(30px, 6vw, 72px); }
+.nora-report-section > header { align-items: baseline; display: flex; gap: 18px; margin-bottom: 30px; }
+.nora-report-section > header span { color: var(--brand-blue); font: 12px ui-monospace, monospace; }
+.nora-report-section > header h2 { font-family: var(--font-serif); font-size: clamp(27px, 3.5vw, 42px); letter-spacing: -.03em; line-height: 1.1; margin: 0; }
+.nora-report-section h3 { line-height: 1.25; }
+
+.nora-program-grid, .nora-structure-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, 1fr); }
+.nora-program-grid article { border: 1px solid var(--border-light); display: flex; flex-direction: column; gap: 4px; opacity: .5; padding: 16px; }
+.nora-program-grid article[data-active="true"] { border-color: var(--brand-blue); opacity: 1; }
+.nora-program-grid article strong { color: var(--brand-blue); }
+.nora-program-grid article span { color: var(--text-muted); font-size: 12px; }
+
+.nora-issue-grid { display: grid; gap: 10px; grid-template-columns: repeat(2, 1fr); }
+.nora-issue-grid article, .nora-structure-grid article { border: 1px solid var(--border-light); padding: 20px; }
+.nora-issue-grid article > span, .nora-structure-grid article > span { color: var(--brand-blue); font: 10px ui-monospace, monospace; text-transform: uppercase; }
+.nora-issue-grid h3, .nora-structure-grid h3 { margin: 10px 0; }
+.nora-issue-grid p, .nora-structure-grid p { color: var(--text-secondary); }
+.nora-issue-grid small { color: var(--text-muted); display: block; line-height: 1.5; }
+.nora-structure-grid article > strong { color: var(--brand-blue); font-size: 12px; }
+.nora-structure-grid ul { color: var(--text-secondary); font-size: 13px; padding-left: 18px; }
+
+.nora-warning { background: #fff7e8; border-color: var(--amber); }
+.nora-warning strong { color: #7b4d00; }
+.nora-table-note { color: var(--text-muted); font-size: 12px; }
+.nora-table-group + .nora-table-group { margin-top: 34px; }
+.nora-table-wrap { overflow-x: auto; }
+.nora-table-wrap table { border-collapse: collapse; font-size: 12px; line-height: 1.45; min-width: 760px; width: 100%; }
+.nora-table-wrap th { background: var(--surface-subtle); color: var(--text-muted); font-size: 10px; letter-spacing: .04em; text-align: left; text-transform: uppercase; }
+.nora-table-wrap th, .nora-table-wrap td { border: 1px solid var(--border-light); padding: 10px 11px; vertical-align: top; }
+.nora-table-wrap td strong { color: var(--brand-blue); }
+
+.nora-formulas { display: grid; gap: 12px; grid-template-columns: repeat(2, 1fr); margin-top: 24px; }
+.nora-formulas article { background: var(--surface-subtle); border-left: 3px solid var(--brand-blue); padding: 16px; }
+.nora-formulas h3 { font-size: 13px; margin: 0 0 8px; }
+.nora-formulas code { color: var(--text-secondary); font-size: 11px; white-space: normal; }
+.nora-proposal-label { background: var(--brand-blue); color: #fff; display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .06em; padding: 6px 10px; text-transform: uppercase; }
+.nora-check-list { columns: 2; padding-left: 20px; }
+.nora-check-list li { break-inside: avoid; margin-bottom: 8px; }
+.nora-question-list { display: grid; gap: 1px; }
+.nora-question-list article { background: var(--surface-subtle); display: grid; gap: 18px; grid-template-columns: 190px 1fr; padding: 14px 16px; }
+.nora-question-list p { margin: 0; }
+.nora-question-list b, .nora-report-section p b { color: var(--brand-blue); }
+
+.nora-coverage { background: var(--surface-subtle); margin-top: 28px; padding: 22px; }
+.nora-coverage h3 { margin-top: 0; }
+.nora-coverage dl { display: grid; gap: 1px; grid-template-columns: repeat(2, 1fr); }
+.nora-coverage dl > div { background: #fff; padding: 12px; }
+.nora-coverage dt { color: var(--text-muted); font-size: 10px; text-transform: uppercase; }
+.nora-coverage dd { margin: 4px 0 0; }
+
+.nora-reference-list { display: grid; gap: 12px; }
+.nora-reference-list article { border: 1px solid var(--border-light); padding: 20px; position: relative; }
+.nora-reference-list article > span { color: var(--brand-blue); font: 12px ui-monospace, monospace; }
+.nora-reference-list h3 { margin: 8px 0 18px; }
+.nora-reference-list dl { display: grid; gap: 1px; grid-template-columns: repeat(2, 1fr); }
+.nora-reference-list dl > div { background: var(--surface-subtle); padding: 8px 10px; }
+.nora-reference-list dt { color: var(--text-muted); font-size: 9px; text-transform: uppercase; }
+.nora-reference-list dd { font-size: 11px; margin: 2px 0 0; }
+.nora-reference-list p { color: var(--text-secondary); font-size: 13px; }
+.nora-reference-list a { color: var(--brand-blue); font-size: 12px; font-weight: 800; }
+
+.nora-report-footer { background: var(--text-primary); color: #fff; padding: 32px clamp(30px, 6vw, 72px); }
+.nora-report-footer strong, .nora-report-footer span { display: block; }
+.nora-report-footer span { color: #b7b7b7; font-size: 12px; margin-top: 4px; }
+.nora-report-footer p { color: #b7b7b7; font-size: 10px; margin: 12px 0 0; }
+
+@media (max-width: 840px) {
+  .nora-hero { grid-template-columns: 1fr; }
+  .nora-hero img { grid-row: 1; max-height: 220px; }
+  .nora-workflow-panel { grid-template-columns: 1fr; }
+  .nora-progress { position: static; }
+  .nora-program-grid, .nora-structure-grid { grid-template-columns: 1fr; }
+  .nora-issue-grid, .nora-formulas { grid-template-columns: 1fr; }
+  .nora-question-list article { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+  .nora-header { grid-template-columns: 1fr auto; }
+  .nora-header > div:nth-child(2) { display: none; }
+  .nora-hero { padding-top: 34px; }
+  .nora-option-grid, .nora-summary-grid, .nora-coverage dl, .nora-reference-list dl { grid-template-columns: 1fr; }
+  .nora-year-grid { grid-template-columns: repeat(2, 1fr); }
+  .nora-questionnaire fieldset > div { flex-wrap: wrap; }
+  .nora-step { padding: 22px 16px; }
+  .nora-report-actions { justify-content: stretch; }
+  .nora-report-actions button { flex: 1 1 46%; }
+  .nora-report-cover dl { flex-direction: column; gap: 14px; }
+  .nora-check-list { columns: 1; }
+}
+
+@media print {
+  .nora-header,
+  .nora-report-actions,
+  .nora-workflow-panel,
+  .nora-hero,
+  .nora-boundary {
+    display: none !important;
+  }
+  .nora-results { margin: 0; max-width: none; padding: 0; }
+  .nora-report { border: 0; }
+  .nora-report-section,
+  .nora-report-cover,
+  .nora-report-footer { break-inside: avoid; }
+  .nora-table-wrap { overflow: visible; }
+  .nora-table-wrap table { min-width: 0; table-layout: fixed; }
+  .nora-reference-list a { color: #000; }
+}
+
 @media (max-width: 380px) {
   .hero h1 { font-size: 38px; }
   .trust-row { flex-wrap: wrap; }

@@ -1,0 +1,195 @@
+import type { LegalSource } from "./types";
+
+export const RULES_VERIFIED_AT = "2026-07-28";
+
+export const LEGAL_SOURCES: LegalSource[] = [
+  {
+    sourceId: "PL119-21",
+    title: "Public Law 119-21, 139 Stat. 72",
+    issuingAuthority: "United States Congress",
+    sourceType: "Enacted statutory text",
+    publicationDate: "2025-07-04",
+    effectiveDate: "2025-07-04",
+    status: "Enacted",
+    url: "https://www.congress.gov/bill/119th-congress/house-bill/1/text/pl",
+    relevantSections: [
+      "§§ 70512–70514",
+      "IRC §§ 7701(a)(51)–(52)",
+      "IRC §§ 45X, 45Y, and 48E",
+    ],
+    summary: {
+      en: "Enacts prohibited-foreign-entity status restrictions, foreign-influenced-entity tests, effective-control factors, and material-assistance thresholds for selected federal energy credits.",
+      zh: "规定特定联邦能源税收抵免中的禁止外国实体身份限制、外国影响实体测试、有效控制因素和实质协助阈值。",
+    },
+    lastVerifiedAt: RULES_VERIFIED_AT,
+    supersedes: [],
+    supersededBy: [],
+    applicablePrograms: ["45X", "45Y", "48E", "downstream", "not-sure"],
+    applicableIndustries: ["ev-battery-materials"],
+    notes: {
+      en: "Statutory rules have program-specific effective dates and require fact-specific ownership, attribution, debt, governance, contractual-control, and sourcing analysis.",
+      zh: "法定规则具有项目特定的生效日期，并需要基于事实分析所有权、归属、债务、治理、合同控制和采购来源。",
+    },
+  },
+  {
+    sourceId: "NOTICE-2026-15",
+    title: "Notice 2026-15, 2026-11 I.R.B.",
+    issuingAuthority: "U.S. Department of the Treasury and Internal Revenue Service",
+    sourceType: "Internal Revenue Bulletin notice",
+    publicationDate: "2026-03-09",
+    effectiveDate: "2026-02-12",
+    status: "Interim Guidance",
+    url: "https://www.irs.gov/irb/2026-11_IRB",
+    relevantSections: ["Notice 2026-15 §§ 2–5", "IRC §§ 45X, 45Y, 48E, 7701(a)(51)–(52)"],
+    summary: {
+      en: "Provides interim PFE guidance, material-assistance safe-harbor methods, transition reliance rules, and examples while Treasury develops proposed regulations and updated tables.",
+      zh: "在财政部制定拟议法规和更新表格期间，提供 PFE 临时指南、实质协助安全港方法、过渡期依赖规则和示例。",
+    },
+    lastVerifiedAt: RULES_VERIFIED_AT,
+    supersedes: [],
+    supersededBy: [],
+    applicablePrograms: ["45X", "45Y", "48E", "downstream", "not-sure"],
+    applicableIndustries: ["ev-battery-materials"],
+    notes: {
+      en: "Interim guidance; taxpayers may rely only within the notice's stated reliance periods. Forthcoming regulations or safe-harbor tables may change the analysis.",
+      zh: "属于临时指南；纳税人只能在通知规定的依赖期内采用。后续法规或安全港表格可能改变分析。",
+    },
+  },
+  {
+    sourceId: "IRS-PFE-PAGE",
+    title: "Restrictions to certain energy credits with respect to status, and sourcing from, a prohibited foreign entity",
+    issuingAuthority: "Internal Revenue Service",
+    sourceType: "Official guidance portal",
+    publicationDate: "2026-03-11",
+    effectiveDate: null,
+    status: "Interim Guidance",
+    url: "https://www.irs.gov/forms-pubs/restrictions-to-certain-energy-credits-with-respect-to-status-and-sourcing-from-a-prohibited-foreign-entity",
+    relevantSections: ["PFE restrictions overview", "Notice 2026-15 link"],
+    summary: {
+      en: "IRS portal connecting the PFE restrictions to Forms 3468, 7207, and 7211 and to Notice 2026-15.",
+      zh: "IRS 官方入口，将 PFE 限制与表格 3468、7207、7211 及 Notice 2026-15 相连接。",
+    },
+    lastVerifiedAt: RULES_VERIFIED_AT,
+    supersedes: [],
+    supersededBy: [],
+    applicablePrograms: ["45X", "45Y", "48E", "downstream", "not-sure"],
+    applicableIndustries: ["ev-battery-materials"],
+    notes: {
+      en: "Portal last reviewed by IRS on March 11, 2026; it summarizes rather than replaces the statute or notice.",
+      zh: "该入口由 IRS 于 2026 年 3 月 11 日最后审核；它是摘要，不能替代法规或通知原文。",
+    },
+  },
+  {
+    sourceId: "IR-2026-23",
+    title: "Treasury, IRS provide guidance for certain energy tax credits regarding material assistance provided by prohibited foreign entities",
+    issuingAuthority: "Internal Revenue Service",
+    sourceType: "Official announcement",
+    publicationDate: "2026-02-12",
+    effectiveDate: null,
+    status: "Interim Guidance",
+    url: "https://www.irs.gov/newsroom/treasury-irs-provide-guidance-for-certain-energy-tax-credits-regarding-material-assistance-provided-by-prohibited-foreign-entities-under-the-one-big-beautiful-bill",
+    relevantSections: ["IR-2026-23", "Notice 2026-15 reliance periods"],
+    summary: {
+      en: "Announces Notice 2026-15, its interim reliance periods, and Treasury's intention to issue proposed regulations and new safe-harbor tables.",
+      zh: "发布 Notice 2026-15，说明其临时依赖期，并说明财政部拟发布拟议法规和新的安全港表格。",
+    },
+    lastVerifiedAt: RULES_VERIFIED_AT,
+    supersedes: [],
+    supersededBy: [],
+    applicablePrograms: ["45X", "45Y", "48E", "downstream", "not-sure"],
+    applicableIndustries: ["ev-battery-materials"],
+    notes: {
+      en: "News releases may not be updated after publication; the notice and statute control.",
+      zh: "新闻稿发布后可能不会更新；应以通知和法规原文为准。",
+    },
+  },
+  {
+    sourceId: "FORM-3468-2025",
+    title: "Instructions for Form 3468 (2025)",
+    issuingAuthority: "Internal Revenue Service",
+    sourceType: "Official form instructions",
+    publicationDate: "2025-12-01",
+    effectiveDate: "2025-01-01",
+    status: "Official Instructions",
+    url: "https://www.irs.gov/instructions/i3468",
+    relevantSections: ["Clean Electricity Investment Credit", "Prohibited foreign entities"],
+    summary: {
+      en: "Official filing instructions for investment credits, including Section 48E reporting context.",
+      zh: "投资税收抵免的官方申报说明，包括 Section 48E 的申报背景。",
+    },
+    lastVerifiedAt: RULES_VERIFIED_AT,
+    supersedes: [],
+    supersededBy: [],
+    applicablePrograms: ["48E"],
+    applicableIndustries: ["ev-battery-materials"],
+    notes: {
+      en: "Instructions are filing aids and do not replace the Code, regulations, or notices.",
+      zh: "表格说明属于申报辅助材料，不能替代税法、法规或通知。",
+    },
+  },
+  {
+    sourceId: "FORM-7207-2025",
+    title: "Instructions for Form 7207 (12/2025)",
+    issuingAuthority: "Internal Revenue Service",
+    sourceType: "Official form instructions",
+    publicationDate: "2025-12-01",
+    effectiveDate: "2025-01-01",
+    status: "Official Instructions",
+    url: "https://www.irs.gov/instructions/i7207",
+    relevantSections: ["Advanced Manufacturing Production Credit", "Prohibited foreign entities"],
+    summary: {
+      en: "Official filing instructions for the Section 45X advanced manufacturing production credit.",
+      zh: "Section 45X 先进制造生产税收抵免的官方申报说明。",
+    },
+    lastVerifiedAt: RULES_VERIFIED_AT,
+    supersedes: [],
+    supersededBy: [],
+    applicablePrograms: ["45X"],
+    applicableIndustries: ["ev-battery-materials"],
+    notes: {
+      en: "Current form instructions must be rechecked for the actual filing year.",
+      zh: "实际申报时必须重新核对相应申报年度的最新说明。",
+    },
+  },
+  {
+    sourceId: "FORM-7211-2025",
+    title: "Instructions for Form 7211 (12/2025)",
+    issuingAuthority: "Internal Revenue Service",
+    sourceType: "Official form instructions",
+    publicationDate: "2025-12-01",
+    effectiveDate: "2025-01-01",
+    status: "Official Instructions",
+    url: "https://www.irs.gov/instructions/i7211",
+    relevantSections: ["Clean Electricity Production Credit", "Prohibited foreign entities"],
+    summary: {
+      en: "Official filing instructions for the Section 45Y clean electricity production credit.",
+      zh: "Section 45Y 清洁电力生产税收抵免的官方申报说明。",
+    },
+    lastVerifiedAt: RULES_VERIFIED_AT,
+    supersedes: [],
+    supersededBy: [],
+    applicablePrograms: ["45Y"],
+    applicableIndustries: ["ev-battery-materials"],
+    notes: {
+      en: "Current form instructions must be rechecked for the actual filing year.",
+      zh: "实际申报时必须重新核对相应申报年度的最新说明。",
+    },
+  },
+];
+
+export function getLegalSource(sourceId: string) {
+  return LEGAL_SOURCES.find((source) => source.sourceId === sourceId) ?? null;
+}
+
+export function validateLegalSourceRegistry() {
+  const ids = new Set<string>();
+  const errors: string[] = [];
+  for (const source of LEGAL_SOURCES) {
+    if (ids.has(source.sourceId)) errors.push(`Duplicate source: ${source.sourceId}`);
+    ids.add(source.sourceId);
+    if (!source.url.startsWith("https://")) errors.push(`Non-HTTPS source: ${source.sourceId}`);
+    if (!source.relevantSections.length) errors.push(`Missing sections: ${source.sourceId}`);
+    if (!source.lastVerifiedAt) errors.push(`Missing verification date: ${source.sourceId}`);
+  }
+  return errors;
+}
