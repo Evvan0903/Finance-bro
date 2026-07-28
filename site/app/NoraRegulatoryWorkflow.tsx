@@ -184,8 +184,8 @@ function NoraReport({
       const { exportReportPdf } = await import("./lib/pdf-export");
       await exportReportPdf(reportRef.current, {
         ticker: "NORA",
+        agentId: "nora",
         subject: copy.workflowName,
-        footerLabel: "FinBro · Evidence-backed regulatory research",
         researchDate: report.generatedAt,
         filename: `finbro-nora-pfe-${report.generatedAt}-${locale}.pdf`,
       });
@@ -474,7 +474,11 @@ function NoraReport({
 }
 
 export function NoraRegulatoryWorkflow() {
-  const [locale, setLocale] = useState<RegulatoryLocale>("en");
+  const [locale, setLocale] = useState<RegulatoryLocale>(() => {
+    if (typeof window === "undefined") return "en";
+    const stored = window.localStorage.getItem("scopeline-locale");
+    return stored === "zh" || stored === "en" ? stored : "en";
+  });
   const [step, setStep] = useState(0);
   const [scenario, setScenario] = useState<RegulatoryScenario>(emptyRegulatoryScenario);
   const [report, setReport] = useState<RegulatoryProposalReport | null>(null);
@@ -483,14 +487,18 @@ export function NoraRegulatoryWorkflow() {
   const questionIds = useMemo(() => dynamicScenarioQuestions(scenario), [scenario]);
 
   useEffect(() => {
-    const stored = window.localStorage.getItem("scopeline-locale");
-    if (stored === "zh" || stored === "en") setLocale(stored);
-  }, []);
-
-  useEffect(() => {
     window.localStorage.setItem("scopeline-locale", locale);
     document.documentElement.lang = locale === "zh" ? "zh-CN" : "en";
   }, [locale]);
+
+  function changeLocale(nextLocale: RegulatoryLocale) {
+    setLocale(nextLocale);
+    setReport((current) =>
+      current
+        ? generateRegulatoryProposal(scenario, nextLocale, current.generatedAt)
+        : current,
+    );
+  }
 
   function select<T extends keyof RegulatoryScenario>(key: T, value: RegulatoryScenario[T]) {
     setScenario((current) => ({ ...current, [key]: value }));
@@ -584,7 +592,7 @@ export function NoraRegulatoryWorkflow() {
   if (report && step === 9) {
     return (
       <main className="nora-shell">
-        <NoraHeader locale={locale} setLocale={setLocale} />
+        <NoraHeader locale={locale} setLocale={changeLocale} />
         <NoraReport report={report} onEdit={() => { setReport(null); setStep(8); }} />
       </main>
     );
@@ -592,7 +600,7 @@ export function NoraRegulatoryWorkflow() {
 
   return (
     <main className="nora-shell">
-      <NoraHeader locale={locale} setLocale={setLocale} />
+      <NoraHeader locale={locale} setLocale={changeLocale} />
       <section className="nora-hero">
         <div>
           <span>{copy.workflowType}</span>
@@ -646,4 +654,3 @@ function NoraHeader({
     </header>
   );
 }
-

@@ -1,5 +1,21 @@
 # Institutional Equity Research Refactor and Shell Sample TODO
 
+## Nora PFE regulatory scenario workflow
+
+- [x] Read `saveToken`, recovery notes, architecture, existing workflows, report/PDF logic, and Nora profile.
+- [x] Verify official PFE statutes, IRS guidance, form instructions, legal thresholds, MACR schedules, and dynamic-list dependencies.
+- [x] Implement the bilingual 10-step EV Battery Materials questionnaire and deterministic scenario validation.
+- [x] Generate three reference structures and the exact 13-section formal report.
+- [x] Add numbered official sources, pending-source warnings, and Web/Markdown/PDF export controls.
+- [x] Keep unsupported industries planned and Nora marked In Development.
+- [x] Add agent-specific formal PDF footers while preserving Ethan’s legacy footer contract.
+- [x] Pass TypeScript, ESLint, 54/54 tests, both production builds, whitespace checks, and responsive bilingual browser QA.
+- [x] Deploy a private Sites preview.
+- [x] Create `feat: add nora pfe regulatory scenario workflow`.
+- [x] Push `main` to the existing GitHub repository.
+- [ ] Future: add live source monitoring and document review.
+- [ ] Future: add a detailed MACR calculator and customer compliance package.
+
 ## FinBro pixel-team and business-card refinement
 
 - [x] Read `saveToken`, current recovery notes, homepage code, route structure, tests, and all six existing assets.

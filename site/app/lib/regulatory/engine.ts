@@ -155,7 +155,10 @@ function isStale(asOf: string, verifiedAt: string, maximumDays = 180) {
 }
 
 function sourceIdsForScenario(scenario: RegulatoryScenario, rules: RegulatoryRule[]) {
-  const ids = new Set<string>(["PL119-21", "NOTICE-2026-15", "IRS-PFE-PAGE", "IR-2026-23"]);
+  const ids = new Set<string>([
+    "PL119-21", "NOTICE-2026-15", "IRS-PFE-PAGE", "IR-2026-23",
+    "PL118-31-BATTERY", "DOD-1260H-LIST", "PL117-78-UFLPA", "DHS-UFLPA-LIST",
+  ]);
   for (const rule of rules) rule.sourceIds.forEach((id) => ids.add(id));
   if (scenario.credit === "45X") ids.add("FORM-7207-2025");
   if (scenario.credit === "48E") ids.add("FORM-3468-2025");
@@ -198,8 +201,11 @@ export function generateRegulatoryProposal(
     ));
   }
   const pending = registryHasPendingRules(applicableRules);
+  const pendingSourceVerification = references.some(
+    (reference) => reference.source.status === "Pending Verification",
+  );
   const stale = isStale(asOf, RULES_VERIFIED_AT);
-  const definitiveBlocked = pending || stale;
+  const definitiveBlocked = pending || pendingSourceVerification || stale;
   const structures = proposedStructures(scenario, locale);
 
   const proposedDirection = [
@@ -248,7 +254,7 @@ export function generateRegulatoryProposal(
     professionalQuestions: [
       { audience: { en: "U.S. tax counsel", zh: "美国税务律师" }, question: { en: "Which 45X, 45Y, or 48E rules apply to the selected product, project, and year?", zh: "哪些 45X、45Y 或 48E 规则适用于所选产品、项目和年份？" }, sourceIds: ["PL119-21", "NOTICE-2026-15"] },
       { audience: { en: "Corporate counsel", zh: "公司律师" }, question: { en: "How do direct and indirect ownership, attribution, appointment rights, and debt rules apply to the proposed entity?", zh: "直接和间接所有权、归属、任命权和债务规则如何适用于拟议实体？" }, sourceIds: ["PL119-21"] },
-      { audience: { en: "Trade or regulatory counsel", zh: "贸易或监管律师" }, question: { en: "Do current DOD, DHS, or incorporated statutory entity lists identify any investor, supplier, licensor, or affiliate?", zh: "当前 DOD、DHS 或法定纳入名单是否识别任何投资者、供应商、许可方或关联方？" }, sourceIds: ["PL119-21"] },
+      { audience: { en: "Trade or regulatory counsel", zh: "贸易或监管律师" }, question: { en: "Do current DOD, DHS, or incorporated statutory entity lists identify any investor, supplier, licensor, or affiliate?", zh: "当前 DOD、DHS 或法定纳入名单是否识别任何投资者、供应商、许可方或关联方？" }, sourceIds: ["PL119-21", "PL118-31-BATTERY", "DOD-1260H-LIST", "PL117-78-UFLPA", "DHS-UFLPA-LIST"] },
       { audience: { en: "CPA or tax adviser", zh: "注册会计师或税务顾问" }, question: { en: "What verified cost data and records are required to calculate and substantiate the applicable MACR?", zh: "计算和证明适用 MACR 需要哪些经核验的成本数据和记录？" }, sourceIds: ["NOTICE-2026-15"] },
       { audience: { en: "Downstream customer tax team", zh: "下游客户税务团队" }, question: { en: "Which credit is expected to be claimed and what supplier evidence is required for the customer's position?", zh: "预计申请哪项抵免，客户立场需要哪些供应商证据？" }, sourceIds: ["IRS-PFE-PAGE"] },
       { audience: { en: "Legal and tax counsel", zh: "法律与税务顾问" }, question: { en: "Has newer Treasury or IRS guidance modified the current interim rules or reliance periods?", zh: "更新的财政部或 IRS 指南是否修改了当前临时规则或依赖期？" }, sourceIds: ["NOTICE-2026-15", "IR-2026-23"] },
@@ -283,4 +289,3 @@ export function scenarioQuestionsAreComplete(scenario: RegulatoryScenario) {
     scenario.answers.some((answer) => answer.questionId === questionId),
   );
 }
-

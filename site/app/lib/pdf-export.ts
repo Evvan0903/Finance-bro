@@ -1,12 +1,13 @@
 "use client";
 
 import { REPORT_RENDERING_MODEL } from "./report-rendering-model";
+import { reportFooterForAgent, type ReportAgentId } from "./agent-report-footers";
 
 type PdfExportMeta = {
   ticker: string;
   researchDate: string;
   filename: string;
-  footerLabel?: string;
+  agentId?: ReportAgentId;
   subject?: string;
 };
 
@@ -104,7 +105,7 @@ function addFooter(canvas: HTMLCanvasElement, meta: PdfExportMeta, pageNumber: n
   context.font = "18px Arial, sans-serif";
   context.textBaseline = "middle";
   context.fillText(
-    `${meta.footerLabel ?? "FinBro Equity Research"} | ${meta.subject ?? meta.ticker} | ${meta.researchDate} | Page ${pageNumber}`,
+    `${reportFooterForAgent(meta.agentId)} | ${meta.subject ?? meta.ticker} | ${meta.researchDate} | Page ${pageNumber}`,
     PAGE_MARGIN,
     y,
   );

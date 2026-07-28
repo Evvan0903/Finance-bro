@@ -1,5 +1,16 @@
 # FinBro Research Worklog
 
+## Nora PFE regulatory scenario workflow
+
+- `saveToken` routing: Sol owned legal-information architecture, decision boundaries, deterministic scenario design, and final review; Terra verified official statutory and IRS sources through 2026-07-28; Luna handled centralized bilingual copy, UI implementation, responsive styling, and routine documentation.
+- Added the bilingual Nora workflow at `/workflows/regulatory-compliance` for the single validated scope `EV Battery Materials`. It uses a 10-step adaptive questionnaire, three deterministic reference structures, exact legal-threshold and MACR tables, 13 report sections, numbered official references, and Web/Markdown/PDF exports.
+- Added typed source, rule, schema, scenario, structure, Markdown, and copy modules. Dynamic DoD and DHS lists remain `Pending Verification`; any dependent result is labeled `Current-source verification required` and cannot become a definitive recommendation.
+- Centralized PDF footers by agent. Ethan retains `FinBro Equity Research`; Nora uses `FinBro Regulatory Research`; Mason, Clara, Felix, and Parker have role-specific formal labels ready for their future report workflows.
+- Validation passed: TypeScript, ESLint, 54/54 tests, vinext production build, Vercel-compatible Next.js Webpack build, whitespace checks, bilingual desktop/tablet/mobile browser QA, and PDF-export interaction. No financial calculations, Metric Registry definitions, sector packs, or equity-research valuation logic changed.
+- Private Sites preview: version 12 was deployed at <https://scopeline-research.evvan.chatgpt.site>. The validated implementation was committed with the exact requested message and released to the existing GitHub `main` branch.
+- Known limitations: Nora remains `In Development`; only EV Battery Materials is supported; dynamic official lists require live verification; the current raster PDF exporter does not add clickable PDF link annotations.
+- Next recommended step: future phases may add document review, live source monitoring, a detailed MACR calculator, and a customer compliance package. Do not unlock another Nora industry until its sources and rules pass the same validation gate.
+
 ## FinBro pixel-team and business-card refinement
 
 - `saveToken` routing: Sol owned the visual hierarchy, interaction boundaries, and final review; Terra audited routing, tests, and regression risk; Luna audited asset individuality, modal direction, status treatment, and responsive presentation.

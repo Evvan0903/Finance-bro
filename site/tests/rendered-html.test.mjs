@@ -143,14 +143,13 @@ test("keeps the bilingual public-company research workflow on Ethan's route", as
   assert.doesNotMatch(html, /ScopeLine|输入一家公司|生成尽调报告|codex-preview|react-loading-skeleton/i);
 });
 
-test("serves status-accurate overview pages for the five unfinished workflows", async () => {
+test("serves status-accurate overview pages for the four unfinished non-Nora workflows", async () => {
   const builtWorker = await worker();
   const expected = [
     ["market-industry", "Mason", "In Development"],
     ["private-company", "Clara", "Planned"],
     ["financial-modeling", "Felix", "Planned"],
     ["portfolio-monitoring", "Parker", "Planned"],
-    ["regulatory-compliance", "Nora", "Planned"],
   ];
   for (const [route, name, status] of expected) {
     const response = await builtWorker.fetch(
@@ -167,6 +166,30 @@ test("serves status-accurate overview pages for the five unfinished workflows", 
     assert.match(html, /This status page does not simulate an unfinished workflow/);
     assert.doesNotMatch(html, /id="company"/);
   }
+});
+
+test("serves Nora's bilingual scenario workflow on the regulatory-compliance route", async () => {
+  const builtWorker = await worker();
+  const response = await builtWorker.fetch(
+    new Request("http://localhost/workflows/regulatory-compliance", {
+      headers: { accept: "text/html" },
+    }),
+    environment,
+    context,
+  );
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /Nora/);
+  assert.match(html, /Regulatory &amp; Compliance Analyst/);
+  assert.match(html, /What are you planning/);
+  assert.match(html, /U\.S\. Battery Supply Chain PFE Analysis/);
+  assert.match(html, /EV Battery Materials/);
+  assert.match(html, /Battery Cells and Modules/);
+  assert.match(html, /Planned/);
+  assert.match(html, />中文</);
+  assert.match(html, />EN</);
+  assert.doesNotMatch(html, /document upload|Self-Assessment Checklist/i);
+  assert.doesNotMatch(html, /This status page does not simulate an unfinished workflow/);
 });
 
 test("keeps the refined team profiles interactive, image-led, and route-accurate", async () => {
@@ -192,6 +215,8 @@ test("keeps the refined team profiles interactive, image-led, and route-accurate
     "/workflows/portfolio-monitoring",
     "/workflows/regulatory-compliance",
   ]) assert.match(workspace, new RegExp(route.replaceAll("/", "\\/")));
+  assert.match(workspace, /Explores regulatory requirements and proposes reference-backed structures/);
+  assert.match(workspace, /Explore Regulatory &amp; Compliance|Explore Regulatory & Compliance/);
 
   assert.match(styles, /\.workspace-profile-hint/);
   assert.match(styles, /\.workspace-member-card:focus-visible/);
@@ -2024,16 +2049,22 @@ test("passes the Industrials and CAT acceptance gate with backlog, price-cost, a
   );
 });
 
-test("owns PDF pagination and footer instead of browser print metadata", async () => {
-  const [client, pdf, css] = await Promise.all([
+test("owns PDF pagination and selects a formal footer for each FinBro agent", async () => {
+  const [client, pdf, footerRegistry, nora, css] = await Promise.all([
     readFile(new URL("../app/ResearchApp.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/pdf-export.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/agent-report-footers.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/NoraRegulatoryWorkflow.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
   ]);
   assert.match(client, /exportReportPdf/);
   assert.match(client, /data-pdf-block/);
   assert.doesNotMatch(client, /window\.print\(\)/);
-  assert.match(pdf, /FinBro Equity Research \| \$\{meta\.ticker\} \| \$\{meta\.researchDate\} \| Page \$\{pageNumber\}/);
+  assert.match(pdf, /reportFooterForAgent\(meta\.agentId\)/);
+  assert.match(footerRegistry, /ethan: "FinBro Equity Research"/);
+  assert.match(footerRegistry, /nora: "FinBro Regulatory Research"/);
+  assert.match(footerRegistry, /mason: "FinBro Market & Industry Research"/);
+  assert.match(nora, /agentId: "nora"/);
   assert.match(pdf, /table \{ min-width: 0 !important/);
   assert.match(css, /\.scenario-grid \{ break-inside: avoid/);
   assert.match(css, /\.source-columns small \{ color: #526878;.*font-size: 10px/s);

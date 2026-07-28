@@ -7,7 +7,6 @@ import type {
   ThresholdTable,
 } from "./types";
 
-const statute = ["PL119-21"];
 const statuteAndNotice = ["PL119-21", "NOTICE-2026-15"];
 
 function entityRule(
@@ -90,8 +89,8 @@ export const ENTITY_AND_CONTROL_RULES: RegulatoryRule[] = [
     "percent",
     ["IRC § 7701(a)(51)(D)(i)(I)(dd)", "Notice 2026-15 § 2.03"],
     {
-      en: "Instrument classification, original issuance, related parties, conversion rights, and aggregation require counsel review.",
-      zh: "工具分类、初始发行、关联方、转换权和合计方式需要专业顾问审查。",
+      en: "This V1 screening threshold is scoped to the private/non-public entity test. Publicly traded entities use a distinct debt formulation. Instrument classification, original issuance, related parties, conversion rights, and aggregation require counsel review.",
+      zh: "该 V1 筛查阈值仅适用于非公众实体测试。上市实体采用不同的债务表述。工具分类、初始发行、关联方、转换权和合计方式需要专业顾问审查。",
     },
   ),
   entityRule(
@@ -364,4 +363,3 @@ export function registryHasPendingRules(rules: RegulatoryRule[]) {
   const pendingStatuses: LegalSourceStatus[] = ["Pending Verification", "Superseded", "Withdrawn"];
   return rules.some((rule) => pendingStatuses.includes(rule.ruleStatus));
 }
-

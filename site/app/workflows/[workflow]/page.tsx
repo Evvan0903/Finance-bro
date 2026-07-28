@@ -58,20 +58,6 @@ const WORKFLOWS = {
       "Portfolio monitoring report",
     ],
   },
-  "regulatory-compliance": {
-    name: "Nora",
-    title: "Regulatory & Compliance Analyst",
-    status: "Planned",
-    image: "/team/nora-workstation.svg",
-    intro: "Nora’s planned workflow will review regulatory requirements, internal policies, reporting obligations, and supporting evidence for compliance-readiness analysis.",
-    outputs: [
-      "Regulatory gap analysis",
-      "Compliance readiness report",
-      "Evidence and control checklist",
-      "Reporting and filing preparation package",
-    ],
-    boundary: "This planned workflow will support compliance analysis and readiness. It will not provide legal advice, guarantee compliance, or replace attorneys, auditors, or regulatory professionals.",
-  },
 } as const;
 
 type WorkflowKey = keyof typeof WORKFLOWS;
@@ -117,7 +103,6 @@ export default async function WorkflowOverviewPage({
             <ul>
               {workflowDefinition.outputs.map((output) => <li key={output}>{output}</li>)}
             </ul>
-            {"boundary" in workflowDefinition && <p>{workflowDefinition.boundary}</p>}
             <div className="workflow-overview-actions">
               <p>This status page does not simulate an unfinished workflow.</p>
               <Link href="/">Return to the FinBro team</Link>

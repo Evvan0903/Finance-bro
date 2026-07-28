@@ -1,5 +1,55 @@
 # Recovery Checkpoint
 
+## Current objective — Nora PFE regulatory scenario workflow
+
+### Original objective
+
+Add Nora’s bilingual, source-backed U.S. battery-supply-chain PFE scenario workflow without changing the validated equity-research architecture, then validate, commit with the requested message, push `main`, and expose a private Sites preview.
+
+### Completed
+
+- Read and followed `saveToken`, recovery notes, project architecture, report/PDF paths, sector packs, and the existing Nora profile.
+- Verified the controlling statute, IRS Notice 2026-15, IRS PFE materials, relevant form instructions, MACR schedules, and dynamic-list dependencies as of 2026-07-28.
+- Implemented a typed 10-step questionnaire, deterministic validation and scenario engine, three reference structures, 13-section bilingual report, numbered official sources, warnings, and Web/Markdown/PDF exports.
+- Kept Nora `In Development` and limited support to EV Battery Materials. Dynamic DoD/DHS sources remain pending and block definitive recommendations.
+- Added centralized agent-specific PDF footers while preserving Ethan’s exact `FinBro Equity Research` footer.
+- Passed TypeScript, ESLint, 54/54 tests, vinext build, Vercel-compatible build, whitespace checks, and responsive bilingual browser QA.
+- Created and deployed private Sites preview version 12 at `https://scopeline-research.evvan.chatgpt.site`.
+
+### Current status
+
+Implementation, validation, the exact requested final local commit, and the authorized push to `origin/main` are complete. No manual Vercel deployment was performed.
+
+### Files modified
+
+- `site/app/NoraRegulatoryWorkflow.tsx`
+- `site/app/TeamWorkspace.tsx`
+- `site/app/globals.css`
+- `site/app/workflows/regulatory-compliance/page.tsx`
+- `site/app/workflows/[workflow]/page.tsx`
+- `site/app/lib/agent-report-footers.ts`
+- `site/app/lib/pdf-export.ts`
+- `site/app/lib/regulatory/*`
+- `site/tests/nora-regulatory.test.mjs`
+- `site/tests/rendered-html.test.mjs`
+- `WORKLOG.md`
+- `RECOVERY.md`
+- `TODO.md`
+
+### Remaining tasks
+
+- No required implementation or release task remains.
+
+### Next recommended step
+
+Future work should begin with live source monitoring, not another industry unlock.
+
+### Assumptions and pending decisions
+
+- The workflow is educational scenario analysis, not legal advice.
+- DoD 1260H and DHS UFLPA lists are dynamic; a current official-source check remains mandatory.
+- PDF content is preserved and agent-branded, but clickable link annotations are not supported by the current raster exporter.
+
 ## Current objective — FinBro pixel-team and business-card refinement
 
 ### Completed
