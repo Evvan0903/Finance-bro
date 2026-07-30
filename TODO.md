@@ -1,5 +1,28 @@
 # Institutional Equity Research Refactor and Shell Sample TODO
 
+## Ethan market analysis and visual asset downloads — paused
+
+- [x] Read `saveToken`, recovery notes, Ethan architecture, provider utilities, report/PDF paths, and existing visuals.
+- [x] Keep Mason user-facing code and behavior unchanged.
+- [x] Add the default-on bilingual Industry and Market Analysis option.
+- [x] Add reviewed NVDA industry mapping and conservative general fallback behavior.
+- [x] Add optional provider-backed industry analysis with non-fatal failure handling.
+- [x] Add structured visual datasets, stable registry IDs, TTL storage, and report-scoped asset APIs.
+- [x] Add real CSV, XLSX, SVG, and portable PNG exports with validation and redaction.
+- [x] Add visualization cards, per-asset menus, integrated market sections, and Visual Downloads center.
+- [x] Hide download controls from print and PDF output.
+- [x] Add and pass targeted NVDA mapping, registry, export-signature, and toggle-off tests.
+- [x] Pass TypeScript and Vinext production build.
+- [ ] Update `package-lock.json` and verify `npm ci` compatibility.
+- [ ] Run the complete combined test suite after the final export changes.
+- [ ] Run ESLint, whitespace validation, and Vercel-compatible build.
+- [ ] Complete bilingual responsive NVDA browser, PDF, and downloaded-file visual QA.
+- [ ] Run the six-company regression matrix including AAPL and all-provider-unavailable behavior.
+- [ ] Audit remaining sector-specific structured visuals for full shared-asset coverage.
+- [ ] Update final README, architecture docs, worklog, and validation evidence.
+- [ ] Create exact feature commit and push `origin/main`.
+- [ ] Confirm only the possible automatic Vercel deployment trigger; do not deploy manually.
+
 ## Nora PFE regulatory scenario workflow
 
 - [x] Read `saveToken`, recovery notes, architecture, existing workflows, report/PDF logic, and Nora profile.

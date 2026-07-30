@@ -29,6 +29,7 @@ export type SupportedSubindustry =
   | "general-corporate";
 
 export type ResearchOptions = {
+  includeIndustryMarketAnalysis: boolean;
   sectorOutlook: boolean;
   peerComparison: boolean;
   valuation: boolean;

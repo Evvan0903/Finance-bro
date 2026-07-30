@@ -1,5 +1,70 @@
 # Recovery Checkpoint
 
+## Current objective — Ethan market analysis and visual asset downloads (paused)
+
+### Original objective
+
+Extend Ethan’s existing Public Company Research workflow with automatic, evidence-backed Industry and Market Analysis from a ticker, plus independent PNG/SVG/CSV/XLSX downloads for existing and new structured visuals. Preserve Mason, existing financial calculations, sector packs, report methodology, bilingual output, and PDF styling. Finish with validation, documentation, the requested feature commit, and a push to `origin/main`; do not manually deploy Vercel.
+
+### Completed
+
+- Read and followed `saveToken`; routed architecture/final judgment to Sol, repository/provider/test inspection to Terra, and routine UI/export work to the presentation lane.
+- Audited the Ethan request pipeline, SEC classification, sector packs, market providers, report/PDF rendering, and existing visuals. Mason was not modified.
+- Added the default-on bilingual `Include Industry and Market Analysis` option and official-data progress copy.
+- Added a reviewed NVDA SIC 3674 profile with curated NAICS, BEA, FRED, Census, and BLS mappings; other issuers use a conservative `mapping-review` fallback and never fabricate a specialized pack.
+- Added server-side optional industry analysis that reuses existing official provider utilities, avoids duplicate SEC retrieval, preserves periods/units/geography/evidence, records compatibility limitations, and never blocks the company report when providers fail.
+- Added a typed visual-asset registry, temporary TTL store, structured datasets, stable IDs, safe filenames, CSV/XLSX/SVG/PNG export, security/redaction controls, and the required report-scoped list/detail/download API routes.
+- Replaced the native `sharp` dependency after manual runtime testing showed it broke Vinext/Cloudflare startup. PNG files are now rendered directly from structured datasets with a portable encoder.
+- Added bilingual visualization cards, restrained download menus, a filtered Visual Downloads center, integrated market-definition/trend/comparison/coverage sections, Markdown coverage, and print/PDF hiding for interactive controls.
+- Added three end-to-end NVDA tests covering the reviewed mapping, stable registry, real file signatures for all four formats, and company-only output when the toggle is disabled.
+- Validation passed so far: TypeScript, Vinext production build, the original 73/73 tests, and the new 3/3 end-to-end market/visual tests.
+
+### Remaining tasks
+
+- Run the complete combined test suite after the latest PNG/export changes.
+- Run ESLint, `git diff --check`, and the Vercel-compatible `next build --webpack`.
+- Update the npm lockfile for the new `xlsx` dependency so `npm ci` remains valid; verify both package-manager paths.
+- Complete manual bilingual NVDA browser QA, responsive screenshots, PDF/print control hiding, and inspect saved CSV/XLSX/SVG/PNG artifacts beyond signatures.
+- Run the required six-company regression matrix, including AAPL and market-provider-unavailable behavior.
+- Review coverage against every existing Ethan structured chart/table and add any missing sector-specific asset adapters required by the acceptance list.
+- Update README, architecture documentation, `WORKLOG.md`, `TODO.md`, and validation artifacts with final results and known persistence limitations.
+- Create the exact final feature commit `feat: add market analysis and visual asset downloads to ethan`, push `origin/main`, and report only the possible automatic Vercel trigger. Do not manually deploy Vercel.
+
+### Current status
+
+Paused at the user’s request. The implementation is buildable in the Vinext production path and targeted tests pass, but final validation, documentation, exact feature commit, and GitHub push are intentionally unfinished. A local recovery checkpoint commit should be the latest commit after this note is saved.
+
+### Files modified
+
+- `site/app/ResearchApp.tsx`
+- `site/app/VisualizationCard.tsx`
+- `site/app/VisualDownloadCenter.tsx`
+- `site/app/api/research/route.ts`
+- `site/app/api/research/reports/*`
+- `site/app/globals.css`
+- `site/app/lib/ethan-industry/*`
+- `site/app/lib/visual-assets/*`
+- `site/app/lib/pdf-export.ts`
+- `site/app/lib/research-types.ts`
+- `site/app/lib/sector-types.ts`
+- `site/package.json`
+- `site/pnpm-lock.yaml`
+- `site/tests/ethan-market-visuals.test.mjs`
+- `RECOVERY.md`
+- `TODO.md`
+- `WORKLOG.md`
+
+### Next recommended step
+
+Read this section, inspect the latest checkpoint diff, update `site/package-lock.json`, then run the complete validation gate before resuming browser QA. Do not restart the feature or rewrite the completed modules.
+
+### Assumptions and pending decisions
+
+- Process-local visual storage is intentionally temporary and must remain disclosed; durable storage is a future deployment decision.
+- Official economic output, investment, and production indicators are context or proxies unless their source explicitly defines a commercial market size.
+- The reviewed NVDA mapping is specialized; other companies remain conservative until their mappings are validated.
+- `.DS_Store` is unrelated pre-existing state and must remain unstaged.
+
 ## Current objective — Nora PFE regulatory scenario workflow
 
 ### Original objective

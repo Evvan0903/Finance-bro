@@ -22,6 +22,8 @@ import {
   formatPerUnitValue,
 } from "./lib/presentation-format";
 import { UI_HEADING_COPY } from "./lib/ui-copy";
+import { AssetDownloadMenu, VisualizationCard } from "./VisualizationCard";
+import { VisualDownloadCenter } from "./VisualDownloadCenter";
 
 type Locale = "zh" | "en";
 
@@ -46,6 +48,7 @@ type SavedResearchSelection = {
   options: ResearchOptions;
 };
 const DEFAULT_OPTIONS: ResearchOptions = {
+  includeIndustryMarketAnalysis: true,
   sectorOutlook: true,
   peerComparison: true,
   valuation: true,
@@ -135,6 +138,7 @@ const COPY = {
     industrials: "工业",
     consumer: "消费",
     options: "研究模块",
+    industryMarketOption: "包含行业与市场分析",
     sectorOutlookOption: "行业展望",
     peerOption: "同业比较",
     valuationOption: "估值",
@@ -144,7 +148,7 @@ const COPY = {
     researching: "Ethan 正在处理…",
     examplesLabel: "已验证示例",
     progressTitle: UI_HEADING_COPY.zh.loadingTitle,
-    progressSteps: "筛选近期证据 → 标准化申报数据 → 加载行业 KPI → 构建可复核的研究输出",
+    progressSteps: "解析公司行业 → 选择官方指标 → 标准化市场指标 → 比较公司与行业趋势 → 准备可下载图表",
     reportUnavailable: "报告暂时无法生成。",
     researchDate: "研究日期",
     researchWindow: "研究窗口",
@@ -299,6 +303,17 @@ const COPY = {
     valuationBridge: "估值桥",
     valuationAssessment: "估值判断",
     sourcesLimitations: "来源与限制",
+    marketDefinition: "市场定义与分类",
+    industryTrends: "行业规模、需求与供给趋势",
+    companyIndustryPositioning: "公司与行业定位",
+    industryCoverage: "行业数据覆盖",
+    coverageStatus: "覆盖状态",
+    providersUsed: "已使用数据源",
+    providersUnavailable: "不可用数据源",
+    classificationMethod: "分类方法",
+    classificationLimitations: "分类限制",
+    primaryMarket: "主要市场",
+    visualDownloads: "图表下载",
     sourceLedger: "来源账本",
     methodology: "方法",
     limitations: "限制",
@@ -348,6 +363,7 @@ const COPY = {
     industrials: "Industrials",
     consumer: "Consumer",
     options: "Research modules",
+    industryMarketOption: "Include Industry and Market Analysis",
     sectorOutlookOption: "Sector outlook",
     peerOption: "Peer comparison",
     valuationOption: "Valuation",
@@ -357,7 +373,7 @@ const COPY = {
     researching: "Ethan is on it…",
     examplesLabel: "Validated examples",
     progressTitle: UI_HEADING_COPY.en.loadingTitle,
-    progressSteps: "Screen recent evidence → normalize filings → load sector KPIs → prepare a reviewable research output",
+    progressSteps: "Resolve the company’s industry → select official indicators → normalize market metrics → compare company and industry trends → prepare downloadable visual assets",
     reportUnavailable: "The report could not be generated right now.",
     researchDate: "Research date",
     researchWindow: "Research window",
@@ -512,6 +528,17 @@ const COPY = {
     valuationBridge: "Valuation bridge",
     valuationAssessment: "Valuation assessment",
     sourcesLimitations: "Sources and limitations",
+    marketDefinition: "Market definition and classification",
+    industryTrends: "Industry scale, demand, and supply trends",
+    companyIndustryPositioning: "Company versus industry positioning",
+    industryCoverage: "Industry Data Coverage",
+    coverageStatus: "Coverage status",
+    providersUsed: "Providers used",
+    providersUnavailable: "Providers unavailable",
+    classificationMethod: "Classification method",
+    classificationLimitations: "Classification limitations",
+    primaryMarket: "Primary market",
+    visualDownloads: "Visual Downloads",
     sourceLedger: "Source ledger",
     methodology: "Methodology",
     limitations: "Limitations",
@@ -828,7 +855,41 @@ function reportToMarkdown(report: ResearchReport, locale: Locale) {
     "",
     report.valuationFormula,
     "",
-    `## 12. ${copy.sourcesLimitations}`,
+    ...(report.industryAnalysis.included && report.industryAnalysis.profile
+      ? [
+          `## 12. ${copy.marketDefinition}`,
+          `- **${copy.primaryMarket}:** ${report.industryAnalysis.profile.primaryMarket}`,
+          `- **${copy.classificationMethod}:** ${report.industryAnalysis.profile.classificationMethod}`,
+          ...report.industryAnalysis.profile.classificationLimitations.map(
+            (item) => `- ${copy.classificationLimitations}: ${item}`,
+          ),
+          "",
+          `## 13. ${copy.industryTrends}`,
+          ...report.industryAnalysis.industryMetrics.map(
+            (metric) =>
+              `- **${metric.displayLabel}: ${metric.value} ${metric.unit}** — ${metric.period}; ${metric.geography}; ${metric.method}`,
+          ),
+          "",
+          `## 14. ${copy.companyIndustryPositioning}`,
+          ...report.industryAnalysis.comparisons.map(
+            (item) =>
+              `- **${item.compatibilityStatus}** — ${item.normalizationMethod}\n  - ${item.interpretationLimitations.join(" ")}`,
+          ),
+          "",
+          `## 15. ${copy.industryCoverage}`,
+          `- **${copy.coverageStatus}:** ${report.industryAnalysis.coverage.status}`,
+          `- **${copy.providersUsed}:** ${report.industryAnalysis.coverage.providersUsed.join(", ") || "—"}`,
+          `- **${copy.providersUnavailable}:** ${report.industryAnalysis.coverage.providersUnavailable.join(", ") || "—"}`,
+          ...report.industryAnalysis.coverage.limitations.map((item) => `- ${item}`),
+          "",
+          `## 16. ${copy.visualDownloads}`,
+          ...report.visualAssets.map(
+            (asset) => `- ${asset.title} — ${asset.supportedFormats.map((format) => format.toUpperCase()).join(", ")}`,
+          ),
+          "",
+        ]
+      : []),
+    `## 17. ${copy.sourcesLimitations}`,
     ...report.sources.map(
       (source) =>
         `- [${source.title}](${source.url})${source.publisher ? ` — ${source.publisher}` : ""}${source.publicationDate ? ` · ${source.publicationDate}` : ""}`,
@@ -1305,6 +1366,7 @@ export function ResearchApp() {
             <fieldset className="option-row">
               <legend>{copy.options}</legend>
               {([
+                ["includeIndustryMarketAnalysis", copy.industryMarketOption],
                 ["sectorOutlook", copy.sectorOutlookOption],
                 ["peerComparison", copy.peerOption],
                 ["valuation", copy.valuationOption],
@@ -1519,12 +1581,25 @@ export function ResearchApp() {
               title={copy.financials}
               note={<><EvidenceBadge kind="Reported fact" locale={locale} /> {copy.financialNote}</>}
             />
-            <TrendChart
-              periods={report.periods}
-              currency={report.currency}
-              locale={locale}
-              bank={report.sectorPack.id === "banks"}
-            />
+            {report.visualAssets.find((asset) => asset.dataset.id === "historical-financial-trend")
+              ? <VisualizationCard
+                  asset={report.visualAssets.find((asset) => asset.dataset.id === "historical-financial-trend")!}
+                  locale={locale}
+                />
+              : <TrendChart
+                  periods={report.periods}
+                  currency={report.currency}
+                  locale={locale}
+                  bank={report.sectorPack.id === "banks"}
+                />}
+            {report.visualAssets.find((asset) => asset.dataset.id === "historical-financial-table") && (
+              <div className="inline-visual-download">
+                <AssetDownloadMenu
+                  asset={report.visualAssets.find((asset) => asset.dataset.id === "historical-financial-table")!}
+                  locale={locale}
+                />
+              </div>
+            )}
             <div className="table-wrap has-unit-label">
               <span className="table-unit-label">
                 {formatFinancialMixedUnitLabel(
@@ -1771,6 +1846,14 @@ export function ResearchApp() {
           {visiblePeerComparison.length > 0 && (
             <section className="report-section" data-pdf-block>
               <SectionHeading number="08" title={copy.peerComparison} note={copy.peerNote} />
+              {report.visualAssets.find((asset) => asset.dataset.id === "peer-comparison") && (
+                <div className="inline-visual-download">
+                  <AssetDownloadMenu
+                    asset={report.visualAssets.find((asset) => asset.dataset.id === "peer-comparison")!}
+                    locale={locale}
+                  />
+                </div>
+              )}
               <div className="table-wrap">
                 <table className="peer-table">
                   <thead>
@@ -1848,6 +1931,14 @@ export function ResearchApp() {
               title={copy.scenariosValuation}
               note={<><EvidenceBadge kind="Analyst assumption" locale={locale} /> {copy.scenarioNote}</>}
             />
+            {report.visualAssets.find((asset) => asset.dataset.id === "valuation-scenarios") && (
+              <div className="inline-visual-download">
+                <AssetDownloadMenu
+                  asset={report.visualAssets.find((asset) => asset.dataset.id === "valuation-scenarios")!}
+                  locale={locale}
+                />
+              </div>
+            )}
             {report.marketValuation && (
               <div className="market-valuation-panel">
                 <div className="market-valuation-header">
@@ -1947,8 +2038,75 @@ export function ResearchApp() {
             </div>
           </section>
 
+          {report.industryAnalysis.included && report.industryAnalysis.profile && (
+            <>
+              <section className="report-section market-analysis-section" data-pdf-block>
+                <SectionHeading number="12" title={copy.marketDefinition} />
+                <dl className="industry-profile-grid">
+                  <div><dt>{copy.primaryMarket}</dt><dd>{report.industryAnalysis.profile.primaryMarket}</dd></div>
+                  <div><dt>{copy.classificationMethod}</dt><dd>{report.industryAnalysis.profile.classificationMethod}</dd></div>
+                  <div><dt>SIC</dt><dd>{report.industryAnalysis.profile.sicCode ?? "—"} · {report.industryAnalysis.profile.sicDescription ?? "—"}</dd></div>
+                  <div><dt>NAICS</dt><dd>{report.industryAnalysis.profile.naicsCodes.join(", ") || "—"}</dd></div>
+                </dl>
+                {report.industryAnalysis.profile.classificationLimitations.length > 0 && (
+                  <div className="industry-limitations">
+                    <h4>{copy.classificationLimitations}</h4>
+                    <ul>{report.industryAnalysis.profile.classificationLimitations.map((item) => <li key={item}>{item}</li>)}</ul>
+                  </div>
+                )}
+                {report.visualAssets
+                  .filter((asset) => asset.sectionId === "market-definition")
+                  .map((asset) => <VisualizationCard key={asset.assetId} asset={asset} locale={locale} />)}
+              </section>
+
+              <section className="report-section market-analysis-section" data-pdf-block>
+                <SectionHeading number="13" title={copy.industryTrends} />
+                {report.visualAssets.some((asset) => asset.sectionId === "industry-trends")
+                  ? report.visualAssets
+                      .filter((asset) => asset.sectionId === "industry-trends")
+                      .map((asset) => <VisualizationCard key={asset.assetId} asset={asset} locale={locale} />)
+                  : <p className="module-not-selected">
+                      {locale === "zh"
+                        ? "没有足够兼容的官方时间序列可用于行业趋势图"
+                        : "Insufficient compatible official time-series data for an industry trend chart"}
+                    </p>}
+              </section>
+
+              <section className="report-section market-analysis-section" data-pdf-block>
+                <SectionHeading number="14" title={copy.companyIndustryPositioning} />
+                {report.industryAnalysis.comparisons.map((comparison) => (
+                  <article className="industry-comparison-note" key={`${comparison.companyMetricId}-${comparison.industryMetricId}`}>
+                    <strong>{comparison.compatibilityStatus}</strong>
+                    <p>{comparison.normalizationMethod}</p>
+                    <small>{comparison.interpretationLimitations.join(" ")}</small>
+                  </article>
+                ))}
+                {report.visualAssets
+                  .filter((asset) => asset.sectionId === "company-industry-positioning")
+                  .map((asset) => <VisualizationCard key={asset.assetId} asset={asset} locale={locale} />)}
+              </section>
+
+              <section className="report-section market-analysis-section" data-pdf-block>
+                <SectionHeading number="15" title={copy.industryCoverage} />
+                <dl className="industry-coverage-grid">
+                  <div><dt>{copy.coverageStatus}</dt><dd>{report.industryAnalysis.coverage.status}</dd></div>
+                  <div><dt>{copy.providersUsed}</dt><dd>{report.industryAnalysis.coverage.providersUsed.join(", ") || "—"}</dd></div>
+                  <div><dt>{copy.providersUnavailable}</dt><dd>{report.industryAnalysis.coverage.providersUnavailable.join(", ") || "—"}</dd></div>
+                </dl>
+                {report.industryAnalysis.coverage.limitations.length > 0 && (
+                  <ul>{report.industryAnalysis.coverage.limitations.map((item) => <li key={item}>{item}</li>)}</ul>
+                )}
+              </section>
+
+              <section className="report-section visual-download-section" data-visual-download-control>
+                <SectionHeading number="16" title={copy.visualDownloads} />
+                <VisualDownloadCenter assets={report.visualAssets} locale={locale} />
+              </section>
+            </>
+          )}
+
           <section className="report-section source-section" data-pdf-block>
-            <SectionHeading number="12" title={copy.sourcesLimitations} />
+            <SectionHeading number="17" title={copy.sourcesLimitations} />
             <div className="source-columns">
               <div>
                 <h4>{copy.sourceLedger}</h4>

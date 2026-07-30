@@ -24,6 +24,8 @@ import type {
   MetricCoverageSummary,
   MetricExtractionAudit,
 } from "./metric-coverage/types";
+import type { EthanIndustryAnalysis } from "./ethan-industry/types";
+import type { VisualAssetDescriptor } from "./visual-assets/types";
 
 export type FilingSource = {
   title: string;
@@ -291,6 +293,7 @@ export type ResearchSource = {
 };
 
 export type ResearchReport = {
+  reportId: string;
   locale: ResearchLocale;
   selection: ResearchSelection;
   classification: CompanyClassification;
@@ -333,6 +336,8 @@ export type ResearchReport = {
   marketValuation: MarketValuationSnapshot | null;
   metricCoverage: MetricCoverageSummary;
   metricExtractionAudit: MetricExtractionAudit[];
+  industryAnalysis: EthanIndustryAnalysis;
+  visualAssets: VisualAssetDescriptor[];
   dataCoverage: DataCoverage;
   overview: string;
   segmentAnalysis: string;

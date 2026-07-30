@@ -30,6 +30,8 @@ import { scoreMetricCoverage } from "../../lib/metric-coverage/coverage-score";
 import { companyTypeForPack } from "../../lib/metric-coverage/coverage-expectations";
 import type { MetricExtractionAudit } from "../../lib/metric-coverage/types";
 import { enrichRegistryFromInlineXbrl } from "../../lib/filing-enrichment/inline-xbrl";
+import { buildEthanIndustryAnalysis } from "../../lib/ethan-industry/industryAnalysis";
+import { buildResearchVisualAssets } from "../../lib/visual-assets/builders";
 import {
   runShellMetricValidation,
   SHELL_2025_20F_URL,
@@ -141,6 +143,7 @@ const COPY = {
 } as const;
 
 const DEFAULT_OPTIONS: ResearchOptions = {
+  includeIndustryMarketAnalysis: true,
   sectorOutlook: true,
   peerComparison: true,
   valuation: true,
@@ -1760,6 +1763,20 @@ async function buildReport(
     });
   }
   const latest = periods.at(-1)!;
+  const industryAnalysis = await buildEthanIndustryAnalysis({
+    company: {
+      ticker: record.ticker,
+      companyName,
+      cik,
+      sicCode: submissions.sic ?? null,
+      sicDescription: submissions.sicDescription ?? null,
+    },
+    classification,
+    selection,
+    periods,
+    locale,
+    includeIndustryMarketAnalysis: selection.options.includeIndustryMarketAnalysis,
+  });
   const productMetrics = buildProductMetrics(metricRegistry, record.ticker, locale);
   const pipelineAssets = buildPipelineAssets(record.ticker, locale);
   const marketValuation = buildLlyMarketValuation(
@@ -2087,7 +2104,8 @@ async function buildReport(
     { module: "pdf-data-model", keys: quantitativeKeys },
   ]);
 
-  return {
+  const report: ResearchReport = {
+    reportId: `${record.ticker.toLowerCase()}-${RESEARCH_DATE}-${locale}`,
     locale,
     selection,
     classification,
@@ -2130,6 +2148,8 @@ async function buildReport(
     marketValuation,
     metricCoverage,
     metricExtractionAudit,
+    industryAnalysis,
+    visualAssets: [],
     dataCoverage: {
       limited: criticalMetricIds.length > 0,
       criticalMetricIds,
@@ -2303,6 +2323,14 @@ async function buildReport(
         publicationDate: source.publicationDate,
         topic: source.topic,
       })),
+      ...(industryAnalysis.marketReport?.references ?? []).map((source) => ({
+        title: source.officialTitle,
+        url: source.officialSourceUrl,
+        retrievedAt: source.retrievedAt,
+        publisher: source.providerName,
+        publicationDate: source.observationPeriod,
+        topic: "Official industry and market evidence",
+      })),
     ],
     limitations: [
       ...(sectorOutlook.insufficientEvidence
@@ -2345,8 +2373,24 @@ async function buildReport(
           : pack.id === "biopharma" && marketValuation
             ? `The market price is the ${marketValuation.asOfDate} close; market capitalization carries the 2026-04-27 reported share count and net debt carries the 2026-03-31 balance sheet to the market date, so this is a dated valuation proxy rather than real-time data.`
           : "No real-time share price is used, so the report does not provide a rating, price target, or per-share value; scenario values are transparent sensitivities only.",
+      ...industryAnalysis.coverage.limitations,
     ],
   };
+  try {
+    report.visualAssets = buildResearchVisualAssets(report);
+  } catch (error) {
+    console.error(JSON.stringify({
+      event: "visual_asset_registry_error",
+      ticker: record.ticker,
+      message: error instanceof Error ? error.message : "Unknown visual asset error",
+    }));
+    report.limitations.push(
+      locale === "zh"
+        ? "图表资产注册失败；公司研究报告仍可使用。"
+        : "Visual asset registration failed; the company research report remains available.",
+    );
+  }
+  return report;
 }
 
 type PreservedSelections = {

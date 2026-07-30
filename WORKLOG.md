@@ -383,3 +383,13 @@ Monitor production extraction behavior before adding any new sector or issuer pa
 - Current limitations: research records/cache are process-local and not durable across instances; Census currently redirects when the configured credential is not accepted; BEA returned no usable matching rows in live validation; commercial market size/share, proprietary estimates, and private-company data are not inferred.
 - Future: add durable storage, EIA integration, an approved search provider, and permitted private market-data integrations.
 - Release: feature commit `1e1864e` was pushed to `origin/main`; Sites version 14 was saved from the same commit and deployed successfully to the existing owner-only production site at `https://scopeline-research.evvan.chatgpt.site`.
+## Ethan market analysis and visual asset downloads — paused checkpoint
+
+- Routing: `saveToken` used. Sol retained architecture, classification, compatibility, and final-review decisions; Terra handled repository/provider/test audits; routine UI/export implementation stayed in the low-risk presentation lane.
+- Added: default-on bilingual industry option; reviewed NVDA SIC/NAICS/BEA/FRED/Census/BLS mapping; conservative fallback profiles; optional official-provider overlay; company/industry compatibility records; reusable visual registry; report-scoped asset APIs; CSV/XLSX/SVG/PNG exports; visualization cards; Visual Downloads center; market sections; PDF/print control hiding.
+- Runtime fix: removed native `sharp` after it broke Vinext server import. PNG is now produced portably from each asset’s structured dataset.
+- Files: Ethan UI/API/types, new `ethan-industry` and `visual-assets` modules, report-scoped API routes, styles, PDF export CSS, package manifests, and `ethan-market-visuals.test.mjs`. Mason files are unchanged.
+- Tests passed: TypeScript; Vinext build; original 73/73 suite before the final PNG revision; targeted 3/3 NVDA market/visual tests after the PNG revision.
+- Tests remaining: full combined suite, ESLint, whitespace, Vercel build, npm lockfile validation, six-company regression, bilingual browser/PDF/download visual QA.
+- Known limitations: visual assets are process-local and expire; official industry measures are labeled as proxies/context where definitions differ; only NVDA has a reviewed specialized mapping in this iteration.
+- Status: paused by the user. No push or deployment was performed. Resume from the latest local checkpoint only.

@@ -35,6 +35,7 @@ function stylesheetText() {
     * { animation: none !important; transition: none !important; }
     body { margin: 0 !important; background: #fff !important; }
     [data-pdf-block] { box-shadow: none !important; margin: 0 !important; width: 100% !important; }
+    [data-visual-download-control] { display: none !important; }
     .table-wrap { overflow: visible !important; }
     table { min-width: 0 !important; table-layout: fixed !important; width: 100% !important; }
     th, td { white-space: normal !important; overflow-wrap: anywhere !important; }
