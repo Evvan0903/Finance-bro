@@ -256,6 +256,6 @@
 - [x] Validate Analyze, Trend, Compare, English/Chinese, 390px mobile, and 820px tablet.
 - [x] Pass vinext build, ESLint, 73/73 tests, Next.js/Vercel build, and whitespace validation.
 - [x] Mark Mason `Available`.
-- [ ] Create the required local commit.
-- [ ] Push `main` to `origin/main`.
-- [ ] Publish and verify the existing private Sites project from the exact pushed commit.
+- [x] Create the required local commit.
+- [x] Push `main` to `origin/main`.
+- [x] Publish and verify the existing private Sites project from the exact pushed commit.

@@ -546,13 +546,11 @@ Build Mason's first functional official-government-data market and industry anal
 
 ## Remaining tasks
 
-- Commit with `feat: build mason government data market analysis mvp`.
-- Push `main` to `origin/main`.
-- Save and publish the exact pushed source to the existing private Sites project, then verify production.
+- None for this MVP.
 
 ## Current status
 
-Implementation and validation are complete. Mason is marked `Available`. The working tree still contains the user's pre-existing `.DS_Store` change, which must remain excluded from the commit.
+Implementation, validation, GitHub push, and private production deployment are complete. Mason is marked `Available`. Sites version 14 deploys feature commit `1e1864e` at `https://scopeline-research.evvan.chatgpt.site`. The working tree still contains the user's pre-existing `.DS_Store` change, which must remain excluded from commits.
 
 ## Files modified
 
@@ -571,7 +569,7 @@ Implementation and validation are complete. Mason is marked `Available`. The wor
 
 ## Next recommended step
 
-Review the final diff, create the required commit, push `origin/main`, then publish that exact pushed commit through the existing Sites project.
+Use the production Mason workflow and monitor provider coverage. Preserve this architecture when adding durable storage or a future provider.
 
 ## Assumptions and pending decisions
 

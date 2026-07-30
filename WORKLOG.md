@@ -382,3 +382,4 @@ Monitor production extraction behavior before adding any new sector or issuer pa
 - Status: Mason is `Available`; Ethan, Nora, financial calculations, Metric Registry, valuation logic, and report methodology remain unchanged.
 - Current limitations: research records/cache are process-local and not durable across instances; Census currently redirects when the configured credential is not accepted; BEA returned no usable matching rows in live validation; commercial market size/share, proprietary estimates, and private-company data are not inferred.
 - Future: add durable storage, EIA integration, an approved search provider, and permitted private market-data integrations.
+- Release: feature commit `1e1864e` was pushed to `origin/main`; Sites version 14 was saved from the same commit and deployed successfully to the existing owner-only production site at `https://scopeline-research.evvan.chatgpt.site`.
