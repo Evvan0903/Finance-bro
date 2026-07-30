@@ -241,3 +241,21 @@
 - [x] Validate English and Chinese NVDA reports, build, lint, and all automated tests.
 - [x] Deploy the validated private Sites version and record the result in `WORKLOG.md`.
 - [ ] Perform owner-signed-in visual export QA of one live NVDA PDF.
+# Mason Government Data Market Analysis MVP
+
+- [x] Inspect Mason, existing provider clients, routes, exports, and sector-pack conventions.
+- [x] Follow `saveToken` routing and preserve Ethan/Nora boundaries.
+- [x] Add typed Market Definition, Evidence, Metric, Provider, Coverage, Report, and Research Record objects.
+- [x] Add the official provider registry and FRED, BEA, Census, SEC, BLS, World Bank, Congress.gov, and GovInfo adapters.
+- [x] Add server-only environment configuration, redaction, official-domain validation, timeouts, response limits, and caching.
+- [x] Require user confirmation of official classifications before retrieval.
+- [x] Add the Universal Market Pack and Data Center Infrastructure pack.
+- [x] Implement Analyze, Trend, and Compare with deterministic calculations.
+- [x] Add bilingual Web, Markdown, PDF, and print report output.
+- [x] Add visible Market Definition, Data Coverage, compact references, proxy labels, and Compare scorecard.
+- [x] Validate Analyze, Trend, Compare, English/Chinese, 390px mobile, and 820px tablet.
+- [x] Pass vinext build, ESLint, 73/73 tests, Next.js/Vercel build, and whitespace validation.
+- [x] Mark Mason `Available`.
+- [ ] Create the required local commit.
+- [ ] Push `main` to `origin/main`.
+- [ ] Publish and verify the existing private Sites project from the exact pushed commit.

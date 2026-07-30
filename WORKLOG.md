@@ -367,3 +367,18 @@
 ## Next recommended step
 
 Monitor production extraction behavior before adding any new sector or issuer pack. Sites version 6 is live at `https://scopeline-research.evvan.chatgpt.site` and remains owner-only.
+# Mason Government Data Market Analysis MVP — 2026-07-30
+
+- Routing: followed `skills/saveToken/SKILL.md`; Sol owned architecture and review, Terra handled repository/provider inspection, and Luna handled routine UI/copy guidance.
+- Architecture: added typed Market Definition, Evidence, Metric, Provider Plan/Result, Coverage, Report, and process-local Research Record objects under `site/app/lib/market-analysis/`.
+- Providers: registered FRED, BEA, Census CBP, existing SEC client reuse, BLS, World Bank, Congress.gov, and GovInfo. Keys are read only from `FRED_API_KEY`, `BEA_API_KEY`, `CENSUS_API_KEY`, and `DATA_GOV_API_KEY`; values are never returned or documented.
+- Classification: added explicit user confirmation before retrieval, a Universal Market Pack, and a validated Data Center Infrastructure pack using NAICS 518210, BEA 514, FRED FEDFUNDS/PCU518210518210, Census CBP, and optional BLS employment.
+- Analysis: added Analyze, Trend, and Compare pipelines; deterministic percentage-change, CAGR, ratio, per-establishment, per-employee, and regional-share calculations; incompatible periods/units/geographies are not compared.
+- Reports: bilingual Web, Markdown, application-owned PDF, and print views share the same report object. Reports include visible market definitions, evidence IDs, proxy labels, compact official references, Data Coverage, and Mason's independent footer.
+- Live validation: default Analyze returned FRED and SEC evidence; BEA and Census failed gracefully and remained separately disclosed. Trend returned 16 sections. California-versus-Texas Compare returned 18 sections and a 9-row evidence scorecard. Final Analyze rendered 16 sections, six Market Definition fields, and five compact references.
+- UI validation: English/Chinese flows, confirmation boundary, 390px mobile and 820px tablet layouts, report actions, Markdown trigger, and PDF generation were checked. PDF returned to the ready state with no browser console errors.
+- Tests: vinext production build, ESLint, TypeScript through both builds, 73/73 automated tests, Next.js Webpack Vercel build, and `git diff --check` passed; zero failures.
+- Caching/security: allowlisted official domains, bounded responses, timeouts, stable request signatures that exclude secrets, sanitized errors/URLs/headers, and process-local successful-response caching.
+- Status: Mason is `Available`; Ethan, Nora, financial calculations, Metric Registry, valuation logic, and report methodology remain unchanged.
+- Current limitations: research records/cache are process-local and not durable across instances; Census currently redirects when the configured credential is not accepted; BEA returned no usable matching rows in live validation; commercial market size/share, proprietary estimates, and private-company data are not inferred.
+- Future: add durable storage, EIA integration, an approved search provider, and permitted private market-data integrations.

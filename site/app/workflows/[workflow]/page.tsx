@@ -6,19 +6,6 @@ import { UI_HEADING_COPY } from "../../lib/ui-copy";
 const workflowCopy = UI_HEADING_COPY.en;
 
 const WORKFLOWS = {
-  "market-industry": {
-    name: "Mason",
-    title: "Market & Industry Analyst",
-    status: "In Development",
-    image: "/team/mason-workstation.svg",
-    intro: "Mason’s evidence-backed market and industry workflow is being built. The finished module will organize market definitions, value chains, competition, structural growth drivers, regulation, and recent developments.",
-    outputs: [
-      "Market and industry report",
-      "Competitive landscape",
-      "Industry KPI framework",
-      "Source-backed market outlook",
-    ],
-  },
   "private-company": {
     name: "Clara",
     title: "Private Company Diligence Analyst",

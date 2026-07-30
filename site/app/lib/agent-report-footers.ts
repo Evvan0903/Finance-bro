@@ -2,7 +2,7 @@ export type ReportAgentId = "ethan" | "mason" | "clara" | "felix" | "parker" | "
 
 export const AGENT_REPORT_FOOTERS: Record<ReportAgentId, string> = {
   ethan: "FinBro Equity Research",
-  mason: "FinBro Market & Industry Research",
+  mason: "Generated with FinBro · Evidence-backed public-data market research",
   clara: "FinBro Private Company Diligence",
   felix: "FinBro Financial Modeling",
   parker: "FinBro Portfolio Monitoring",
@@ -12,4 +12,3 @@ export const AGENT_REPORT_FOOTERS: Record<ReportAgentId, string> = {
 export function reportFooterForAgent(agentId: ReportAgentId = "ethan") {
   return AGENT_REPORT_FOOTERS[agentId];
 }
-

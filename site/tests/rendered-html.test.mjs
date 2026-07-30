@@ -143,10 +143,9 @@ test("keeps the bilingual public-company research workflow on Ethan's route", as
   assert.doesNotMatch(html, /ScopeLine|输入一家公司|生成尽调报告|codex-preview|react-loading-skeleton/i);
 });
 
-test("serves status-accurate overview pages for the four unfinished non-Nora workflows", async () => {
+test("serves status-accurate overview pages for the three unfinished non-Mason workflows", async () => {
   const builtWorker = await worker();
   const expected = [
-    ["market-industry", "Mason", "In Development"],
     ["private-company", "Clara", "Planned"],
     ["financial-modeling", "Felix", "Planned"],
     ["portfolio-monitoring", "Parker", "Planned"],
@@ -166,6 +165,87 @@ test("serves status-accurate overview pages for the four unfinished non-Nora wor
     assert.match(html, /This status page does not simulate an unfinished workflow/);
     assert.doesNotMatch(html, /id="company"/);
   }
+});
+
+test("serves Mason's bilingual official-data workflow on the market-industry route", async () => {
+  const builtWorker = await worker();
+  const response = await builtWorker.fetch(
+    new Request("http://localhost/workflows/market-industry", {
+      headers: { accept: "text/html" },
+    }),
+    environment,
+    context,
+  );
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /Mason/);
+  assert.match(html, /Market &amp; Industry Analyst/);
+  assert.match(html, /What market should Mason analyze/);
+  assert.match(html, /OFFICIAL DATA WORKFLOW/);
+  assert.match(html, /Analyze/);
+  assert.match(html, /Trend/);
+  assert.match(html, /Compare/);
+  assert.match(html, /Assign to Mason/);
+  assert.match(html, /U\.S\. Data Center Infrastructure/);
+  assert.match(html, />中文</);
+  assert.match(html, />EN</);
+  assert.doesNotMatch(html, /This status page does not simulate an unfinished workflow/);
+});
+
+test("requires Mason classification confirmation before building a provider plan", async () => {
+  const builtWorker = await worker();
+  const scope = {
+    mode: "analyze",
+    market: "U.S. Data Center Infrastructure",
+    geography: "United States",
+    startYear: 2019,
+    endYear: 2025,
+    analysisYear: 2025,
+    researchQuestion: "",
+    focusAreas: ["industryFootprint", "economicContribution", "macroEnvironment", "risks"],
+    comparisonCriteria: ["industryOutput", "valueAdded", "growth", "risks"],
+    leadingIndicators: [],
+    tickers: ["EQIX", "DLR", "VRT"],
+    locale: "en",
+    reportDepth: "standard",
+    outputFormat: "web",
+  };
+  const classificationResponse = await builtWorker.fetch(
+    new Request("http://localhost/api/market-analysis/classifications", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ scope }),
+    }),
+    environment,
+    context,
+  );
+  assert.equal(classificationResponse.status, 200);
+  const classified = await classificationResponse.json();
+  assert.equal(classified.requiresUserConfirmation, true);
+  assert.equal(classified.packId, "data-center-infrastructure");
+  assert.ok(classified.candidates.some((item) => item.code === "518210"));
+  assert.equal("marketDefinition" in classified, false);
+
+  const planResponse = await builtWorker.fetch(
+    new Request("http://localhost/api/market-analysis/plan", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        scope,
+        candidates: classified.candidates,
+        limitations: classified.limitations,
+      }),
+    }),
+    environment,
+    context,
+  );
+  assert.equal(planResponse.status, 200);
+  const planned = await planResponse.json();
+  assert.equal(planned.marketDefinition.userConfirmed, true);
+  assert.ok(planned.providerPlan.items.some((item) =>
+    item.providerId === "census" && item.selected));
+  assert.ok(planned.providerPlan.items.some((item) =>
+    item.providerId === "worldBank" && !item.selected));
 });
 
 test("serves Nora's bilingual scenario workflow on the regulatory-compliance route", async () => {
@@ -217,6 +297,7 @@ test("keeps the refined team profiles interactive, image-led, and route-accurate
   ]) assert.match(workspace, new RegExp(route.replaceAll("/", "\\/")));
   assert.match(workspace, /Explores regulatory requirements and proposes reference-backed structures/);
   assert.match(workspace, /Explore Regulatory &amp; Compliance|Explore Regulatory & Compliance/);
+  assert.match(workspace, /Open Market &amp; Industry Analysis|Open Market & Industry Analysis/);
 
   assert.match(styles, /\.workspace-profile-hint/);
   assert.match(styles, /\.workspace-member-card:focus-visible/);
@@ -2063,7 +2144,7 @@ test("owns PDF pagination and selects a formal footer for each FinBro agent", as
   assert.match(pdf, /reportFooterForAgent\(meta\.agentId\)/);
   assert.match(footerRegistry, /ethan: "FinBro Equity Research"/);
   assert.match(footerRegistry, /nora: "FinBro Regulatory Research"/);
-  assert.match(footerRegistry, /mason: "FinBro Market & Industry Research"/);
+  assert.match(footerRegistry, /mason: "Generated with FinBro · Evidence-backed public-data market research"/);
   assert.match(nora, /agentId: "nora"/);
   assert.match(pdf, /table \{ min-width: 0 !important/);
   assert.match(css, /\.scenario-grid \{ break-inside: avoid/);

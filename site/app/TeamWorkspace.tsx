@@ -47,13 +47,13 @@ const TEAM: TeamMember[] = [
     id: "mason",
     name: "Mason",
     title: "Market & Industry Analyst",
-    status: "In Development",
-    intro: "Analyzes markets, industries, competitive landscapes, value chains, and structural growth drivers using evidence-backed research.",
+    status: "Available",
+    intro: "Analyzes industry scale, growth, regional concentration, economic contribution, operating indicators, macroeconomic drivers, and policy context using official public data.",
     responsibilities: [
-      "Defines markets and industry boundaries",
-      "Analyzes market structure and value chains",
-      "Identifies competitors, trends, and growth drivers",
-      "Reviews regulation, risks, and recent developments",
+      "Confirms official market and industry classifications",
+      "Normalizes government economic and operating data",
+      "Analyzes trends, regions, drivers, and policy context",
+      "Documents evidence coverage, proxies, and limitations",
     ],
     deliverables: [
       "Market and industry report",
@@ -61,7 +61,7 @@ const TEAM: TeamMember[] = [
       "Industry KPI framework",
       "Source-backed market outlook",
     ],
-    cta: "Explore Market & Industry Analysis",
+    cta: "Open Market & Industry Analysis",
     route: "/workflows/market-industry",
   },
   {
@@ -234,8 +234,8 @@ export function TeamWorkspace() {
           <p>{workspaceCopy.homeHeroScope}</p>
         </div>
         <div className="workspace-summary" aria-label="Workflow availability">
-          <span><strong>1</strong> Available</span>
-          <span><strong>2</strong> In Development</span>
+          <span><strong>2</strong> Available</span>
+          <span><strong>1</strong> In Development</span>
           <span><strong>3</strong> Planned</span>
         </div>
       </section>

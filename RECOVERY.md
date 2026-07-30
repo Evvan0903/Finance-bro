@@ -529,3 +529,53 @@ Sign in as the Site owner, generate an NVDA report in each language, export one 
 - Checkpoint: the validated handoff is committed locally as `feat: add finbro team workspace homepage`; resume with review or an explicitly authorized push/deployment.
 - Files: `site/app/TeamWorkspace.tsx`, `site/app/page.tsx`, `site/app/workflows/public-company/page.tsx`, `site/app/ResearchApp.tsx`, `site/app/layout.tsx`, `site/app/globals.css`, `site/tests/rendered-html.test.mjs`, `WORKLOG.md`, `RECOVERY.md`, and `TODO.md`.
 - Deployment: not pushed or deployed. Preserve the pre-existing uncommitted `.DS_Store`.
+# Mason Government Data Market Analysis MVP — Recovery
+
+## Original objective
+
+Build Mason's first functional official-government-data market and industry analysis MVP without changing Ethan, Nora, validated financial logic, or unrelated workflows.
+
+## Completed tasks
+
+- Added the typed provider, evidence, metric, classification, calculation, report, coverage, and process-local persistence architecture.
+- Integrated FRED, BEA, Census, SEC reuse, BLS, World Bank, Congress.gov, and GovInfo with official-domain and credential protections.
+- Added user-confirmed official classifications, Universal and Data Center Infrastructure market packs, and Analyze/Trend/Compare modes.
+- Added bilingual Web, Markdown, PDF, and print reports with visible definitions, compact references, proxy disclosures, and agent-specific footer.
+- Passed 73/73 tests, lint, vinext build, Next.js/Vercel build, whitespace validation, and live browser acceptance.
+- Validated Analyze, Trend, Compare, English/Chinese, mobile/tablet, reference compaction, and PDF execution.
+
+## Remaining tasks
+
+- Commit with `feat: build mason government data market analysis mvp`.
+- Push `main` to `origin/main`.
+- Save and publish the exact pushed source to the existing private Sites project, then verify production.
+
+## Current status
+
+Implementation and validation are complete. Mason is marked `Available`. The working tree still contains the user's pre-existing `.DS_Store` change, which must remain excluded from the commit.
+
+## Files modified
+
+- `.gitignore`
+- `WORKLOG.md`, `RECOVERY.md`, `TODO.md`
+- `site/app/TeamWorkspace.tsx`
+- `site/app/MasonMarketAnalysisWorkflow.tsx`
+- `site/app/globals.css`
+- `site/app/lib/agent-report-footers.ts`
+- `site/app/lib/market-analysis/**`
+- `site/app/api/market-analysis/**`
+- `site/app/workflows/market-industry/page.tsx`
+- `site/app/workflows/[workflow]/page.tsx`
+- `site/tests/mason-market-analysis.test.mjs`
+- `site/tests/rendered-html.test.mjs`
+
+## Next recommended step
+
+Review the final diff, create the required commit, push `origin/main`, then publish that exact pushed commit through the existing Sites project.
+
+## Assumptions and pending decisions
+
+- Provider keys remain server-only and are not copied into documentation.
+- Research records and raw-response cache are process-local because durable project storage is not currently configured.
+- Census and BEA live coverage may remain partial until valid provider access/data mappings are available; their failures are already isolated and disclosed.
+- EIA, external search, and private market-data integrations are intentionally future work.
