@@ -303,13 +303,23 @@ const COPY = {
     valuationBridge: "估值桥",
     valuationAssessment: "估值判断",
     sourcesLimitations: "来源与限制",
-    marketDefinition: "市场定义与分类",
+    marketDefinition: "市场定义与分析限制",
     industryTrends: "行业规模、需求与供给趋势",
     companyIndustryPositioning: "公司与行业定位",
     industryCoverage: "行业数据覆盖",
     coverageStatus: "覆盖状态",
     providersUsed: "已使用数据源",
     providersUnavailable: "不可用数据源",
+    provider: "数据源",
+    providerStatus: "状态",
+    analyticalRole: "分析作用",
+    providerResult: "结果",
+    shortNote: "简注",
+    directMetrics: "直接指标",
+    proxyMetrics: "代理指标",
+    unavailableMetrics: "不可用指标",
+    periodsCovered: "覆盖期间",
+    retrievalTimes: "检索时间",
     classificationMethod: "分类方法",
     classificationLimitations: "分类限制",
     primaryMarket: "主要市场",
@@ -528,13 +538,23 @@ const COPY = {
     valuationBridge: "Valuation bridge",
     valuationAssessment: "Valuation assessment",
     sourcesLimitations: "Sources and limitations",
-    marketDefinition: "Market definition and classification",
+    marketDefinition: "Market Definition and Analytical Limitations",
     industryTrends: "Industry scale, demand, and supply trends",
     companyIndustryPositioning: "Company versus industry positioning",
     industryCoverage: "Industry Data Coverage",
     coverageStatus: "Coverage status",
     providersUsed: "Providers used",
     providersUnavailable: "Providers unavailable",
+    provider: "Provider",
+    providerStatus: "Status",
+    analyticalRole: "Analytical role",
+    providerResult: "Result",
+    shortNote: "Short note",
+    directMetrics: "Direct metrics",
+    proxyMetrics: "Proxy metrics",
+    unavailableMetrics: "Unavailable metrics",
+    periodsCovered: "Periods covered",
+    retrievalTimes: "Retrieval timestamps",
     classificationMethod: "Classification method",
     classificationLimitations: "Classification limitations",
     primaryMarket: "Primary market",
@@ -877,10 +897,18 @@ function reportToMarkdown(report: ResearchReport, locale: Locale) {
           ),
           "",
           `## 15. ${copy.industryCoverage}`,
-          `- **${copy.coverageStatus}:** ${report.industryAnalysis.coverage.status}`,
-          `- **${copy.providersUsed}:** ${report.industryAnalysis.coverage.providersUsed.join(", ") || "—"}`,
-          `- **${copy.providersUnavailable}:** ${report.industryAnalysis.coverage.providersUnavailable.join(", ") || "—"}`,
-          ...report.industryAnalysis.coverage.limitations.map((item) => `- ${item}`),
+          `- **${copy.coverageStatus}:** ${report.industryAnalysis.coverage.overallStatus}`,
+          `- **${copy.directMetrics}:** ${report.industryAnalysis.coverage.directMetricCount}`,
+          `- **${copy.proxyMetrics}:** ${report.industryAnalysis.coverage.proxyMetricCount}`,
+          `- **${copy.unavailableMetrics}:** ${report.industryAnalysis.coverage.unavailableMetricCount}`,
+          `- **${copy.periodsCovered}:** ${report.industryAnalysis.coverage.periodsCovered.join(", ") || "—"}`,
+          `- **${copy.retrievalTimes}:** ${report.industryAnalysis.coverage.retrievalTimestamps.join(", ") || "—"}`,
+          "",
+          `| ${copy.provider} | ${copy.providerStatus} | ${copy.analyticalRole} | ${copy.providerResult} | ${copy.shortNote} |`,
+          "| --- | --- | --- | --- | --- |",
+          ...report.industryAnalysis.coverage.providerCoverage.map((row) =>
+            `| ${row.provider} | ${row.status} | ${row.analyticalRole} | ${row.result} | ${row.shortNote} |`,
+          ),
           "",
         ]
       : []),
@@ -2145,13 +2173,33 @@ export function ResearchApp() {
               <section className="report-section market-analysis-section" data-pdf-block>
                 <SectionHeading number="15" title={copy.industryCoverage} />
                 <dl className="industry-coverage-grid">
-                  <div><dt>{copy.coverageStatus}</dt><dd>{report.industryAnalysis.coverage.status}</dd></div>
-                  <div><dt>{copy.providersUsed}</dt><dd>{report.industryAnalysis.coverage.providersUsed.join(", ") || "—"}</dd></div>
-                  <div><dt>{copy.providersUnavailable}</dt><dd>{report.industryAnalysis.coverage.providersUnavailable.join(", ") || "—"}</dd></div>
+                  <div><dt>{copy.coverageStatus}</dt><dd>{report.industryAnalysis.coverage.overallStatus}</dd></div>
+                  <div><dt>{copy.directMetrics}</dt><dd>{report.industryAnalysis.coverage.directMetricCount}</dd></div>
+                  <div><dt>{copy.proxyMetrics}</dt><dd>{report.industryAnalysis.coverage.proxyMetricCount}</dd></div>
+                  <div><dt>{copy.unavailableMetrics}</dt><dd>{report.industryAnalysis.coverage.unavailableMetricCount}</dd></div>
+                  <div><dt>{copy.periodsCovered}</dt><dd>{report.industryAnalysis.coverage.periodsCovered.join(", ") || "—"}</dd></div>
+                  <div><dt>{copy.retrievalTimes}</dt><dd>{report.industryAnalysis.coverage.retrievalTimestamps.map((value) => formatTimestamp(value, locale)).join(", ") || "—"}</dd></div>
                 </dl>
-                {report.industryAnalysis.coverage.limitations.length > 0 && (
-                  <ul>{report.industryAnalysis.coverage.limitations.map((item) => <li key={item}>{item}</li>)}</ul>
-                )}
+                <div className="table-wrap industry-provider-coverage-wrap">
+                  <table className="industry-provider-coverage">
+                    <thead><tr>
+                      <th>{copy.provider}</th>
+                      <th>{copy.providerStatus}</th>
+                      <th>{copy.analyticalRole}</th>
+                      <th>{copy.providerResult}</th>
+                      <th>{copy.shortNote}</th>
+                    </tr></thead>
+                    <tbody>{report.industryAnalysis.coverage.providerCoverage.map((row) => (
+                      <tr key={row.providerId}>
+                        <td>{row.provider}</td>
+                        <td><span className={`coverage-status coverage-status-${row.status.toLowerCase().replaceAll(" ", "-")}`}>{row.status}</span></td>
+                        <td>{row.analyticalRole}</td>
+                        <td>{row.result}</td>
+                        <td>{row.shortNote}</td>
+                      </tr>
+                    ))}</tbody>
+                  </table>
+                </div>
               </section>
 
             </>

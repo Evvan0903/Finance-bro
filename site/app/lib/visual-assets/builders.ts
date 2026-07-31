@@ -1,6 +1,11 @@
 import type { ResearchReport } from "../research-types";
 import type { MarketEvidence } from "../market-analysis/types";
-import type { VisualAssetColumn, VisualAssetInput, VisualAssetValue } from "./types";
+import type {
+  TimeSeriesAggregationMethod,
+  VisualAssetColumn,
+  VisualAssetInput,
+  VisualAssetValue,
+} from "./types";
 import { visualAssetDescriptor, visualAssetStore } from "./store";
 
 type Row = Record<string, VisualAssetValue>;
@@ -20,6 +25,13 @@ function slug(value: string) {
     .replace(/^-+|-+$/g, "")
     .toLowerCase()
     .slice(0, 70);
+}
+
+function aggregationForEvidence(evidence: MarketEvidence): TimeSeriesAggregationMethod {
+  const definition = `${evidence.metricLabel} ${evidence.sourceTitle} ${evidence.unit}`;
+  if (/employment|index|rate|margin|price|utilization/i.test(definition)) return "average";
+  if (/balance|inventory|debt|assets|establishments|population/i.test(definition)) return "endOfPeriod";
+  return "sum";
 }
 
 function lineSvg(
@@ -241,7 +253,16 @@ export function buildResearchVisualAssets(report: ResearchReport) {
       sectionId: "historical-financials",
       sectionTitle: isZh ? "历史财务表现" : "Historical financial performance",
       dataset: { id: "historical-financial-trend", title: "Historical financial trend", columns: chartColumns, rows: chartRows },
-      metadata: { chartType: "line", unit: report.currency, isReported: true, period: `${chartRows[0].period}–${chartRows.at(-1)!.period}` },
+      metadata: {
+        chartType: "line",
+        unit: report.currency,
+        isReported: true,
+        period: `${chartRows[0].period}–${chartRows.at(-1)!.period}`,
+        sourceFrequency: "annual",
+        displayFrequency: "annual",
+        aggregationMethod: "sum",
+        periodKey: "period",
+      },
       svg: lineSvg(isZh ? "历史财务趋势" : "Historical financial trend", chartColumns, chartRows),
       formats: ["png", "svg", "csv", "xlsx"],
     }));
@@ -652,7 +673,7 @@ export function buildResearchVisualAssets(report: ResearchReport) {
     const evidenceGroups = new Map<string, MarketEvidence[]>();
     for (const evidence of industry.marketReport?.evidence ?? []) {
       if (typeof evidence.value !== "number") continue;
-      const key = `${evidence.providerId}:${evidence.seriesOrTableId}:${evidence.unit}`;
+      const key = `${evidence.providerId}:${evidence.seriesOrTableId}:${evidence.unit}:${evidence.frequency}`;
       evidenceGroups.set(key, [...(evidenceGroups.get(key) ?? []), evidence]);
     }
     const censusEvidence = (industry.marketReport?.evidence ?? []).filter(
@@ -716,6 +737,10 @@ export function buildResearchVisualAssets(report: ResearchReport) {
     for (const [key, evidence] of evidenceGroups) {
       if (evidence.length < 2) continue;
       const ordered = [...evidence].sort((left, right) => left.observationPeriod.localeCompare(right.observationPeriod));
+      const sourceFrequency = ordered[0].frequency;
+      if (sourceFrequency !== "monthly" && sourceFrequency !== "quarterly" && sourceFrequency !== "annual") continue;
+      const aggregationMethod = aggregationForEvidence(ordered[0]);
+      const displayFrequency = sourceFrequency === "annual" ? "annual" : "quarterly";
       const columns = [
         column("period", isZh ? "期间" : "Period", "string"),
         column("value", ordered[0].metricLabel, "number"),
@@ -739,6 +764,10 @@ export function buildResearchVisualAssets(report: ResearchReport) {
           isProxy: ordered[0].isProxy,
           sourceIds: ordered.map((item) => item.evidenceId).join(" · "),
           limitations: ordered[0].notes.join(" "),
+          sourceFrequency,
+          displayFrequency,
+          aggregationMethod,
+          periodKey: "period",
         },
         svg: lineSvg(ordered[0].sourceTitle, columns, rows),
         formats: ["png", "svg", "csv", "xlsx"],

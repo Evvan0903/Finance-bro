@@ -9,6 +9,13 @@ import {
   type VisualAssetMetadata,
   type VisualAssetValue,
 } from "./types";
+import {
+  aggregateTimeSeries,
+  normalizeDisplayFrequency,
+  readableTickIndices,
+  timeSeriesConfiguration,
+} from "./timeSeries";
+import type { TimeSeriesFrequency } from "./types";
 
 const MAX_SVG_BYTES = 1_000_000;
 const MAX_DATASET_ROWS = 25_000;
@@ -218,6 +225,90 @@ export function visualAssetToCsv(asset: StoredVisualAsset) {
   const header = columns.map((column) => csvCell(column.label)).join(",");
   const body = rows.map((row) => columns.map((column) => csvCell(row[column.key] ?? null)).join(","));
   return `\uFEFF${[header, ...body].join("\r\n")}\r\n`;
+}
+
+function sourceDatasetWithFrequencyMetadata(
+  asset: StoredVisualAsset,
+  displayFrequency?: TimeSeriesFrequency,
+): StoredVisualAsset {
+  const config = timeSeriesConfiguration(asset.metadata);
+  if (!config) return asset;
+  const selected = normalizeDisplayFrequency(config.sourceFrequency, displayFrequency);
+  const metadataColumns: VisualAssetColumn[] = [
+    { key: "sourceFrequency", label: "Source frequency", type: "string" },
+    { key: "displayFrequency", label: "Selected display frequency", type: "string" },
+    { key: "aggregationMethod", label: "Display aggregation method", type: "string" },
+  ];
+  return {
+    ...asset,
+    dataset: {
+      ...asset.dataset,
+      columns: [...asset.dataset.columns, ...metadataColumns],
+      rows: asset.dataset.rows.map((row) => ({
+        ...row,
+        sourceFrequency: config.sourceFrequency,
+        displayFrequency: selected,
+        aggregationMethod: config.aggregationMethod,
+      })),
+    },
+    metadata: { ...asset.metadata, displayFrequency: selected },
+  };
+}
+
+function displayedAsset(asset: StoredVisualAsset, frequency?: TimeSeriesFrequency): StoredVisualAsset {
+  const config = timeSeriesConfiguration(asset.metadata);
+  if (!config) return asset;
+  const aggregated = aggregateTimeSeries(asset.dataset, asset.metadata ?? {}, frequency);
+  return {
+    ...asset,
+    dataset: aggregated.dataset,
+    metadata: { ...asset.metadata, displayFrequency: aggregated.displayFrequency },
+  };
+}
+
+function xml(value: unknown) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function timeSeriesSvg(asset: StoredVisualAsset) {
+  const width = 1200;
+  const height = 680;
+  const left = 90;
+  const top = 100;
+  const plotWidth = 1040;
+  const plotHeight = 470;
+  const { columns, rows } = asset.dataset;
+  const numeric = columns.filter((column) => column.type === "number").slice(0, 3);
+  const xColumn = columns.find((column) => column.type === "string") ?? columns[0];
+  const values = numeric.flatMap((column) => rows
+    .map((row) => row[column.key])
+    .filter((value): value is number => typeof value === "number"));
+  const min = Math.min(0, ...values);
+  const max = Math.max(1, ...values);
+  const range = Math.max(1, max - min);
+  const x = (index: number) => left + (rows.length === 1 ? plotWidth / 2 : index * plotWidth / Math.max(1, rows.length - 1));
+  const y = (value: number) => top + (max - value) / range * plotHeight;
+  const colors = ["#0055FF", "#12A594", "#A46BFF"];
+  const grid = Array.from({ length: 5 }, (_, index) => {
+    const lineY = top + index * plotHeight / 4;
+    const value = max - index * range / 4;
+    return `<line x1="${left}" x2="${left + plotWidth}" y1="${lineY}" y2="${lineY}" stroke="#DFE5EC"/><text x="${left - 12}" y="${lineY + 4}" text-anchor="end" font-size="12" fill="#617080">${xml(value.toFixed(1))}</text>`;
+  }).join("");
+  const series = numeric.map((column, seriesIndex) => {
+    const points = rows.map((row, index) => typeof row[column.key] === "number" ? `${x(index)},${y(row[column.key] as number)}` : null).filter(Boolean).join(" ");
+    const dots = rows.map((row, index) => typeof row[column.key] === "number"
+      ? `<circle cx="${x(index)}" cy="${y(row[column.key] as number)}" r="4" fill="${colors[seriesIndex]}"><title>${xml(row[xColumn.key])}: ${xml(row[column.key])}</title></circle>`
+      : "").join("");
+    return `<polyline points="${points}" fill="none" stroke="${colors[seriesIndex]}" stroke-width="4"/>${dots}`;
+  }).join("");
+  const labels = readableTickIndices(rows.length, width).map((index) =>
+    `<text x="${x(index)}" y="${top + plotHeight + 34}" text-anchor="middle" font-size="12" fill="#617080">${xml(rows[index]?.[xColumn.key])}</text>`,
+  ).join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}"><rect width="100%" height="100%" fill="#fff"/><text x="${left}" y="52" font-size="26" font-family="Arial, sans-serif" fill="#1A1A1A">${xml(asset.title)}</text><g font-family="Arial, sans-serif">${grid}${series}${labels}</g></svg>`;
 }
 
 function cellValue(value: VisualAssetValue, type: VisualAssetColumn["type"]) {
@@ -462,7 +553,9 @@ async function bitmapPng(asset: StoredVisualAsset) {
         previous = { x, y };
       });
     });
+    const tickIndices = new Set(readableTickIndices(rows.length, PNG_WIDTH));
     rows.forEach((row, index) => {
+      if (!tickIndices.has(index)) return;
       const x = left + (rows.length === 1 ? width / 2 : index * width / (rows.length - 1));
       text(row[xColumn.key], x - 40, 790, 2, [97, 112, 128]);
     });
@@ -506,28 +599,37 @@ async function bitmapPng(asset: StoredVisualAsset) {
   ]);
 }
 
-export async function exportVisualAsset(asset: StoredVisualAsset, format: VisualAssetFormat): Promise<VisualAssetExport> {
+export async function exportVisualAsset(
+  asset: StoredVisualAsset,
+  format: VisualAssetFormat,
+  options: { displayFrequency?: TimeSeriesFrequency } = {},
+): Promise<VisualAssetExport> {
   if (!asset.formats?.includes(format)) {
     throw new VisualAssetExportError("UNSUPPORTED_FORMAT", "This asset does not support the requested format.");
   }
   if (format === "csv") {
+    const sourceAsset = sourceDatasetWithFrequencyMetadata(asset, options.displayFrequency);
     return {
-      body: new TextEncoder().encode(visualAssetToCsv(asset)),
+      body: new TextEncoder().encode(visualAssetToCsv(sourceAsset)),
       contentType: "text/csv; charset=utf-8",
       extension: "csv",
       filename: safeAssetFilename(asset, "csv"),
     };
   }
   if (format === "xlsx") {
+    const sourceAsset = sourceDatasetWithFrequencyMetadata(asset, options.displayFrequency);
     return {
-      body: visualAssetToXlsx(asset),
+      body: visualAssetToXlsx(sourceAsset),
       contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       extension: "xlsx",
       filename: safeAssetFilename(asset, "xlsx"),
     };
   }
-  if (!asset.svg) throw new VisualAssetExportError("MISSING_SVG", "This asset has no SVG surface.");
-  const svg = sanitizeStandaloneSvg(asset.svg);
+  const renderedAsset = displayedAsset(asset, options.displayFrequency);
+  if (!renderedAsset.svg) throw new VisualAssetExportError("MISSING_SVG", "This asset has no SVG surface.");
+  const svg = sanitizeStandaloneSvg(
+    timeSeriesConfiguration(renderedAsset.metadata) ? timeSeriesSvg(renderedAsset) : renderedAsset.svg,
+  );
   if (format === "svg") {
     return {
       body: new TextEncoder().encode(svg),
@@ -537,7 +639,7 @@ export async function exportVisualAsset(asset: StoredVisualAsset, format: Visual
     };
   }
   return {
-    body: await bitmapPng(asset),
+    body: await bitmapPng(renderedAsset),
     contentType: "image/png",
     extension: "png",
     filename: safeAssetFilename(asset, "png"),

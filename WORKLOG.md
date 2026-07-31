@@ -1,5 +1,18 @@
 # FinBro Research Worklog
 
+## Ethan chart frequency and Industry Data Coverage — 2026-07-31
+
+- `saveToken` routing: Sol owned aggregation semantics, Ethan/Mason boundaries, and final review; Terra completed chart/export and provider-coverage audits; routine UI, tests, and documentation stayed in the low-risk implementation lane.
+- Time series: added source/display frequency and aggregation metadata, compact Monthly/Quarterly/Annual controls, quarterly default for monthly/quarterly sources, responsive x-axis ticks, exact tooltip periods, and deterministic average/sum/end-of-period aggregation. Annual source series remain annual.
+- Exports: PNG/SVG render the selected display frequency. CSV/XLSX preserve all original source-frequency rows and include source frequency, selected display frequency, and aggregation method.
+- Coverage: Ethan now shows overall coverage, direct/proxy/unavailable metric counts, periods, retrieval timestamps, and one deduplicated safe row per provider. Provider failures return structured coverage instead of breaking the company report.
+- Limitations: market-definition and methodology warnings remain in `Market Definition and Analytical Limitations`; they no longer repeat inside Industry Data Coverage or the general report limitation list.
+- Scope: Ethan UI/export/coverage paths were modified. Mason’s user-facing code, calculations, mappings, and default insufficient-data behavior were not modified.
+- Validation: TypeScript passed; ESLint passed; Vinext production build passed; the final full suite passed 80/80 tests, and the targeted Ethan/frequency suite passed 7/7. Failed tests: none. `git diff --check` passed.
+- Known limitation: only source frequencies at or above their original granularity are offered; company-versus-industry snapshots with only two incomparable points remain static rather than being presented as a false time series.
+- Release: committed with `fix: improve ethan chart frequency and data coverage` and pushed to `origin/main`. No manual Vercel deployment was performed or claimed.
+- Next recommended step: allow any configured GitHub/Vercel automation to operate, then verify production only in a separate deployment-verification task.
+
 ## Ethan market analysis and visual asset downloads — 2026-07-30
 
 - `saveToken` routing: Sol retained classification, compatibility, security, and final-review decisions; Terra handled repository/provider/regression audits; routine UI, export, documentation, and formatting work stayed in the low-risk implementation lane.

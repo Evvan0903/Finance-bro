@@ -1,5 +1,19 @@
 # Institutional Equity Research Refactor and Shell Sample TODO
 
+## Ethan chart frequency and Industry Data Coverage
+
+- [x] Read `saveToken`, recovery notes, chart/export architecture, provider coverage path, and tests.
+- [x] Add reusable Monthly/Quarterly/Annual selection with quarterly default where supported.
+- [x] Add metric-specific average, sum, and end-of-period aggregation without mutating source rows.
+- [x] Add responsive ticks, precise tooltip periods, and frequency metadata.
+- [x] Export selected display frequency to PNG/SVG and preserve original observations in CSV/XLSX.
+- [x] Replace repeated coverage prose with one safe row per provider and an explicit summary.
+- [x] Relocate and deduplicate market-definition and methodology limitations.
+- [x] Keep provider failures non-fatal for Ethan and preserve Mason defaults.
+- [x] Pass lint, TypeScript, targeted tests, full tests, production build, and whitespace checks.
+- [x] Create `fix: improve ethan chart frequency and data coverage` and push `origin/main`.
+- [x] Record final commit/push status without manually deploying Vercel.
+
 ## Ethan market analysis and visual asset downloads
 
 - [x] Read `saveToken`, recovery notes, Ethan architecture, provider utilities, report/PDF paths, and existing visuals.

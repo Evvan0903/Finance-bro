@@ -19,7 +19,16 @@ export type VisualAssetDataset = {
   rows: Array<Record<string, VisualAssetValue>>;
 };
 
-export type VisualAssetMetadata = Record<string, VisualAssetValue>;
+export type TimeSeriesFrequency = "monthly" | "quarterly" | "annual";
+
+export type TimeSeriesAggregationMethod = "average" | "endOfPeriod" | "sum";
+
+export type VisualAssetMetadata = Record<string, VisualAssetValue> & {
+  sourceFrequency?: TimeSeriesFrequency;
+  displayFrequency?: TimeSeriesFrequency;
+  aggregationMethod?: TimeSeriesAggregationMethod;
+  periodKey?: string;
+};
 
 export type VisualAssetType =
   | "chart"

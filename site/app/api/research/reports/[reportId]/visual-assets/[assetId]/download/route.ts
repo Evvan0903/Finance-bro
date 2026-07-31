@@ -5,6 +5,7 @@ import {
   VisualAssetExportError,
 } from "../../../../../../../lib/visual-assets/exportService";
 import { visualAssetStore } from "../../../../../../../lib/visual-assets/store";
+import { isTimeSeriesFrequency } from "../../../../../../../lib/visual-assets/timeSeries";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,14 +21,22 @@ export async function GET(
 ) {
   const { reportId, assetId } = await context.params;
   try {
-    const format = assertVisualAssetFormat(
-      new URL(request.url).searchParams.get("format") ?? "",
-    );
+    const searchParams = new URL(request.url).searchParams;
+    const format = assertVisualAssetFormat(searchParams.get("format") ?? "");
+    const requestedFrequency = searchParams.get("frequency");
+    if (requestedFrequency && !isTimeSeriesFrequency(requestedFrequency)) {
+      return NextResponse.json({ code: "INVALID_DISPLAY_FREQUENCY" }, { status: 400 });
+    }
+    const displayFrequency = isTimeSeriesFrequency(requestedFrequency)
+      ? requestedFrequency
+      : undefined;
     const asset = visualAssetStore.get(assetId);
     if (!asset || asset.reportId !== reportId) {
       return NextResponse.json({ code: "VISUAL_ASSET_NOT_FOUND" }, { status: 404 });
     }
-    const exported = await exportVisualAsset(asset, format);
+    const exported = await exportVisualAsset(asset, format, {
+      displayFrequency,
+    });
     return new Response(exported.body.slice().buffer as ArrayBuffer, {
       headers: {
         "Content-Type": exported.contentType,

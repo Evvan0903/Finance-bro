@@ -2373,7 +2373,6 @@ async function buildReport(
           : pack.id === "biopharma" && marketValuation
             ? `The market price is the ${marketValuation.asOfDate} close; market capitalization carries the 2026-04-27 reported share count and net debt carries the 2026-03-31 balance sheet to the market date, so this is a dated valuation proxy rather than real-time data.`
           : "No real-time share price is used, so the report does not provide a rating, price target, or per-share value; scenario values are transparent sensitivities only.",
-      ...industryAnalysis.coverage.limitations,
     ],
   };
   try {

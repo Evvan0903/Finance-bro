@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
+import * as XLSX from "xlsx";
 
 async function worker() {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
@@ -67,6 +69,29 @@ test("builds the reviewed NVDA industry profile and stable visual registry", asy
   );
   assert.ok(report.visualAssets.some((asset) => asset.dataset.id === "valuation-scenarios"));
   assert.ok(report.visualAssets.some((asset) => asset.dataset.id === "market-definition"));
+  const historicalTrend = report.visualAssets.find((asset) => asset.dataset.id === "historical-financial-trend");
+  assert.equal(historicalTrend.metadata.sourceFrequency, "annual");
+  assert.equal(historicalTrend.metadata.displayFrequency, "annual");
+  assert.ok(["average", "endOfPeriod", "sum"].includes(historicalTrend.metadata.aggregationMethod));
+
+  const coverage = report.industryAnalysis.coverage;
+  assert.ok([
+    "Strong official-data coverage",
+    "Partial official-data coverage",
+    "Proxy-based industry context",
+    "Insufficient industry data",
+  ].includes(coverage.overallStatus));
+  assert.equal(new Set(coverage.providerCoverage.map((row) => row.providerId)).size, coverage.providerCoverage.length);
+  assert.ok(coverage.providerCoverage.every((row) =>
+    ["Configured", "Used", "Usable", "Partial", "Unavailable", "Not relevant"].includes(row.status),
+  ));
+  assert.ok(coverage.providerCoverage.every((row) =>
+    !/\/Users\/|\/tmp\/|stack|token|secret|api[_ -]?key/i.test(`${row.result} ${row.shortNote}`),
+  ));
+  assert.deepEqual(coverage.limitations, []);
+  for (const caveat of report.industryAnalysis.profile.classificationLimitations) {
+    assert.equal(report.limitations.includes(caveat), false, "market-definition caveats should not repeat in report limitations");
+  }
 
   const financialTable = report.visualAssets.find(
     (asset) => asset.dataset.id === "historical-financial-table",
@@ -138,7 +163,7 @@ test("exports real standalone CSV, XLSX, SVG, and PNG files", async () => {
   for (const format of ["csv", "xlsx", "svg", "png"]) {
     const response = await builtWorker.fetch(
       new Request(
-        `http://localhost/api/research/reports/${report.reportId}/visual-assets/${chart.assetId}/download?format=${format}`,
+        `http://localhost/api/research/reports/${report.reportId}/visual-assets/${chart.assetId}/download?format=${format}&frequency=annual`,
       ),
       environment,
       context,
@@ -149,7 +174,28 @@ test("exports real standalone CSV, XLSX, SVG, and PNG files", async () => {
     const bytes = new Uint8Array(await response.arrayBuffer());
     assert.ok(bytes.byteLength > 20);
     signatures[format](bytes);
+    if (format === "csv") {
+      const text = new TextDecoder().decode(bytes).replace(/^\uFEFF/, "");
+      assert.equal(text.trim().split(/\r?\n/).length, chart.dataset.rows.length + 1);
+      assert.match(text, /Source frequency,Selected display frequency,Display aggregation method/);
+      assert.match(text, /annual,annual,sum/);
+    }
+    if (format === "xlsx") {
+      const workbook = XLSX.read(bytes, { type: "buffer" });
+      const dataRows = XLSX.utils.sheet_to_json(workbook.Sheets.Data, { header: 1 });
+      assert.equal(dataRows.length, chart.dataset.rows.length + 1);
+      const metadataRows = XLSX.utils.sheet_to_json(workbook.Sheets.Metadata, { header: 1 });
+      assert.ok(metadataRows.some(([key, value]) => key === "displayFrequency" && value === "annual"));
+    }
   }
+  const invalidFrequency = await builtWorker.fetch(
+    new Request(
+      `http://localhost/api/research/reports/${report.reportId}/visual-assets/${chart.assetId}/download?format=svg&frequency=weekly`,
+    ),
+    environment,
+    context,
+  );
+  assert.equal(invalidFrequency.status, 400);
 });
 
 test("keeps the company report and company visuals available when the market toggle is off", async () => {
@@ -164,4 +210,22 @@ test("keeps the company report and company visuals available when the market tog
   assert.equal(report.visualAssets.some((asset) => asset.category === "market"), false);
   assert.ok(report.visualAssets.some((asset) => asset.dataset.id === "research-dashboard"));
   assert.ok(report.visualAssets.some((asset) => asset.dataset.id === "historical-financial-table"));
+});
+
+test("keeps frequency controls web-only and separates coverage from analytical limitations", async () => {
+  const [card, reportUi, exports] = await Promise.all([
+    readFile(new URL("../app/VisualizationCard.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/ResearchApp.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/visual-assets/exportService.ts", import.meta.url), "utf8"),
+  ]);
+  assert.match(card, /monthly: "Monthly"/);
+  assert.match(card, /quarterly: "Quarterly"/);
+  assert.match(card, /annual: "Annual"/);
+  assert.match(card, /frequency-selector[\s\S]*data-visual-download-control/);
+  assert.match(reportUi, /Market Definition and Analytical Limitations/);
+  assert.doesNotMatch(reportUi.slice(reportUi.indexOf('number="15"'), reportUi.indexOf('number="16"')), /coverage\.limitations/);
+  assert.match(exports, /displayedAsset\(asset, options\.displayFrequency\)/);
+  assert.match(exports, /bitmapPng\(renderedAsset\)/);
+  assert.match(exports, /timeSeriesSvg\(renderedAsset\)/);
+  assert.match(exports, /sourceDatasetWithFrequencyMetadata\(asset, options\.displayFrequency\)/);
 });

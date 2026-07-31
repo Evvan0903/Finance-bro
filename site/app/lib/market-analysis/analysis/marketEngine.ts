@@ -19,6 +19,7 @@ export type MarketEngineOptions = {
   providers?: Map<ProviderId, MarketDataProvider>;
   now?: () => Date;
   researchId?: string;
+  allowInsufficientData?: boolean;
 };
 
 function dataCoverage(
@@ -91,7 +92,7 @@ export async function runMarketAnalysis(
     metrics.filter((metric) => metric.isProxy).length,
     generatedAt,
   );
-  if (coverage.status === "Insufficient structured data") {
+  if (coverage.status === "Insufficient structured data" && !options.allowInsufficientData) {
     throw new Error("Current official data unavailable");
   }
   const references = buildReportReferences(providerResults);

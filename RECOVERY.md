@@ -1,5 +1,57 @@
 # Recovery Checkpoint
 
+## Current objective — Ethan chart frequency and Industry Data Coverage
+
+### Original objective
+
+Incrementally improve Ethan’s long time-series readability and provider coverage presentation without changing Mason, report calculations, evidence mappings, provider mappings, or download formats. Add reusable Monthly/Quarterly/Annual display controls, preserve source observations in data exports, deduplicate provider results, relocate analytical limitations, validate, commit, and push `main` without manually deploying Vercel.
+
+### Completed
+
+- Followed `saveToken`: Sol retained aggregation architecture and final judgment; Terra audited chart/export and coverage paths; routine UI, test, and documentation edits stayed in the low-risk lane.
+- Added reusable deterministic monthly, quarterly, and annual aggregation with per-asset `average`, `sum`, or `endOfPeriod` rules, default quarterly display for monthly/quarterly sources, responsive tick density, and precise tooltip periods.
+- Added compact bilingual frequency controls to applicable Ethan charts; controls remain web-only and are hidden from print/PDF surfaces.
+- PNG/SVG now use the selected display frequency. CSV/XLSX retain every original source observation and include source frequency, selected display frequency, and aggregation metadata.
+- Rebuilt Ethan Industry Data Coverage into a summary plus one deduplicated row per planned provider with safe statuses and provider-specific results. Provider failures remain non-fatal.
+- Moved classification and methodology caveats to Market Definition and Analytical Limitations and removed their duplicate injection into Sources and limitations.
+- Preserved Mason behavior by making insufficient-data retention an Ethan-only market-engine option.
+- Validation passed: TypeScript, ESLint, production build, full automated suite, targeted aggregation/export/coverage tests, and whitespace validation.
+
+### Remaining tasks
+
+- No required implementation or release task remains.
+
+### Current status
+
+Implementation, validation, the exact requested commit, and the authorized push to `origin/main` are complete. No manual Vercel deployment was performed or claimed.
+
+### Files modified
+
+- `site/app/ResearchApp.tsx`
+- `site/app/VisualizationCard.tsx`
+- `site/app/api/research/route.ts`
+- `site/app/api/research/reports/[reportId]/visual-assets/[assetId]/download/route.ts`
+- `site/app/globals.css`
+- `site/app/lib/ethan-industry/*`
+- `site/app/lib/market-analysis/analysis/marketEngine.ts`
+- `site/app/lib/visual-assets/*`
+- `site/tests/ethan-market-visuals.test.mjs`
+- `site/tests/time-series-frequency.test.mjs`
+- `RECOVERY.md`
+- `TODO.md`
+- `WORKLOG.md`
+
+### Next recommended step
+
+Allow the existing GitHub/Vercel integration to handle any configured automatic deployment, then verify production only in a separate deployment-verification task.
+
+### Assumptions and pending decisions
+
+- A time series exposes only frequencies that do not invent observations: monthly sources allow all three views, quarterly sources allow quarterly/annual, and annual sources remain annual.
+- Aggregation is configured per asset/metric family, not globally.
+- `.DS_Store` remains unrelated pre-existing state and must stay unstaged.
+- No manual Vercel deployment is authorized.
+
 ## Current objective — Ethan market analysis and visual asset downloads
 
 ### Original objective

@@ -1,6 +1,18 @@
 "use client";
 
-import type { CSSProperties, ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import {
+  aggregateTimeSeries,
+  availableDisplayFrequencies,
+  readableTickIndices,
+  timeSeriesConfiguration,
+  tooltipPeriod,
+} from "./lib/visual-assets/timeSeries";
+import type {
+  TimeSeriesFrequency,
+  VisualAssetDataset,
+  VisualAssetMetadata,
+} from "./lib/visual-assets/types";
 
 export type VisualizationLocale = "en" | "zh";
 export type DownloadFormat = "png" | "svg" | "csv" | "xlsx";
@@ -71,6 +83,13 @@ export const VISUAL_COPY = {
     svg: "Download SVG",
     csv: "Download CSV",
     xlsx: "Download Excel",
+    monthly: "Monthly",
+    quarterly: "Quarterly",
+    annual: "Annual",
+    frequency: "Display frequency",
+    sourceFrequency: "Source frequency",
+    displayFrequency: "Display frequency",
+    aggregationMethod: "Aggregation",
   },
   zh: {
     download: "下载",
@@ -88,6 +107,13 @@ export const VISUAL_COPY = {
     svg: "下载 SVG",
     csv: "下载 CSV",
     xlsx: "下载 Excel",
+    monthly: "月度",
+    quarterly: "季度",
+    annual: "年度",
+    frequency: "显示频率",
+    sourceFrequency: "源数据频率",
+    displayFrequency: "显示频率",
+    aggregationMethod: "聚合方法",
   },
 } as const;
 
@@ -133,9 +159,30 @@ function chartColumns(dataset: VisualizationDatasetLike) {
 
 const CHART_COLORS = ["#0055FF", "#12A594", "#A46BFF"];
 
-function InlineChart({ asset, locale }: { asset: VisualizationAssetLike; locale: VisualizationLocale }) {
-  const { rows, keys, numericKeys } = chartColumns(asset.dataset);
-  if (!rows.length || !numericKeys.length) return <p className="visualization-empty">{VISUAL_COPY[locale].noData}</p>;
+function InlineChart({
+  asset,
+  locale,
+  dataset,
+  pointPeriods,
+}: {
+  asset: VisualizationAssetLike;
+  locale: VisualizationLocale;
+  dataset: VisualizationDatasetLike;
+  pointPeriods: Array<{ label: string; start: string; end: string }>;
+}) {
+  const { rows, keys, numericKeys } = chartColumns(dataset);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [chartWidth, setChartWidth] = useState(760);
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(([entry]) => setChartWidth(entry.contentRect.width));
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+  if (!rows.length || !numericKeys.length) {
+    return <p className="visualization-empty">{VISUAL_COPY[locale].noData}</p>;
+  }
 
   const xKey = keys.find((key) => !numericKeys.includes(key)) ?? keys[0];
   const series = numericKeys.slice(0, 3);
@@ -152,10 +199,11 @@ function InlineChart({ asset, locale }: { asset: VisualizationAssetLike; locale:
   const x = (index: number) =>
     pad.left + (rows.length === 1 ? plotWidth / 2 : (index / (rows.length - 1)) * plotWidth);
   const isBar = asset.metadata?.chartType === "bar";
-  const labels = asset.dataset.columns.map(columnLabel);
+  const labels = dataset.columns.map(columnLabel);
+  const tickIndices = new Set(readableTickIndices(rows.length, chartWidth));
 
   return (
-    <div className="visualization-chart" role="img" aria-label={asset.title}>
+    <div className="visualization-chart" role="img" aria-label={asset.title} ref={containerRef}>
       <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={asset.title}>
         <title>{asset.title}</title>
         {[0, 0.25, 0.5, 0.75, 1].map((step) => {
@@ -181,7 +229,7 @@ function InlineChart({ asset, locale }: { asset: VisualizationAssetLike; locale:
                 const barY = value >= 0 ? y(value) : zeroY;
                 const barHeight = Math.max(1, Math.abs(zeroY - y(value)));
                 const barX = x(index) - (series.length * barWidth) / 2 + seriesIndex * barWidth;
-                return <rect key={`${key}-${index}`} x={barX} y={barY} width={barWidth - 2} height={barHeight} fill={CHART_COLORS[seriesIndex]} rx="1" />;
+                return <rect key={`${key}-${index}`} x={barX} y={barY} width={barWidth - 2} height={barHeight} fill={CHART_COLORS[seriesIndex]} rx="1"><title>{`${tooltipPeriod(pointPeriods[index], String(row[xKey] ?? ""))}: ${displayValue(value, locale)}`}</title></rect>;
               });
             })
           : series.map((key, seriesIndex) => {
@@ -197,12 +245,12 @@ function InlineChart({ asset, locale }: { asset: VisualizationAssetLike; locale:
                   {points && <polyline points={points} fill="none" stroke={CHART_COLORS[seriesIndex]} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />}
                   {rows.map((row, index) => {
                     const value = numeric(row[key]);
-                    return value === null ? null : <circle key={`${key}-${index}`} cx={x(index)} cy={y(value)} r="3.5" fill={CHART_COLORS[seriesIndex]} />;
+                    return value === null ? null : <circle key={`${key}-${index}`} cx={x(index)} cy={y(value)} r="3.5" fill={CHART_COLORS[seriesIndex]}><title>{`${tooltipPeriod(pointPeriods[index], String(row[xKey] ?? ""))}: ${displayValue(value, locale)}`}</title></circle>;
                   })}
                 </g>
               );
             })}
-        {rows.map((row, index) => (
+        {rows.map((row, index) => tickIndices.has(index) && (
           <text key={`label-${index}`} x={x(index)} y={height - 16} textAnchor="middle" fill="#617080" fontSize="11">
             {displayValue(row[xKey], locale).slice(0, 18)}
           </text>
@@ -239,17 +287,24 @@ function StructuredTable({ asset, locale }: { asset: VisualizationAssetLike; loc
   );
 }
 
-export function assetDownloadHref(assetId: string, format: DownloadFormat) {
+export function assetDownloadHref(
+  assetId: string,
+  format: DownloadFormat,
+  displayFrequency?: TimeSeriesFrequency,
+) {
   const reportId = assetId.split("--", 1)[0];
-  return `/api/research/reports/${encodeURIComponent(reportId)}/visual-assets/${encodeURIComponent(assetId)}/download?format=${encodeURIComponent(format)}`;
+  const frequency = displayFrequency ? `&frequency=${encodeURIComponent(displayFrequency)}` : "";
+  return `/api/research/reports/${encodeURIComponent(reportId)}/visual-assets/${encodeURIComponent(assetId)}/download?format=${encodeURIComponent(format)}${frequency}`;
 }
 
 export function AssetDownloadMenu({
   asset,
   locale,
+  displayFrequency,
 }: {
   asset: Pick<VisualizationAssetLike, "assetId" | "supportedFormats" | "title">;
   locale: VisualizationLocale;
+  displayFrequency?: TimeSeriesFrequency;
 }) {
   const copy = VISUAL_COPY[locale];
   const labels: Record<DownloadFormat, string> = {
@@ -264,7 +319,7 @@ export function AssetDownloadMenu({
       <summary aria-label={`${copy.download} ${asset.title}`}>{copy.download}</summary>
       <div role="menu">
         {asset.supportedFormats.map((format) => (
-          <a key={format} role="menuitem" href={assetDownloadHref(asset.assetId, format)}>
+          <a key={format} role="menuitem" href={assetDownloadHref(asset.assetId, format, displayFrequency)}>
             {labels[format]}
           </a>
         ))}
@@ -291,6 +346,20 @@ export function VisualizationCard({
 }) {
   const copy = VISUAL_COPY[locale];
   const metadata = asset.metadata ?? {};
+  const timeSeries = timeSeriesConfiguration(metadata as VisualAssetMetadata);
+  const sourceFrequency = timeSeries?.sourceFrequency;
+  const defaultFrequency = timeSeries?.displayFrequency;
+  const [displayFrequency, setDisplayFrequency] = useState<TimeSeriesFrequency>(
+    defaultFrequency ?? "annual",
+  );
+  const frequencies = sourceFrequency ? availableDisplayFrequencies(sourceFrequency) : [];
+  const displayed = sourceFrequency
+    ? aggregateTimeSeries(
+        asset.dataset as unknown as VisualAssetDataset,
+        metadata as VisualAssetMetadata,
+        displayFrequency,
+      )
+    : { dataset: asset.dataset, displayFrequency: "annual" as const, pointPeriods: [] };
   const showTable = asset.assetType !== "chart";
   const sourceIds = metadataList(metadata.sourceIds);
   const evidenceIds = metadataList(metadata.evidenceIds);
@@ -302,19 +371,41 @@ export function VisualizationCard({
           <h4>{asset.title}</h4>
           {asset.subtitle && <p>{asset.subtitle}</p>}
         </div>
-        <AssetDownloadMenu asset={asset} locale={locale} />
+        <div className="visualization-card-controls">
+          {frequencies.length > 1 && (
+            <div className="frequency-selector" role="group" aria-label={copy.frequency} data-visual-download-control>
+              {frequencies.map((frequency) => (
+                <button
+                  type="button"
+                  key={frequency}
+                  className={displayFrequency === frequency ? "is-active" : ""}
+                  aria-pressed={displayFrequency === frequency}
+                  onClick={() => setDisplayFrequency(frequency)}
+                >
+                  {copy[frequency]}
+                </button>
+              ))}
+            </div>
+          )}
+          <AssetDownloadMenu asset={asset} locale={locale} displayFrequency={timeSeries ? displayFrequency : undefined} />
+        </div>
       </header>
       <div className="visualization-badges" aria-label={asset.title}>
         {metadata.isReported && <span className="evidence-badge reported-fact">{copy.reported}</span>}
         {metadata.isCalculated && <span className="evidence-badge derived-calculation">{copy.calculated}</span>}
         {metadata.isProxy && <span className="evidence-badge market-data-value">{copy.proxy}</span>}
       </div>
-      {showTable ? <StructuredTable asset={asset} locale={locale} /> : <InlineChart asset={asset} locale={locale} />}
+      {showTable
+        ? <StructuredTable asset={asset} locale={locale} />
+        : <InlineChart asset={asset} locale={locale} dataset={displayed.dataset} pointPeriods={displayed.pointPeriods} />}
       <footer className="visualization-metadata">
         <div>
           {metadata.unit && <MetadataLine label={copy.unit}>{String(metadata.unit)}</MetadataLine>}
           {metadata.geography && <MetadataLine label={copy.geography}>{String(metadata.geography)}</MetadataLine>}
           {metadata.period && <MetadataLine label={copy.period}>{String(metadata.period)}</MetadataLine>}
+          {timeSeries && <MetadataLine label={copy.sourceFrequency}>{copy[timeSeries.sourceFrequency]}</MetadataLine>}
+          {timeSeries && <MetadataLine label={copy.displayFrequency}>{copy[displayFrequency]}</MetadataLine>}
+          {timeSeries && <MetadataLine label={copy.aggregationMethod}>{String(timeSeries.aggregationMethod)}</MetadataLine>}
         </div>
         {(sourceIds.length > 0 || evidenceIds.length > 0) && (
           <small>

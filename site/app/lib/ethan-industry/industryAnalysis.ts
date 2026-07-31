@@ -12,7 +12,30 @@ import type {
   EthanCompanyMetric,
   EthanIndustryAnalysis,
   EthanIndustryCoverage,
+  EthanIndustryProviderCoverage,
 } from "./types";
+
+function emptyCoverage(
+  status: EthanIndustryCoverage["status"],
+  limitations: string[],
+): EthanIndustryCoverage {
+  return {
+    status,
+    providerPlan: null,
+    providerResults: [],
+    providersUsed: [],
+    providersUnavailable: [],
+    limitations,
+    overallStatus: "Insufficient industry data",
+    providerCoverage: [],
+    directMetricCount: 0,
+    proxyMetricCount: 0,
+    unavailableMetricCount: 0,
+    unavailableProviderCount: 0,
+    periodsCovered: [],
+    retrievalTimestamps: [],
+  };
+}
 
 function finite(value: number | null): value is number {
   return value !== null && Number.isFinite(value);
@@ -158,25 +181,65 @@ function buildComparisons(
 }
 
 function disabledCoverage(): EthanIndustryCoverage {
-  return {
-    status: "disabled",
-    providerPlan: null,
-    providerResults: [],
-    providersUsed: [],
-    providersUnavailable: [],
-    limitations: ["Industry and Market Analysis was not selected for this report."],
-  };
+  return emptyCoverage("disabled", ["Industry and Market Analysis was not selected for this report."]);
 }
 
 function unavailableCoverage(message: string): EthanIndustryCoverage {
-  return {
-    status: "unavailable",
-    providerPlan: null,
-    providerResults: [],
-    providersUsed: [],
-    providersUnavailable: [],
-    limitations: [message],
-  };
+  return emptyCoverage("unavailable", [message]);
+}
+
+function providerCoverageRows(report: MarketReport): EthanIndustryProviderCoverage[] {
+  const results = new Map(report.providerResults.map((result) => [result.providerId, result]));
+  return report.providerPlan.items.map((item) => {
+    const result = results.get(item.providerId);
+    let status: EthanIndustryProviderCoverage["status"];
+    if (!item.selected) status = "Not relevant";
+    else if (!result) status = item.configurationStatus === "configured" ? "Configured" : "Unavailable";
+    else if (result.status === "used") status = "Used";
+    else if (result.status === "incomplete") status = result.evidence.length ? "Partial" : "Unavailable";
+    else if (result.status === "notRelevant") status = "Not relevant";
+    else status = "Unavailable";
+    const observationCount = result?.evidence.length ?? 0;
+    const resultText = status === "Used"
+      ? `${observationCount} official observation${observationCount === 1 ? "" : "s"} used`
+      : status === "Partial"
+        ? `${observationCount} usable observation${observationCount === 1 ? "" : "s"}; coverage incomplete`
+        : status === "Configured"
+          ? "Configured; no retrieval result"
+          : status === "Not relevant"
+            ? "Not selected for this market scope"
+            : "No usable observations returned";
+    const unavailableNotes: Record<string, string> = {
+      bea: "BEA returned no compatible observations for the selected industry mapping",
+      census: "Census returned no usable records for the requested geography and period",
+      fred: "FRED request failed before compatible observations were received",
+      bls: "BLS series was unavailable for the selected classification",
+      sec: "SEC returned no compatible company observations for this market request",
+      worldBank: "World Bank returned no compatible indicator observations",
+      congressGov: "Congress.gov returned no relevant policy records for the selected scope",
+      govInfo: "GovInfo returned no relevant policy publications for the selected scope",
+    };
+    const shortNote = status === "Unavailable"
+      ? item.configurationStatus === "missing"
+        ? `${item.providerName} requires configuration before retrieval`
+        : unavailableNotes[item.providerId] ?? `${item.providerName} returned no usable observations`
+      : status === "Partial"
+        ? "Only part of the requested evidence was usable"
+        : status === "Used"
+          ? "Included in the industry analysis"
+          : status === "Configured"
+            ? "Available to the provider plan"
+            : "Outside the confirmed analytical scope";
+    return {
+      providerId: item.providerId,
+      provider: item.providerName,
+      status,
+      analyticalRole: item.reason,
+      result: resultText,
+      shortNote,
+      retrievedAt: result?.retrievedAt ?? null,
+    };
+  });
 }
 
 function coverageFrom(report: MarketReport): EthanIndustryCoverage {
@@ -185,6 +248,23 @@ function coverageFrom(report: MarketReport): EthanIndustryCoverage {
     result.status === "missingConfiguration" ||
     result.status === "incomplete",
   );
+  const providerCoverage = providerCoverageRows(report);
+  const directMetricCount = report.metrics.filter((metric) => !metric.isProxy).length;
+  const proxyMetricCount = report.metrics.filter((metric) => metric.isProxy).length;
+  const unavailableProviderCount = providerCoverage.filter((row) => row.status === "Unavailable").length;
+  const unavailableProviderIds = new Set(providerCoverage
+    .filter((row) => row.status === "Unavailable")
+    .map((row) => row.providerId));
+  const unavailableMetricCount = new Set(report.providerPlan.items
+    .filter((item) => unavailableProviderIds.has(item.providerId))
+    .flatMap((item) => item.expectedEvidence)).size;
+  const overallStatus: EthanIndustryCoverage["overallStatus"] = report.metrics.length === 0
+    ? "Insufficient industry data"
+    : directMetricCount === 0
+      ? "Proxy-based industry context"
+      : unavailableProviderCount === 0 && proxyMetricCount === 0
+        ? "Strong official-data coverage"
+        : "Partial official-data coverage";
   return {
     status: unavailable.length ? "partial" : "available",
     providerPlan: report.providerPlan,
@@ -193,10 +273,17 @@ function coverageFrom(report: MarketReport): EthanIndustryCoverage {
       .filter((result) => result.status === "used")
       .map((result) => result.providerName),
     providersUnavailable: unavailable.map((result) => result.providerName),
-    limitations: [
-      ...report.dataCoverage.metricsUnavailable,
-      ...report.marketDefinition.definitionLimitations,
-    ],
+    limitations: [],
+    overallStatus,
+    providerCoverage,
+    directMetricCount,
+    proxyMetricCount,
+    unavailableMetricCount,
+    unavailableProviderCount,
+    periodsCovered: [...report.dataCoverage.timePeriodsCovered],
+    retrievalTimestamps: [...new Set(report.providerResults
+      .map((result) => result.retrievedAt)
+      .filter((value): value is string => Boolean(value)))].sort(),
   };
 }
 
@@ -241,14 +328,7 @@ export async function buildEthanIndustryAnalysis(
       companyMetrics: metrics,
       industryMetrics: [],
       comparisons: [],
-      coverage: {
-        status: "mapping-review",
-        providerPlan: null,
-        providerResults: [],
-        providersUsed: [],
-        providersUnavailable: [],
-        limitations: [...profile.classificationLimitations],
-      },
+      coverage: emptyCoverage("mapping-review", []),
     };
   }
   const marketDefinition = buildEthanMarketDefinition(profile, scope);
@@ -266,7 +346,10 @@ export async function buildEthanIndustryAnalysis(
     };
   }
   try {
-    const marketReport = await runMarketAnalysis(scope, marketDefinition, { now: input.now });
+    const marketReport = await runMarketAnalysis(scope, marketDefinition, {
+      now: input.now,
+      allowInsufficientData: true,
+    });
     return {
       included: true,
       profile,
