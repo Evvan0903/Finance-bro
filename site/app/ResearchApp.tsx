@@ -882,14 +882,14 @@ function reportToMarkdown(report: ResearchReport, locale: Locale) {
           `- **${copy.providersUnavailable}:** ${report.industryAnalysis.coverage.providersUnavailable.join(", ") || "—"}`,
           ...report.industryAnalysis.coverage.limitations.map((item) => `- ${item}`),
           "",
-          `## 16. ${copy.visualDownloads}`,
-          ...report.visualAssets.map(
-            (asset) => `- ${asset.title} — ${asset.supportedFormats.map((format) => format.toUpperCase()).join(", ")}`,
-          ),
-          "",
         ]
       : []),
-    `## 17. ${copy.sourcesLimitations}`,
+    `## ${report.industryAnalysis.included ? 16 : 12}. ${copy.visualDownloads}`,
+    ...report.visualAssets.map(
+      (asset) => `- ${asset.title} — ${asset.supportedFormats.map((format) => format.toUpperCase()).join(", ")}`,
+    ),
+    "",
+    `## ${report.industryAnalysis.included ? 17 : 13}. ${copy.sourcesLimitations}`,
     ...report.sources.map(
       (source) =>
         `- [${source.title}](${source.url})${source.publisher ? ` — ${source.publisher}` : ""}${source.publicationDate ? ` · ${source.publicationDate}` : ""}`,
@@ -1492,6 +1492,14 @@ export function ResearchApp() {
 
           <section className="report-section dashboard-section" data-pdf-block>
             <SectionHeading number="01" title={copy.dashboard} />
+            {report.visualAssets.find((asset) => asset.dataset.id === "research-dashboard") && (
+              <div className="inline-visual-download">
+                <AssetDownloadMenu
+                  asset={report.visualAssets.find((asset) => asset.dataset.id === "research-dashboard")!}
+                  locale={locale}
+                />
+              </div>
+            )}
             <div className="metric-grid">
               {report.dashboard.map((metric) => <MetricCard metric={metric} locale={locale} key={metric.label} />)}
             </div>
@@ -1530,6 +1538,14 @@ export function ResearchApp() {
           {report.driverExposure.length > 0 && (
             <section className="report-section" data-pdf-block>
               <SectionHeading number="03" title={copy.driverExposure} />
+              {report.visualAssets.find((asset) => asset.dataset.id === "company-sector-driver-exposure") && (
+                <div className="inline-visual-download">
+                  <AssetDownloadMenu
+                    asset={report.visualAssets.find((asset) => asset.dataset.id === "company-sector-driver-exposure")!}
+                    locale={locale}
+                  />
+                </div>
+              )}
               <div className="table-wrap">
                 <table className="driver-table">
                   <thead>
@@ -1699,6 +1715,14 @@ export function ResearchApp() {
           {hasSectorDetail && (
           <section className="report-section" data-pdf-block>
             <SectionHeading number="06" title={copy.sectorKpis} />
+            {report.visualAssets.find((asset) => asset.dataset.id === "sector-kpi-data-sheet") && (
+              <div className="inline-visual-download">
+                <AssetDownloadMenu
+                  asset={report.visualAssets.find((asset) => asset.dataset.id === "sector-kpi-data-sheet")!}
+                  locale={locale}
+                />
+              </div>
+            )}
             <div className="kpi-grid">
               {report.sectorKpis.filter((item) => item.usable).map((item) => (
                 <article key={item.id}>
@@ -1717,7 +1741,15 @@ export function ResearchApp() {
             </div>
             {report.productMetrics.length > 0 && (
               <div className="report-subsection">
-                <h4>{copy.productEconomics}</h4>
+                <div className="report-subsection-heading">
+                  <h4>{copy.productEconomics}</h4>
+                  {report.visualAssets.find((asset) => asset.dataset.id === "product-economics") && (
+                    <AssetDownloadMenu
+                      asset={report.visualAssets.find((asset) => asset.dataset.id === "product-economics")!}
+                      locale={locale}
+                    />
+                  )}
+                </div>
                 <div className="product-metrics-grid">
                   {report.productMetrics.map((item) => (
                     <article className="product-metric-card" key={`${item.product}-${item.period}`}>
@@ -1748,7 +1780,15 @@ export function ResearchApp() {
             )}
             {report.pipelineAssets.length > 0 && (
               <div className="report-subsection">
-                <h4>{copy.pipelineAssets}</h4>
+                <div className="report-subsection-heading">
+                  <h4>{copy.pipelineAssets}</h4>
+                  {report.visualAssets.find((asset) => asset.dataset.id === "pipeline-assets") && (
+                    <AssetDownloadMenu
+                      asset={report.visualAssets.find((asset) => asset.dataset.id === "pipeline-assets")!}
+                      locale={locale}
+                    />
+                  )}
+                </div>
                 <div className="pipeline-grid">
                   {report.pipelineAssets.map((item) => (
                     <article className="pipeline-card" key={`${item.asset}-${item.indication}`}>
@@ -1794,6 +1834,14 @@ export function ResearchApp() {
                     : copy.cashCapital
               }
             />
+            {report.visualAssets.find((asset) => asset.dataset.id === "cash-capital-allocation") && (
+              <div className="inline-visual-download">
+                <AssetDownloadMenu
+                  asset={report.visualAssets.find((asset) => asset.dataset.id === "cash-capital-allocation")!}
+                  locale={locale}
+                />
+              </div>
+            )}
             <div className="balance-panel">
               <div className="balance-grid">
                 {(report.sectorPack.id === "banks"
@@ -1943,9 +1991,17 @@ export function ResearchApp() {
               <div className="market-valuation-panel">
                 <div className="market-valuation-header">
                   <div><h4>{copy.marketValuation}</h4><time>{copy.asOfDate} {report.marketValuation.asOfDate}</time></div>
-                  <a href={report.marketValuation.sourceUrl} target="_blank" rel="noreferrer">
-                    {report.marketValuation.sourceTitle} ↗
-                  </a>
+                  <div>
+                    {report.visualAssets.find((asset) => asset.dataset.id === "dated-market-valuation") && (
+                      <AssetDownloadMenu
+                        asset={report.visualAssets.find((asset) => asset.dataset.id === "dated-market-valuation")!}
+                        locale={locale}
+                      />
+                    )}
+                    <a href={report.marketValuation.sourceUrl} target="_blank" rel="noreferrer">
+                      {report.marketValuation.sourceTitle} ↗
+                    </a>
+                  </div>
                 </div>
                 <dl className="valuation-snapshot-grid">
                   <div><dt>{copy.sharePrice}</dt><dd>{formatPerUnitValue(report.marketValuation.sharePrice, report.currency, locale, "share")}</dd></div>
@@ -2098,15 +2154,22 @@ export function ResearchApp() {
                 )}
               </section>
 
-              <section className="report-section visual-download-section" data-visual-download-control>
-                <SectionHeading number="16" title={copy.visualDownloads} />
-                <VisualDownloadCenter assets={report.visualAssets} locale={locale} />
-              </section>
             </>
           )}
 
+          <section className="report-section visual-download-section" data-visual-download-control>
+            <SectionHeading
+              number={report.industryAnalysis.included ? "16" : "12"}
+              title={copy.visualDownloads}
+            />
+            <VisualDownloadCenter assets={report.visualAssets} locale={locale} />
+          </section>
+
           <section className="report-section source-section" data-pdf-block>
-            <SectionHeading number="17" title={copy.sourcesLimitations} />
+            <SectionHeading
+              number={report.industryAnalysis.included ? "17" : "13"}
+              title={copy.sourcesLimitations}
+            />
             <div className="source-columns">
               <div>
                 <h4>{copy.sourceLedger}</h4>

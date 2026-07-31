@@ -1,5 +1,18 @@
 # FinBro Research Worklog
 
+## Ethan market analysis and visual asset downloads — 2026-07-30
+
+- `saveToken` routing: Sol retained classification, compatibility, security, and final-review decisions; Terra handled repository/provider/regression audits; routine UI, export, documentation, and formatting work stayed in the low-risk implementation lane.
+- Ethan now accepts the same ticker-only assignment with a default-on `Include Industry and Market Analysis` option. The integrated report uses SEC SIC, a reviewed company-industry profile, compatible official-provider plans, visible proxy boundaries, and non-fatal provider fallback. Mason was not modified.
+- Added the reviewed NVDA SIC 3674 market profile and conservative `mapping-review` behavior for other issuers. Market definition, official trends, company-versus-industry proxy positioning, and coverage appear inside the formal Ethan report; unsupported gross-output and NVIDIA Data Center comparisons are omitted rather than fabricated.
+- Added normalized report-scoped visual assets for dashboard, driver exposure, historicals, sector KPIs, cash/capital, supported product/pipeline data, peers, risks, scenarios, dated valuation, market definition, official trends, Census footprint when available, and company-industry comparison. Empty or unsupported assets remain hidden.
+- Downloads: CSV/XLSX for structured data and PNG/SVG where a visual surface exists. Files use deterministic safe names, explicit MIME/disposition, typed XLSX cells with metadata, compressed 1600×900 PNG, standalone SVG, formula-injection protection, SVG sanitization, secret/path redaction, and bounded identifiers.
+- Live NVDA browser QA passed in Chinese and English. The report rendered 17 sections, 27 download controls, no empty images, and no horizontal overflow at 390px or 1440px. Actual PNG, SVG, CSV, and XLSX files were opened and inspected; the CSV contained five complete annual rows and XLSX contained typed Data/Metadata sheets.
+- Six-company regression: SHEL, NVDA, JPM, LLY, and CAT passed from verified fixtures; AAPL passed live SEC resolution and general-pack generation. Toggle-off and all-provider-unavailable tests preserved the company report and company visuals.
+- Validation: TypeScript, ESLint, Vinext production build, 76/76 tests, Vercel-compatible Next.js Webpack build, npm lockfile dry-run, and `git diff --check` passed. The browser PDF download event was not observable, but the existing application-PDF/print regression gate passed and interactive controls remain excluded from those surfaces.
+- Current limitations: visual assets use an expiring process-local store and predictable IDs are not an authorization boundary; only NVDA has a reviewed specialized market profile; portable PNG uses an ASCII bitmap fallback; official economic indicators are context/proxies unless their definitions support a commercial-market claim. Future work includes durable signed storage, EIA, and additional reviewed industry mappings.
+- Release status: the validated feature was committed with the exact requested message and pushed to `origin/main`. The push may trigger the repository's configured automatic Vercel deployment; no manual Vercel deployment was performed or claimed.
+
 ## Nora PFE regulatory scenario workflow
 
 - `saveToken` routing: Sol owned legal-information architecture, decision boundaries, deterministic scenario design, and final review; Terra verified official statutory and IRS sources through 2026-07-28; Luna handled centralized bilingual copy, UI implementation, responsive styling, and routine documentation.

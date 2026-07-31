@@ -1,6 +1,6 @@
 # Institutional Equity Research Refactor and Shell Sample TODO
 
-## Ethan market analysis and visual asset downloads — paused
+## Ethan market analysis and visual asset downloads
 
 - [x] Read `saveToken`, recovery notes, Ethan architecture, provider utilities, report/PDF paths, and existing visuals.
 - [x] Keep Mason user-facing code and behavior unchanged.
@@ -13,15 +13,15 @@
 - [x] Hide download controls from print and PDF output.
 - [x] Add and pass targeted NVDA mapping, registry, export-signature, and toggle-off tests.
 - [x] Pass TypeScript and Vinext production build.
-- [ ] Update `package-lock.json` and verify `npm ci` compatibility.
-- [ ] Run the complete combined test suite after the final export changes.
-- [ ] Run ESLint, whitespace validation, and Vercel-compatible build.
-- [ ] Complete bilingual responsive NVDA browser, PDF, and downloaded-file visual QA.
-- [ ] Run the six-company regression matrix including AAPL and all-provider-unavailable behavior.
-- [ ] Audit remaining sector-specific structured visuals for full shared-asset coverage.
-- [ ] Update final README, architecture docs, worklog, and validation evidence.
-- [ ] Create exact feature commit and push `origin/main`.
-- [ ] Confirm only the possible automatic Vercel deployment trigger; do not deploy manually.
+- [x] Update `package-lock.json` and verify npm lockfile compatibility.
+- [x] Run the complete combined test suite after the final export changes.
+- [x] Run ESLint, whitespace validation, and Vercel-compatible build.
+- [x] Complete bilingual responsive NVDA browser and downloaded-file visual QA; retain the automated PDF/print gate.
+- [x] Run the six-company regression matrix including AAPL and all-provider-unavailable behavior.
+- [x] Audit remaining sector-specific structured visuals and add evidence-supported shared-asset adapters.
+- [x] Update final README, architecture docs, worklog, and validation evidence.
+- [x] Create exact feature commit and push `origin/main`.
+- [x] Confirm only the possible automatic Vercel deployment trigger; do not deploy manually.
 
 ## Nora PFE regulatory scenario workflow
 

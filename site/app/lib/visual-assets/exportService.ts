@@ -116,6 +116,7 @@ export function sanitizeStandaloneSvg(value: string) {
   let svg = source
     .replace(/<\s*(script|foreignObject|iframe|object|embed|audio|video)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, "")
     .replace(/<\s*(script|foreignObject|iframe|object|embed|audio|video)\b[^>]*\/?\s*>/gi, "")
+    .replace(/<\s*style\b[^>]*>[\s\S]*?<\s*\/\s*style\s*>/gi, "")
     .replace(/\s+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "")
     .replace(/\s+(?:href|xlink:href|src)\s*=\s*(?:"(?!#)[^"]*"|'(?!#)[^']*'|(?!#)[^\s>]+)/gi, "")
     .replace(/\s+style\s*=\s*("[^"]*(?:url\s*\(|expression\s*\(|@import)[^"]*"|'[^']*(?:url\s*\(|expression\s*\(|@import)[^']*'|[^\s>]*(?:url\s*\(|expression\s*\(|@import)[^\s>]*)/gi, "");
@@ -351,6 +352,18 @@ function uncompressedZlib(bytes: Uint8Array) {
   return output;
 }
 
+async function compressedZlib(bytes: Uint8Array) {
+  if (typeof CompressionStream === "undefined") return uncompressedZlib(bytes);
+  try {
+    const compressed = new Blob([bytes.slice().buffer])
+      .stream()
+      .pipeThrough(new CompressionStream("deflate"));
+    return new Uint8Array(await new Response(compressed).arrayBuffer());
+  } catch {
+    return uncompressedZlib(bytes);
+  }
+}
+
 function concatBytes(parts: Uint8Array[]) {
   const output = new Uint8Array(parts.reduce((sum, part) => sum + part.length, 0));
   let cursor = 0;
@@ -361,7 +374,7 @@ function concatBytes(parts: Uint8Array[]) {
   return output;
 }
 
-function bitmapPng(asset: StoredVisualAsset) {
+async function bitmapPng(asset: StoredVisualAsset) {
   const pixels = new Uint8Array(PNG_WIDTH * PNG_HEIGHT * 4);
   for (let index = 0; index < pixels.length; index += 4) {
     pixels[index] = 255;
@@ -401,8 +414,23 @@ function bitmapPng(asset: StoredVisualAsset) {
       rect(x - thickness / 2, y - thickness / 2, thickness, thickness, color);
     }
   };
+  const compactNumber = (value: number) => {
+    const absolute = Math.abs(value);
+    const units: Array<[number, string]> = [
+      [1_000_000_000_000, "T"],
+      [1_000_000_000, "B"],
+      [1_000_000, "M"],
+      [1_000, "K"],
+    ];
+    const unit = units.find(([threshold]) => absolute >= threshold);
+    if (!unit) return value.toFixed(Math.abs(value) < 10 ? 1 : 0);
+    const scaled = value / unit[0];
+    return `${scaled.toFixed(Math.abs(scaled) < 10 ? 1 : 0)}${unit[1]}`;
+  };
+  const asciiLabel = (value: string, fallback: string) =>
+    /^[\x20-\x7E]+$/.test(value) ? value : fallback;
 
-  text(asset.title, 64, 48, 5);
+  text(asciiLabel(asset.title, asset.dataset.title), 64, 48, 5);
   const { columns, rows } = asset.dataset;
   if (asset.assetType === "chart") {
     const numeric = columns.filter((column) => column.type === "number").slice(0, 3);
@@ -418,11 +446,11 @@ function bitmapPng(asset: StoredVisualAsset) {
     for (let grid = 0; grid <= 4; grid += 1) {
       const y = top + grid * height / 4;
       line(left, y, left + width, y, [221, 228, 236], 2);
-      text((max - range * grid / 4).toFixed(1), 22, y - 10, 2, [97, 112, 128]);
+      text(compactNumber(max - range * grid / 4), 40, y - 10, 2, [97, 112, 128]);
     }
     const colors: Array<[number, number, number]> = [[0,85,255],[18,165,148],[164,107,255]];
     numeric.forEach((column, seriesIndex) => {
-      text(column.label, 120 + seriesIndex * 360, 130, 3, colors[seriesIndex]);
+      text(asciiLabel(column.label, column.key), 120 + seriesIndex * 360, 130, 3, colors[seriesIndex]);
       let previous: { x: number; y: number } | null = null;
       rows.forEach((row, index) => {
         const value = row[column.key];
@@ -473,7 +501,7 @@ function bitmapPng(asset: StoredVisualAsset) {
     new Uint8Array([137,80,78,71,13,10,26,10]),
     pngChunk("IHDR", ihdr),
     pngChunk("tEXt", title),
-    pngChunk("IDAT", uncompressedZlib(scanlines)),
+    pngChunk("IDAT", await compressedZlib(scanlines)),
     pngChunk("IEND", new Uint8Array()),
   ]);
 }
@@ -509,7 +537,7 @@ export async function exportVisualAsset(asset: StoredVisualAsset, format: Visual
     };
   }
   return {
-    body: bitmapPng(asset),
+    body: await bitmapPng(asset),
     contentType: "image/png",
     extension: "png",
     filename: safeAssetFilename(asset, "png"),

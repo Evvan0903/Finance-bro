@@ -1,6 +1,6 @@
 # Recovery Checkpoint
 
-## Current objective — Ethan market analysis and visual asset downloads (paused)
+## Current objective — Ethan market analysis and visual asset downloads
 
 ### Original objective
 
@@ -17,22 +17,19 @@ Extend Ethan’s existing Public Company Research workflow with automatic, evide
 - Replaced the native `sharp` dependency after manual runtime testing showed it broke Vinext/Cloudflare startup. PNG files are now rendered directly from structured datasets with a portable encoder.
 - Added bilingual visualization cards, restrained download menus, a filtered Visual Downloads center, integrated market-definition/trend/comparison/coverage sections, Markdown coverage, and print/PDF hiding for interactive controls.
 - Added three end-to-end NVDA tests covering the reviewed mapping, stable registry, real file signatures for all four formats, and company-only output when the toggle is disabled.
-- Validation passed so far: TypeScript, Vinext production build, the original 73/73 tests, and the new 3/3 end-to-end market/visual tests.
+- Added evidence-supported adapters for dashboard, driver exposure, pack-specific historicals, sector KPIs, cash/capital, product/pipeline data, dynamic peers, full scenarios, dated valuation, market definitions, Census footprint, and company-industry comparison.
+- Added compressed portable PNG output, compact axis labels, SVG style-block sanitization, explicit MIME/attachment checks, and expanded dataset/export regression coverage.
+- Completed live bilingual NVDA browser QA at 390px and 1440px, actual PNG/SVG/CSV/XLSX inspection, six-company regression, provider-unavailable fallback, and toggle-off validation.
+- Updated the npm lockfile, README, architecture documentation, worklog, and checklist.
+- Validation passed: TypeScript, ESLint, Vinext production build, 76/76 tests, Vercel-compatible Next.js Webpack build, npm lockfile dry-run, and whitespace checks.
 
 ### Remaining tasks
 
-- Run the complete combined test suite after the latest PNG/export changes.
-- Run ESLint, `git diff --check`, and the Vercel-compatible `next build --webpack`.
-- Update the npm lockfile for the new `xlsx` dependency so `npm ci` remains valid; verify both package-manager paths.
-- Complete manual bilingual NVDA browser QA, responsive screenshots, PDF/print control hiding, and inspect saved CSV/XLSX/SVG/PNG artifacts beyond signatures.
-- Run the required six-company regression matrix, including AAPL and market-provider-unavailable behavior.
-- Review coverage against every existing Ethan structured chart/table and add any missing sector-specific asset adapters required by the acceptance list.
-- Update README, architecture documentation, `WORKLOG.md`, `TODO.md`, and validation artifacts with final results and known persistence limitations.
-- Create the exact final feature commit `feat: add market analysis and visual asset downloads to ethan`, push `origin/main`, and report only the possible automatic Vercel trigger. Do not manually deploy Vercel.
+- No required implementation or release task remains.
 
 ### Current status
 
-Paused at the user’s request. The implementation is buildable in the Vinext production path and targeted tests pass, but final validation, documentation, exact feature commit, and GitHub push are intentionally unfinished. A local recovery checkpoint commit should be the latest commit after this note is saved.
+Implementation, regression, manual browser/file QA, documentation, the exact final commit, and the authorized GitHub push are complete. No manual Vercel deployment was performed.
 
 ### Files modified
 
@@ -42,6 +39,8 @@ Paused at the user’s request. The implementation is buildable in the Vinext pr
 - `site/app/api/research/route.ts`
 - `site/app/api/research/reports/*`
 - `site/app/globals.css`
+- `site/README.md`
+- `site/docs/ethan-industry-visual-assets.md`
 - `site/app/lib/ethan-industry/*`
 - `site/app/lib/visual-assets/*`
 - `site/app/lib/pdf-export.ts`
@@ -56,13 +55,16 @@ Paused at the user’s request. The implementation is buildable in the Vinext pr
 
 ### Next recommended step
 
-Read this section, inspect the latest checkpoint diff, update `site/package-lock.json`, then run the complete validation gate before resuming browser QA. Do not restart the feature or rewrite the completed modules.
+If a later task requests deployment verification, inspect the automatic Vercel result from this push without changing the validated implementation.
 
 ### Assumptions and pending decisions
 
 - Process-local visual storage is intentionally temporary and must remain disclosed; durable storage is a future deployment decision.
+- Predictable report/asset IDs are not an authorization boundary; durable multi-user storage should add signed access control.
 - Official economic output, investment, and production indicators are context or proxies unless their source explicitly defines a commercial market size.
 - The reviewed NVDA mapping is specialized; other companies remain conservative until their mappings are validated.
+- Gross industry output and NVIDIA Data Center comparisons remain omitted where compatible verified inputs are unavailable.
+- Portable PNG uses an ASCII bitmap fallback; bilingual labels remain complete in Web, PDF, CSV, XLSX, and SVG.
 - `.DS_Store` is unrelated pre-existing state and must remain unstaged.
 
 ## Current objective — Nora PFE regulatory scenario workflow

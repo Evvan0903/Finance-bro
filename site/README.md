@@ -59,7 +59,13 @@ npm run vercel-build
 npm test
 ```
 
-Set `SEC_USER_AGENT` to a descriptive application/contact value for reliable production SEC requests. No OpenAI API key, embedding service, D1 database, or R2 bucket is required.
+Set `SEC_USER_AGENT` to a descriptive application/contact value for reliable production SEC requests.
+
+Ethan's optional Industry and Market Analysis is enabled by default. It derives a reviewed company-industry profile from the resolved SEC identity and SIC, then requests only compatible official series. `FRED_API_KEY` and `BEA_API_KEY` improve provider coverage when configured; Census and BLS can run without keys for supported requests. Missing or failed market providers never block the company report, and no OpenAI API key, embedding service, D1 database, or R2 bucket is required.
+
+Every evidence-supported report visual is registered as a structured dataset and can be downloaded independently. Supported formats are CSV and XLSX for all data assets, plus SVG and PNG when a visual surface exists. The server protects spreadsheets from formula injection, sanitizes SVG, redacts credentials and local paths, and generates files from normalized datasets. Visual assets currently use a process-local expiring store, so links are not durable across server restarts or instances.
+
+The reviewed specialized market profile in this release is NVIDIA / SIC 3674. Other issuers use conservative general mappings or an explicit mapping-review state. Official economic indicators remain labeled as context or proxies unless their source supports a commercial-market definition. See [ethan-industry-visual-assets.md](docs/ethan-industry-visual-assets.md).
 
 ## Vercel
 
