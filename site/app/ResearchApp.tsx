@@ -308,20 +308,12 @@ const COPY = {
     companyIndustryPositioning: "公司与行业定位",
     industryCoverage: "行业数据覆盖",
     coverageStatus: "覆盖状态",
-    providersUsed: "已使用数据源",
-    providersUnavailable: "不可用数据源",
-    provider: "数据源",
-    providerStatus: "状态",
-    analyticalRole: "分析作用",
-    providerResult: "结果",
-    shortNote: "简注",
-    directMetrics: "直接指标",
+    directMetrics: "直接官方指标",
     proxyMetrics: "代理指标",
-    unavailableMetrics: "不可用指标",
-    periodsCovered: "覆盖期间",
-    retrievalTimes: "检索时间",
+    observationPeriod: "观察期间",
+    dataRetrievalDate: "数据检索日期",
+    officialIndicatorsUnavailable: "本报告未能取得官方市场指标",
     classificationMethod: "分类方法",
-    classificationLimitations: "分类限制",
     primaryMarket: "主要市场",
     visualDownloads: "图表下载",
     sourceLedger: "来源账本",
@@ -543,20 +535,12 @@ const COPY = {
     companyIndustryPositioning: "Company versus industry positioning",
     industryCoverage: "Industry Data Coverage",
     coverageStatus: "Coverage status",
-    providersUsed: "Providers used",
-    providersUnavailable: "Providers unavailable",
-    provider: "Provider",
-    providerStatus: "Status",
-    analyticalRole: "Analytical role",
-    providerResult: "Result",
-    shortNote: "Short note",
-    directMetrics: "Direct metrics",
+    directMetrics: "Direct official metrics",
     proxyMetrics: "Proxy metrics",
-    unavailableMetrics: "Unavailable metrics",
-    periodsCovered: "Periods covered",
-    retrievalTimes: "Retrieval timestamps",
+    observationPeriod: "Observation period",
+    dataRetrievalDate: "Data retrieval date",
+    officialIndicatorsUnavailable: "Official market indicators were unavailable for this report",
     classificationMethod: "Classification method",
-    classificationLimitations: "Classification limitations",
     primaryMarket: "Primary market",
     visualDownloads: "Visual Downloads",
     sourceLedger: "Source ledger",
@@ -880,15 +864,14 @@ function reportToMarkdown(report: ResearchReport, locale: Locale) {
           `## 12. ${copy.marketDefinition}`,
           `- **${copy.primaryMarket}:** ${report.industryAnalysis.profile.primaryMarket}`,
           `- **${copy.classificationMethod}:** ${report.industryAnalysis.profile.classificationMethod}`,
-          ...report.industryAnalysis.profile.classificationLimitations.map(
-            (item) => `- ${copy.classificationLimitations}: ${item}`,
-          ),
           "",
           `## 13. ${copy.industryTrends}`,
-          ...report.industryAnalysis.industryMetrics.map(
-            (metric) =>
-              `- **${metric.displayLabel}: ${metric.value} ${metric.unit}** — ${metric.period}; ${metric.geography}; ${metric.method}`,
-          ),
+          ...(report.industryAnalysis.industryMetrics.length
+            ? report.industryAnalysis.industryMetrics.map(
+                (metric) =>
+                  `- **${metric.displayLabel}: ${metric.value} ${metric.unit}** — ${metric.period}; ${metric.geography}; ${metric.method}`,
+              )
+            : [copy.officialIndicatorsUnavailable]),
           "",
           `## 14. ${copy.companyIndustryPositioning}`,
           ...report.industryAnalysis.comparisons.map(
@@ -898,17 +881,10 @@ function reportToMarkdown(report: ResearchReport, locale: Locale) {
           "",
           `## 15. ${copy.industryCoverage}`,
           `- **${copy.coverageStatus}:** ${report.industryAnalysis.coverage.overallStatus}`,
-          `- **${copy.directMetrics}:** ${report.industryAnalysis.coverage.directMetricCount}`,
+          `- **${copy.directMetrics}:** ${report.industryAnalysis.coverage.directOfficialMetricCount}`,
           `- **${copy.proxyMetrics}:** ${report.industryAnalysis.coverage.proxyMetricCount}`,
-          `- **${copy.unavailableMetrics}:** ${report.industryAnalysis.coverage.unavailableMetricCount}`,
-          `- **${copy.periodsCovered}:** ${report.industryAnalysis.coverage.periodsCovered.join(", ") || "—"}`,
-          `- **${copy.retrievalTimes}:** ${report.industryAnalysis.coverage.retrievalTimestamps.join(", ") || "—"}`,
-          "",
-          `| ${copy.provider} | ${copy.providerStatus} | ${copy.analyticalRole} | ${copy.providerResult} | ${copy.shortNote} |`,
-          "| --- | --- | --- | --- | --- |",
-          ...report.industryAnalysis.coverage.providerCoverage.map((row) =>
-            `| ${row.provider} | ${row.status} | ${row.analyticalRole} | ${row.result} | ${row.shortNote} |`,
-          ),
+          `- **${copy.observationPeriod}:** ${report.industryAnalysis.coverage.observationPeriod ?? "—"}`,
+          `- **${copy.dataRetrievalDate}:** ${report.industryAnalysis.coverage.dataRetrievalDate ?? "—"}`,
           "",
         ]
       : []),
@@ -2132,12 +2108,6 @@ export function ResearchApp() {
                   <div><dt>SIC</dt><dd>{report.industryAnalysis.profile.sicCode ?? "—"} · {report.industryAnalysis.profile.sicDescription ?? "—"}</dd></div>
                   <div><dt>NAICS</dt><dd>{report.industryAnalysis.profile.naicsCodes.join(", ") || "—"}</dd></div>
                 </dl>
-                {report.industryAnalysis.profile.classificationLimitations.length > 0 && (
-                  <div className="industry-limitations">
-                    <h4>{copy.classificationLimitations}</h4>
-                    <ul>{report.industryAnalysis.profile.classificationLimitations.map((item) => <li key={item}>{item}</li>)}</ul>
-                  </div>
-                )}
                 {report.visualAssets
                   .filter((asset) => asset.sectionId === "market-definition")
                   .map((asset) => <VisualizationCard key={asset.assetId} asset={asset} locale={locale} />)}
@@ -2148,12 +2118,8 @@ export function ResearchApp() {
                 {report.visualAssets.some((asset) => asset.sectionId === "industry-trends")
                   ? report.visualAssets
                       .filter((asset) => asset.sectionId === "industry-trends")
-                      .map((asset) => <VisualizationCard key={asset.assetId} asset={asset} locale={locale} />)
-                  : <p className="module-not-selected">
-                      {locale === "zh"
-                        ? "没有足够兼容的官方时间序列可用于行业趋势图"
-                        : "Insufficient compatible official time-series data for an industry trend chart"}
-                    </p>}
+                      .map((asset) => <VisualizationCard key={asset.assetId} asset={asset} locale={locale} showSourceMetadata={false} />)
+                  : <p className="module-not-selected">{copy.officialIndicatorsUnavailable}</p>}
               </section>
 
               <section className="report-section market-analysis-section" data-pdf-block>
@@ -2174,32 +2140,11 @@ export function ResearchApp() {
                 <SectionHeading number="15" title={copy.industryCoverage} />
                 <dl className="industry-coverage-grid">
                   <div><dt>{copy.coverageStatus}</dt><dd>{report.industryAnalysis.coverage.overallStatus}</dd></div>
-                  <div><dt>{copy.directMetrics}</dt><dd>{report.industryAnalysis.coverage.directMetricCount}</dd></div>
+                  <div><dt>{copy.directMetrics}</dt><dd>{report.industryAnalysis.coverage.directOfficialMetricCount}</dd></div>
                   <div><dt>{copy.proxyMetrics}</dt><dd>{report.industryAnalysis.coverage.proxyMetricCount}</dd></div>
-                  <div><dt>{copy.unavailableMetrics}</dt><dd>{report.industryAnalysis.coverage.unavailableMetricCount}</dd></div>
-                  <div><dt>{copy.periodsCovered}</dt><dd>{report.industryAnalysis.coverage.periodsCovered.join(", ") || "—"}</dd></div>
-                  <div><dt>{copy.retrievalTimes}</dt><dd>{report.industryAnalysis.coverage.retrievalTimestamps.map((value) => formatTimestamp(value, locale)).join(", ") || "—"}</dd></div>
+                  <div><dt>{copy.observationPeriod}</dt><dd>{report.industryAnalysis.coverage.observationPeriod ?? "—"}</dd></div>
+                  <div><dt>{copy.dataRetrievalDate}</dt><dd>{report.industryAnalysis.coverage.dataRetrievalDate ?? "—"}</dd></div>
                 </dl>
-                <div className="table-wrap industry-provider-coverage-wrap">
-                  <table className="industry-provider-coverage">
-                    <thead><tr>
-                      <th>{copy.provider}</th>
-                      <th>{copy.providerStatus}</th>
-                      <th>{copy.analyticalRole}</th>
-                      <th>{copy.providerResult}</th>
-                      <th>{copy.shortNote}</th>
-                    </tr></thead>
-                    <tbody>{report.industryAnalysis.coverage.providerCoverage.map((row) => (
-                      <tr key={row.providerId}>
-                        <td>{row.provider}</td>
-                        <td><span className={`coverage-status coverage-status-${row.status.toLowerCase().replaceAll(" ", "-")}`}>{row.status}</span></td>
-                        <td>{row.analyticalRole}</td>
-                        <td>{row.result}</td>
-                        <td>{row.shortNote}</td>
-                      </tr>
-                    ))}</tbody>
-                  </table>
-                </div>
               </section>
 
             </>

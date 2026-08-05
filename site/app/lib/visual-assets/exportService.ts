@@ -14,6 +14,7 @@ import {
   normalizeDisplayFrequency,
   readableTickIndices,
   timeSeriesConfiguration,
+  tooltipPeriod,
 } from "./timeSeries";
 import type { TimeSeriesFrequency } from "./types";
 
@@ -255,14 +256,17 @@ function sourceDatasetWithFrequencyMetadata(
   };
 }
 
-function displayedAsset(asset: StoredVisualAsset, frequency?: TimeSeriesFrequency): StoredVisualAsset {
+function displayedAsset(asset: StoredVisualAsset, frequency?: TimeSeriesFrequency) {
   const config = timeSeriesConfiguration(asset.metadata);
-  if (!config) return asset;
+  if (!config) return { asset, pointPeriods: [] };
   const aggregated = aggregateTimeSeries(asset.dataset, asset.metadata ?? {}, frequency);
   return {
-    ...asset,
-    dataset: aggregated.dataset,
-    metadata: { ...asset.metadata, displayFrequency: aggregated.displayFrequency },
+    asset: {
+      ...asset,
+      dataset: aggregated.dataset,
+      metadata: { ...asset.metadata, displayFrequency: aggregated.displayFrequency },
+    },
+    pointPeriods: aggregated.pointPeriods,
   };
 }
 
@@ -274,7 +278,10 @@ function xml(value: unknown) {
     .replaceAll('"', "&quot;");
 }
 
-function timeSeriesSvg(asset: StoredVisualAsset) {
+function timeSeriesSvg(
+  asset: StoredVisualAsset,
+  pointPeriods: Array<{ start: string; end: string }>,
+) {
   const width = 1200;
   const height = 680;
   const left = 90;
@@ -301,7 +308,7 @@ function timeSeriesSvg(asset: StoredVisualAsset) {
   const series = numeric.map((column, seriesIndex) => {
     const points = rows.map((row, index) => typeof row[column.key] === "number" ? `${x(index)},${y(row[column.key] as number)}` : null).filter(Boolean).join(" ");
     const dots = rows.map((row, index) => typeof row[column.key] === "number"
-      ? `<circle cx="${x(index)}" cy="${y(row[column.key] as number)}" r="4" fill="${colors[seriesIndex]}"><title>${xml(row[xColumn.key])}: ${xml(row[column.key])}</title></circle>`
+      ? `<circle cx="${x(index)}" cy="${y(row[column.key] as number)}" r="4" fill="${colors[seriesIndex]}"><title>${xml(tooltipPeriod(pointPeriods[index], String(row[xColumn.key] ?? "")))}: ${xml(row[column.key])}</title></circle>`
       : "").join("");
     return `<polyline points="${points}" fill="none" stroke="${colors[seriesIndex]}" stroke-width="4"/>${dots}`;
   }).join("");
@@ -625,10 +632,13 @@ export async function exportVisualAsset(
       filename: safeAssetFilename(asset, "xlsx"),
     };
   }
-  const renderedAsset = displayedAsset(asset, options.displayFrequency);
+  const rendered = displayedAsset(asset, options.displayFrequency);
+  const renderedAsset = rendered.asset;
   if (!renderedAsset.svg) throw new VisualAssetExportError("MISSING_SVG", "This asset has no SVG surface.");
   const svg = sanitizeStandaloneSvg(
-    timeSeriesConfiguration(renderedAsset.metadata) ? timeSeriesSvg(renderedAsset) : renderedAsset.svg,
+    timeSeriesConfiguration(renderedAsset.metadata)
+      ? timeSeriesSvg(renderedAsset, rendered.pointPeriods)
+      : renderedAsset.svg,
   );
   if (format === "svg") {
     return {

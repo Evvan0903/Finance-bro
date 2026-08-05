@@ -1,5 +1,62 @@
 # Recovery Checkpoint
 
+## Current objective — Ethan market coverage and provider diagnostics cleanup
+
+### Original objective
+
+Simplify Ethan's public Industry Data Coverage and Section 13 source presentation, keep provider failures non-fatal and private, add sanitized server-only diagnostics, validate the six required official provider paths, preserve time-series behavior and Mason, then commit and push the validated change without manually deploying Vercel.
+
+### Completed
+
+- Followed `saveToken`: Sol retained architecture and final review, Terra audited coverage/chart/provider paths, and the Luna lane handled scoped presentation, tests, and documentation.
+- Removed visible source badges from Section 13 chart/table headers while preserving source provenance in tooltips/details, downloads, metadata, and Sources and limitations.
+- Reduced public coverage to overall status, direct official metric count, proxy metric count, observation period, and retrieval date. Provider names, failures, fallback details, and transport diagnostics are no longer serialized to the client.
+- Added sanitized server-only provider diagnostics with controlled statuses and no secrets, URLs, raw payloads, or stack traces.
+- Kept partial provider success usable and made complete provider failure non-fatal with the neutral message `Official market indicators were unavailable for this report`.
+- Corrected exported SVG period tooltips without changing source observations or frequency aggregation behavior.
+- Added the controlled official-provider validation utility and `MARKET_DATA_DIAGNOSTIC_REPORT.md`.
+- Provider checks: FRED, BLS, Congress.gov, and SEC succeeded; BEA and Census were correctly classified as credential authentication failures.
+- Validation passed: ESLint, TypeScript, production build, `git diff --check`, and 83/83 automated tests.
+
+### Remaining tasks
+
+- No required implementation or release task remains.
+
+### Current status
+
+Implementation, validation, the exact requested commit, and the authorized push to `origin/main` are complete. No manual Vercel deployment was performed or claimed.
+
+### Files modified
+
+- `site/app/ResearchApp.tsx`
+- `site/app/VisualizationCard.tsx`
+- `site/app/api/research/route.ts`
+- `site/app/globals.css`
+- `site/app/lib/ethan-industry/industryAnalysis.ts`
+- `site/app/lib/ethan-industry/providerDiagnostics.ts`
+- `site/app/lib/ethan-industry/types.ts`
+- `site/app/lib/visual-assets/builders.ts`
+- `site/app/lib/visual-assets/exportService.ts`
+- `site/scripts/validate-market-providers.mjs`
+- `site/tests/ethan-market-visuals.test.mjs`
+- `site/tests/ethan-provider-diagnostics.test.mjs`
+- `MARKET_DATA_DIAGNOSTIC_REPORT.md`
+- `RECOVERY.md`
+- `TODO.md`
+- `WORKLOG.md`
+
+### Next recommended step
+
+Allow the existing GitHub/Vercel integration to handle any configured automatic deployment, then verify production only in a separate deployment-verification task.
+
+### Assumptions and pending decisions
+
+- BEA and Census require corrected credentials; no provider integration or mapping defect was confirmed for those two services.
+- The public report intentionally exposes analytical limitations, not provider operations.
+- Mason remains unchanged.
+- `.DS_Store` is unrelated pre-existing state and must stay unstaged.
+- No manual Vercel deployment is authorized.
+
 ## Current objective — Ethan chart frequency and Industry Data Coverage
 
 ### Original objective

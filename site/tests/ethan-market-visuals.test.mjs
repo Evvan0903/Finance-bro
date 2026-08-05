@@ -81,16 +81,25 @@ test("builds the reviewed NVDA industry profile and stable visual registry", asy
     "Proxy-based industry context",
     "Insufficient industry data",
   ].includes(coverage.overallStatus));
-  assert.equal(new Set(coverage.providerCoverage.map((row) => row.providerId)).size, coverage.providerCoverage.length);
-  assert.ok(coverage.providerCoverage.every((row) =>
-    ["Configured", "Used", "Usable", "Partial", "Unavailable", "Not relevant"].includes(row.status),
-  ));
-  assert.ok(coverage.providerCoverage.every((row) =>
-    !/\/Users\/|\/tmp\/|stack|token|secret|api[_ -]?key/i.test(`${row.result} ${row.shortNote}`),
-  ));
-  assert.deepEqual(coverage.limitations, []);
+  assert.deepEqual(
+    Object.keys(coverage).sort(),
+    [
+      "dataRetrievalDate",
+      "directOfficialMetricCount",
+      "observationPeriod",
+      "overallStatus",
+      "proxyMetricCount",
+      "status",
+    ],
+  );
+  assert.equal(report.industryAnalysis.marketReport, null);
+  const publicReport = JSON.stringify(report);
+  assert.doesNotMatch(
+    publicReport,
+    /providerResults|missingConfiguration|authentication failed|parse failed|provider timeout|api unavailable/i,
+  );
   for (const caveat of report.industryAnalysis.profile.classificationLimitations) {
-    assert.equal(report.limitations.includes(caveat), false, "market-definition caveats should not repeat in report limitations");
+    assert.equal(report.limitations.includes(caveat), true, "methodology caveats should remain under Sources and limitations");
   }
 
   const financialTable = report.visualAssets.find(
@@ -213,19 +222,29 @@ test("keeps the company report and company visuals available when the market tog
 });
 
 test("keeps frequency controls web-only and separates coverage from analytical limitations", async () => {
-  const [card, reportUi, exports] = await Promise.all([
+  const [card, reportUi, exports, builders, industryAnalysis, marketEngine] = await Promise.all([
     readFile(new URL("../app/VisualizationCard.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/ResearchApp.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/visual-assets/exportService.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/visual-assets/builders.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/ethan-industry/industryAnalysis.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/market-analysis/analysis/marketEngine.ts", import.meta.url), "utf8"),
   ]);
   assert.match(card, /monthly: "Monthly"/);
   assert.match(card, /quarterly: "Quarterly"/);
   assert.match(card, /annual: "Annual"/);
   assert.match(card, /frequency-selector[\s\S]*data-visual-download-control/);
   assert.match(reportUi, /Market Definition and Analytical Limitations/);
-  assert.doesNotMatch(reportUi.slice(reportUi.indexOf('number="15"'), reportUi.indexOf('number="16"')), /coverage\.limitations/);
+  assert.match(reportUi, /showSourceMetadata=\{false\}/);
+  assert.match(reportUi, /Official market indicators were unavailable for this report/);
+  assert.doesNotMatch(reportUi, /industry-provider-coverage|providerCoverage|providersUnavailable/);
+  assert.match(builders, /sectionId: "industry-trends"/);
+  assert.match(builders, /sourceIds: ordered\.map/);
+  assert.match(industryAnalysis, /industryMetrics: marketReport\.metrics/);
+  assert.match(industryAnalysis, /allowInsufficientData: true/);
+  assert.match(marketEngine, /providerResults\.flatMap\(\(result\) => result\.evidence\)/);
   assert.match(exports, /displayedAsset\(asset, options\.displayFrequency\)/);
   assert.match(exports, /bitmapPng\(renderedAsset\)/);
-  assert.match(exports, /timeSeriesSvg\(renderedAsset\)/);
+  assert.match(exports, /timeSeriesSvg\(renderedAsset, rendered\.pointPeriods\)/);
   assert.match(exports, /sourceDatasetWithFrequencyMetadata\(asset, options\.displayFrequency\)/);
 });

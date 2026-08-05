@@ -665,7 +665,7 @@ export function buildResearchVisualAssets(report: ResearchReport) {
       sectionId: "market-definition",
       sectionTitle: isZh ? "市场定义" : "Market definition",
       dataset: { id: "market-definition", title: "Market definition", columns: definitionColumns, rows: definitionRows },
-      metadata: { isReported: true, limitations: industry.profile.classificationLimitations.join(" ") },
+      metadata: { isReported: true },
       svg: tableSvg(isZh ? "市场定义与分类" : "Market definition and classification", definitionColumns, definitionRows),
       formats: ["png", "csv", "xlsx"],
     }));

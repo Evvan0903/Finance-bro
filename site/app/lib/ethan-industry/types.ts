@@ -7,8 +7,6 @@ import type {
   MarketDefinition,
   MarketReport,
   MarketScopeInput,
-  ProviderPlan,
-  ProviderResult,
 } from "../market-analysis/types";
 
 export type IndustryClassificationConfidence = "high" | "medium" | "low";
@@ -103,39 +101,13 @@ export type EthanIndustryCoverageOverallStatus =
   | "Proxy-based industry context"
   | "Insufficient industry data";
 
-export type EthanIndustryProviderStatus =
-  | "Configured"
-  | "Used"
-  | "Usable"
-  | "Partial"
-  | "Unavailable"
-  | "Not relevant";
-
-export type EthanIndustryProviderCoverage = {
-  providerId: string;
-  provider: string;
-  status: EthanIndustryProviderStatus;
-  analyticalRole: string;
-  result: string;
-  shortNote: string;
-  retrievedAt: string | null;
-};
-
 export type EthanIndustryCoverage = {
   status: EthanIndustryCoverageStatus;
-  providerPlan: ProviderPlan | null;
-  providerResults: ProviderResult[];
-  providersUsed: string[];
-  providersUnavailable: string[];
-  limitations: string[];
   overallStatus: EthanIndustryCoverageOverallStatus;
-  providerCoverage: EthanIndustryProviderCoverage[];
-  directMetricCount: number;
+  directOfficialMetricCount: number;
   proxyMetricCount: number;
-  unavailableMetricCount: number;
-  unavailableProviderCount: number;
-  periodsCovered: string[];
-  retrievalTimestamps: string[];
+  observationPeriod: string | null;
+  dataRetrievalDate: string | null;
 };
 
 export type EthanIndustryAnalysis = {

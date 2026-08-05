@@ -31,6 +31,7 @@ import { companyTypeForPack } from "../../lib/metric-coverage/coverage-expectati
 import type { MetricExtractionAudit } from "../../lib/metric-coverage/types";
 import { enrichRegistryFromInlineXbrl } from "../../lib/filing-enrichment/inline-xbrl";
 import { buildEthanIndustryAnalysis } from "../../lib/ethan-industry/industryAnalysis";
+import { buildInternalProviderDiagnostics } from "../../lib/ethan-industry/providerDiagnostics";
 import { buildResearchVisualAssets } from "../../lib/visual-assets/builders";
 import {
   runShellMetricValidation,
@@ -2333,6 +2334,7 @@ async function buildReport(
       })),
     ],
     limitations: [
+      ...(industryAnalysis.profile?.classificationLimitations ?? []),
       ...(sectorOutlook.insufficientEvidence
         ? ["Insufficient recent sector research available for 2025–2026."]
         : []),
@@ -2682,6 +2684,17 @@ export async function POST(request: Request) {
         ),
       ));
     }
+    const marketProviderDiagnostics = report.industryAnalysis.marketReport
+      ? buildInternalProviderDiagnostics(report.industryAnalysis.marketReport)
+      : [];
+    if (marketProviderDiagnostics.length) {
+      console.info(JSON.stringify({
+        event: "ethan_market_provider_diagnostics",
+        traceId: requestTraceId,
+        ticker: record.ticker,
+        providers: marketProviderDiagnostics,
+      }));
+    }
     const consistencyAudit = auditResearchReport(report);
     if (!consistencyAudit.passed) {
       throw new SecClientError({
@@ -2707,6 +2720,9 @@ export async function POST(request: Request) {
       diagnostics,
     };
     console.info(JSON.stringify({ event: "research_pipeline_complete", ...pipeline }));
+    // Provider-level execution details are server diagnostics only. Visuals,
+    // sources, and coverage summaries have already been materialized.
+    report.industryAnalysis.marketReport = null;
     return Response.json({
       report,
       classification,

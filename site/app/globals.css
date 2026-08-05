@@ -3143,13 +3143,6 @@ tbody th, .driver-table a strong { color: #003FC2; }
 .industry-limitations,
 .industry-comparison-note { border-top: 1px solid var(--border-light); margin-top: 18px; padding-top: 16px; }
 .industry-comparison-note small { color: var(--text-muted); }
-.industry-provider-coverage-wrap { margin-top: 16px; }
-.industry-provider-coverage { font-size: 12px; min-width: 760px; }
-.industry-provider-coverage th { white-space: nowrap; }
-.coverage-status { background: var(--surface-muted); border-radius: 999px; display: inline-block; font-size: 10px; font-weight: 700; padding: 4px 7px; white-space: nowrap; }
-.coverage-status-used, .coverage-status-usable { background: #e7f7f1; color: #126447; }
-.coverage-status-partial, .coverage-status-configured { background: #fff4d6; color: #73510d; }
-.coverage-status-unavailable { background: #fdebea; color: #8b251e; }
 
 @media (max-width: 760px) {
   .hero-content { padding: 52px 18px 44px; }

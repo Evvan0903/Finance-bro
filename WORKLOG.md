@@ -1,5 +1,19 @@
 # FinBro Research Worklog
 
+## Ethan market coverage and provider diagnostics cleanup — validated locally
+
+- `saveToken` routing: Sol handled public/private architecture and final review; Terra audited chart, coverage, request, and provider behavior; the Luna lane handled scoped UI cleanup, test formatting, and documentation.
+- Public cleanup: Section 13 no longer shows source labels in chart/table headers. Provenance remains in contextual details, visual metadata, CSV/XLSX/SVG/PNG exports, and Sources and limitations.
+- Coverage: public output now contains only overall status, direct official metric count, proxy metric count, observation period, and data retrieval date. Empty coverage uses the neutral official-indicator message; provider failures never block the company report.
+- Diagnostics: added server-only sanitized provider records with controlled statuses, requested dataset/period, available period, fallback usage, usable record count, and last successful retrieval. Public JSON contains no provider plan/results, raw errors, request URLs, stack traces, keys, or tokens.
+- Controlled provider validation: FRED (`FEDFUNDS`), BLS (CES), Congress.gov, and SEC (NVDA submissions) succeeded. BEA metadata and Census 2023 CBP were configured but rejected the supplied credentials, so both are classified `authenticationFailed`; no mapping defect was confirmed.
+- Time series: source observations and frequency selection/aggregation are unchanged; exported SVGs now preserve precise aggregated-period tooltips.
+- Tests passed: ESLint, TypeScript, production build, `git diff --check`, and 83/83 automated tests. Tests failed: none in final validation.
+- Known limitations: BEA and Census require valid replacement credentials before they can return usable records. This does not prevent company research or other official-provider assets.
+- Mason: no Mason implementation, report logic, or public behavior was modified.
+- Diagnostic report: `MARKET_DATA_DIAGNOSTIC_REPORT.md`.
+- Release: committed with `fix: simplify ethan market coverage and diagnostics` and pushed to `origin/main`. The configured GitHub/Vercel integration may deploy automatically; no manual Vercel deployment was performed or claimed.
+
 ## Ethan chart frequency and Industry Data Coverage — 2026-07-31
 
 - `saveToken` routing: Sol owned aggregation semantics, Ethan/Mason boundaries, and final review; Terra completed chart/export and provider-coverage audits; routine UI, tests, and documentation stayed in the low-risk implementation lane.

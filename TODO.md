@@ -1,5 +1,19 @@
 # Institutional Equity Research Refactor and Shell Sample TODO
 
+## Ethan market coverage and provider diagnostics cleanup
+
+- [x] Read `saveToken`, recovery notes, Ethan coverage/rendering/provider paths, and Mason boundaries.
+- [x] Remove visible Section 13 source labels while preserving provenance and download metadata.
+- [x] Reduce public coverage to five investor-relevant fields and remove provider diagnostics from serialization.
+- [x] Add sanitized server-only provider diagnostics with controlled statuses and no secrets.
+- [x] Keep partial and complete provider failure non-fatal with neutral public handling.
+- [x] Preserve time-series frequency behavior and correct exported SVG period tooltips.
+- [x] Run controlled FRED, BEA, Census, BLS, DATA GOV, and SEC validations.
+- [x] Create `MARKET_DATA_DIAGNOSTIC_REPORT.md`.
+- [x] Pass ESLint, TypeScript, production build, whitespace validation, and 83/83 tests.
+- [x] Create `fix: simplify ethan market coverage and diagnostics` and push `origin/main`.
+- [x] Record the final commit/push status without manually deploying Vercel.
+
 ## Ethan chart frequency and Industry Data Coverage
 
 - [x] Read `saveToken`, recovery notes, chart/export architecture, provider coverage path, and tests.

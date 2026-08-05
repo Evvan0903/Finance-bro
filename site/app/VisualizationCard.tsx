@@ -340,9 +340,11 @@ function metadataList(value: string | string[] | undefined) {
 export function VisualizationCard({
   asset,
   locale,
+  showSourceMetadata = true,
 }: {
   asset: VisualizationAssetLike;
   locale: VisualizationLocale;
+  showSourceMetadata?: boolean;
 }) {
   const copy = VISUAL_COPY[locale];
   const metadata = asset.metadata ?? {};
@@ -407,7 +409,7 @@ export function VisualizationCard({
           {timeSeries && <MetadataLine label={copy.displayFrequency}>{copy[displayFrequency]}</MetadataLine>}
           {timeSeries && <MetadataLine label={copy.aggregationMethod}>{String(timeSeries.aggregationMethod)}</MetadataLine>}
         </div>
-        {(sourceIds.length > 0 || evidenceIds.length > 0) && (
+        {showSourceMetadata && (sourceIds.length > 0 || evidenceIds.length > 0) && (
           <small>
             <b>{copy.source}</b> {[...sourceIds, ...evidenceIds].join(" · ")}
           </small>
