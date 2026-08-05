@@ -1,4 +1,4 @@
-import { providerConfigurationStatus, readMarketProviderSecrets } from "../config/marketEnv";
+import { providerConfigurationStatus, readMarketProviderConfiguration } from "../config/marketEnv";
 import { fetchOfficialJson } from "../security";
 import type { MarketDataProvider, MarketEvidence } from "../types";
 import type { ProviderFactoryOptions } from "./providerTypes";
@@ -18,12 +18,12 @@ export function createGovInfoProvider(options: ProviderFactoryOptions = {}): Mar
     providerId: "govInfo",
     providerName: "GovInfo",
     providerType: "policy",
-    isConfigured: () => Boolean(readMarketProviderSecrets().dataGovApiKey),
+    isConfigured: () => readMarketProviderConfiguration().dataGov.configured,
     supports: (request) => request.scope.focusAreas.includes("policyEnvironment"),
     validateConfiguration: () => providerConfigurationStatus("govInfo"),
     fetchMetadata: async () => ({}),
     fetchData: async (request) => {
-      const key = readMarketProviderSecrets().dataGovApiKey;
+      const key = readMarketProviderConfiguration().dataGov.key;
       if (!key) return [];
       const payload = await fetchOfficialJson<{
         results?: GovInfoResult[];

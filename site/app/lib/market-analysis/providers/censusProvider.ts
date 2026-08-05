@@ -1,5 +1,5 @@
-import { readMarketProviderSecrets } from "../config/marketEnv";
-import { fetchOfficialJson } from "../security";
+import { readMarketProviderConfiguration } from "../config/marketEnv";
+import { fetchOfficialJson, MarketProviderError } from "../security";
 import type { MarketDataProvider, MarketEvidence } from "../types";
 import type { ProviderFactoryOptions } from "./providerTypes";
 import { evidenceId, numeric, publicReference } from "./shared";
@@ -27,7 +27,7 @@ export function createCensusProvider(options: ProviderFactoryOptions = {}): Mark
     validateConfiguration: () => "configured",
     fetchMetadata: async () => ({}),
     fetchData: async (request) => {
-      const key = readMarketProviderSecrets().censusApiKey;
+      const key = readMarketProviderConfiguration().census.key;
       const output: CensusRaw = [];
       // County Business Patterns releases lag the analysis year. Request only
       // through the latest validated API year and show the resulting period.
@@ -39,16 +39,24 @@ export function createCensusProvider(options: ProviderFactoryOptions = {}): Mark
             request.scope.geographyB,
           )) {
             const keyParameter = key ? `&key=${encodeURIComponent(key)}` : "";
-            const rows = await fetchOfficialJson<string[][]>(
+            const payload = await fetchOfficialJson<string[][] | { error?: unknown }>(
               `https://api.census.gov/data/${year}/cbp?get=NAME,NAICS2017_LABEL,ESTAB,EMP,PAYANN&for=${encodeURIComponent(geography.censusFor)}&NAICS2017=${encodeURIComponent(mapping.code)}${keyParameter}`,
               {},
               fetchImpl,
             );
+            if (!Array.isArray(payload)) {
+              const errorText = JSON.stringify(payload.error ?? payload);
+              const rejected = /(?:invalid|missing|rejected|not\s+valid).{0,40}(?:api[ _-]?key|key)|(?:api[ _-]?key|key).{0,40}(?:invalid|missing|rejected|not\s+valid)/i.test(errorText);
+              throw new MarketProviderError(
+                rejected ? "invalidConfiguration" : "invalidRequest",
+                rejected ? "Census rejected its server-side key." : "Census rejected the dataset request.",
+              );
+            }
             output.push({
               year,
               naics: mapping.code,
               geographyName: geography.name,
-              rows,
+              rows: payload,
             });
           }
         }

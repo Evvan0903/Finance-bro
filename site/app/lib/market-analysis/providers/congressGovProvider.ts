@@ -1,4 +1,4 @@
-import { providerConfigurationStatus, readMarketProviderSecrets } from "../config/marketEnv";
+import { providerConfigurationStatus, readMarketProviderConfiguration } from "../config/marketEnv";
 import { fetchOfficialJson } from "../security";
 import type { MarketDataProvider, MarketEvidence } from "../types";
 import type { ProviderFactoryOptions } from "./providerTypes";
@@ -20,12 +20,12 @@ export function createCongressGovProvider(options: ProviderFactoryOptions = {}):
     providerId: "congressGov",
     providerName: "Congress.gov",
     providerType: "policy",
-    isConfigured: () => Boolean(readMarketProviderSecrets().dataGovApiKey),
+    isConfigured: () => readMarketProviderConfiguration().dataGov.configured,
     supports: (request) => request.scope.focusAreas.includes("policyEnvironment"),
     validateConfiguration: () => providerConfigurationStatus("congressGov"),
     fetchMetadata: async () => ({}),
     fetchData: async () => {
-      const key = readMarketProviderSecrets().dataGovApiKey;
+      const key = readMarketProviderConfiguration().dataGov.key;
       if (!key) return [];
       const payload = await fetchOfficialJson<{ bills?: CongressBill[] }>(
         "https://api.congress.gov/v3/bill?format=json&limit=10&sort=updateDate+desc",

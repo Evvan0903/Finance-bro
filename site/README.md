@@ -63,12 +63,30 @@ Set `SEC_USER_AGENT` to a descriptive application/contact value for reliable pro
 
 Ethan's optional Industry and Market Analysis is enabled by default. It derives a reviewed company-industry profile from the resolved SEC identity and SIC, then requests only compatible official series. `FRED_API_KEY` and `BEA_API_KEY` improve provider coverage when configured; Census and BLS can run without keys for supported requests. Missing or failed market providers never block the company report, and no OpenAI API key, embedding service, D1 database, or R2 bucket is required.
 
+Provider credentials use these exact server-only names: `FRED_API_KEY`, `BEA_API_KEY`, `CENSUS_API_KEY`, and `DATA_GOV_API_KEY`. The validator loads the same normalized configuration used by the production providers and automatically reads the project env files with shell variables taking precedence. No manual `source .env.local` step is needed.
+
+From `site`:
+
+```bash
+node scripts/validate-market-providers.mjs
+```
+
+From the repository root:
+
+```bash
+node site/scripts/validate-market-providers.mjs
+```
+
+The output is sanitized and never contains credential values or request URLs. Local `.env.local` files are ignored by Git and apply only to local execution.
+
 Every evidence-supported report visual is registered as a structured dataset and can be downloaded independently. Supported formats are CSV and XLSX for all data assets, plus SVG and PNG when a visual surface exists. The server protects spreadsheets from formula injection, sanitizes SVG, redacts credentials and local paths, and generates files from normalized datasets. Visual assets currently use a process-local expiring store, so links are not durable across server restarts or instances.
 
 The reviewed specialized market profile in this release is NVIDIA / SIC 3674. Other issuers use conservative general mappings or an explicit mapping-review state. Official economic indicators remain labeled as context or proxies unless their source supports a commercial-market definition. See [ethan-industry-visual-assets.md](docs/ethan-industry-visual-assets.md).
 
 ## Vercel
 
-Set Vercel's Root Directory to `site`. The project uses `npm ci` and `npm run vercel-build` (`next build --webpack`). This change set is validated locally only; it is not pushed or deployed.
+Set Vercel's Root Directory to `site`. The project uses `npm ci` and `npm run vercel-build` (`next build --webpack`). Configure required provider variables separately in Vercel Project Settings for each intended environment; local `.env.local` values are not uploaded. Use only the exact server-side names `FRED_API_KEY`, `BEA_API_KEY`, `CENSUS_API_KEY`, and `DATA_GOV_API_KEY`, plus a descriptive `SEC_USER_AGENT`. Never use `NEXT_PUBLIC_` for credentials. Changing a Vercel variable requires a new deployment before the runtime sees it.
+
+FRED and BEA require their credentials. Census can use its public anonymous quota, but `CENSUS_API_KEY` increases authenticated quota when valid. DATA GOV is required for the selected Congress.gov or GovInfo adapter. Missing or rejected optional market-provider credentials do not block Ethan's filing-based company report.
 
 FinBro provides research information, not investment advice, a rating, or a target price.

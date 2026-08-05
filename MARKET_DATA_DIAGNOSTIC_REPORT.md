@@ -2,32 +2,32 @@
 
 ## Summary
 
-Market-data retrieval is generally working: known-good server-side checks succeeded for FRED, BLS, Congress.gov through DATA GOV, and SEC. BEA and Census requests reached their official services but the configured credentials were rejected; Ethan can continue with successful providers while omitting unsupported market assets.
+Market-data retrieval is generally working. The validator automatically loaded `site/.env.local` on 2026-08-05 and known-good checks succeeded for FRED, BLS, Congress.gov through DATA GOV, and SEC. BEA and Census reached their official services with the documented credential parameters, but the supplied credentials were rejected.
 
 ## Provider Results
 
 | Provider | Status | Main issue | Action needed |
 |---|---|---|---|
-| FRED | success | Stable FEDFUNDS request returned a usable observation | None |
-| BEA | authenticationFailed | Configured credential was rejected by dataset metadata request | Verify or replace `BEA_API_KEY` |
-| Census | authenticationFailed | Configured credential was rejected by the 2023 CBP request | Verify or replace `CENSUS_API_KEY` |
-| BLS | success | Public CES request returned usable observations | None |
-| DATA GOV | success | Congress.gov returned a usable bill record | None |
-| SEC | success | NVIDIA Submissions request returned current filing data | None |
+| FRED | success | `FEDFUNDS` returned one usable observation for 2026-07-01 | None |
+| BEA | authenticationFailed | `GETDATASETLIST` reached BEA with `UserID`, but the credential was rejected | Verify or replace `BEA_API_KEY` |
+| Census | authenticationFailed | 2023 CBP reached Census with `key`, but the credential was rejected | Verify or replace `CENSUS_API_KEY` |
+| BLS | success | Public CES request returned 18 usable observations | None |
+| DATA GOV | success | Congress.gov returned one usable bill record | None |
+| SEC | success | NVIDIA Submissions returned filing data through 2026-07-20 | None |
 
 ## Mapping Issues
 
-- None confirmed. BEA industry and Census NAICS mapping validation remains blocked until the rejected credentials are corrected.
+- None confirmed. The stable BEA dataset-list and Census 2023 CBP requests show credential rejection, not a mapping, year-range, dataset, or series defect.
 
 ## Fixes Applied
 
-- Removed provider names, statuses, errors, and fallback details from Ethan’s public Industry Data Coverage section.
-- Removed visible source-ID labels from Section 13 cards while preserving provenance in exports, Sources and limitations, and internal visual records.
-- Added sanitized server-only provider diagnostics and removed the detailed market provider result object before the public response is serialized.
-- Preserved partial-provider behavior, the quarterly-default frequency control, original-frequency data exports, and precise aggregated-period tooltips.
+- Added automatic Next-style project env loading for the standalone validator from either the repository root or `site`, with shell values taking precedence.
+- Centralized exact-name credential normalization and safe state diagnostics for FRED, BEA, Census, and DATA GOV.
+- Reused the shared configuration in production providers and validation; BEA maps `BEA_API_KEY` to `UserID`, and Census maps `CENSUS_API_KEY` to `key`.
+- Added response-aware status classification and retained sanitized server-only diagnostics without changing Ethan’s public-report behavior.
 
 ## Remaining Actions
 
-- Verify or replace `BEA_API_KEY` in the server environment and mirror the corrected value in Vercel if production uses BEA.
-- Verify or replace `CENSUS_API_KEY` in the server environment and mirror the corrected value in Vercel if production uses Census CBP.
-- Re-run `site/scripts/validate-market-providers.mjs` after updating either credential.
+- Verify or replace `BEA_API_KEY`; configure the corrected value separately in Vercel if production uses BEA.
+- Verify or replace `CENSUS_API_KEY`; configure the corrected value separately in Vercel if production uses authenticated Census quota.
+- Re-run `node scripts/validate-market-providers.mjs` from `site` after either credential changes.

@@ -1,5 +1,62 @@
 # Recovery Checkpoint
 
+## Current objective — Ethan market-provider credential loading and validation
+
+### Original objective
+
+Fix Ethan's standalone provider validator so it automatically loads project env files, shares exact credential normalization with production providers, uses the documented FRED, BEA, Census, and DATA GOV authentication contracts, classifies failures accurately, preserves private diagnostics and public-report behavior, validates locally, then commit and push without manually deploying Vercel or modifying Mason.
+
+### Completed
+
+- Followed `saveToken`: Sol retained architecture/root-cause/final review, Terra audited environment/provider/test paths, and the low-risk lane handled implementation, tests, and documentation.
+- Confirmed the root cause: Next/Vercel application requests already read runtime `process.env`; only the standalone validator skipped `site/.env.local` and duplicated credential interpretation.
+- Added Next-style env-file precedence for the validator from either the repository root or `site`, with existing shell values winning and absent files remaining harmless.
+- Centralized exact-name credential normalization, safe presence/empty/whitespace/quote diagnostics, and provider-specific mappings. No aliases or mixed-case alternatives are accepted.
+- FRED now reads the shared `FRED_API_KEY` configuration and the live `FEDFUNDS` validation succeeded.
+- BEA sends `BEA_API_KEY` only as exact `UserID`; Census sends `CENSUS_API_KEY` only as `key`. Both requests are correct, but the current local credentials remain rejected by the official services.
+- Added response-aware validation for authentication, invalid requests, rate limits, timeouts, empty data, upstream failures, and malformed responses.
+- Preserved server-only sanitized diagnostics and Ethan's public-report boundary. No Mason-specific file or workflow was modified.
+- Updated provider/Vercel documentation and `MARKET_DATA_DIAGNOSTIC_REPORT.md` without including credential values.
+- Validation passed: ESLint, TypeScript, Vinext production build, Vercel-compatible Next.js build, 92/92 full tests, 9/9 focused validator tests, and `git diff --check`.
+- Created `fix: load and validate market provider credentials` and pushed it to `origin/main`; no manual Vercel deployment was performed.
+
+### Remaining tasks
+
+- No required code or release task remains.
+- The developer must replace or activate the rejected BEA and Census credentials, then configure corrected values separately in Vercel if those providers are needed in production.
+
+### Current status
+
+Implementation, local provider validation, regression testing, the requested commit, and the authorized GitHub push are complete. FRED, BLS, DATA GOV, and SEC succeeded; BEA and Census remain credential-related failures.
+
+### Files modified
+
+- `MARKET_DATA_DIAGNOSTIC_REPORT.md`
+- `site/README.md`
+- `site/app/lib/ethan-industry/providerDiagnostics.ts`
+- `site/app/lib/market-analysis/config/marketEnv.ts`
+- `site/app/lib/market-analysis/providers/{fred,bea,census,congressGov,govInfo}Provider.ts`
+- `site/docs/ethan-industry-visual-assets.md`
+- `site/package.json`
+- `site/scripts/lib/load-project-env.mjs`
+- `site/scripts/validate-market-providers.mjs`
+- `site/tests/market-provider-validation.test.mjs`
+- `RECOVERY.md`
+- `TODO.md`
+- `WORKLOG.md`
+
+### Next recommended step
+
+Replace or activate `BEA_API_KEY` and `CENSUS_API_KEY`, re-run `node scripts/validate-market-providers.mjs` from `site`, and only then mirror validated values into the intended Vercel environments.
+
+### Assumptions and pending decisions
+
+- Census remains capable of anonymous public requests when no key is configured; a present but rejected key is correctly reported as an authentication failure.
+- `.env.local` remains local, ignored, and unstaged. Vercel variables must be configured separately.
+- No secret value, prefix, URL, or correlating hash is written to diagnostics or documentation.
+- `.DS_Store` remains unrelated pre-existing state and is intentionally unstaged.
+- No manual Vercel deployment is authorized.
+
 ## Current objective — Ethan market coverage and provider diagnostics cleanup
 
 ### Original objective

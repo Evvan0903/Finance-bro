@@ -1,5 +1,5 @@
-import { providerConfigurationStatus, readMarketProviderSecrets } from "../config/marketEnv";
-import { fetchOfficialJson, sanitizeSecrets } from "../security";
+import { providerConfigurationStatus, readMarketProviderConfiguration } from "../config/marketEnv";
+import { fetchOfficialJson, MarketProviderError, sanitizeSecrets } from "../security";
 import type { MarketDataProvider, MarketEvidence } from "../types";
 import type { ProviderFactoryOptions } from "./providerTypes";
 import { evidenceId, numeric, publicReference } from "./shared";
@@ -25,13 +25,13 @@ export function createBeaProvider(options: ProviderFactoryOptions = {}): MarketD
     providerId: "bea",
     providerName: "U.S. Bureau of Economic Analysis",
     providerType: "industryEconomic",
-    isConfigured: () => Boolean(readMarketProviderSecrets().beaApiKey),
+    isConfigured: () => readMarketProviderConfiguration().bea.configured,
     supports: (request) => mappings(request).length > 0,
     validateConfiguration: () => providerConfigurationStatus("bea"),
     fetchMetadata: async () => ({}),
     fetchData: async (request) => {
-      const key = readMarketProviderSecrets().beaApiKey;
-      if (!key) return [];
+      const userId = readMarketProviderConfiguration().bea.userId;
+      if (!userId) return [];
       const years = Array.from(
         { length: request.scope.endYear - request.scope.startYear + 1 },
         (_, index) => request.scope.startYear + index,
@@ -39,12 +39,19 @@ export function createBeaProvider(options: ProviderFactoryOptions = {}): MarketD
       const raw = await fetchOfficialJson<{
         BEAAPI?: { Results?: { Data?: BeaRow[]; Error?: unknown }; Request?: unknown };
       }>(
-        `https://apps.bea.gov/api/data/?UserID=${encodeURIComponent(key)}&method=GetData&datasetname=GDPbyIndustry&TableID=1&Frequency=A&Year=${years}&Industry=ALL&ResultFormat=JSON`,
+        `https://apps.bea.gov/api/data/?UserID=${encodeURIComponent(userId)}&method=GetData&datasetname=GDPbyIndustry&TableID=1&Frequency=A&Year=${years}&Industry=ALL&ResultFormat=JSON`,
         {},
         fetchImpl,
       );
-      if (raw.BEAAPI?.Results?.Error) throw new Error("BEA returned a dataset error");
-      return sanitizeSecrets(raw.BEAAPI?.Results?.Data ?? [], [key]);
+      if (raw.BEAAPI?.Results?.Error) {
+        const errorText = JSON.stringify(raw.BEAAPI.Results.Error);
+        const rejected = /(?:invalid|missing|unregistered|rejected|not\s+valid).{0,40}(?:user\s?id|key)|(?:user\s?id|key).{0,40}(?:invalid|missing|unregistered|rejected|not\s+valid)/i.test(errorText);
+        throw new MarketProviderError(
+          rejected ? "invalidConfiguration" : "invalidRequest",
+          rejected ? "BEA rejected its server-side UserID." : "BEA rejected the dataset request.",
+        );
+      }
+      return sanitizeSecrets(raw.BEAAPI?.Results?.Data ?? [], [userId]);
     },
     normalizeResponse: (raw, request, retrievedAt) => {
       if (!Array.isArray(raw)) return [];

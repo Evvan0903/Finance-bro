@@ -1,5 +1,20 @@
 # Institutional Equity Research Refactor and Shell Sample TODO
 
+## Ethan market-provider credential loading and validation
+
+- [x] Read `saveToken`, recovery notes, env/provider clients, validator, diagnostics, tests, and Vercel documentation.
+- [x] Add automatic project env loading from `site` and repository-root launches with Next-style precedence.
+- [x] Make shell values override files; handle missing, empty, whitespace, quoted, and mixed-case cases safely.
+- [x] Centralize exact FRED, BEA, Census, and DATA GOV credential configuration.
+- [x] Validate FRED `FEDFUNDS` using `FRED_API_KEY`.
+- [x] Validate BEA `GETDATASETLIST` using exact `UserID` mapping.
+- [x] Validate Census 2023 CBP using exact `key` mapping and safe error parsing.
+- [x] Preserve BLS, DATA GOV, SEC, public Ethan, and Mason behavior.
+- [x] Update `MARKET_DATA_DIAGNOSTIC_REPORT.md` and Vercel/local validation documentation.
+- [x] Pass ESLint, TypeScript, Vinext build, Vercel-compatible build, 92/92 full tests, and whitespace checks.
+- [x] Create `fix: load and validate market provider credentials` and push `origin/main`.
+- [x] Record that BEA and Census still require valid replacement credentials.
+
 ## Ethan market coverage and provider diagnostics cleanup
 
 - [x] Read `saveToken`, recovery notes, Ethan coverage/rendering/provider paths, and Mason boundaries.

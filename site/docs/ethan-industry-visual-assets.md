@@ -16,7 +16,7 @@ The hierarchy is:
 
 The reviewed specialized profile is NVIDIA / SIC 3674. It maps compatible semiconductor-manufacturing context across NAICS 334413/334, BEA 3344, selected FRED series, Census CBP, and BLS. NVIDIA remains a fabless platform company, so U.S. manufacturing classifications are explicitly proxies rather than NVIDIA's market size or market share.
 
-Available official-provider adapters include FRED, BEA, Census, BLS, SEC, World Bank, Congress.gov, and GovInfo. Ethan selects only profile-compatible providers. `FRED_API_KEY` and `BEA_API_KEY` are optional server-side settings; credentials are never returned to the client, written into references, or stored in visual files. EIA and additional reviewed specialized mappings are future work.
+Available official-provider adapters include FRED, BEA, Census, BLS, SEC, World Bank, Congress.gov, and GovInfo. Ethan selects only profile-compatible providers. The exact server-only credential names are `FRED_API_KEY`, `BEA_API_KEY`, `CENSUS_API_KEY`, and `DATA_GOV_API_KEY`; credentials are never returned to the client, written into references, or stored in visual files. The standalone validator automatically loads local project env files and uses the same normalization and provider-specific credential mapping as production. EIA and additional reviewed specialized mappings are future work.
 
 ## Normalized analysis objects
 
@@ -29,9 +29,9 @@ The integrated report adds:
 - market definition and data scope;
 - industry scale, demand, production, investment, and employment indicators when supported;
 - company-versus-industry positioning;
-- industry data coverage and provider failures.
+- minimal industry data coverage without provider diagnostics.
 
-The company report remains usable when every market provider fails. Coverage then reports `unavailable` while existing filing-based financials, citations, scenarios, and company visuals remain present.
+The company report remains usable when every market provider fails. Ethan shows one neutral section-level message while existing filing-based financials, citations, scenarios, and company visuals remain present. Provider failures remain server-side and are not serialized into the public report.
 
 ## Visual asset architecture
 

@@ -1,5 +1,18 @@
 # FinBro Research Worklog
 
+## Ethan market-provider credential loading and validation — 2026-08-05
+
+- `saveToken` routing: Sol owned root-cause analysis, shared-config boundaries, classification judgment, and final review; Terra audited environment loading, providers, tests, and Mason/public-report risks; routine code, tests, and documentation stayed in the low-risk implementation lane.
+- Root cause: application requests already used Next/Vercel runtime `process.env`. The standalone validator read `process.env` before any project env file was loaded and separately interpreted credentials, so local `FRED_API_KEY` appeared absent.
+- Environment: the validator now locates `site` from either launch directory and loads `.env.<environment>.local`, `.env.local`, `.env.<environment>`, and `.env` in intended priority order without overwriting shell values. Missing files do not fail execution; exact names only are accepted.
+- Shared configuration: production providers and validation use the same normalizer. FRED maps `FRED_API_KEY` to `api_key`, BEA maps `BEA_API_KEY` to exact `UserID`, Census maps `CENSUS_API_KEY` to `key`, and DATA GOV maps `DATA_GOV_API_KEY` to `X-Api-Key`.
+- Live validation: FRED succeeded with one `FEDFUNDS` observation dated 2026-07-01; BLS returned 18 observations; Congress.gov and SEC succeeded. BEA and Census reached their official endpoints with correct parameters but rejected the configured credentials, so remaining work is credential replacement or activation, not a confirmed code/mapping issue.
+- Diagnostics/public boundary: safe states and actions were added server-side; credential values, raw URLs, bodies, stack traces, and hashes are never emitted. Ethan public reports still omit technical diagnostics and retain partial-provider assets. Mason-specific code and behavior were not modified.
+- Validation passed: ESLint, TypeScript, Vinext production build, Vercel-compatible Next.js build, 92/92 full tests, 29/29 provider/Mason focused tests, 9/9 validator tests, and `git diff --check`. Final failed tests: none.
+- Documentation: added root/site validator commands, local-versus-Vercel environment guidance, and updated `MARKET_DATA_DIAGNOSTIC_REPORT.md`.
+- Release: committed with `fix: load and validate market provider credentials` and pushed to `origin/main`. No manual Vercel deployment was performed or claimed.
+- Next step: replace or activate `BEA_API_KEY` and `CENSUS_API_KEY`, validate locally again, then mirror only confirmed working values into the intended Vercel environments.
+
 ## Ethan market coverage and provider diagnostics cleanup — validated locally
 
 - `saveToken` routing: Sol handled public/private architecture and final review; Terra audited chart, coverage, request, and provider behavior; the Luna lane handled scoped UI cleanup, test formatting, and documentation.

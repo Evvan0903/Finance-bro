@@ -64,6 +64,8 @@ test("retains useful internal provider detail without copying raw errors or secr
   assert.deepEqual(diagnostics[0].requestedDatasetOrSeries, ["fredSeries:IPG3344S"]);
   assert.equal(diagnostics[1].requestAttempted, true);
   assert.equal(diagnostics[2].requestAttempted, false);
+  assert.equal(diagnostics[0].mainIssue, "Usable official records returned");
+  assert.equal(diagnostics[2].actionNeeded, "Review the requested dataset, series, and period");
   const serialized = JSON.stringify(diagnostics);
   assert.doesNotMatch(serialized, /SECRET_VALUE|\/tmp\/|api_key|stack|token=/i);
 });

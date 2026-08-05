@@ -1,4 +1,4 @@
-import { readMarketProviderSecrets, providerConfigurationStatus } from "../config/marketEnv";
+import { readMarketProviderConfiguration, providerConfigurationStatus } from "../config/marketEnv";
 import { fetchOfficialJson } from "../security";
 import type { MarketDataProvider, MarketEvidence } from "../types";
 import type { ProviderFactoryOptions } from "./providerTypes";
@@ -26,12 +26,12 @@ export function createFredProvider(options: ProviderFactoryOptions = {}): Market
     providerId: "fred",
     providerName: "Federal Reserve Economic Data",
     providerType: "macroeconomic",
-    isConfigured: () => Boolean(readMarketProviderSecrets().fredApiKey),
+    isConfigured: () => readMarketProviderConfiguration().fred.configured,
     supports: (request) => selectedSeries(request).length > 0,
     validateConfiguration: () => providerConfigurationStatus("fred"),
     fetchMetadata: async () => ({}),
     fetchData: async (request) => {
-      const key = readMarketProviderSecrets().fredApiKey;
+      const key = readMarketProviderConfiguration().fred.key;
       if (!key) return [];
       const output: FredRaw = [];
       for (const mapping of selectedSeries(request)) {
