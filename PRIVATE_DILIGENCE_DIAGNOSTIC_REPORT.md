@@ -4,6 +4,19 @@ Validation date: 2026-08-05
 
 This report records sanitized validation outcomes only. It contains no API keys, raw response bodies, request headers, local paths, or hardcoded production findings.
 
+## Website-first resolution validation
+
+| Scenario | Result | Key outcome |
+|---|---|---|
+| Website-only Abaka AI | Pass | Abaka AI derived from the live site; Medium, 65/100; confirmation and report generation completed |
+| Website-only second private company | Pass | Live Anthropic site produced an enriched High-confidence candidate |
+| Company-name-only | Pass | Requested additional identity information without fabricating a candidate |
+| Mismatched name and website | Pass | Preserved the supplied name and surfaced the website-organization mismatch |
+| Unreachable website | Pass | Returned a concise identity-information request without technical details |
+| Low-information website | Pass | Preserved unresolved identity fields instead of inferring unavailable facts |
+
+All website-derived evidence remained Company Reported. The frontend and backend used the same confirmation helper, and a valid explicit confirmation proceeded without the former generic confirmation error.
+
 ## Real-source scenarios
 
 | Profile | Company | Identity | Coverage | Evidence | Claims | Gaps | Questions | Result |
@@ -18,8 +31,8 @@ Provider outcomes varied by entity. Company website retrieval succeeded in all t
 
 ## Automated validation
 
-- Clara-focused tests: 9 passed, 0 failed
-- Full automated suite: 102 passed, 0 failed
+- Clara-focused tests: 14 passed, 0 failed
+- Full automated suite: 107 passed, 0 failed
 - TypeScript: passed
 - ESLint: passed
 - Vinext production build: passed

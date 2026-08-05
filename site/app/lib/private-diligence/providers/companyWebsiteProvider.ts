@@ -5,13 +5,16 @@ import type { RawEvidence } from "../types";
 import type { PrivateCompanyProvider, ProviderSearchResult } from "./providerTypes";
 
 const PREFERRED_PATHS = [
-  "/", "/about", "/company", "/team", "/leadership", "/products", "/solutions",
-  "/services", "/customers", "/case-studies", "/partners", "/careers", "/jobs",
-  "/news", "/press", "/terms", "/privacy",
+  "/", "/about", "/company", "/team", "/leadership", "/contact",
+  "/products", "/services", "/careers", "/news", "/terms", "/privacy",
 ];
+
+const IDENTITY_PATH = /(?:^|\/)(?:about|company|team|leadership|contact|products?|services?|careers?|news|press|terms|privacy|legal)(?:\/|$)/i;
 
 type WebsiteRecord = {
   url: string;
+  pageType: string;
+  depth: number;
   extracted: ExtractedCompanyPage;
 };
 
@@ -19,7 +22,40 @@ export type CompanyWebsiteProviderOptions = {
   fetchImpl?: typeof fetch;
   resolveHost?: Parameters<typeof safeCompanyFetch>[1]["resolveHost"];
   paths?: string[];
+  maxPages?: number;
+  maxDepth?: number;
+  timeoutMs?: number;
 };
+
+function pageType(url: URL) {
+  const segment = url.pathname.toLowerCase().split("/").filter(Boolean).at(-1) ?? "homepage";
+  if (/terms/.test(segment)) return "terms";
+  if (/privacy/.test(segment)) return "privacy";
+  if (/legal/.test(segment)) return "legal";
+  if (/team|leadership/.test(segment)) return "leadership";
+  if (/contact/.test(segment)) return "contact";
+  if (/product/.test(segment)) return "products";
+  if (/service/.test(segment)) return "services";
+  if (/about|company/.test(segment)) return "about";
+  return segment === "homepage" ? "homepage" : "other";
+}
+
+function urlDepth(url: URL) {
+  return url.pathname.split("/").filter(Boolean).length;
+}
+
+export function selectIdentityLinks(base: URL, links: string[], maxDepth = 2) {
+  const output: string[] = [];
+  for (const link of links) {
+    let target: URL;
+    try { target = new URL(link, base); } catch { continue; }
+    if (target.hostname.replace(/^www\./, "").toLowerCase() !== base.hostname.replace(/^www\./, "").toLowerCase()) continue;
+    target.hash = "";
+    if (!IDENTITY_PATH.test(target.pathname) || urlDepth(target) > maxDepth) continue;
+    output.push(target.toString());
+  }
+  return [...new Set(output)];
+}
 
 export function createCompanyWebsiteProvider(
   options: CompanyWebsiteProviderOptions = {},
@@ -36,6 +72,8 @@ export function createCompanyWebsiteProvider(
       const source = context.input.website ?? `https://${context.identityGraph.domains[0]}`;
       const official = normalizeOfficialCompanyUrl(source);
       const records: WebsiteRecord[] = [];
+      const maxPages = Math.max(1, Math.min(options.maxPages ?? 12, 12));
+      const maxDepth = Math.max(0, Math.min(options.maxDepth ?? 2, 2));
       let robots = "";
       try {
         robots = (await safeCompanyFetch(new URL("/robots.txt", official), {
@@ -44,27 +82,44 @@ export function createCompanyWebsiteProvider(
           resolveHost: options.resolveHost,
           expectedContent: "text",
           maxBytes: 250_000,
+          timeoutMs: Math.min(options.timeoutMs ?? 5_000, 8_000),
         })).text;
       } catch {
         // Missing or unavailable robots.txt does not authorize restricted paths;
         // only explicit Disallow rules in a successful file are applied.
       }
-      const paths = (options.paths ?? PREFERRED_PATHS)
-        .filter((path) => !robots || !robotsDisallows(robots, path));
-      for (let index = 0; index < paths.length; index += 3) {
-        const batch = await Promise.all(paths.slice(index, index + 3).map(async (path) => {
+      const configured = options.paths ?? [PREFERRED_PATHS[0]];
+      const queue = configured.map((path) => new URL(path, official).toString());
+      const seen = new Set<string>();
+      while (queue.length && records.length < maxPages) {
+        const batchUrls = queue.splice(0, Math.min(3, maxPages - records.length))
+          .filter((value) => !seen.has(value));
+        batchUrls.forEach((value) => seen.add(value));
+        const batch = await Promise.all(batchUrls.map(async (value) => {
           try {
-            const response = await safeCompanyFetch(new URL(path, official), {
+            const target = new URL(value);
+            if (urlDepth(target) > maxDepth || (robots && robotsDisallows(robots, target.pathname))) return null;
+            const response = await safeCompanyFetch(target, {
               officialHostname: official.hostname,
               fetchImpl: options.fetchImpl,
               resolveHost: options.resolveHost,
+              timeoutMs: Math.min(options.timeoutMs ?? 5_000, 8_000),
             });
-            return { url: response.url, extracted: extractCompanyPage(response.text) };
+            const resolved = new URL(response.url);
+            return { url: response.url, pageType: pageType(resolved), depth: urlDepth(resolved), extracted: extractCompanyPage(response.text) };
           } catch {
             return null;
           }
         }));
-        records.push(...batch.filter((item): item is WebsiteRecord => Boolean(item)));
+        const usable = batch.filter((item): item is WebsiteRecord => Boolean(item));
+        records.push(...usable.filter((item) => !records.some((existing) => existing.url === item.url)));
+        if (!options.paths) {
+          const discovered = usable.flatMap((item) => selectIdentityLinks(new URL(item.url), item.extracted.links, maxDepth));
+          const fallbacks = PREFERRED_PATHS.map((path) => new URL(path, official).toString());
+          for (const next of [...discovered, ...fallbacks]) {
+            if (!seen.has(next) && !queue.includes(next)) queue.push(next);
+          }
+        }
       }
       return {
         status: records.length ? (records.length < 2 ? "partial" : "success") : "noData",
@@ -95,20 +150,42 @@ export function createCompanyWebsiteProvider(
           rawText,
           structuredData: {
             pageTitle: extracted.title,
+            pageType: record.pageType,
+            crawlDepth: record.depth,
             description: extracted.description,
             organizationName: extracted.organizationNames[0] ?? null,
             legalName: extracted.legalNames[0] ?? null,
             organizationNames: extracted.organizationNames,
             legalNames: extracted.legalNames,
+            legalEntityMentions: extracted.legalEntityMentions,
             alternateNames: extracted.alternateNames,
             founders: extracted.founders,
             executives: extracted.executives,
             addresses: extracted.addresses,
+            cities: extracted.cities,
+            states: extracted.states,
+            countries: extracted.countries,
+            industryLabels: extracted.industryLabels,
+            emailDomains: extracted.emailDomains,
+            phoneNumbers: extracted.phoneNumbers,
             products: extracted.products,
+            services: extracted.services,
             socialProfiles: extracted.socialProfiles,
+            affiliateNames: extracted.affiliateNames,
+            extractedFields: Object.entries({
+              organizationName: extracted.organizationNames,
+              legalName: [...extracted.legalNames, ...extracted.legalEntityMentions],
+              location: extracted.addresses,
+              founders: extracted.founders,
+              executives: extracted.executives,
+              industry: extracted.industryLabels,
+            }).filter(([, value]) => value.length).map(([key]) => key),
+            evidenceStatus: "Company Reported",
           },
-          matchedEntitySignals: ["confirmed official domain"],
-          entityMatchConfidence: "High",
+          matchedEntitySignals: [context.identityGraph.resolutionStatus === "autoConfirmed" || context.identityGraph.resolutionStatus === "userConfirmed"
+            ? "user-confirmed company domain"
+            : "company website identity lead"],
+          entityMatchConfidence: context.identityGraph.identityConfidence,
           companyReported: true,
           officialRecord: false,
           independentlyPublished: false,

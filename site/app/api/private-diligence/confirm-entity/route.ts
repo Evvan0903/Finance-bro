@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { buildIdentityGraph } from "../../../lib/private-diligence/entity-resolution/identityGraphBuilder";
+import { getEntityConfirmationEligibility } from "../../../lib/private-diligence/entity-resolution/entityMatcher";
 import { privateDiligenceStore } from "../../../lib/private-diligence/persistence/researchStore";
 
 export const runtime = "nodejs";
@@ -11,10 +12,10 @@ export async function POST(request: Request) {
     const candidateId = typeof body?.candidateId === "string" ? body.candidateId : "";
     const record = privateDiligenceStore.get(researchId);
     const candidate = record?.candidates.find((item) => item.candidateId === candidateId);
-    if (!record || !candidate || candidate.resolutionStatus === "unresolved" || candidate.resolutionStatus === "rejected") {
-      return NextResponse.json({ code: "ENTITY_CONFIRMATION_REQUIRED", message: "A plausible target company must be confirmed" }, { status: 409 });
+    if (!record || !candidate || !getEntityConfirmationEligibility(candidate, true).canConfirm) {
+      return NextResponse.json({ code: "ENTITY_CONFIRMATION_REQUIRED", message: "Additional identifying information is required before this target can be confirmed" }, { status: 409 });
     }
-    const confirmed = { ...candidate, resolutionStatus: "autoConfirmed" as const };
+    const confirmed = { ...candidate, resolutionStatus: "userConfirmed" as const };
     const graph = buildIdentityGraph(confirmed, record.input);
     privateDiligenceStore.update(researchId, {
       confirmedCandidate: confirmed,

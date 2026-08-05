@@ -1,6 +1,6 @@
 import { createCompanyWebsiteProvider } from "../providers/companyWebsiteProvider";
 import { buildIdentityGraph } from "./identityGraphBuilder";
-import { scoreEntityCandidate } from "./entityMatcher";
+import { normalizeEntityName, scoreEntityCandidate } from "./entityMatcher";
 import type { EntityCandidate, PrivateCompanyInput, RawEvidence } from "../types";
 
 function fieldArray(record: RawEvidence | undefined, key: string) {
@@ -8,30 +8,50 @@ function fieldArray(record: RawEvidence | undefined, key: string) {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string" && Boolean(item.trim())) : [];
 }
 
-function addressParts(address: string | undefined, input: PrivateCompanyInput) {
-  if (!address) return { city: null, state: null, country: null };
-  const lower = address.toLowerCase();
-  return {
-    city: input.city && lower.includes(input.city.toLowerCase()) ? input.city : null,
-    state: input.state && lower.includes(input.state.toLowerCase()) ? input.state : null,
-    country: input.country && lower.includes(input.country.toLowerCase()) ? input.country : null,
-  };
+function pageRecords(evidence: RawEvidence[], ...types: string[]) {
+  return evidence.filter((item) => types.includes(String(item.structuredData.pageType ?? "")));
 }
+
+function meaningfulTitle(value: string) {
+  const first = value.split(/\s+(?:\||—|–|-|·)\s+/)[0]?.trim() ?? "";
+  return /^(?:home|welcome|untitled company page)$/i.test(first) || first.length < 2 ? null : first;
+}
+
+function unique(values: string[]) {
+  return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
+}
+
+function unresolvedFields(candidate: Omit<EntityCandidate, "unresolvedIdentityFields" | "matchScore" | "matchConfidence" | "resolutionStatus" | "matchSignals">) {
+  return [
+    candidate.legalName ? null : "Legal entity name",
+    candidate.addresses.length ? null : "Office location",
+    candidate.industry ? null : "Industry",
+    candidate.founders.length || candidate.executives.length ? null : "Founders or executives",
+    candidate.registrationJurisdiction ? null : "Registration jurisdiction",
+    candidate.registrationNumbers.length ? null : "Official registration identifier",
+  ].filter((value): value is string => Boolean(value));
+}
+
+export type EntityDiscoveryResult = {
+  candidates: EntityCandidate[];
+  websiteEvidence: RawEvidence[];
+  websiteStatus: "notProvided" | "reachable" | "unreachable" | "insufficientIdentity";
+};
 
 export async function discoverEntityCandidates(
   researchId: string,
   input: PrivateCompanyInput,
   options: Parameters<typeof createCompanyWebsiteProvider>[0] = {},
-) {
+): Promise<EntityDiscoveryResult> {
   const source = input.website ? new URL(input.website.includes("://") ? input.website : `https://${input.website}`) : null;
   const base = {
     candidateId: crypto.randomUUID(),
-    displayName: input.companyName,
+    displayName: input.companyName ?? "",
     legalName: null,
     dbaNames: [],
     formerNames: [],
     website: source?.toString() ?? null,
-    domain: source?.hostname.replace(/^www\./, "") ?? null,
+    domain: source?.hostname.replace(/^www\./, "").toLowerCase() ?? null,
     city: null,
     state: null,
     country: null,
@@ -42,50 +62,90 @@ export async function discoverEntityCandidates(
     registrationNumbers: [],
     addresses: [],
     phoneNumbers: [],
-    emailDomains: source ? [source.hostname.replace(/^www\./, "")] : [],
+    emailDomains: [],
+    websiteOrganizationNames: [],
+    termsLegalNames: [],
+    privacyLegalNames: [],
+    pageTitles: [],
+    socialProfiles: [],
+    productCategories: [],
+    affiliateNames: [],
+    websiteReachable: false,
     sourceIds: [],
   };
   if (!source) {
-    const scored = scoreEntityCandidate(input, base);
-    return [{ ...base, ...scored, resolutionStatus: "unresolved" as const }];
+    const partial = { ...base, unresolvedIdentityFields: unresolvedFields(base) };
+    const scored = scoreEntityCandidate(input, partial);
+    return { candidates: [{ ...partial, ...scored }], websiteEvidence: [], websiteStatus: "notProvided" };
   }
   const seedCandidate: EntityCandidate = {
     ...base,
-    matchSignals: ["User-supplied company website"],
+    unresolvedIdentityFields: unresolvedFields(base),
+    matchSignals: ["Company website supplied as an identity lead"],
     matchScore: 0,
     matchConfidence: "Low",
-    resolutionStatus: "requiresUserConfirmation",
+    resolutionStatus: "unresolved",
   };
-  const provider = createCompanyWebsiteProvider({ ...options, paths: ["/", "/about", "/terms", "/privacy"] });
+  const provider = createCompanyWebsiteProvider({ ...options, maxPages: Math.min(options.maxPages ?? 12, 12), maxDepth: Math.min(options.maxDepth ?? 2, 2) });
   const context = { researchId, input, identityGraph: buildIdentityGraph(seedCandidate, input), now: () => new Date() };
   const search = await provider.search(context);
   const evidence = search.status === "success" || search.status === "partial"
     ? await provider.normalize(await provider.fetchDetails(search.records, context), context)
     : [];
-  const primary = evidence[0];
-  const legalNames = evidence.flatMap((item) => fieldArray(item, "legalNames"));
-  const organizationNames = evidence.flatMap((item) => fieldArray(item, "organizationNames"));
-  const pageTitles = evidence.map((item) => item.structuredData.pageTitle)
-    .filter((item): item is string => typeof item === "string" && Boolean(item.trim()));
-  const addresses = [...new Set(evidence.flatMap((item) => fieldArray(item, "addresses")))];
-  const location = addressParts(addresses[0], input);
+  if (!evidence.length) {
+    const fallback = input.companyName
+      ? { ...base, unresolvedIdentityFields: unresolvedFields(base) }
+      : null;
+    return {
+      candidates: fallback ? [{ ...fallback, ...scoreEntityCandidate(input, fallback) }] : [],
+      websiteEvidence: [],
+      websiteStatus: "unreachable",
+    };
+  }
+
+  const legalNames = unique(evidence.flatMap((item) => fieldArray(item, "legalNames")));
+  const organizationNames = unique(evidence.flatMap((item) => fieldArray(item, "organizationNames")));
+  const pageTitles = unique(evidence.map((item) => meaningfulTitle(String(item.structuredData.pageTitle ?? ""))).filter((item): item is string => Boolean(item)));
+  const terms = pageRecords(evidence, "terms", "legal");
+  const privacy = pageRecords(evidence, "privacy");
+  const termsLegalNames = unique(terms.flatMap((item) => [...fieldArray(item, "legalNames"), ...fieldArray(item, "legalEntityMentions")]));
+  const privacyLegalNames = unique(privacy.flatMap((item) => [...fieldArray(item, "legalNames"), ...fieldArray(item, "legalEntityMentions")]));
+  const discoveredNames = unique([...organizationNames, ...legalNames, ...termsLegalNames, ...privacyLegalNames, ...pageTitles]);
+  const displayName = organizationNames[0] ?? legalNames[0] ?? termsLegalNames[0] ?? privacyLegalNames[0] ?? pageTitles[0] ?? "";
+  if (!displayName || !discoveredNames.some((name) => normalizeEntityName(name))) {
+    return { candidates: [], websiteEvidence: evidence, websiteStatus: "insufficientIdentity" };
+  }
+  const addresses = unique(evidence.flatMap((item) => fieldArray(item, "addresses")));
+  const cities = unique(evidence.flatMap((item) => fieldArray(item, "cities")));
+  const states = unique(evidence.flatMap((item) => fieldArray(item, "states")));
+  const countries = unique(evidence.flatMap((item) => fieldArray(item, "countries")));
+  const descriptions = unique(evidence.map((item) => item.structuredData.description)
+    .filter((item): item is string => typeof item === "string" && Boolean(item.trim())));
   const candidateBase = {
     ...base,
-    displayName: organizationNames[0] ?? input.companyName,
-    legalName: legalNames[0] ?? organizationNames[0] ?? null,
-    dbaNames: [...new Set([
-      ...evidence.flatMap((item) => fieldArray(item, "alternateNames")),
-      ...pageTitles,
-    ])],
-    founders: [...new Set(evidence.flatMap((item) => fieldArray(item, "founders")))],
-    executives: [...new Set(evidence.flatMap((item) => fieldArray(item, "executives")))],
+    displayName,
+    legalName: termsLegalNames[0] ?? privacyLegalNames[0] ?? legalNames[0] ?? null,
+    dbaNames: unique([...organizationNames, ...pageTitles].filter((name) => normalizeEntityName(name) !== normalizeEntityName(displayName))),
+    city: cities[0] ?? null,
+    state: states[0] ?? null,
+    country: countries[0] ?? null,
+    industry: unique(evidence.flatMap((item) => fieldArray(item, "industryLabels")))[0] ?? descriptions[0]?.slice(0, 160) ?? null,
+    founders: unique(evidence.flatMap((item) => fieldArray(item, "founders"))),
+    executives: unique(evidence.flatMap((item) => fieldArray(item, "executives"))),
     addresses,
-    phoneNumbers: [...new Set(evidence.flatMap((item) => fieldArray(item, "phoneNumbers")))],
+    phoneNumbers: unique(evidence.flatMap((item) => fieldArray(item, "phoneNumbers"))),
+    emailDomains: unique(evidence.flatMap((item) => fieldArray(item, "emailDomains"))),
+    websiteOrganizationNames: organizationNames.length ? organizationNames : pageTitles.slice(0, 1),
+    termsLegalNames,
+    privacyLegalNames,
+    pageTitles,
+    socialProfiles: unique(evidence.flatMap((item) => fieldArray(item, "socialProfiles"))),
+    productCategories: unique(evidence.flatMap((item) => [...fieldArray(item, "products"), ...fieldArray(item, "services")])),
+    affiliateNames: unique(evidence.flatMap((item) => fieldArray(item, "affiliateNames"))),
+    websiteReachable: true,
     sourceIds: evidence.map((item) => item.evidenceId),
-    ...location,
   };
-  const scored = scoreEntityCandidate(input, candidateBase);
-  return [{ ...candidateBase, ...scored, resolutionStatus: scored.resolutionStatus === "unresolved" && primary
-    ? "requiresUserConfirmation" as const
-    : scored.resolutionStatus }];
+  const enriched = { ...candidateBase, unresolvedIdentityFields: unresolvedFields(candidateBase) };
+  const scored = scoreEntityCandidate(input, enriched);
+  return { candidates: [{ ...enriched, ...scored }], websiteEvidence: evidence, websiteStatus: "reachable" };
 }

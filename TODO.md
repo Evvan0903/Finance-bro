@@ -327,6 +327,21 @@
 - [x] Publish and verify the existing private Sites project from the exact pushed commit.
 # Clara V1 public-source private company diligence
 
+## Clara website-first entity resolution
+
+- [x] Read `saveToken`, recovery notes, Clara input/discovery/scoring/provider/graph/API/UI/test paths.
+- [x] Accept company name, website, or both while rejecting an empty identity request.
+- [x] Add bounded website-first identity crawling and enriched Company Reported extraction.
+- [x] Implement deduplicated strong-signal scoring and one shared frontend/backend confirmation helper.
+- [x] Permit explicit Low-confidence exact-domain confirmation while preserving confidence and report limitations.
+- [x] Enrich the Identity Graph and downstream provider query names without silently overwriting mismatched input.
+- [x] Update bilingual candidate UI, unresolved labels, selected state, and low-confidence notice.
+- [x] Add website-first, extraction, scoring, eligibility, crawl-boundary, security, and regression tests.
+- [x] Validate Abaka AI, another website-only company, name-only, mismatch, unreachable, and low-information scenarios.
+- [x] Pass 14/14 Clara tests, 107/107 full tests, TypeScript, ESLint, both builds, whitespace, and browser QA.
+- [x] Update developer documentation, `WORKLOG.md`, `RECOVERY.md`, and `TODO.md`.
+- [x] Commit `fix: support website-first clara entity resolution` and push `origin/main` without manual Vercel deployment.
+
 - [x] Read `saveToken`, recovery notes, architecture, agent routes, provider conventions, report/PDF/export paths, and tests.
 - [x] Build typed input, candidate, Identity Graph, provider result, evidence, claim, conflict, risk, gap, question, and report models.
 - [x] Implement mandatory entity resolution and user confirmation without treating similar names as identity proof.

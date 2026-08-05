@@ -1,5 +1,19 @@
 # FinBro Research Worklog
 
+## Clara website-first entity resolution — 2026-08-05
+
+- `saveToken` routing: Sol owned strong-signal scoring, shared confirmation rules, low-confidence boundaries, and final review; Terra audited discovery, provider, security, storage, and regression paths; Luna audited bilingual candidate presentation and responsive behavior.
+- Root cause: the prior schema required a company name, discovery crawled only four fixed pages, the candidate scored the user-entered domain as confirmed before website identity enrichment, and the backend rejected unresolved candidates even when the frontend displayed a Confirm control.
+- Input/discovery: company name is now optional when a website is provided. Website-first discovery normalizes and verifies the URL, crawls up to 12 identity-relevant pages at depth 2, and derives website names, title fallback, Terms/Privacy legal names, locations, people, email domains, industry, social profiles, products/services, and affiliates without overwriting a mismatched user name.
+- Confirmation: one shared frontend/backend eligibility function implements strong-signal rules, the 60-point threshold, high-confidence automatic gate passage, and explicit user confirmation for a Low-confidence exact-domain candidate. Explicit confirmation stores `userConfirmed`, preserves Low confidence, and adds a visible report limitation.
+- Evidence/graph: every website page remains Company Reported and records page type, extracted fields, source URL/title, retrieval date, and limitations. The Identity Graph and downstream provider queries use enriched names and fields; confirmation never upgrades website claims to independently verified.
+- UI: both name and website are optional individually but at least one is required. Candidate cards show discovered brand/legal name, location, industry, people, jurisdiction, localized confidence/signals, `Not identified`/`未识别`, unresolved fields, selected state, and a low-confidence website notice.
+- Security: retained SSRF/private-IP/DNS/redirect/type/size/timeout/robots controls and added explicit 12-page/depth-2 limits. Login, CAPTCHA, arbitrary attachments, and unrestricted crawling remain unsupported.
+- Validation: 14/14 Clara tests and 107/107 full tests passed, together with TypeScript, ESLint, Vinext build, Next.js/Vercel build, and whitespace checks. English/Chinese desktop and 390px browser QA passed without overflow or confirmation errors.
+- Live scenarios: website-only Abaka AI produced a Medium 65-point confirmable candidate and completed report generation; website-only Anthropic, name-only, mismatched name/domain, unreachable domain, and low-information website scenarios all behaved as designed. Abaka website evidence remained Company Reported and no legal entity was presented as independently verified.
+- Remaining limitation: research state is still process-local and ephemeral, as already disclosed; durable serverless-safe persistence remains a future infrastructure task. No Ethan, Mason, or Nora file or behavior was modified.
+- Release: committed as `fix: support website-first clara entity resolution` and pushed to `origin/main`. The configured integration may deploy automatically; no manual Vercel deployment was performed or claimed.
+
 ## Clara V1 public-source private company diligence — 2026-08-05
 
 - `saveToken` routing: Sol owned entity/evidence architecture, confidence boundaries, error design, and final review; Terra audited routes, providers, shared report/PDF/export infrastructure, security, and test coverage; Luna audited bilingual UI, responsive styling, heading copy, and formal-report presentation.

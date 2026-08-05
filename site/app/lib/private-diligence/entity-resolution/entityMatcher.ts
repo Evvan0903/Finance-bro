@@ -1,4 +1,4 @@
-import type { EntityCandidate, MatchConfidence, PrivateCompanyInput } from "../types";
+import type { EntityCandidate, MatchConfidence, PrivateCompanyInput, ResolutionStatus } from "../types";
 
 export function normalizeEntityName(value: string) {
   return value.toLowerCase()
@@ -19,55 +19,104 @@ function similarity(left: string, right: string) {
   return shared / Math.max(leftTokens.size, rightTokens.size);
 }
 
+function hasSignal(candidate: Pick<EntityCandidate, "matchSignals">, text: string) {
+  return candidate.matchSignals.includes(text);
+}
+
+export function getEntityConfirmationEligibility(
+  candidate: Pick<EntityCandidate, "matchSignals" | "matchScore" | "matchConfidence" | "websiteReachable" | "resolutionStatus">,
+  explicitUserConfirmation = false,
+) {
+  const exactDomain = hasSignal(candidate, "Exact confirmed domain match");
+  const websiteName = hasSignal(candidate, "Organization name confirmed on official website");
+  const termsEntity = hasSignal(candidate, "Legal entity identified in Terms or Privacy");
+  const officialLegalName = hasSignal(candidate, "Exact legal name match from official record");
+  const additionalSignalCount = candidate.matchSignals.filter((signal) =>
+    signal !== "Exact legal name match from official record" &&
+    signal !== "Website organization differs from supplied company name",
+  ).length;
+  const strongSignalRule = (exactDomain && websiteName) ||
+    (exactDomain && termsEntity) ||
+    (officialLegalName && additionalSignalCount > 0);
+  const thresholdRule = candidate.matchScore >= 60;
+  const lowDomainOverride = explicitUserConfirmation && exactDomain && candidate.websiteReachable;
+  const canConfirm = strongSignalRule || thresholdRule || lowDomainOverride;
+  const autoConfirm = canConfirm && candidate.matchConfidence === "High" && candidate.resolutionStatus !== "userConfirmed";
+  return { canConfirm, autoConfirm, strongSignalRule, thresholdRule, lowDomainOverride };
+}
+
 export function scoreEntityCandidate(
   input: PrivateCompanyInput,
   candidate: Omit<EntityCandidate, "matchScore" | "matchConfidence" | "resolutionStatus" | "matchSignals">,
 ) {
   let score = 0;
-  const signals: string[] = [];
-  const independentlyObservedNames = candidate.legalName
-    ? [candidate.legalName, ...candidate.dbaNames]
-    : candidate.sourceIds.length
-      ? candidate.dbaNames
-      : [candidate.displayName, ...candidate.dbaNames];
-  const nameScore = Math.max(0,
-    ...independentlyObservedNames.map((name) => similarity(input.companyName, name)),
-  );
-  if (nameScore === 1) { score += 28; signals.push("Exact legal or operating name match"); }
-  else if (nameScore >= 0.5) { score += 10; signals.push("Fuzzy name match"); }
-  if (input.website && candidate.domain) {
-    const inputDomain = new URL(input.website.includes("://") ? input.website : `https://${input.website}`).hostname.replace(/^www\./, "");
-    if (inputDomain === candidate.domain.replace(/^www\./, "")) {
-      score += 35; signals.push("Exact confirmed domain match");
+  const signals = new Set<string>();
+  const inputName = input.companyName?.trim() ?? "";
+  const websiteNames = [...candidate.websiteOrganizationNames, ...candidate.pageTitles]
+    .filter((name) => normalizeEntityName(name));
+  const websiteNameScore = inputName
+    ? Math.max(0, ...websiteNames.map((name) => similarity(inputName, name)))
+    : websiteNames.length ? 1 : 0;
+
+  if (input.website && candidate.domain && candidate.websiteReachable) {
+    const inputDomain = new URL(input.website.includes("://") ? input.website : `https://${input.website}`)
+      .hostname.replace(/^www\./, "").toLowerCase();
+    if (inputDomain === candidate.domain.replace(/^www\./, "").toLowerCase()) {
+      score += 35;
+      signals.add("Exact confirmed domain match");
     }
   }
-  if (input.city && candidate.city && input.city.toLowerCase() === candidate.city.toLowerCase()) {
-    score += 8; signals.push("City match");
+  if (websiteNameScore >= 0.8) {
+    score += 20;
+    signals.add("Organization name confirmed on official website");
+  } else if (inputName && websiteNames.length && websiteNameScore < 0.5) {
+    signals.add("Website organization differs from supplied company name");
   }
-  if (input.state && candidate.state && input.state.toLowerCase() === candidate.state.toLowerCase()) {
-    score += 7; signals.push("State match");
+  if (candidate.termsLegalNames.length || candidate.privacyLegalNames.length) {
+    score += 20;
+    signals.add("Legal entity identified in Terms or Privacy");
   }
-  if (input.country && candidate.country && input.country.toLowerCase() === candidate.country.toLowerCase()) {
-    score += 4; signals.push("Country match");
+  if (candidate.registrationNumbers.length && candidate.legalName &&
+      (!inputName || similarity(inputName, candidate.legalName) >= 0.8)) {
+    score += 30;
+    signals.add("Exact legal name match from official record");
   }
+  const locationMatched = [
+    input.city && candidate.city && input.city.toLowerCase() === candidate.city.toLowerCase(),
+    input.state && candidate.state && input.state.toLowerCase() === candidate.state.toLowerCase(),
+    input.country && candidate.country && input.country.toLowerCase() === candidate.country.toLowerCase(),
+  ].some(Boolean);
+  if (locationMatched) { score += 15; signals.add("Location identified on official website"); }
   if (input.founderOrExecutive && [...candidate.founders, ...candidate.executives]
     .some((name) => similarity(input.founderOrExecutive!, name) >= 0.8)) {
-    score += 12; signals.push("Founder or executive match");
+    score += 15;
+    signals.add("Founder or executive identified on official website");
+  }
+  if (candidate.domain && candidate.emailDomains.some((domain) => domain.replace(/^www\./, "") === candidate.domain)) {
+    score += 10;
+    signals.add("Official email domain matches website");
   }
   if (input.industry && candidate.industry && similarity(input.industry, candidate.industry) >= 0.5) {
-    score += 6; signals.push("Industry match");
-  }
-  if (candidate.registrationNumbers.length) {
-    score += 20; signals.push("Official registration identifier available");
+    score += 5;
+    signals.add("Industry identified on official website");
   }
   const bounded = Math.min(100, score);
   const confidence: MatchConfidence = bounded >= 80 ? "High" : bounded >= 45 ? "Medium" : "Low";
-  const resolutionStatus = bounded >= 90 && candidate.registrationNumbers.length
+  const provisional = {
+    matchScore: bounded,
+    matchConfidence: confidence,
+    matchSignals: [...signals],
+    websiteReachable: candidate.websiteReachable,
+    resolutionStatus: "unresolved" as const,
+  };
+  const eligibility = getEntityConfirmationEligibility(provisional, false);
+  const explicitEligibility = getEntityConfirmationEligibility(provisional, true);
+  const resolutionStatus: ResolutionStatus = eligibility.autoConfirm
     ? "autoConfirmed"
-    : bounded >= 45
+    : explicitEligibility.canConfirm
       ? "requiresUserConfirmation"
       : "unresolved";
-  return { matchScore: bounded, matchConfidence: confidence, resolutionStatus, matchSignals: signals } as const;
+  return { matchScore: bounded, matchConfidence: confidence, resolutionStatus, matchSignals: [...signals] };
 }
 
 export function candidatesAreDistinct(left: EntityCandidate, right: EntityCandidate) {

@@ -9,7 +9,7 @@ export type ResearchObjective =
   | "Customer review";
 
 export type PrivateCompanyInput = {
-  companyName: string;
+  companyName: string | null;
   website: string | null;
   city: string | null;
   state: string | null;
@@ -23,6 +23,7 @@ export type PrivateCompanyInput = {
 
 export type ResolutionStatus =
   | "autoConfirmed"
+  | "userConfirmed"
   | "requiresUserConfirmation"
   | "rejected"
   | "unresolved";
@@ -47,6 +48,15 @@ export type EntityCandidate = {
   addresses: string[];
   phoneNumbers: string[];
   emailDomains: string[];
+  websiteOrganizationNames: string[];
+  termsLegalNames: string[];
+  privacyLegalNames: string[];
+  pageTitles: string[];
+  socialProfiles: string[];
+  productCategories: string[];
+  affiliateNames: string[];
+  websiteReachable: boolean;
+  unresolvedIdentityFields: string[];
   sourceIds: string[];
   matchSignals: string[];
   matchScore: number;
@@ -80,8 +90,12 @@ export type EntityIdentityGraph = {
   subsidiaries: string[];
   affiliatedEntities: string[];
   socialProfiles: string[];
+  termsPageLegalNames: string[];
+  privacyPageLegalNames: string[];
+  productCategories: string[];
   industryLabels: string[];
   identityConfidence: MatchConfidence;
+  resolutionStatus: ResolutionStatus;
   identityLimitations: string[];
 };
 

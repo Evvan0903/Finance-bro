@@ -1,17 +1,19 @@
 # Clara V1 public-source private company diligence
 
-Clara is FinBro's bilingual Private Company Diligence Analyst. The V1 workflow at `/workflows/private-company-diligence` accepts a company name plus optional identity hints, requires target confirmation, and produces a formal public-source diligence report. It does not provide complete legal, financial, tax, operational, cybersecurity, ownership, litigation, valuation, fraud, background-investigation, or investment conclusions.
+Clara is FinBro's bilingual Private Company Diligence Analyst. The V1 workflow at `/workflows/private-company-diligence` accepts either a company name, a company website, or both, plus optional identity hints. It resolves the target before producing a formal public-source diligence report. It does not provide complete legal, financial, tax, operational, cybersecurity, ownership, litigation, valuation, fraud, background-investigation, or investment conclusions.
 
 ## Execution model
 
-1. Validate the company name and optional website, location, founder, industry, objective, language, and report depth.
-2. Discover candidates and score only independently observed identity signals. Similar names alone cannot establish identity.
-3. Require user confirmation unless an official identifier and high-confidence signals support automatic confirmation.
-4. Build an identity graph containing observed names, domains, people, addresses, identifiers, jurisdictions, and explicit relationship boundaries.
-5. Build a provider plan from the graph, geography, and industry. Provider failures are typed and non-fatal.
-6. register raw evidence, normalize supported fields, assign source tiers and verification eligibility, then exclude weak/lead-only evidence from final claims.
-7. Build evidence-linked claims, reconcile matching values, preserve conflicts, separate risks from information gaps, and generate follow-up questions.
-8. Generate a 20-section report with References and Evidence Register last.
+1. Validate that at least a company name or website is present; location, founder, industry, objective, language, and report depth remain optional.
+2. For website-first requests, normalize and safely reach the domain, then inspect at most 12 identity-focused pages to depth 2. Extract JSON-LD, title, metadata, Terms/Privacy legal names, addresses, people, email domains, social profiles, products, services, and affiliates where available.
+3. Score unique strong signals. Exact reachable domain plus an observed website organization name, exact domain plus a Terms/Privacy entity, an official legal-name match plus another signal, or a score of at least 60 is confirmable.
+4. A displayed Low-confidence candidate with an exact reachable domain may be explicitly user-confirmed. Its status becomes `userConfirmed`, confidence stays Low, and the report records the identity limitation while research continues. A Low candidate without a reachable domain requests more information.
+5. Frontend and backend import the same confirmation-eligibility function. High-confidence eligible candidates pass the confirmation gate automatically but remain visible and editable before report generation.
+6. Build an enriched identity graph containing website names, candidate legal names, Terms/Privacy entities, domains, email domains, people, addresses, social profiles, product categories, affiliates, identifiers, jurisdictions, and explicit relationship boundaries.
+7. Build a provider plan from enriched names, geography, and industry. Provider failures are typed and non-fatal.
+8. Register raw evidence, normalize supported fields, assign source tiers and verification eligibility, then exclude weak/lead-only evidence from final claims.
+9. Build evidence-linked claims, reconcile matching values, preserve conflicts, separate risks from information gaps, and generate follow-up questions.
+10. Generate a 20-section report with References and Evidence Register last.
 
 The process-local store is intentionally ephemeral because no Vercel-safe database binding is configured. Research records may be lost on process restart and are not an authorization boundary. Durable encrypted storage, retention controls, and signed downloads are future work.
 
@@ -19,7 +21,7 @@ The process-local store is intentionally ephemeral because no Vercel-safe databa
 
 | Provider | V1 behavior | Source tier |
 |---|---|---:|
-| Company website | Safe server-side crawler limited to the confirmed domain, robots rules, approved content types, bounded redirects, time, and size | 2 |
+| Company website | Safe server-side crawler limited to 12 identity-relevant pages and depth 2 on the supplied/canonical domain, with robots, redirect, type, time, and size controls | 2 |
 | SEC Form D | Retrieves D and D/A only after a verified CIK is present; preserves amount offered versus sold and related-person limitations | 1 |
 | USAspending | Exact normalized recipient matching, award-type-group requests, weak-match rejection, and official award normalization | 1 |
 | SAM.gov | Configuration and manual-verification framework; not required for report completion | 1 |
@@ -37,6 +39,7 @@ Optional server variables are `SAM_API_KEY`, `USPTO_API_KEY`, and `PRIVATE_DILIG
 - Tier 4 or Low-confidence evidence is `leadOnly` or `excluded` and cannot support a final claim.
 - Every claim must contain at least one eligible evidence ID.
 - Website statements retain `companyReported: true` and display as Company Reported unless an independent or official source supports the same value.
+- Website-derived candidate fields retain page URL, title, page type, retrieved date, extracted-field list, and `Company Reported` evidence status. Entity confirmation does not upgrade those facts to Verified.
 - Official, independent, company, inferred, conflicting, outdated, and unverified statuses remain distinct. Conflicts are recorded; no source is silently discarded merely because values differ.
 
 Missing public information produces an information gap, not a misconduct inference. Risks require evidence or a clearly labeled identity/conflict limitation. Follow-up questions name the evidence a human diligence team should request.
@@ -49,14 +52,15 @@ Exports include Markdown, PDF, evidence CSV/XLSX, claim CSV/XLSX, and risk CSV. 
 
 ## Security and privacy
 
-Company-site requests accept HTTP/S only, reject credentials and unsupported ports, resolve DNS before each request, block loopback/private/link-local/reserved addresses, reject cross-domain redirects, enforce response type/size/time limits, and use manual redirects. Only public business-role information needed for entity resolution is retained in the ephemeral record. Sensitive personal details, raw secret-bearing URLs, request headers, stack traces, and API responses are not published.
+Company-site requests are server-side, accept HTTP/S only, reject credentials and unsupported ports, resolve DNS before each request, block loopback/private/link-local/reserved addresses, reject cross-domain redirects, enforce a maximum of 12 pages and depth 2, respect applicable robots rules, validate response type/size, enforce timeouts, and use manual redirects. The crawler does not bypass login, CAPTCHA, or download arbitrary attachments. Only public business-role information needed for entity resolution is retained in the ephemeral record. Sensitive personal details, raw secret-bearing URLs, request headers, stack traces, and API responses are not published.
 
 ## Current limitations and future work
 
+- Website-only resolution depends on identity signals actually exposed by the site. If no name or identity signal is extractable, Clara requests a company name, location, or founder rather than fabricating a candidate.
 - Name-only candidate discovery needs a configured broad-web provider or an official identifier; V1 asks for a website, location, or founder when identity remains unresolved.
 - SEC Form D is available only after a verified CIK is discovered; absence of Form D is not evidence that financing did not occur.
 - SAM, USPTO, many state registries, licensing, and comprehensive litigation research require credentials, reviewed adapters, or manual verification.
 - Public websites do not establish audited revenue, valuation, beneficial ownership, customer concentration, security posture, or complete litigation history.
 - Future phases may add durable storage, document-room diligence, reviewed litigation providers, additional state adapters, and industry-specific verification packs.
 
-Run focused validation with `node --test tests/clara-private-diligence.test.mjs`. After `pnpm build`, run the three real-source scenarios with `node scripts/validate-private-diligence.mjs` in a network-enabled environment.
+Run focused validation with `node --test tests/clara-private-diligence.test.mjs`. After `pnpm build`, run website-first validation with `node scripts/validate-clara-website-first.mjs` and the broader three-company report validation with `node scripts/validate-private-diligence.mjs` in a network-enabled environment.

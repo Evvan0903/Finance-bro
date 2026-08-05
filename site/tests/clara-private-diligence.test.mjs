@@ -43,7 +43,8 @@ function graph(overrides = {}) {
     usaSpendingRecipientIds: [], patentAssigneeNames: ["Acme Robotics, Inc."],
     trademarkOwnerNames: ["Acme Robotics, Inc."], parentCompanies: [], subsidiaries: [],
     affiliatedEntities: [], socialProfiles: [], industryLabels: ["Robotics"],
-    identityConfidence: "High", identityLimitations: [],
+    termsPageLegalNames: [], privacyPageLegalNames: [], productCategories: [],
+    identityConfidence: "High", resolutionStatus: "autoConfirmed", identityLimitations: [],
     ...overrides,
   };
 }
@@ -63,6 +64,144 @@ function rawEvidence(overrides = {}) {
   };
 }
 
+function entityCandidate(overrides = {}) {
+  return {
+    candidateId: "candidate-website", displayName: "Acme Robotics", legalName: null,
+    dbaNames: [], formerNames: [], website: "https://acme.example", domain: "acme.example",
+    city: null, state: null, country: null, industry: null, founders: [], executives: [],
+    registrationJurisdiction: null, registrationNumbers: [], addresses: [], phoneNumbers: [],
+    emailDomains: [], websiteOrganizationNames: [], termsLegalNames: [], privacyLegalNames: [],
+    pageTitles: [], socialProfiles: [], productCategories: [], affiliateNames: [],
+    websiteReachable: true, unresolvedIdentityFields: [], sourceIds: ["website-r-1"],
+    ...overrides,
+  };
+}
+
+test("accepts either company name or website and rejects an empty identity request", async () => {
+  const schema = await import((await moduleUrl("../app/lib/private-diligence/schema.ts")) + nonce());
+  assert.equal(schema.parsePrivateCompanyInput({ website: "abaka.ai" }).companyName, null);
+  assert.equal(schema.parsePrivateCompanyInput({ companyName: "Abaka AI" }).website, null);
+  assert.throws(() => schema.parsePrivateCompanyInput({}), /name or company website/i);
+});
+
+test("discovers website-only identity signals and preserves Company Reported evidence", async () => {
+  const htmlUrl = await moduleUrl("../app/lib/private-diligence/extraction/htmlExtractor.ts");
+  const securityUrl = await moduleUrl("../app/lib/private-diligence/security.ts");
+  const providerUrl = await moduleUrl("../app/lib/private-diligence/providers/companyWebsiteProvider.ts", {
+    '"../extraction/htmlExtractor"': JSON.stringify(htmlUrl),
+    '"../security"': JSON.stringify(securityUrl),
+  });
+  const graphUrl = await moduleUrl("../app/lib/private-diligence/entity-resolution/identityGraphBuilder.ts");
+  const matcherUrl = await moduleUrl("../app/lib/private-diligence/entity-resolution/entityMatcher.ts");
+  const discoveryUrl = await moduleUrl("../app/lib/private-diligence/entity-resolution/candidateDiscovery.ts", {
+    '"../providers/companyWebsiteProvider"': JSON.stringify(providerUrl),
+    '"./identityGraphBuilder"': JSON.stringify(graphUrl),
+    '"./entityMatcher"': JSON.stringify(matcherUrl),
+  });
+  const { discoverEntityCandidates } = await import(discoveryUrl + nonce());
+  const pages = {
+    "/": `<!doctype html><title>Acme Robotics | Automation</title><meta name="description" content="Industrial robotics"><a href="/terms">Terms</a><script type="application/ld+json">{"@type":"Organization","name":"Acme Robotics","industry":"Robotics","email":"hello@acme.example","address":{"addressLocality":"Austin","addressRegion":"Texas","addressCountry":"United States"}}</script><p>hello@acme.example</p>`,
+    "/terms": `<!doctype html><title>Terms | Acme Robotics</title><p>These Terms are provided by Acme Robotics, Inc.</p>`,
+    "/privacy": `<!doctype html><title>Privacy | Acme Robotics</title><p>Acme Robotics, Inc. controls this privacy policy.</p>`,
+    "/contact": `<!doctype html><title>Contact | Acme Robotics</title><address>1 Main Street, Austin, Texas</address>`,
+    "/team": `<!doctype html><title>Team | Acme Robotics</title><p>Founded by Avery Chen</p>`,
+  };
+  const fetchImpl = async (url) => {
+    const target = new URL(String(url));
+    if (target.pathname === "/robots.txt") return new Response("User-agent: *\nDisallow:", { headers: { "content-type": "text/plain" } });
+    return new Response(pages[target.pathname] ?? "", { status: pages[target.pathname] ? 200 : 404, headers: { "content-type": "text/html" } });
+  };
+  const result = await discoverEntityCandidates("research-web", input({ companyName: null, website: "https://acme.example", city: null, state: null, founderOrExecutive: null, industry: null }), {
+    fetchImpl, resolveHost: async () => [{ address: "93.184.216.34", family: 4 }],
+    paths: ["/", "/terms", "/privacy", "/contact", "/team"],
+  });
+  assert.equal(result.websiteStatus, "reachable");
+  assert.equal(result.candidates.length, 1);
+  const candidate = result.candidates[0];
+  assert.equal(candidate.displayName, "Acme Robotics");
+  assert.equal(candidate.legalName, "Acme Robotics, Inc");
+  assert.equal(candidate.city, "Austin");
+  assert.equal(candidate.industry, "Robotics");
+  assert.deepEqual(candidate.founders, ["Avery Chen"]);
+  assert.ok(candidate.matchSignals.includes("Exact confirmed domain match"));
+  assert.ok(candidate.matchSignals.includes("Organization name confirmed on official website"));
+  assert.equal(result.websiteEvidence.every((item) => item.companyReported && !item.officialRecord), true);
+  assert.equal(result.websiteEvidence.some((item) => item.structuredData.pageType === "terms" && item.structuredData.evidenceStatus === "Company Reported"), true);
+  assert.equal(result.websiteEvidence.some((item) => item.structuredData.pageType === "privacy" && item.structuredData.legalEntityMentions.length > 0), true);
+
+  const titleOnly = await discoverEntityCandidates("research-title", input({ companyName: null, website: "https://acme.example", city: null, state: null, country: null, founderOrExecutive: null, industry: null }), {
+    fetchImpl: async (url) => String(url).endsWith("robots.txt")
+      ? new Response("User-agent: *\nDisallow:", { headers: { "content-type": "text/plain" } })
+      : new Response("<!doctype html><title>Beacon Labs | Home</title>", { headers: { "content-type": "text/html" } }),
+    resolveHost: async () => [{ address: "93.184.216.34", family: 4 }], paths: ["/"],
+  });
+  assert.equal(titleOnly.candidates[0].displayName, "Beacon Labs");
+});
+
+test("uses page-title fallback, flags name mismatches, and shares low-score confirmation rules", async () => {
+  const matcher = await import((await moduleUrl("../app/lib/private-diligence/entity-resolution/entityMatcher.ts")) + nonce());
+  const titleCandidate = entityCandidate({ websiteOrganizationNames: ["Beacon Labs"], pageTitles: ["Beacon Labs"] });
+  const titleScore = matcher.scoreEntityCandidate(input({ companyName: null, website: "https://acme.example", city: null, state: null, country: null, founderOrExecutive: null, industry: null }), titleCandidate);
+  assert.equal(titleScore.matchScore, 55);
+  assert.equal(matcher.getEntityConfirmationEligibility({ ...titleCandidate, ...titleScore }).canConfirm, true);
+  const mismatchScore = matcher.scoreEntityCandidate(input({ companyName: "Different Holdings", city: null, state: null, country: null, founderOrExecutive: null, industry: null }), titleCandidate);
+  assert.ok(mismatchScore.matchSignals.includes("Website organization differs from supplied company name"));
+  const low = { ...titleCandidate, matchScore: 35, matchConfidence: "Low", matchSignals: ["Exact confirmed domain match"], resolutionStatus: "requiresUserConfirmation" };
+  assert.equal(matcher.getEntityConfirmationEligibility(low).canConfirm, false);
+  assert.equal(matcher.getEntityConfirmationEligibility(low, true).canConfirm, true);
+  const termsOnlyScore = matcher.scoreEntityCandidate(input({ companyName: null, website: "https://acme.example", city: null, state: null, country: null, founderOrExecutive: null, industry: null }), entityCandidate({
+    termsLegalNames: ["Acme Robotics, Inc"],
+  }));
+  assert.equal(termsOnlyScore.matchScore, 55);
+  assert.equal(matcher.getEntityConfirmationEligibility({ ...entityCandidate({ termsLegalNames: ["Acme Robotics, Inc"] }), ...termsOnlyScore }).canConfirm, true);
+  assert.equal(matcher.getEntityConfirmationEligibility({ ...low, matchScore: 60, matchSignals: [] }).canConfirm, true);
+  const duplicate = matcher.scoreEntityCandidate(input({ companyName: null, city: null, state: null, country: null, founderOrExecutive: null, industry: null }), entityCandidate({
+    websiteOrganizationNames: ["Acme Robotics", "Acme Robotics"], pageTitles: ["Acme Robotics", "Acme Robotics"],
+    emailDomains: ["acme.example", "acme.example"], termsLegalNames: ["Acme Robotics, Inc", "Acme Robotics, Inc"],
+  }));
+  assert.equal(duplicate.matchScore, 85);
+  assert.equal(new Set(duplicate.matchSignals).size, duplicate.matchSignals.length);
+});
+
+test("enforces website crawl page and depth limits", async () => {
+  const htmlUrl = await moduleUrl("../app/lib/private-diligence/extraction/htmlExtractor.ts");
+  const securityUrl = await moduleUrl("../app/lib/private-diligence/security.ts");
+  const providerUrl = await moduleUrl("../app/lib/private-diligence/providers/companyWebsiteProvider.ts", {
+    '"../extraction/htmlExtractor"': JSON.stringify(htmlUrl),
+    '"../security"': JSON.stringify(securityUrl),
+  });
+  const { createCompanyWebsiteProvider, selectIdentityLinks } = await import(providerUrl + nonce());
+  assert.deepEqual(selectIdentityLinks(new URL("https://acme.example"), ["/about", "/legal/privacy", "/legal/a/privacy", "https://evil.example/about"], 2), [
+    "https://acme.example/about", "https://acme.example/legal/privacy",
+  ]);
+  let htmlRequests = 0;
+  const provider = createCompanyWebsiteProvider({
+    paths: Array.from({ length: 20 }, (_, index) => `/about-${index}`), maxPages: 12, maxDepth: 2,
+    resolveHost: async () => [{ address: "93.184.216.34", family: 4 }],
+    fetchImpl: async (url) => {
+      if (String(url).endsWith("robots.txt")) return new Response("User-agent: *\nDisallow:", { headers: { "content-type": "text/plain" } });
+      htmlRequests += 1;
+      return new Response("<!doctype html><title>Acme Robotics</title>", { headers: { "content-type": "text/html" } });
+    },
+  });
+  const searched = await provider.search({ researchId: "r", input: input(), identityGraph: graph(), now: () => new Date() });
+  assert.equal(searched.records.length, 12);
+  assert.equal(htmlRequests, 12);
+});
+
+test("builds a low-confidence user-confirmed graph with a visible identity limitation", async () => {
+  const builder = await import((await moduleUrl("../app/lib/private-diligence/entity-resolution/identityGraphBuilder.ts")) + nonce());
+  const low = entityCandidate({
+    displayName: "Acme Robotics", matchScore: 35, matchConfidence: "Low",
+    matchSignals: ["Exact confirmed domain match"], resolutionStatus: "userConfirmed",
+    unresolvedIdentityFields: ["Legal entity name"],
+  });
+  const built = builder.buildIdentityGraph(low, input({ companyName: null }));
+  assert.equal(built.resolutionStatus, "userConfirmed");
+  assert.equal(built.identityConfidence, "Low");
+  assert.match(built.identityLimitations.join(" "), /explicitly user-confirmed at Low confidence/i);
+});
+
 test("validates Clara input and scores exact identity signals deterministically", async () => {
   const schema = await import((await moduleUrl("../app/lib/private-diligence/schema.ts")) + nonce());
   const matcher = await import((await moduleUrl("../app/lib/private-diligence/entity-resolution/entityMatcher.ts")) + nonce());
@@ -75,6 +214,9 @@ test("validates Clara input and scores exact identity signals deterministically"
     founders: ["Avery Chen"], executives: [], registrationJurisdiction: "Texas",
     registrationNumbers: ["TX-123"], addresses: [], phoneNumbers: [],
     emailDomains: ["acme.example"], sourceIds: [],
+    websiteOrganizationNames: ["Acme Robotics"], termsLegalNames: ["Acme Robotics, Inc."],
+    privacyLegalNames: [], pageTitles: ["Acme Robotics"], socialProfiles: [],
+    productCategories: [], affiliateNames: [], websiteReachable: true, unresolvedIdentityFields: [],
   };
   const score = matcher.scoreEntityCandidate(input(), candidate);
   assert.equal(score.matchScore, 100);
@@ -138,6 +280,14 @@ test("blocks SSRF, cross-domain redirects, oversized responses, and unsupported 
       officialHostname: "acme.example", resolveHost: publicDns,
       fetchImpl: async () => new Response("%PDF", { headers: { "content-type": "application/pdf" } }),
     }), (error) => error.code === "unsupportedContentType",
+  );
+  await assert.rejects(
+    security.safeCompanyFetch("https://acme.example", {
+      officialHostname: "acme.example", resolveHost: publicDns, timeoutMs: 1_000,
+      fetchImpl: async (_url, options) => new Promise((_resolve, reject) => {
+        options.signal.addEventListener("abort", () => reject(Object.assign(new Error("aborted"), { name: "AbortError" })));
+      }),
+    }), (error) => error.code === "timeout",
   );
   assert.match(security.redactPrivateDiligenceText("https://x.example/?api_key=secret"), /REDACTED/);
   assert.doesNotMatch(security.redactPrivateDiligenceText("/Users/person/private.txt"), /Users\/person/);
@@ -279,10 +429,11 @@ test("generates an evidence-backed report with references last and explicit gaps
   assert.ok(report.claims.every((claim) => claim.evidenceIds.length));
 });
 
-test("keeps Clara UI bilingual, responsive, export-safe, and isolated from other agents", async () => {
-  const [workspace, workflow, copy, css, exports, ethan, mason, nora] = await Promise.all([
+test("keeps Clara UI bilingual, confirmation-consistent, export-safe, and isolated from other agents", async () => {
+  const [workspace, workflow, confirmRoute, copy, css, exports, ethan, mason, nora] = await Promise.all([
     readFile(new URL("../app/TeamWorkspace.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/ClaraPrivateDiligenceWorkflow.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/private-diligence/confirm-entity/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/private-diligence/copy.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
     readFile(new URL("../app/api/private-diligence/export/route.ts", import.meta.url), "utf8"),
@@ -292,6 +443,13 @@ test("keeps Clara UI bilingual, responsive, export-safe, and isolated from other
   ]);
   assert.match(workspace, /\/workflows\/private-company-diligence/);
   assert.match(workflow, /Confirm target company|CLARA_COPY/);
+  assert.match(workflow, /required=\{!input\.website\}/);
+  assert.match(workflow, /required=\{!input\.companyName\}/);
+  assert.match(workflow, /getEntityConfirmationEligibility/);
+  assert.match(confirmRoute, /getEntityConfirmationEligibility\(candidate, true\)/);
+  assert.doesNotMatch(confirmRoute, /A plausible target company must be confirmed/);
+  assert.match(workflow, /Not identified|notIdentified/);
+  assert.match(workflow, /lowConfidenceWebsite/);
   assert.match(workflow, /downloadMarkdown/);
   assert.match(workflow, /evidenceXlsx/);
   assert.match(copy, /Clara 应该研究哪家私营公司/);

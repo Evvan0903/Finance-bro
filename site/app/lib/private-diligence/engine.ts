@@ -21,7 +21,7 @@ export async function runPrivateDiligence(
   graph: EntityIdentityGraph,
   options: PrivateProviderRegistryOptions & { now?: () => Date } = {},
 ) {
-  if (graph.identityConfidence === "Low" || !graph.legalNames.length) {
+  if (!graph.legalNames.length || (graph.identityConfidence === "Low" && graph.resolutionStatus !== "userConfirmed")) {
     throw new PrivateDiligenceEngineError("ENTITY_NOT_RESOLVED", "The target entity is not sufficiently resolved");
   }
   const now = options.now ?? (() => new Date());

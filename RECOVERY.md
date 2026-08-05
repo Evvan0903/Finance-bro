@@ -812,6 +812,40 @@ Use the production Mason workflow and monitor provider coverage. Preserve this a
 - EIA, external search, and private market-data integrations are intentionally future work.
 # Clara V1 recovery checkpoint — 2026-08-05
 
+## Website-first entity-resolution increment — 2026-08-05
+
+### Original objective
+
+Allow Clara to begin with either a company name or confirmed company website, enrich identity from public website pages, apply shared strong-signal confirmation rules, and permit explicit Low-confidence website confirmation without changing other agents.
+
+### Completed tasks
+
+- Added website-only input, 12-page/depth-2 identity crawling, enriched extraction, deterministic deduplicated scoring, shared frontend/backend eligibility, `userConfirmed` status, Low-confidence report limitations, enriched Identity Graph fields, bilingual candidate UI, and focused/live validation.
+- Passed 14/14 Clara tests, 107/107 full tests, TypeScript, ESLint, Vinext and Next.js/Vercel builds, whitespace checks, bilingual browser QA, and six requested live scenarios including Abaka AI.
+
+### Remaining tasks
+
+- No required website-first implementation, validation, or release task remains.
+
+### Current status
+
+Implementation, validation, the exact requested commit, and the GitHub `main` push are complete. No Ethan, Mason, or Nora code was modified. No manual Vercel deployment was performed.
+
+### Files modified
+
+- Clara entity/schema/provider/graph/UI files under `site/app/lib/private-diligence/` and `site/app/ClaraPrivateDiligenceWorkflow.tsx`
+- Clara candidate and confirmation API routes, Clara CSS, focused tests, live validation script, developer documentation, and project notes
+
+### Next recommended step
+
+If a later task requests deployment verification, inspect the repository's automatic Vercel result without changing the validated website-first implementation.
+
+### Assumptions and pending decisions
+
+- Website facts remain Company Reported until corroborated; explicit confirmation selects the target but is not independent verification.
+- Process-local storage remains an acknowledged V1 limitation and is not a durable serverless authorization boundary.
+- Name-only discovery still needs a configured broad-web/official provider when no other identity signal is available.
+
 ## Original objective
 
 Build and release Clara V1 as a bilingual, evidence-backed, public-source private-company diligence workflow without rebuilding or changing the validated Ethan, Mason, or Nora research systems.

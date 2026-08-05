@@ -12,8 +12,8 @@ export function buildIdentityGraph(
   return {
     entityId: `entity-${candidate.candidateId}`,
     canonicalName: candidate.legalName ?? candidate.displayName,
-    legalNames: compact([candidate.legalName, candidate.displayName]),
-    dbaNames: compact(candidate.dbaNames),
+    legalNames: compact([candidate.legalName, candidate.displayName, ...candidate.termsLegalNames, ...candidate.privacyLegalNames]),
+    dbaNames: compact([...candidate.dbaNames, ...candidate.websiteOrganizationNames]),
     formerNames: compact(candidate.formerNames),
     domains: compact([candidate.domain]),
     emailDomains: compact(candidate.emailDomains),
@@ -33,17 +33,25 @@ export function buildIdentityGraph(
       .filter((value) => /^CAGE[:\s-]*/i.test(value)).map((value) => value.replace(/^CAGE[:\s-]*/i, "")),
     samEntityIds: [],
     usaSpendingRecipientIds: [],
-    patentAssigneeNames: compact([candidate.legalName, ...candidate.formerNames]),
-    trademarkOwnerNames: compact([candidate.legalName, ...candidate.formerNames]),
+    patentAssigneeNames: compact([candidate.legalName, candidate.displayName, ...candidate.termsLegalNames, ...candidate.privacyLegalNames, ...candidate.dbaNames, ...candidate.formerNames]),
+    trademarkOwnerNames: compact([candidate.legalName, candidate.displayName, ...candidate.termsLegalNames, ...candidate.privacyLegalNames, ...candidate.dbaNames, ...candidate.formerNames]),
     parentCompanies: [],
     subsidiaries: [],
-    affiliatedEntities: [],
-    socialProfiles: [],
+    affiliatedEntities: compact(candidate.affiliateNames),
+    socialProfiles: compact(candidate.socialProfiles),
+    termsPageLegalNames: compact(candidate.termsLegalNames),
+    privacyPageLegalNames: compact(candidate.privacyLegalNames),
+    productCategories: compact(candidate.productCategories),
     industryLabels: compact([candidate.industry, input.industry]),
     identityConfidence: candidate.matchConfidence,
+    resolutionStatus: candidate.resolutionStatus,
     identityLimitations: [
       ...(candidate.registrationNumbers.length ? [] : ["No official registration number was confirmed during entity resolution."]),
       ...(candidate.matchConfidence === "High" ? [] : ["The target entity required user confirmation because public identity signals were incomplete."]),
+      ...(candidate.resolutionStatus === "userConfirmed" && candidate.matchConfidence === "Low"
+        ? ["The target was explicitly user-confirmed at Low confidence; Clara continued external verification without treating the website identity as independently verified."]
+        : []),
+      ...candidate.unresolvedIdentityFields.map((field) => `${field} was not identified during website-first entity resolution.`),
       ...(input.founderOrExecutive && !candidate.founders.includes(input.founderOrExecutive)
         ? ["The user-supplied founder or executive was used as a search lead but was not independently confirmed during entity resolution."]
         : []),

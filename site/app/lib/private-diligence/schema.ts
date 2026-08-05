@@ -17,7 +17,6 @@ export function parsePrivateCompanyInput(value: unknown): PrivateCompanyInput {
   if (!value || typeof value !== "object") throw new Error("Company input is required");
   const input = value as Record<string, unknown>;
   const companyName = optionalText(input.companyName, 180);
-  if (!companyName || companyName.length < 2) throw new Error("Company name is required");
   const website = optionalText(input.website, 300);
   if (website) {
     let url: URL;
@@ -27,6 +26,10 @@ export function parsePrivateCompanyInput(value: unknown): PrivateCompanyInput {
       throw new Error("Company website must be a public HTTP or HTTPS URL without credentials");
     }
   }
+  if ((!companyName || companyName.length < 2) && !website) {
+    throw new Error("A company name or company website is required");
+  }
+  if (companyName && companyName.length < 2) throw new Error("Company name is too short");
   const researchObjective = OBJECTIVES.has(input.researchObjective as ResearchObjective)
     ? input.researchObjective as ResearchObjective
     : "General diligence";
