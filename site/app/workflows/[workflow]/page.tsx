@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { UI_HEADING_COPY } from "../../lib/ui-copy";
 
 const workflowCopy = UI_HEADING_COPY.en;
@@ -59,6 +59,7 @@ export default async function WorkflowOverviewPage({
   params: Promise<{ workflow: string }>;
 }) {
   const { workflow } = await params;
+  if (workflow === "private-company") redirect("/workflows/private-company-diligence");
   if (!(workflow in WORKFLOWS)) notFound();
   const workflowDefinition = WORKFLOWS[workflow as WorkflowKey];
 

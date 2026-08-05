@@ -1,0 +1,47 @@
+import type { DiligenceLocale, PrivateCompanyInput, ReportDepth, ResearchObjective } from "./types";
+
+const OBJECTIVES = new Set<ResearchObjective>([
+  "General diligence", "Investor screening", "Vendor diligence",
+  "Acquisition screening", "Partnership review", "Customer review",
+]);
+
+function optionalText(value: unknown, maximum = 160) {
+  if (value === null || value === undefined || value === "") return null;
+  if (typeof value !== "string") throw new Error("Optional company identifiers must be text");
+  const normalized = value.trim().replace(/\s+/g, " ");
+  if (!normalized || normalized.length > maximum) throw new Error("An input value is outside the supported length");
+  return normalized;
+}
+
+export function parsePrivateCompanyInput(value: unknown): PrivateCompanyInput {
+  if (!value || typeof value !== "object") throw new Error("Company input is required");
+  const input = value as Record<string, unknown>;
+  const companyName = optionalText(input.companyName, 180);
+  if (!companyName || companyName.length < 2) throw new Error("Company name is required");
+  const website = optionalText(input.website, 300);
+  if (website) {
+    let url: URL;
+    try { url = new URL(website.includes("://") ? website : `https://${website}`); }
+    catch { throw new Error("Company website must be a valid URL"); }
+    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) {
+      throw new Error("Company website must be a public HTTP or HTTPS URL without credentials");
+    }
+  }
+  const researchObjective = OBJECTIVES.has(input.researchObjective as ResearchObjective)
+    ? input.researchObjective as ResearchObjective
+    : "General diligence";
+  const locale: DiligenceLocale = input.locale === "zh" ? "zh" : "en";
+  const reportDepth: ReportDepth = input.reportDepth === "Compact" ? "Compact" : "Standard";
+  return {
+    companyName,
+    website,
+    city: optionalText(input.city),
+    state: optionalText(input.state),
+    country: optionalText(input.country) ?? "United States",
+    founderOrExecutive: optionalText(input.founderOrExecutive),
+    industry: optionalText(input.industry),
+    researchObjective,
+    locale,
+    reportDepth,
+  };
+}

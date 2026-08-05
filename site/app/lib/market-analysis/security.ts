@@ -31,6 +31,9 @@ const OFFICIAL_HOSTS = new Set([
   "api.govinfo.gov",
   "govinfo.gov",
   "www.govinfo.gov",
+  "api.usaspending.gov",
+  "usaspending.gov",
+  "www.usaspending.gov",
 ]);
 
 export type SafeFetchOptions = {

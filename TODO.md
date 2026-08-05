@@ -325,3 +325,18 @@
 - [x] Create the required local commit.
 - [x] Push `main` to `origin/main`.
 - [x] Publish and verify the existing private Sites project from the exact pushed commit.
+# Clara V1 public-source private company diligence
+
+- [x] Read `saveToken`, recovery notes, architecture, agent routes, provider conventions, report/PDF/export paths, and tests.
+- [x] Build typed input, candidate, Identity Graph, provider result, evidence, claim, conflict, risk, gap, question, and report models.
+- [x] Implement mandatory entity resolution and user confirmation without treating similar names as identity proof.
+- [x] Implement confirmed-domain website crawling with SSRF, DNS, redirect, robots, content, size, and timeout controls.
+- [x] Implement SEC Form D and exact-match USAspending providers with non-fatal typed failure behavior.
+- [x] Add SAM, state registry, USPTO, web discovery, and market context configuration/manual-verification frameworks.
+- [x] Add evidence eligibility, claim reconciliation, conflict preservation, risk/gap separation, and follow-up questions.
+- [x] Add bilingual Clara UI, 20-section report, Markdown/PDF/CSV/XLSX downloads, and Clara-specific PDF footer.
+- [x] Add focused automated tests and three repeatable real-public-source validation scenarios.
+- [x] Pass focused tests, TypeScript, ESLint, Vinext build, and the three manual scenarios.
+- [x] Pass final full test suite, Vercel-compatible build, responsive browser/PDF/Markdown QA, and whitespace checks.
+- [x] Update final diagnostics and recovery notes.
+- [x] Commit exactly `feat: build clara private company diligence mvp` and push `origin/main` without manual Vercel deployment.

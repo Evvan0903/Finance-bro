@@ -37,7 +37,7 @@ export async function GET(
     const exported = await exportVisualAsset(asset, format, {
       displayFrequency,
     });
-    return new Response(exported.body.slice().buffer as ArrayBuffer, {
+    return new Response(new Uint8Array(exported.body), {
       headers: {
         "Content-Type": exported.contentType,
         "Content-Disposition": contentDisposition(exported.filename),

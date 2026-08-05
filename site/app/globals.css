@@ -42,6 +42,126 @@
   --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Songti SC", "STSong", serif;
 }
 
+/* Clara · public-source private company diligence */
+.clara-shell { min-height: 100vh; color: var(--text-primary); background: #fff; background-image: linear-gradient(var(--brand-blue-04) 1px, transparent 1px), linear-gradient(90deg, var(--brand-blue-04) 1px, transparent 1px); background-size: 48px 48px; }
+.clara-header { min-height: 68px; padding: 0 5vw; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-light); background: rgba(255,255,255,.95); position: sticky; top: 0; z-index: 20; }
+.clara-header a { display: inline-flex; align-items: center; gap: 10px; color: var(--text-primary); font-weight: 800; letter-spacing: .09em; text-decoration: none; }
+.clara-header a span { display: grid; place-items: center; width: 30px; height: 30px; color: #fff; background: var(--brand-blue); }
+.clara-header > div { display: flex; gap: 12px; align-items: baseline; }
+.clara-header > div strong { letter-spacing: .12em; }
+.clara-header > div span { color: var(--text-muted); font-size: .82rem; }
+.clara-header button { border: 1px solid var(--border-medium); background: #fff; padding: 8px 13px; cursor: pointer; }
+.clara-hero { display: grid; grid-template-columns: minmax(0,1.25fr) minmax(300px,.75fr); min-height: 410px; padding: 72px 7vw 48px; border-bottom: 1px solid var(--border-light); align-items: center; overflow: hidden; }
+.clara-hero > div > span { color: var(--brand-blue); font-size: .74rem; font-weight: 800; letter-spacing: .15em; }
+.clara-hero h1 { max-width: 780px; margin: 14px 0 18px; font-size: clamp(2.25rem,5vw,5rem); line-height: .98; letter-spacing: -.055em; }
+.clara-hero p { max-width: 720px; color: var(--text-secondary); font-size: 1.05rem; line-height: 1.65; }
+.clara-hero small { display: block; margin-top: 20px; color: var(--text-muted); }
+.clara-hero img { width: min(100%,520px); height: auto; justify-self: center; }
+.clara-workspace { display: grid; grid-template-columns: minmax(250px,.32fr) minmax(0,1fr); gap: 28px; padding: 42px 7vw 90px; }
+.clara-progress { align-self: start; position: sticky; top: 96px; border-top: 3px solid var(--brand-blue); background: #fff; padding: 22px 22px 24px; box-shadow: 0 10px 34px rgba(18,36,50,.07); }
+.clara-progress > span { font-size: .72rem; font-weight: 800; letter-spacing: .12em; color: var(--text-muted); }
+.clara-progress ol { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 9px; }
+.clara-progress li { position: relative; padding-left: 20px; color: var(--text-disabled); font-size: .82rem; line-height: 1.35; }
+.clara-progress li::before { content: ""; position: absolute; left: 0; top: .35em; width: 7px; height: 7px; border: 1px solid currentColor; border-radius: 50%; }
+.clara-progress li[data-state="current"] { color: var(--brand-blue); font-weight: 700; }
+.clara-progress li[data-state="current"]::before, .clara-progress li[data-state="complete"]::before { background: var(--brand-blue); border-color: var(--brand-blue); }
+.clara-progress li[data-state="complete"] { color: var(--text-secondary); }
+.clara-panel { min-width: 0; background: #fff; border: 1px solid var(--border-light); padding: clamp(24px,4vw,52px); box-shadow: 0 16px 50px rgba(18,36,50,.07); }
+.clara-panel form > header, .clara-confirmation > header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 30px; border-bottom: 1px solid var(--border-light); padding-bottom: 18px; }
+.clara-panel header > span { color: var(--brand-blue); font-weight: 800; }
+.clara-panel h2 { margin: 0; font-size: clamp(1.45rem,3vw,2.3rem); letter-spacing: -.035em; }
+.clara-form-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; }
+.clara-form-grid label { display: grid; gap: 8px; }
+.clara-form-grid label > span { font-size: .76rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--text-secondary); }
+.clara-form-grid input, .clara-form-grid select { width: 100%; min-height: 46px; border: 1px solid var(--border-medium); border-radius: 0; padding: 10px 12px; background: #fff; color: var(--text-primary); font: inherit; }
+.clara-form-grid input:focus, .clara-form-grid select:focus { outline: 2px solid var(--brand-blue-20); border-color: var(--brand-blue); }
+.clara-primary { margin-top: 28px; min-height: 48px; border: 1px solid var(--brand-blue); background: var(--brand-blue); color: #fff; padding: 12px 22px; font-weight: 800; cursor: pointer; }
+.clara-primary:disabled { opacity: .55; cursor: wait; }
+.clara-disclosure { margin: 28px 0 0; padding-top: 18px; border-top: 1px solid var(--border-light); color: var(--text-muted); font-size: .78rem; line-height: 1.5; }
+.clara-error { padding: 14px 16px; margin: 22px 0 0; color: #8a2d2d; border: 1px solid #e6b9b9; background: #fff8f8; }
+.clara-candidate-card { border: 1px solid var(--border-medium); padding: 22px; margin: 0 0 18px; }
+.clara-candidate-card > header { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; }
+.clara-candidate-card > header div span { color: var(--brand-blue); font-size: .72rem; font-weight: 800; text-transform: uppercase; }
+.clara-candidate-card h3 { margin: 6px 0 0; font-size: 1.25rem; }
+.clara-candidate-card > header > strong { color: var(--text-muted); }
+.clara-candidate-card dl { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px 20px; margin: 20px 0; }
+.clara-candidate-card dl div { border-top: 1px solid var(--border-light); padding-top: 10px; min-width: 0; }
+.clara-candidate-card dt { color: var(--text-muted); font-size: .72rem; text-transform: uppercase; }
+.clara-candidate-card dd { margin: 5px 0 0; overflow-wrap: anywhere; }
+.clara-match-signals { display: flex; flex-wrap: wrap; gap: 7px; }
+.clara-match-signals span { background: var(--brand-blue-08); color: #003da8; padding: 5px 8px; font-size: .72rem; }
+.clara-candidate-card > button { margin-top: 18px; border: 1px solid var(--brand-blue); color: var(--brand-blue); background: #fff; padding: 10px 14px; font-weight: 700; cursor: pointer; }
+.clara-results { padding: 32px 5vw 90px; }
+.clara-report-actions { max-width: 1180px; margin: 0 auto 18px; display: flex; flex-wrap: wrap; gap: 8px; }
+.clara-report-actions button { border: 1px solid var(--border-medium); background: #fff; padding: 9px 12px; cursor: pointer; }
+.clara-report { max-width: 1180px; margin: auto; background: #fff; border: 1px solid var(--border-light); box-shadow: 0 18px 60px rgba(18,36,50,.09); }
+.clara-report-cover { padding: clamp(34px,6vw,76px); border-top: 8px solid var(--brand-blue); }
+.clara-report-cover > span { color: var(--brand-blue); font-size: .75rem; font-weight: 800; letter-spacing: .14em; }
+.clara-report-cover h1 { margin: 28px 0 8px; font-size: clamp(2.2rem,5vw,4.7rem); letter-spacing: -.055em; line-height: 1; }
+.clara-report-cover h2 { margin: 0 0 36px; font-weight: 500; color: var(--text-secondary); }
+.clara-report-cover dl { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 12px; }
+.clara-report-cover dl div { border-top: 1px solid var(--border-medium); padding-top: 10px; }
+.clara-report-cover dt { font-size: .7rem; color: var(--text-muted); text-transform: uppercase; }
+.clara-report-cover dd { margin: 6px 0 0; font-weight: 700; }
+.clara-report-cover > p { margin: 36px 0 0; padding: 16px; background: var(--surface-subtle); color: var(--text-secondary); line-height: 1.55; }
+.clara-report-section { padding: 34px clamp(28px,6vw,76px); border-top: 1px solid var(--border-light); }
+.clara-report-section > header { display: grid; grid-template-columns: 54px 1fr; align-items: baseline; margin-bottom: 22px; }
+.clara-report-section > header span { color: var(--brand-blue); font-weight: 800; }
+.clara-report-section h2 { margin: 0; font-size: 1.55rem; letter-spacing: -.025em; }
+.clara-report-section > p { margin: 10px 0; color: var(--text-secondary); line-height: 1.62; }
+.clara-table-wrap { overflow-x: auto; margin-top: 18px; }
+.clara-table-wrap table { width: 100%; border-collapse: collapse; min-width: 700px; }
+.clara-table-wrap th, .clara-table-wrap td { text-align: left; border-bottom: 1px solid var(--border-light); padding: 10px; vertical-align: top; }
+.clara-table-wrap th { background: var(--surface-subtle); font-size: .74rem; text-transform: uppercase; }
+.clara-question-list { display: grid; gap: 12px; }
+.clara-question-list article { border-left: 3px solid var(--brand-blue); background: var(--surface-subtle); padding: 16px 18px; }
+.clara-question-list span { color: var(--brand-blue); font-size: .7rem; font-weight: 800; }
+.clara-question-list h3 { margin: 6px 0; }
+.clara-question-list p, .clara-question-list small { color: var(--text-secondary); }
+.clara-reference-list { padding-left: 22px; }
+.clara-reference-list li { margin: 12px 0; padding-left: 8px; }
+.clara-reference-list a { color: var(--brand-blue); overflow-wrap: anywhere; }
+.clara-reference-list span { display: block; color: var(--text-muted); font-size: .75rem; margin-top: 3px; }
+
+@media (max-width: 840px) {
+  .clara-hero { grid-template-columns: 1fr; padding-top: 48px; }
+  .clara-hero img { max-width: 420px; }
+  .clara-workspace { grid-template-columns: 1fr; }
+  .clara-progress { position: static; }
+  .clara-progress ol { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .clara-report-cover dl { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+
+@media (max-width: 560px) {
+  .clara-header { padding: 0 18px; }
+  .clara-header > div span { display: none; }
+  .clara-hero { min-height: auto; padding: 42px 20px 32px; }
+  .clara-workspace { padding: 28px 16px 64px; }
+  .clara-panel { padding: 22px 18px; }
+  .clara-form-grid, .clara-candidate-card dl, .clara-report-cover dl { grid-template-columns: 1fr; }
+  .clara-results { padding: 24px 12px 64px; }
+  .clara-report-cover, .clara-report-section { padding-left: 22px; padding-right: 22px; }
+  .clara-report-section > header { grid-template-columns: 40px 1fr; }
+}
+
+@media (max-width: 600px) {
+  .clara-header { padding: 0 18px; }
+  .clara-header > div span { display: none; }
+  .clara-hero, .clara-workspace, .clara-results { padding-left: 18px; padding-right: 18px; }
+  .clara-form-grid, .clara-candidate-card dl, .clara-report-cover dl { grid-template-columns: 1fr; }
+  .clara-progress ol { grid-template-columns: 1fr; }
+  .clara-panel { padding: 22px 18px; }
+  .clara-report-section { padding: 28px 20px; }
+  .clara-report-section > header { grid-template-columns: 42px 1fr; }
+}
+
+@media print {
+  .clara-header, .clara-hero, .clara-workspace, .clara-report-actions { display: none !important; }
+  .clara-results { padding: 0; }
+  .clara-report { border: 0; box-shadow: none; max-width: none; }
+  .clara-report-section, .clara-report-cover { break-inside: avoid; }
+}
+
 * {
   box-sizing: border-box;
 }

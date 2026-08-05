@@ -68,22 +68,24 @@ const TEAM: TeamMember[] = [
     id: "clara",
     name: "Clara",
     title: "Private Company Diligence Analyst",
-    status: "Planned",
-    intro: "Reviews private-company financial, operating, and data-room materials to identify business quality, financial risks, and diligence gaps.",
+    status: "Available",
+    intro: "Investigates private companies using official records, public sources, company disclosures, and cross-source verification.",
     responsibilities: [
-      "Reviews financial statements and data-room documents",
-      "Analyzes revenue quality and customer concentration",
-      "Identifies accounting, liquidity, and operating risks",
-      "Builds management questions and missing-document lists",
+      "Resolves private-company identities",
+      "Reviews registrations and official records",
+      "Researches founders, financing, relationships, contracts, and intellectual property",
+      "Verifies public claims and identifies conflicts, risks, and information gaps",
     ],
     deliverables: [
       "Private company diligence report",
-      "Red-flag review",
-      "Document-gap checklist",
-      "Management question list",
+      "Entity identity profile",
+      "Evidence and claim registers",
+      "Risk matrix and information-gap list",
+      "Follow-up diligence questions",
     ],
-    cta: "View Private Company Diligence",
-    route: "/workflows/private-company",
+    cta: "Open Private Company Diligence",
+    route: "/workflows/private-company-diligence",
+    boundary: "Clara uses publicly accessible information only. She does not provide complete legal, financial, tax, cybersecurity, ownership, litigation, valuation, fraud, background-investigation, or investment conclusions.",
   },
   {
     id: "felix",
@@ -163,6 +165,11 @@ const WORKSTATION_ASSETS: Record<MemberId, string> = {
 
 const workspaceCopy = UI_HEADING_COPY.en;
 
+const STATUS_COUNTS = TEAM.reduce<Record<MemberStatus, number>>((counts, member) => {
+  counts[member.status] += 1;
+  return counts;
+}, { Available: 0, "In Development": 0, Planned: 0 });
+
 function PixelAnalyst({ id }: { id: MemberId }) {
   const member = TEAM.find((candidate) => candidate.id === id)!;
   return (
@@ -234,9 +241,9 @@ export function TeamWorkspace() {
           <p>{workspaceCopy.homeHeroScope}</p>
         </div>
         <div className="workspace-summary" aria-label="Workflow availability">
-          <span><strong>2</strong> Available</span>
-          <span><strong>1</strong> In Development</span>
-          <span><strong>3</strong> Planned</span>
+          <span><strong>{STATUS_COUNTS.Available}</strong> Available</span>
+          <span><strong>{STATUS_COUNTS["In Development"]}</strong> In Development</span>
+          <span><strong>{STATUS_COUNTS.Planned}</strong> Planned</span>
         </div>
       </section>
 

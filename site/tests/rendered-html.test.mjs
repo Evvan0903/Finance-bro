@@ -143,10 +143,9 @@ test("keeps the bilingual public-company research workflow on Ethan's route", as
   assert.doesNotMatch(html, /ScopeLine|输入一家公司|生成尽调报告|codex-preview|react-loading-skeleton/i);
 });
 
-test("serves status-accurate overview pages for the three unfinished non-Mason workflows", async () => {
+test("serves status-accurate overview pages for the two unfinished workflows", async () => {
   const builtWorker = await worker();
   const expected = [
-    ["private-company", "Clara", "Planned"],
     ["financial-modeling", "Felix", "Planned"],
     ["portfolio-monitoring", "Parker", "Planned"],
   ];
@@ -165,6 +164,26 @@ test("serves status-accurate overview pages for the three unfinished non-Mason w
     assert.match(html, /This status page does not simulate an unfinished workflow/);
     assert.doesNotMatch(html, /id="company"/);
   }
+});
+
+test("serves Clara's bilingual public-source diligence workflow", async () => {
+  const builtWorker = await worker();
+  const response = await builtWorker.fetch(
+    new Request("http://localhost/workflows/private-company-diligence", {
+      headers: { accept: "text/html" },
+    }),
+    environment,
+    context,
+  );
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /Clara/);
+  assert.match(html, /Private Company Diligence Analyst/);
+  assert.match(html, /Which private company should Clara research/);
+  assert.match(html, /Company name/);
+  assert.match(html, /Assign to Clara/);
+  assert.match(html, />中文</);
+  assert.doesNotMatch(html, /This status page does not simulate an unfinished workflow/);
 });
 
 test("serves Mason's bilingual official-data workflow on the market-industry route", async () => {
@@ -290,7 +309,7 @@ test("keeps the refined team profiles interactive, image-led, and route-accurate
   for (const route of [
     "/workflows/public-company",
     "/workflows/market-industry",
-    "/workflows/private-company",
+    "/workflows/private-company-diligence",
     "/workflows/financial-modeling",
     "/workflows/portfolio-monitoring",
     "/workflows/regulatory-compliance",

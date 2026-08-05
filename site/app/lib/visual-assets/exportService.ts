@@ -337,25 +337,6 @@ function applyFrozenHeader(sheet: XLSX.WorkSheet) {
   };
 }
 
-function injectFrozenHeader(workbook: Uint8Array) {
-  const cfb = XLSX.CFB.read(workbook, { type: "buffer" });
-  const entry = XLSX.CFB.find(cfb, "xl/worksheets/sheet1.xml");
-  if (!entry?.content) return workbook;
-  const original = new TextDecoder().decode(entry.content as Uint8Array);
-  const pane = '<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>';
-  const next = original.replace(
-    /<sheetView([^>]*)\/>/,
-    `<sheetView$1>${pane}</sheetView>`,
-  ).replace(
-    /(<sheetView[^>]*>)(?![\s\S]*?<pane\b)/,
-    `$1${pane}`,
-  );
-  if (next === original) return workbook;
-  entry.content = new TextEncoder().encode(next);
-  entry.size = entry.content.length;
-  return XLSX.CFB.write(cfb, { type: "buffer" }) as Uint8Array;
-}
-
 export function visualAssetToXlsx(asset: StoredVisualAsset) {
   const { columns, rows } = asset.dataset;
   const dataRows = [
@@ -387,8 +368,7 @@ export function visualAssetToXlsx(asset: StoredVisualAsset) {
   XLSX.utils.book_append_sheet(workbook, data, "Data");
   XLSX.utils.book_append_sheet(workbook, metadata, "Metadata");
   workbook.Props = { Title: asset.title, Subject: asset.dataset.title, Author: "FinBro" };
-  const output = XLSX.write(workbook, { bookType: "xlsx", type: "buffer", compression: true }) as Uint8Array;
-  return injectFrozenHeader(output);
+  return XLSX.write(workbook, { bookType: "xlsx", type: "buffer", compression: true }) as Uint8Array;
 }
 
 function pngCrc(bytes: Uint8Array) {

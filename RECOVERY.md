@@ -810,3 +810,42 @@ Use the production Mason workflow and monitor provider coverage. Preserve this a
 - Research records and raw-response cache are process-local because durable project storage is not currently configured.
 - Census and BEA live coverage may remain partial until valid provider access/data mappings are available; their failures are already isolated and disclosed.
 - EIA, external search, and private market-data integrations are intentionally future work.
+# Clara V1 recovery checkpoint — 2026-08-05
+
+## Original objective
+
+Build and release Clara V1 as a bilingual, evidence-backed, public-source private-company diligence workflow without rebuilding or changing the validated Ethan, Mason, or Nora research systems.
+
+## Completed tasks
+
+- Implemented entity resolution, candidate confirmation, Identity Graph, provider planning/execution, evidence and claim registries, reconciliation, conflict/risk/gap/question engines, 20-section report, exports, bilingual UI, security controls, and server routes.
+- Added company website, SEC Form D, USAspending, SAM/state/USPTO/web-discovery/market-context provider architecture.
+- Added focused tests and a repeatable three-company real-source validation script.
+- Passed focused tests, lint, type check, production build, and three real-source scenarios.
+- Corrected the shared XLSX exact-byte response blocker; no Ethan calculation, report, or UI logic changed.
+- Passed 102/102 full tests, both Vinext and Next.js/Vercel production builds, whitespace checks, bilingual 390px/1440px browser QA, live report generation, export endpoint checks, and PDF interaction review.
+- Completed final manual validation with Moderate Anthropic, Strong Turner, and Limited Pine Park coverage; weak recipient matches remained excluded.
+
+## Remaining tasks
+
+- No required Clara V1 implementation, validation, or release task remains.
+
+## Current status
+
+Implementation, validation, the exact requested commit, and the GitHub `main` push are complete. Clara is marked Available. No manual Vercel deployment was performed.
+
+## Files modified
+
+- Clara implementation: `site/app/lib/private-diligence/`, `site/app/api/private-diligence/`, `site/app/ClaraPrivateDiligenceWorkflow.tsx`, and `site/app/workflows/private-company-diligence/`
+- Shared/public integration: `site/app/TeamWorkspace.tsx`, `site/app/globals.css`, shared official-host allowlist, legacy Clara redirect, and exact-byte XLSX response handling
+- Validation/docs: `site/tests/clara-private-diligence.test.mjs`, `site/scripts/validate-private-diligence.mjs`, `site/docs/clara-private-diligence.md`, `PRIVATE_DILIGENCE_DIAGNOSTIC_REPORT.md`, `WORKLOG.md`, `RECOVERY.md`, `TODO.md`, and `README.md`
+
+## Next recommended step
+
+If a later task requests deployment verification, inspect the repository's automatic Vercel result without changing the validated Clara implementation.
+
+## Assumptions and pending decisions
+
+- No Vercel-safe durable database binding is configured, so V1 uses disclosed ephemeral process-local storage.
+- SAM, USPTO, broad-web discovery, and unsupported state sources remain explicit configuration/manual-verification frameworks.
+- The GitHub push may trigger configured deployment automation; do not claim deployment success without separate verification.

@@ -1,5 +1,21 @@
 # FinBro Research Worklog
 
+## Clara V1 public-source private company diligence — 2026-08-05
+
+- `saveToken` routing: Sol owned entity/evidence architecture, confidence boundaries, error design, and final review; Terra audited routes, providers, shared report/PDF/export infrastructure, security, and test coverage; Luna audited bilingual UI, responsive styling, heading copy, and formal-report presentation.
+- Product: added the available bilingual Clara workflow at `/workflows/private-company-diligence`, mandatory candidate confirmation, a typed Identity Graph, 15-stage progress, and a formal 20-section public-source report.
+- Providers: added a confirmed-domain website crawler, SEC Form D, exact-match USAspending, and non-blocking SAM/state/USPTO/web-discovery/market-context frameworks. Provider failures use typed internal statuses and never expose technical errors publicly.
+- Evidence: added source tiers, raw/normalized registries, deterministic eligibility, content deduplication, evidence-required claims, Company Reported labeling, reconciliation, preserved conflicts, risk/gap separation, and evidence-oriented follow-up questions.
+- Downloads: Markdown, Clara-footer PDF, evidence/claim CSV and XLSX, and risk CSV with URL/path redaction and spreadsheet formula protection.
+- Security/privacy: SSRF and DNS checks, same-domain redirects, robots handling, size/type/time limits, server-only credential configuration, sanitized diagnostics, and ephemeral process-local storage with a visible limitation.
+- Manual validation: Anthropic PBC completed with 8 evidence items / 12 claims and Moderate coverage; Turner Construction Company with 31 / 132 and Strong coverage; Pine Park Health with 4 / 4 and Limited coverage. All three used real public websites and live USAspending, retained evidence-linked claims, sanitized references, explicit gaps, and no unsupported precision. Nine weak Turner recipient matches were rejected.
+- Shared blocker fixed: visual-asset XLSX responses now copy the exact byte range; the invalid `ArrayBuffer` slab response and invalid post-write CFB rewrite were removed. Ethan research logic and UI were not changed.
+- Validation passed: 9/9 Clara tests, 102/102 full tests, TypeScript, ESLint, Vinext build, Next.js/Vercel build, whitespace checks, three real-source scenarios, and the shared Ethan XLSX regression. Browser QA passed in English and Chinese at 390px and 1440px without overflow; the live Pine Park report rendered 10 supported sections and four final clickable references. Markdown/CSV/XLSX attachment responses were valid and non-empty, and PDF generation completed without browser errors.
+- Bilingual correction: Clara now localizes research-objective/report-depth options and updates the document language on locale changes; Ethan, Mason, and Nora behavior was not changed.
+- Known limitations: process-local persistence is ephemeral; name-only discovery needs a configured web provider; Form D needs a verified CIK; SAM/USPTO and many state/licensing/litigation sources require credentials or manual verification; no document-room workflow exists in V1.
+- Developer guide: `site/docs/clara-private-diligence.md`. Sanitized validation record: `PRIVATE_DILIGENCE_DIAGNOSTIC_REPORT.md`.
+- Release: committed as `feat: build clara private company diligence mvp` and pushed to `origin/main`. The configured integration may deploy automatically; no manual Vercel deployment was performed or claimed.
+
 ## Ethan market-provider credential loading and validation — 2026-08-05
 
 - `saveToken` routing: Sol owned root-cause analysis, shared-config boundaries, classification judgment, and final review; Terra audited environment loading, providers, tests, and Mason/public-report risks; routine code, tests, and documentation stayed in the low-risk implementation lane.
