@@ -11,7 +11,7 @@
 - [x] Prepare a disabled structured model-router abstraction without activating paid APIs.
 - [x] Add Quick workflow regression coverage and pass focused/full tests, lint, type check, both builds, and whitespace validation.
 - [x] Update Clara developer documentation, README, `WORKLOG.md`, and `RECOVERY.md`.
-- [x] Create `feat: add clara quick company intelligence workflow`; push `origin/main` without manual Vercel deployment remains next.
+- [x] Create `feat: add clara quick company intelligence workflow` and push `1f1b32e` to `origin/main` without manual Vercel deployment.
 - [ ] Future: add reviewed direct public ATS adapters and durable Vercel-safe state persistence before claiming production-ready multi-request research.
 
 ## Ethan market-provider credential loading and validation

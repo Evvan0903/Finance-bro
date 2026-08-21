@@ -832,7 +832,7 @@ Add a lightweight public-source business intelligence workflow for private compa
 
 ### Current status
 
-Validated locally and committed as `04fdbb4` (`feat: add clara quick company intelligence workflow`); the authorized GitHub push remains next. `.DS_Store` is unrelated pre-existing state and must remain unstaged. No manual Vercel deployment is authorized.
+Validated locally, committed as `1f1b32e` (`feat: add clara quick company intelligence workflow`), and pushed to `origin/main`. `.DS_Store` is unrelated pre-existing state and remains unstaged. No manual Vercel deployment is authorized.
 
 ### Files modified
 
@@ -843,7 +843,7 @@ Validated locally and committed as `04fdbb4` (`feat: add clara quick company int
 
 ### Next recommended step
 
-Push commit `04fdbb4` to `origin/main` without manual deployment.
+If deployment verification is later requested, inspect the configured automatic deployment only; do not manually deploy from this checkpoint.
 
 ## Website-first entity-resolution increment — 2026-08-05
 

@@ -11,6 +11,7 @@
 - Tests: focused Clara + Quick suite 17/17; full suite 110/110; ESLint; TypeScript; Vinext build; Vercel-compatible Next build; and `git diff --check` passed. No tests failed.
 - Limitations: ATS links are surfaced as public hiring infrastructure only; direct Greenhouse/Lever/Ashby/Workday role retrieval is not activated in this increment, so no role count/trend is asserted. Process-local research state remains unsuitable for cross-instance Vercel workflow persistence and is visibly documented. No manual Vercel deployment was performed.
 - Agents: Ethan, Mason, Nora, Felix, and Parker research workflows were not modified.
+- Release: committed as `1f1b32e` (`feat: add clara quick company intelligence workflow`) and pushed to `origin/main`. No manual Vercel deployment was performed or claimed.
 
 ## Clara website-first entity resolution — 2026-08-05
 
