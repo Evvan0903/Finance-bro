@@ -4,6 +4,31 @@ Validation date: 2026-08-05
 
 This report records sanitized validation outcomes only. It contains no API keys, raw response bodies, request headers, local paths, or hardcoded production findings.
 
+## Candidate-selection state validation — 2026-08-21
+
+The reported Abaka confirmation failure did not reproduce in the pre-fix local build: clicking the candidate card's embedded Confirm action reached the backend and generated a report. Inspection nevertheless confirmed that the UI had no independent selected-candidate state. Displaying a candidate and confirming it were conflated, one result was not visibly selected, and confirmation captured a candidate object rather than deriving its payload solely from a selected ID.
+
+Confirmed categories: **A** and **C**. Category **D** was a structural risk but not observed as a stale request. Categories **F**, **G**, **H**, and **I** were not reproduced.
+
+After the minimal fix, the sanitized Abaka browser trace was:
+
+| Field | Value |
+|---|---|
+| `researchRequestId` | `97750122-74e9-4093-b4e3-2aa86a40f81a` |
+| `candidates.length` | `1` |
+| `candidateId` | `bd809464-9781-4544-ae3d-65048be1d037` |
+| `candidate.researchRequestId` | `97750122-74e9-4093-b4e3-2aa86a40f81a` |
+| `selectedCandidateId` | `bd809464-9781-4544-ae3d-65048be1d037` |
+| Explicit confirmation | `true` |
+| Ownership comparison | `true` |
+| Confirmation / research / report | Pass / Pass / Pass |
+
+One candidate was visibly Selected before confirmation, and the separate Confirm target company button was enabled. The request candidate ID equaled the selected candidate ID. The backend loaded the same request and candidate IDs and retained the ownership gate.
+
+The deterministic multiple-candidate regression uses three candidates, starts with no selection, selects the second ID, and builds the confirmation payload only from that ID. No-selection, stale-object, cross-request, and malformed-candidate cases are covered. A natural multi-candidate public response was not available from the current conservative discovery path, so no production discovery data was fabricated for browser testing.
+
+Validation: 27 focused tests and 120 full-suite tests passed, together with ESLint, TypeScript, Vinext build, Vercel-compatible build, and `git diff --check`. No manual deployment was performed.
+
 ## Company discovery and target-selection validation — 2026-08-20
 
 The blocking path was the reuse of legal-identity verification rules as target-selection rules. A name-only request could produce a candidate, but missing website/legal name/location/people or a Low score prevented the candidate route, UI, confirmation API, and engine from agreeing that the user could select it.

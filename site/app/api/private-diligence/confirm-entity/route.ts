@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { buildIdentityGraph } from "../../../lib/private-diligence/entity-resolution/identityGraphBuilder";
+import { candidateBelongsToResearch } from "../../../lib/private-diligence/entity-resolution/candidateSelection";
 import { canSelectTarget, getEntityConfirmationEligibility, selectTargetCandidate } from "../../../lib/private-diligence/entity-resolution/entityMatcher";
 import { privateDiligenceStore } from "../../../lib/private-diligence/persistence/researchStore";
 
@@ -10,11 +11,17 @@ export async function POST(request: Request) {
     const body = await request.json();
     const researchId = typeof body?.researchId === "string" ? body.researchId : "";
     const candidateId = typeof body?.candidateId === "string" ? body.candidateId : "";
+    const explicitUserConfirmation = body?.explicitUserConfirmation === true;
     const record = privateDiligenceStore.get(researchId);
     const selection = record ? selectTargetCandidate(record.candidates, candidateId) : null;
     const candidate = selection?.candidate;
-    if (!record || !candidate) {
+    if (!record || !candidate || !explicitUserConfirmation) {
       return NextResponse.json({ code: "TARGET_CANDIDATE_NOT_FOUND", message: "The selected candidate does not belong to this research request" }, { status: 404 });
+    }
+    const ownershipMatches = record.researchId === researchId && candidateBelongsToResearch(candidate, researchId);
+    if (!ownershipMatches) {
+      console.info(JSON.stringify({ event: "clara_target_ownership_diagnostic", incomingResearchRequestId: researchId, incomingCandidateId: candidateId, loadedResearchRequestId: record.researchId, loadedCandidateId: candidate.candidateId, candidateResearchRequestId: candidate.researchRequestId, ownershipMatches: false }));
+      return NextResponse.json({ code: "TARGET_CANDIDATE_OWNERSHIP_MISMATCH", message: "The selected candidate does not belong to this research request" }, { status: 409 });
     }
     const frontendEligibility = getEntityConfirmationEligibility(candidate, true);
     const backendEligibility = canSelectTarget(candidate, true);
@@ -30,7 +37,7 @@ export async function POST(request: Request) {
       stage: "providerPlanning",
       stageStatus: "running",
     });
-    console.info(JSON.stringify({ event: "clara_target_selection_diagnostic", researchId, candidateId, candidateStatus: candidate.resolutionStatus, candidateConfidence: candidate.matchConfidence, candidateScore: candidate.matchScore, selectable: true, frontendEligibility: frontendEligibility.canConfirm, backendEligibility: true, targetSelectionResult: "userSelected", researchSessionCreated: true }));
+    console.info(JSON.stringify({ event: "clara_target_selection_diagnostic", incomingResearchRequestId: researchId, incomingCandidateId: candidateId, loadedResearchRequestId: record.researchId, loadedCandidateId: candidate.candidateId, candidateResearchRequestId: candidate.researchRequestId, ownershipMatches, explicitUserConfirmation, candidateStatus: candidate.resolutionStatus, candidateConfidence: candidate.matchConfidence, candidateScore: candidate.matchScore, selectable: true, frontendEligibility: frontendEligibility.canConfirm, backendEligibility: true, targetSelectionResult: "userSelected", researchSessionCreated: true }));
     return NextResponse.json({ researchId, entity: graph, targetSelectionStatus: graph.targetSelectionStatus, identityVerificationStatus: graph.identityVerificationStatus });
   } catch {
     return NextResponse.json({ code: "ENTITY_CONFIRMATION_FAILED", message: "Clara could not confirm the selected target" }, { status: 400 });

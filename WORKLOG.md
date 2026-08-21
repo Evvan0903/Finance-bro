@@ -1,5 +1,16 @@
 # FinBro Research Worklog
 
+## Clara explicit candidate-selection state — 2026-08-21
+
+- `saveToken` routing: repository tracing, browser reproduction, and diagnostics used the research lane; the selection-only UI/API/test edits used the low-risk implementation lane; final review retained the state and ownership boundary.
+- Diagnosis: the reported Abaka failure did not reproduce in the prior local build because the card-level Confirm button successfully called the backend. The confirmed defect was structural: no independent `selectedCandidateId` existed, a displayed single candidate was not marked selected, and confirmation captured the candidate object in a card callback. Failure categories A and C were confirmed; D was a structural stale-object risk. F, G, H, and I were not reproduced.
+- Minimal fix: added deterministic selection state. One candidate is automatically selected; multiple candidates start unselected; clicking a card's Select control stores exactly that candidate ID; the independent Confirm button is disabled until selection exists and builds an ID-only payload with `explicitUserConfirmation: true`.
+- Ownership: each server-issued candidate carries its `researchRequestId`. Confirmation validates the incoming research ID, selected candidate ID, stored request ID, candidate request ID, and existing provenance/relationship rules. Cross-request and malformed candidates remain rejected.
+- Sanitized Abaka browser trace: research request `97750122-74e9-4093-b4e3-2aa86a40f81a`; candidate and selected candidate `bd809464-9781-4544-ae3d-65048be1d037`; candidate request ID matched; ownership was true; confirmation succeeded; Quick research and report rendering completed.
+- Tests: focused Clara selection/diligence/Quick suite 27/27; full suite 120/120; ESLint, TypeScript, Vinext production build, Vercel-compatible build, and `git diff --check` passed. The deterministic three-candidate test selects the second candidate and confirms only its ID; a naturally occurring multi-candidate public result was not available without fabricating production discovery data.
+- Scope: no persistence, scoring, discovery behavior, provider architecture, paid model, ATS, report redesign, or other employee workflow was changed. No manual Vercel deployment was performed.
+- Release: commit `fix: correct clara candidate selection state` and push to `origin/main` without manual deployment.
+
 ## Clara company discovery and target-selection unblock — 2026-08-20
 
 - `saveToken` routing: Sol retained the selection-versus-verification boundary and final review; repository tracing and live request diagnostics stayed in the research lane; scoped UI, route, test, and documentation edits stayed in the low-risk implementation lane.

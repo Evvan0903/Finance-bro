@@ -17,13 +17,14 @@ Quick mode selects the website source first, then selective USAspending or Form 
 3. If public identity information cannot be reached for a name-only request, create a server-bound provisional discovery lead from that request. It remains Low confidence, identity-unverified, and unusable as evidence; it exists only so the user can select the intended research target and let Clara continue discovery.
 4. Score unique strong signals. Exact reachable domain plus an observed website organization name, exact domain plus a Terms/Privacy entity, an official legal-name match plus another signal, or a score of at least 60 can support automatic selection.
 5. Keep target selection separate from legal-entity verification. Explicit selection requires a structurally valid candidate that belongs to the current research request, has server-side provenance, and is neither rejected nor likely unrelated. Missing website, legal name, location, people, or a high score does not by itself block explicit selection.
-6. Frontend and backend use the same deterministic selection helper. Explicit selection preserves Low/Medium/High confidence and records `userSelected`; automatic selection records `autoSelected`. Identity verification independently remains `unverified`, `partiallyVerified`, `verified`, or `conflicting`.
-7. In Quick mode, valid selection starts research immediately. If no eligible public evidence is available, Clara produces a Limited brief with explicit gaps and zero unsupported claims. Deep mode retains the evidence requirement.
-8. Build an enriched identity graph containing website names, candidate legal names, Terms/Privacy entities, domains, email domains, people, addresses, social profiles, product categories, affiliates, identifiers, jurisdictions, and explicit relationship boundaries.
-9. Build a provider plan from enriched names, geography, and industry. Provider failures are typed and non-fatal.
-10. Register raw evidence, normalize supported fields, assign source tiers and verification eligibility, then exclude weak/lead-only evidence from final claims.
-11. Build evidence-linked claims, reconcile matching values, preserve conflicts, separate risks from information gaps, and generate follow-up questions.
-12. Generate a 20-section report with References and Evidence Register last.
+6. Frontend and backend use deterministic selection helpers. Exactly one candidate initializes `selectedCandidateId` to that server-issued ID; multiple candidates initialize it to null until the user chooses one. The independent Confirm action is disabled without a selection and sends only the research ID, selected candidate ID, and `explicitUserConfirmation: true`. Every candidate also carries its issuing research-request ID for backend ownership validation.
+7. Explicit selection preserves Low/Medium/High confidence and records `userSelected`; automatic selection records `autoSelected`. Identity verification independently remains `unverified`, `partiallyVerified`, `verified`, or `conflicting`.
+8. In Quick mode, valid selection starts research immediately. If no eligible public evidence is available, Clara produces a Limited brief with explicit gaps and zero unsupported claims. Deep mode retains the evidence requirement.
+9. Build an enriched identity graph containing website names, candidate legal names, Terms/Privacy entities, domains, email domains, people, addresses, social profiles, product categories, affiliates, identifiers, jurisdictions, and explicit relationship boundaries.
+10. Build a provider plan from enriched names, geography, and industry. Provider failures are typed and non-fatal.
+11. Register raw evidence, normalize supported fields, assign source tiers and verification eligibility, then exclude weak/lead-only evidence from final claims.
+12. Build evidence-linked claims, reconcile matching values, preserve conflicts, separate risks from information gaps, and generate follow-up questions.
+13. Generate a 20-section report with References and Evidence Register last.
 
 The process-local store is intentionally ephemeral because no Vercel-safe database binding is configured. Research records may be lost on process restart and are not an authorization boundary. Durable encrypted storage, retention controls, and signed downloads are future work.
 

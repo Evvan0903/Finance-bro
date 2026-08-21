@@ -31,7 +31,7 @@ async function confirm(discovered) {
   if (!candidate) return null;
   if (discovered.autoConfirmedCandidateId === candidate.candidateId) return candidate;
   const response = await request("/api/private-diligence/confirm-entity", {
-    researchId: discovered.researchId, candidateId: candidate.candidateId,
+    researchId: discovered.researchId, candidateId: candidate.candidateId, explicitUserConfirmation: true,
   });
   if (!response.ok) throw new Error(response.payload.message ?? "Confirmation failed");
   return candidate;

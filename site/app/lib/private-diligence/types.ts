@@ -38,6 +38,7 @@ export type EntityRelationshipType = "Target operating company" | "Possible lega
 
 export type EntityCandidate = {
   candidateId: string;
+  researchRequestId: string;
   displayName: string;
   legalName: string | null;
   dbaNames: string[];

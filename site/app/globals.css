@@ -81,7 +81,7 @@
 .clara-form-grid input, .clara-form-grid select { width: 100%; min-height: 46px; border: 1px solid var(--border-medium); border-radius: 0; padding: 10px 12px; background: #fff; color: var(--text-primary); font: inherit; }
 .clara-form-grid input:focus, .clara-form-grid select:focus { outline: 2px solid var(--brand-blue-20); border-color: var(--brand-blue); }
 .clara-primary { margin-top: 28px; min-height: 48px; border: 1px solid var(--brand-blue); background: var(--brand-blue); color: #fff; padding: 12px 22px; font-weight: 800; cursor: pointer; }
-.clara-primary:disabled { opacity: .55; cursor: wait; }
+.clara-primary:disabled { opacity: .55; cursor: not-allowed; }
 .workspace-modal-secondary { display: inline-flex; margin-top: 10px; color: var(--text-muted); font-size: .8rem; }
 .clara-disclosure { margin: 28px 0 0; padding-top: 18px; border-top: 1px solid var(--border-light); color: var(--text-muted); font-size: .78rem; line-height: 1.5; }
 .clara-error { padding: 14px 16px; margin: 22px 0 0; color: #8a2d2d; border: 1px solid #e6b9b9; background: #fff8f8; }

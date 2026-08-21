@@ -57,6 +57,7 @@ export async function discoverEntityCandidates(
   const source = input.website ? new URL(input.website.includes("://") ? input.website : `https://${input.website}`) : null;
   const base = {
     candidateId: crypto.randomUUID(),
+    researchRequestId: researchId,
     displayName: input.companyName ?? "",
     legalName: null,
     dbaNames: [],

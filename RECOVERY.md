@@ -1,5 +1,60 @@
 # Recovery Checkpoint
 
+## Current objective — Clara explicit candidate-selection state
+
+### Original objective
+
+Diagnose Clara's Quick Company Intelligence candidate-selection and confirmation flow before architectural changes, trace the request/candidate/selection identifiers, then make only the smallest proven fix. A single candidate must be automatically selected, multiple candidates must require an explicit choice, confirmation must use only the selected server-issued ID, and backend ownership checks must remain intact.
+
+### Completed
+
+- Followed `saveToken`, inspected the current notes and implementation, and reproduced Abaka AI with `https://www.abaka.ai/` in the built application before editing.
+- Confirmed that the prior build could complete when its card-level Confirm button was clicked, so process-local persistence was not the reproduced cause.
+- Confirmed failure categories A and C: the UI had no independent `selectedCandidateId`, and one displayed candidate was not automatically marked selected. The object-capturing card callback also created category D risk, although a stale payload was not observed in the Abaka run.
+- Added a small deterministic selection helper, explicit selection state, automatic one-candidate selection, multi-candidate null initial state, visible Selected styling, and an independent guarded Confirm button.
+- Confirmation now derives an ID-only payload from `selectedCandidateId` and includes `explicitUserConfirmation: true`; it never selects from array position, score, or a stale candidate object.
+- Added `researchRequestId` to server-issued candidates and retained request ownership, candidate membership, malformed-candidate, provenance, and unrelated-entity checks.
+- Added sanitized frontend, discovery, and backend ownership diagnostics.
+- Browser-validated Abaka from Find Company through selection, confirmation, research start, and Quick report. All four sanitized ID fields agreed.
+- Passed 27/27 focused tests, 120/120 full tests, ESLint, TypeScript, Vinext build, Vercel-compatible build, and whitespace validation.
+- Created `fix: correct clara candidate selection state` and pushed it to `origin/main`; no manual deployment was performed.
+
+### Remaining tasks
+
+- No required task remains in this diagnostic/fix scope.
+- The current public discovery path did not yield a natural multi-candidate browser example; deterministic three-candidate coverage verifies that the second selected ID is the only ID confirmed. No test-only production candidates were introduced.
+
+### Current status
+
+The Abaka single-candidate flow now has an explicit selected state and completes through the Quick report. Backend ownership remains enforced. Persistence was not changed because category I was not reproduced.
+
+### Files modified
+
+- `site/app/ClaraPrivateDiligenceWorkflow.tsx`
+- `site/app/api/private-diligence/candidates/route.ts`
+- `site/app/api/private-diligence/confirm-entity/route.ts`
+- `site/app/globals.css`
+- `site/app/lib/private-diligence/copy.ts`
+- `site/app/lib/private-diligence/entity-resolution/candidateDiscovery.ts`
+- `site/app/lib/private-diligence/entity-resolution/candidateSelection.ts`
+- `site/app/lib/private-diligence/types.ts`
+- `site/scripts/validate-clara-website-first.mjs`
+- `site/scripts/validate-private-diligence.mjs`
+- `site/tests/clara-candidate-selection.test.mjs`
+- `site/tests/clara-quick-company-intelligence.test.mjs`
+- `PRIVATE_DILIGENCE_DIAGNOSTIC_REPORT.md`
+- `WORKLOG.md`, `RECOVERY.md`, and `TODO.md`
+
+### Next recommended step
+
+Verify any configured GitHub integration separately if desired. Do not migrate persistence or add provider/discovery features as part of this completed selection fix.
+
+### Assumptions and pending decisions
+
+- Internal API names remain `researchId` and `candidateId`; diagnostics label the conceptual request ownership as `researchRequestId` without a risky system-wide rename.
+- Process-local persistence remains a known future limitation, but it did not fail in the reproduced same-instance Abaka path.
+- No manual Vercel deployment was authorized or performed.
+
 ## Current objective — Clara company discovery and target-selection unblock
 
 ### Original objective

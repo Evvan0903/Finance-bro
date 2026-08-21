@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CLARA_COPY, CLARA_PROGRESS } from "./lib/private-diligence/copy";
+import { buildConfirmationPayload, initialSelectedCandidateId, selectCandidateId } from "./lib/private-diligence/entity-resolution/candidateSelection";
 import { getEntityConfirmationEligibility } from "./lib/private-diligence/entity-resolution/entityMatcher";
 import { REPORT_RENDERING_MODEL } from "./lib/report-rendering-model";
 import type { ClaraWorkflowMode, DiligenceLocale, EntityCandidate, PrivateCompanyInput, PrivateDiligenceReport, QuickResearchPurpose, ResearchObjective } from "./lib/private-diligence/types";
@@ -94,9 +95,9 @@ const UNRESOLVED_ZH: Record<string, string> = {
   "Official registration identifier": "官方注册标识符",
 };
 
-function CandidateCard({ candidate, onConfirm, locale, selected }: {
+function CandidateCard({ candidate, onSelect, locale, selected }: {
   candidate: EntityCandidate;
-  onConfirm: () => void;
+  onSelect: () => void;
   locale: DiligenceLocale;
   selected: boolean;
 }) {
@@ -129,7 +130,7 @@ function CandidateCard({ candidate, onConfirm, locale, selected }: {
       </div>
       {candidate.unresolvedIdentityFields.length > 0 && <p className="clara-unresolved"><strong>{copy.unresolved}</strong>{candidate.unresolvedIdentityFields.map(unresolvedLabel).join(" · ")}</p>}
       {candidate.matchConfidence === "Low" && <p className="clara-candidate-warning">{copy.lowConfidenceWebsite}</p>}
-      {eligibility.canConfirm && <button type="button" onClick={onConfirm} disabled={selected} aria-pressed={selected}>{selected ? copy.targetConfirmed : copy.confirm}</button>}
+      {eligibility.canConfirm && <button type="button" onClick={onSelect} disabled={selected} aria-pressed={selected}>{selected ? copy.selectedTarget : copy.selectTarget}</button>}
     </article>
   );
 }
@@ -216,6 +217,7 @@ export function ClaraPrivateDiligenceWorkflow({ mode = "deep" }: { mode?: ClaraW
   const [state, setState] = useState<WorkflowState>("input");
   const [researchId, setResearchId] = useState("");
   const [candidates, setCandidates] = useState<EntityCandidate[]>([]);
+  const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
   const [confirmedId, setConfirmedId] = useState("");
   const [report, setReport] = useState<PrivateDiligenceReport | null>(null);
   const [error, setError] = useState("");
@@ -236,20 +238,32 @@ export function ClaraPrivateDiligenceWorkflow({ mode = "deep" }: { mode?: ClaraW
     event.preventDefault(); setError(""); setState("resolving");
     try {
       const payload = await jsonRequest("/api/private-diligence/candidates", { input: normalizedInput });
+      const discoveredCandidates: EntityCandidate[] = payload.candidates ?? [];
+      const initialSelection = initialSelectedCandidateId(discoveredCandidates);
       setResearchId(payload.researchId);
-      setCandidates(payload.candidates ?? []);
+      setCandidates(discoveredCandidates);
+      setSelectedCandidateId(initialSelection);
       setConfirmedId(payload.autoConfirmedCandidateId ?? "");
-      if (!payload.candidates?.length) { setError(payload.message ?? copy.insufficientIdentity); setState("needsMoreInformation"); return; }
-      if (payload.autoConfirmedCandidateId && mode === "quick") { setState("targetSelected"); await runResearch(payload.researchId); return; }
+      console.info(JSON.stringify({ event: "clara_candidate_selection_state", researchRequestId: payload.researchId, candidatesLength: discoveredCandidates.length, candidateId: discoveredCandidates[0]?.candidateId ?? null, candidateResearchRequestId: discoveredCandidates[0]?.researchRequestId ?? null, selectedCandidateId: initialSelection }));
+      if (!discoveredCandidates.length) { setError(payload.message ?? copy.insufficientIdentity); setState("needsMoreInformation"); return; }
       setState("confirmation");
     } catch (problem) { setError(problem instanceof Error ? problem.message : copy.insufficientIdentity); setState("error"); }
   }
 
-  async function confirm(candidate: EntityCandidate) {
+  function selectCandidate(candidateId: string) {
+    const selection = selectCandidateId(candidates, candidateId);
+    setSelectedCandidateId(selection);
+    if (selection !== confirmedId) setConfirmedId("");
+  }
+
+  async function confirmSelected() {
+    const confirmationPayload = buildConfirmationPayload(researchId, selectedCandidateId);
+    if (!confirmationPayload) return;
     setError("");
     try {
-      await jsonRequest("/api/private-diligence/confirm-entity", { researchId, candidateId: candidate.candidateId });
-      setConfirmedId(candidate.candidateId);
+      console.info(JSON.stringify({ event: "clara_confirmation_request", researchRequestId: confirmationPayload.researchId, candidateId: confirmationPayload.candidateId, selectedCandidateId, explicitUserConfirmation: true }));
+      await jsonRequest("/api/private-diligence/confirm-entity", confirmationPayload);
+      setConfirmedId(confirmationPayload.candidateId);
       setState("targetSelected");
       if (mode === "quick") await runResearch();
     } catch (problem) { setError(problem instanceof Error ? problem.message : copy.insufficientIdentity); }
@@ -269,7 +283,7 @@ export function ClaraPrivateDiligenceWorkflow({ mode = "deep" }: { mode?: ClaraW
     await runResearch();
   }
 
-  function reset() { setState("input"); setResearchId(""); setCandidates([]); setConfirmedId(""); setReport(null); setError(""); }
+  function reset() { setState("input"); setResearchId(""); setCandidates([]); setSelectedCandidateId(null); setConfirmedId(""); setReport(null); setError(""); }
 
   return (
     <main className="clara-shell">
@@ -302,7 +316,7 @@ export function ClaraPrivateDiligenceWorkflow({ mode = "deep" }: { mode?: ClaraW
               </div>
               <button className="clara-primary" disabled={state === "resolving"}>{state === "resolving" ? progress[0][input.locale] : mode === "quick" ? (input.locale === "zh" ? "查找公司" : "Find Company") : copy.assign}</button>
             </form>}
-            {(state === "confirmation" || state === "targetSelected" || state === "researching") && <div className="clara-confirmation"><header><span>02</span><h2>{copy.confirmHeading}</h2></header>{candidates.map((candidate) => <CandidateCard key={candidate.candidateId} candidate={candidate} locale={input.locale} selected={candidate.candidateId === confirmedId} onConfirm={() => confirm(candidate)} />)}{confirmedId && mode === "deep" && <div className="clara-confirm-actions"><button type="button" onClick={reset}>{copy.edit}</button><button className="clara-primary" onClick={generate} disabled={state === "researching"}>{state === "researching" ? progress.at(-1)![input.locale] : copy.generate}</button></div>}</div>}
+            {(state === "confirmation" || state === "targetSelected" || state === "researching") && <div className="clara-confirmation"><header><span>02</span><h2>{copy.confirmHeading}</h2></header>{candidates.map((candidate) => <CandidateCard key={candidate.candidateId} candidate={candidate} locale={input.locale} selected={candidate.candidateId === selectedCandidateId} onSelect={() => selectCandidate(candidate.candidateId)} />)}<div className="clara-confirm-actions"><button type="button" onClick={reset}>{copy.edit}</button>{confirmedId && mode === "deep" ? <button className="clara-primary" onClick={generate} disabled={state === "researching"}>{state === "researching" ? progress.at(-1)![input.locale] : copy.generate}</button> : <button className="clara-primary" onClick={confirmSelected} disabled={!selectedCandidateId || state === "researching"}>{copy.confirm}</button>}</div></div>}
             {error && <p className="clara-error" role="alert">{error}</p>}
             <p className="clara-disclosure">{copy.disclosure}</p>
           </section>

@@ -51,7 +51,7 @@ for (const scenario of scenarios) {
     const candidate = discovered.candidates?.[0];
     if (!candidate) throw new Error("No plausible candidate was returned");
     const confirmed = await request("/api/private-diligence/confirm-entity", {
-      researchId: discovered.researchId, candidateId: candidate.candidateId,
+      researchId: discovered.researchId, candidateId: candidate.candidateId, explicitUserConfirmation: true,
     });
     await request("/api/private-diligence/plan", { researchId: discovered.researchId });
     const completed = await request("/api/private-diligence/run", { researchId: discovered.researchId });

@@ -37,11 +37,11 @@ test("confirmation diagnostics prove target-selection parity without public expo
   assert.doesNotMatch(route, /Additional identifying information is required before this target can be confirmed/);
 });
 
-test("automatically selected Quick targets enter the same research-start path", async () => {
+test("automatically selected Quick candidates wait for explicit confirmation before research", async () => {
   const workflow = await readFile(new URL("../app/ClaraPrivateDiligenceWorkflow.tsx", import.meta.url), "utf8");
-  assert.match(workflow, /payload\.autoConfirmedCandidateId && mode === "quick"/);
-  assert.match(workflow, /await runResearch\(payload\.researchId\)/);
-  assert.match(workflow, /async function runResearch\(activeResearchId = researchId\)/);
+  assert.match(workflow, /initialSelectedCandidateId\(discoveredCandidates\)/);
+  assert.match(workflow, /await jsonRequest\("\/api\/private-diligence\/confirm-entity", confirmationPayload\)/);
+  assert.match(workflow, /if \(mode === "quick"\) await runResearch\(\)/);
 });
 
 test("exposes a compact bilingual quick workflow and preserves Clara's deep route", async () => {

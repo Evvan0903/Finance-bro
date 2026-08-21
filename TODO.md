@@ -1,5 +1,19 @@
 # Institutional Equity Research Refactor and Shell Sample TODO
 
+## Clara explicit candidate-selection state
+
+- [x] Reproduce the Abaka AI + official website flow before changing code.
+- [x] Trace the research request ID, candidate ID, candidate request ownership, and frontend selection state.
+- [x] Classify the defect as A and C, with D as a structural risk; do not attribute it to persistence.
+- [x] Add independent `selectedCandidateId` state and automatically select exactly one candidate.
+- [x] Keep multiple candidates unselected until the user chooses an exact candidate ID.
+- [x] Send an ID-only confirmation payload with explicit user confirmation.
+- [x] Preserve and validate backend request/candidate ownership without weakening security checks.
+- [x] Add single, multiple, no-selection, stale-object, cross-request, malformed-candidate, and UI/API invariant tests.
+- [x] Pass 27/27 focused tests, 120/120 full tests, ESLint, TypeScript, both builds, and whitespace checks.
+- [x] Complete Abaka browser validation from Find Company through Quick report.
+- [x] Commit as `fix: correct clara candidate selection state` and push to `origin/main` without manual deployment.
+
 ## Clara company discovery and target-selection unblock
 
 - [x] Read `saveToken`, recovery notes, Clara discovery, candidate confirmation, state-machine, report, provider, and test paths.
