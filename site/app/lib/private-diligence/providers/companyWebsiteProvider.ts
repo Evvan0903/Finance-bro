@@ -171,6 +171,7 @@ export function createCompanyWebsiteProvider(
             products: extracted.products,
             services: extracted.services,
             socialProfiles: extracted.socialProfiles,
+            links: extracted.links,
             affiliateNames: extracted.affiliateNames,
             extractedFields: Object.entries({
               organizationName: extracted.organizationNames,

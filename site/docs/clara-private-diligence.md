@@ -2,6 +2,14 @@
 
 Clara is FinBro's bilingual Private Company Diligence Analyst. The V1 workflow at `/workflows/private-company-diligence` accepts either a company name, a company website, or both, plus optional identity hints. It resolves the target before producing a formal public-source diligence report. It does not provide complete legal, financial, tax, operational, cybersecurity, ownership, litigation, valuation, fraud, background-investigation, or investment conclusions.
 
+## Two Clara modes
+
+`/workflows/company-intelligence` is the available **Quick Company Intelligence** workflow. It reuses the same confirmation-first identity graph and evidence controls for a concise nine-section business brief: Company Snapshot; Business and Products; Ownership and Leadership; Hiring and Growth Signals; Locations and Contact Information; Customers and Partners; Recent Business Activity; Key Commercial Signals; and Sources and Information Gaps. Its research-purpose selector supports competitor, potential customer, vendor, partner, sales prospect, and general research. Purpose changes emphasis only; it never changes evidentiary standards.
+
+Quick mode selects the website source first, then selective USAspending or Form D checks only when relevant. ATS links visible on a company page are identified as public hiring infrastructure, but a link is not presented as an open-role count without direct ATS evidence. Contacts are restricted to public business channels; personal emails, personal mobiles, and residential addresses are excluded. Customer and partner labels require company and/or counterparty support; logos alone are not confirmation. Commercial signals are restrained, evidence-linked, and not investment recommendations. Coverage means public-source availability, not diligence completion.
+
+`/workflows/private-company-diligence` is retained as the deeper **Outside-In Due Diligence** implementation and remains In Development in the product presentation. It is not presented as the completed Quick workflow. Shared infrastructure includes entity resolution, providers, evidence and claim registries, conflict handling, exports, source ledger, and the disabled `runClaraModel` boundary. The model router has `small`, `medium`, and `strong` tiers for future isolated structured-output use; no paid model calls are enabled and model output can never bypass evidence validation.
+
 ## Execution model
 
 1. Validate that at least a company name or website is present; location, founder, industry, objective, language, and report depth remain optional.

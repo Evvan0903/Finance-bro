@@ -1,5 +1,19 @@
 # Institutional Equity Research Refactor and Shell Sample TODO
 
+## Clara Quick Company Intelligence
+
+- [x] Read `saveToken`, project notes, Clara implementation, entity resolution, provider/evidence/claim/export/report infrastructure, persistence, and tests.
+- [x] Add the bilingual Quick Company Intelligence route and keep Outside-In Due Diligence intact/In Development.
+- [x] Support name and/or website identity input and six quick research purposes.
+- [x] Reuse candidate confirmation and bounded website-first enrichment without duplicating shared infrastructure.
+- [x] Add selective quick source planning and a concise nine-section evidence-backed brief.
+- [x] Preserve Company Reported provenance, relationship labels, information gaps, business-contact privacy, and no-investment-recommendation boundaries.
+- [x] Prepare a disabled structured model-router abstraction without activating paid APIs.
+- [x] Add Quick workflow regression coverage and pass focused/full tests, lint, type check, both builds, and whitespace validation.
+- [x] Update Clara developer documentation, README, `WORKLOG.md`, and `RECOVERY.md`.
+- [x] Create `feat: add clara quick company intelligence workflow`; push `origin/main` without manual Vercel deployment remains next.
+- [ ] Future: add reviewed direct public ATS adapters and durable Vercel-safe state persistence before claiming production-ready multi-request research.
+
 ## Ethan market-provider credential loading and validation
 
 - [x] Read `saveToken`, recovery notes, env/provider clients, validator, diagnostics, tests, and Vercel documentation.

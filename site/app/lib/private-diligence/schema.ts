@@ -1,9 +1,10 @@
-import type { DiligenceLocale, PrivateCompanyInput, ReportDepth, ResearchObjective } from "./types";
+import type { ClaraWorkflowMode, DiligenceLocale, PrivateCompanyInput, QuickResearchPurpose, ReportDepth, ResearchObjective } from "./types";
 
 const OBJECTIVES = new Set<ResearchObjective>([
   "General diligence", "Investor screening", "Vendor diligence",
   "Acquisition screening", "Partnership review", "Customer review",
 ]);
+const QUICK_PURPOSES = new Set<QuickResearchPurpose>(["Competitor", "Potential Customer", "Vendor", "Partner", "Sales Prospect", "General Research"]);
 
 function optionalText(value: unknown, maximum = 160) {
   if (value === null || value === undefined || value === "") return null;
@@ -35,6 +36,9 @@ export function parsePrivateCompanyInput(value: unknown): PrivateCompanyInput {
     : "General diligence";
   const locale: DiligenceLocale = input.locale === "zh" ? "zh" : "en";
   const reportDepth: ReportDepth = input.reportDepth === "Compact" ? "Compact" : "Standard";
+  const workflowMode: ClaraWorkflowMode = input.workflowMode === "deep" ? "deep" : "quick";
+  const quickResearchPurpose = QUICK_PURPOSES.has(input.quickResearchPurpose as QuickResearchPurpose)
+    ? input.quickResearchPurpose as QuickResearchPurpose : "General Research";
   return {
     companyName,
     website,
@@ -46,5 +50,7 @@ export function parsePrivateCompanyInput(value: unknown): PrivateCompanyInput {
     researchObjective,
     locale,
     reportDepth,
+    workflowMode,
+    quickResearchPurpose,
   };
 }

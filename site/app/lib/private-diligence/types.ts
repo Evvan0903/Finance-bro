@@ -7,6 +7,8 @@ export type ResearchObjective =
   | "Acquisition screening"
   | "Partnership review"
   | "Customer review";
+export type ClaraWorkflowMode = "quick" | "deep";
+export type QuickResearchPurpose = "Competitor" | "Potential Customer" | "Vendor" | "Partner" | "Sales Prospect" | "General Research";
 
 export type PrivateCompanyInput = {
   companyName: string | null;
@@ -19,6 +21,8 @@ export type PrivateCompanyInput = {
   researchObjective: ResearchObjective;
   locale: DiligenceLocale;
   reportDepth: ReportDepth;
+  workflowMode?: ClaraWorkflowMode;
+  quickResearchPurpose?: QuickResearchPurpose;
 };
 
 export type ResolutionStatus =
@@ -345,7 +349,7 @@ export type ReportSection = {
 export type PrivateDiligenceReport = {
   reportId: string;
   researchId: string;
-  reportVersion: "clara-v1";
+  reportVersion: "clara-v1" | "clara-quick-v1";
   generatedAt: string;
   locale: DiligenceLocale;
   input: PrivateCompanyInput;

@@ -90,3 +90,9 @@ Set Vercel's Root Directory to `site`. The project uses `npm ci` and `npm run ve
 FRED and BEA require their credentials. Census can use its public anonymous quota, but `CENSUS_API_KEY` increases authenticated quota when valid. DATA GOV is required for the selected Congress.gov or GovInfo adapter. Missing or rejected optional market-provider credentials do not block Ethan's filing-based company report.
 
 FinBro provides research information, not investment advice, a rating, or a target price.
+
+## Clara workflows
+
+Clara offers **Quick Company Intelligence** at `/workflows/company-intelligence`. It accepts a company name and/or public website, asks the user to confirm the target, then produces a concise public-source business brief for competitor, customer, vendor, partner, prospect, or general research. It prioritizes identity, business profile, leadership, public hiring links, locations, business contact channels, relationships, recent activity, commercial signals, sources, and information gaps. Public website facts remain Company Reported until independently corroborated; personal contact information is excluded. CSV/XLSX evidence and claim downloads plus Markdown/PDF report exports reuse Clara's controlled export path.
+
+**Outside-In Due Diligence** remains an in-development, deeper workflow at `/workflows/private-company-diligence`. The two modes share entity resolution, provider, evidence, claim, export, and security infrastructure but keep their report scopes separate. Clara's model-router boundary is prepared but disabled; no paid LLM API is activated.

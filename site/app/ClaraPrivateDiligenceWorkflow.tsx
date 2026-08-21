@@ -6,12 +6,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { CLARA_COPY, CLARA_PROGRESS } from "./lib/private-diligence/copy";
 import { getEntityConfirmationEligibility } from "./lib/private-diligence/entity-resolution/entityMatcher";
 import { REPORT_RENDERING_MODEL } from "./lib/report-rendering-model";
-import type { DiligenceLocale, EntityCandidate, PrivateCompanyInput, PrivateDiligenceReport, ResearchObjective } from "./lib/private-diligence/types";
+import type { ClaraWorkflowMode, DiligenceLocale, EntityCandidate, PrivateCompanyInput, PrivateDiligenceReport, QuickResearchPurpose, ResearchObjective } from "./lib/private-diligence/types";
 
 const OBJECTIVES: ResearchObjective[] = [
   "General diligence", "Investor screening", "Vendor diligence",
   "Acquisition screening", "Partnership review", "Customer review",
 ];
+const QUICK_PURPOSES: QuickResearchPurpose[] = ["Competitor", "Potential Customer", "Vendor", "Partner", "Sales Prospect", "General Research"];
 
 const OBJECTIVE_LABELS: Record<DiligenceLocale, Record<ResearchObjective, string>> = {
   en: Object.fromEntries(OBJECTIVES.map((objective) => [objective, objective])) as Record<ResearchObjective, string>,
@@ -30,6 +31,18 @@ const EMPTY_INPUT: PrivateCompanyInput = {
   founderOrExecutive: null, industry: null, researchObjective: "General diligence",
   locale: "en", reportDepth: "Standard",
 };
+
+const QUICK_LABELS: Record<DiligenceLocale, Record<QuickResearchPurpose, string>> = {
+  en: Object.fromEntries(QUICK_PURPOSES.map((purpose) => [purpose, purpose])) as Record<QuickResearchPurpose, string>,
+  zh: { Competitor: "竞争对手", "Potential Customer": "潜在客户", Vendor: "供应商", Partner: "合作伙伴", "Sales Prospect": "销售线索", "General Research": "通用调查" },
+};
+const QUICK_PROGRESS = [
+  { en: "Finding the company", zh: "正在查找公司" }, { en: "Confirming the target", zh: "正在确认目标" },
+  { en: "Reviewing the company website", zh: "正在审查公司网站" }, { en: "Checking leadership and ownership signals", zh: "正在核查管理层和所有权信号" },
+  { en: "Reviewing hiring activity", zh: "正在审查招聘活动" }, { en: "Finding offices and business contacts", zh: "正在查找办公室和业务联系方式" },
+  { en: "Checking customers and partners", zh: "正在核查客户和合作伙伴" }, { en: "Reviewing recent business activity", zh: "正在审查近期业务动态" },
+  { en: "Building the intelligence brief", zh: "正在生成企业调查简报" },
+] as const;
 
 type WorkflowState = "input" | "resolving" | "confirmation" | "researching" | "report";
 
@@ -105,6 +118,7 @@ function CandidateCard({ candidate, onConfirm, locale, selected }: {
         <div><dt>{locale === "zh" ? "行业" : "Industry"}</dt><dd>{candidate.industry ?? missing}</dd></div>
         <div><dt>{locale === "zh" ? "已知人员" : "Known people"}</dt><dd>{[...candidate.founders, ...candidate.executives].join(", ") || missing}</dd></div>
         <div><dt>{locale === "zh" ? "注册辖区" : "Registration jurisdiction"}</dt><dd>{candidate.registrationJurisdiction ?? missing}</dd></div>
+        <div><dt>{locale === "zh" ? "关系类型" : "Relationship type"}</dt><dd>{locale === "zh" ? "目标运营公司" : "Target operating company"}</dd></div>
       </dl>
       <div className="clara-match-signals">
         {candidate.matchSignals.map((signal) => <span key={signal}>{signalLabel(signal)}</span>)}
@@ -191,8 +205,8 @@ function ClaraReport({ report, researchId, onReset }: {
   );
 }
 
-export function ClaraPrivateDiligenceWorkflow() {
-  const [input, setInput] = useState<PrivateCompanyInput>(EMPTY_INPUT);
+export function ClaraPrivateDiligenceWorkflow({ mode = "deep" }: { mode?: ClaraWorkflowMode }) {
+  const [input, setInput] = useState<PrivateCompanyInput>({ ...EMPTY_INPUT, workflowMode: mode, quickResearchPurpose: "General Research" });
   const [state, setState] = useState<WorkflowState>("input");
   const [researchId, setResearchId] = useState("");
   const [candidates, setCandidates] = useState<EntityCandidate[]>([]);
@@ -200,7 +214,8 @@ export function ClaraPrivateDiligenceWorkflow() {
   const [report, setReport] = useState<PrivateDiligenceReport | null>(null);
   const [error, setError] = useState("");
   const copy = CLARA_COPY[input.locale];
-  const progressIndex = state === "resolving" ? 0 : state === "confirmation" ? 1 : state === "researching" ? 3 : state === "report" ? CLARA_PROGRESS.length : -1;
+  const progress = mode === "quick" ? QUICK_PROGRESS : CLARA_PROGRESS;
+  const progressIndex = state === "resolving" ? 0 : state === "confirmation" ? 1 : state === "researching" ? 3 : state === "report" ? progress.length : -1;
   const normalizedInput = useMemo(() => Object.fromEntries(Object.entries(input).map(([key, value]) => [key, typeof value === "string" && !value.trim() ? null : value])), [input]);
 
   useEffect(() => {
@@ -247,12 +262,16 @@ export function ClaraPrivateDiligenceWorkflow() {
     <main className="clara-shell">
       <header className="clara-header"><Link href="/" aria-label={copy.back}><span>F</span> FINBRO</Link><div><strong>CLARA</strong><span>{copy.role}</span></div><button type="button" onClick={() => update("locale", input.locale === "en" ? "zh" : "en")}>{input.locale === "en" ? "中文" : "EN"}</button></header>
       <section className="clara-hero">
-        <div><span>PUBLIC-SOURCE DILIGENCE</span><h1>{copy.heading}</h1><p>{copy.subheading}</p><small>{copy.publicOnly}</small></div>
+        <div><span>{mode === "quick" ? (input.locale === "zh" ? "快速企业调查" : "QUICK COMPANY INTELLIGENCE") : "PUBLIC-SOURCE DILIGENCE"}</span><h1>{mode === "quick" ? (input.locale === "zh" ? "快速企业调查" : "Quick Company Intelligence") : copy.heading}</h1><p>{mode === "quick" ? (input.locale === "zh" ? "快速研究竞争对手、客户、供应商、合作伙伴和销售线索的公开商业信息" : "Fast public-source research for competitors, customers, vendors, partners, and sales prospects") : copy.subheading}</p><small>{mode === "quick" ? (input.locale === "zh" ? "仅限公开业务信息 · 并非完整尽调" : "Public business information only · not complete due diligence") : copy.publicOnly}</small></div>
         <Image src="/team/clara-workstation.svg" alt="Clara at a private company diligence workstation" width={560} height={360} priority />
       </section>
+      {mode === "quick" && <nav className="clara-workflow-choices" aria-label={input.locale === "zh" ? "Clara 工作流" : "Clara workflows"}>
+        <Link href="/workflows/company-intelligence" data-active="true"><strong>{input.locale === "zh" ? "快速企业调查" : "Quick Company Intelligence"}</strong><span>{input.locale === "zh" ? "快速研究竞争对手、客户、供应商、合作伙伴和销售线索" : "Fast competitor, customer, vendor, partner, or prospect research"}</span></Link>
+        <span aria-disabled="true"><strong>{input.locale === "zh" ? "外部信息深度尽调" : "Outside-In Due Diligence"}</strong><span>{input.locale === "zh" ? "开发中" : "In Development"}</span></span>
+      </nav>}
       {state !== "report" && (
         <div className="clara-workspace">
-          <aside className="clara-progress"><span>{input.locale === "zh" ? "工作流程" : "Research workflow"}</span><ol>{CLARA_PROGRESS.map((item, index) => <li key={item.en} data-state={index < progressIndex ? "complete" : index === progressIndex ? "current" : "pending"}>{item[input.locale]}</li>)}</ol></aside>
+          <aside className="clara-progress"><span>{input.locale === "zh" ? "工作流程" : "Research workflow"}</span><ol>{progress.map((item, index) => <li key={item.en} data-state={index < progressIndex ? "complete" : index === progressIndex ? "current" : "pending"}>{item[input.locale]}</li>)}</ol></aside>
           <section className="clara-panel">
             {(state === "input" || state === "resolving") && <form onSubmit={discover}>
               <header><span>01</span><h2>{input.locale === "zh" ? "确定目标公司" : "Define the target company"}</h2></header>
@@ -265,12 +284,12 @@ export function ClaraPrivateDiligenceWorkflow() {
                 <label><span>{copy.fields.country}</span><input value={input.country ?? ""} onChange={(event) => update("country", event.target.value || null)} /></label>
                 <label><span>{copy.fields.founder}</span><input value={input.founderOrExecutive ?? ""} onChange={(event) => update("founderOrExecutive", event.target.value || null)} /></label>
                 <label><span>{copy.fields.industry}</span><input value={input.industry ?? ""} onChange={(event) => update("industry", event.target.value || null)} /></label>
-                <label><span>{copy.fields.objective}</span><select value={input.researchObjective} onChange={(event) => update("researchObjective", event.target.value as ResearchObjective)}>{OBJECTIVES.map((objective) => <option key={objective} value={objective}>{OBJECTIVE_LABELS[input.locale][objective]}</option>)}</select></label>
-                <label><span>{copy.fields.depth}</span><select value={input.reportDepth} onChange={(event) => update("reportDepth", event.target.value as "Standard" | "Compact")}><option value="Standard">{input.locale === "zh" ? "标准" : "Standard"}</option><option value="Compact">{input.locale === "zh" ? "精简" : "Compact"}</option></select></label>
+                <label><span>{mode === "quick" ? (input.locale === "zh" ? "研究目的" : "Research purpose") : copy.fields.objective}</span>{mode === "quick" ? <select value={input.quickResearchPurpose} onChange={(event) => update("quickResearchPurpose", event.target.value as QuickResearchPurpose)}>{QUICK_PURPOSES.map((purpose) => <option key={purpose} value={purpose}>{QUICK_LABELS[input.locale][purpose]}</option>)}</select> : <select value={input.researchObjective} onChange={(event) => update("researchObjective", event.target.value as ResearchObjective)}>{OBJECTIVES.map((objective) => <option key={objective} value={objective}>{OBJECTIVE_LABELS[input.locale][objective]}</option>)}</select>}</label>
+                {mode === "deep" && <label><span>{copy.fields.depth}</span><select value={input.reportDepth} onChange={(event) => update("reportDepth", event.target.value as "Standard" | "Compact")}><option value="Standard">{input.locale === "zh" ? "标准" : "Standard"}</option><option value="Compact">{input.locale === "zh" ? "精简" : "Compact"}</option></select></label>}
               </div>
-              <button className="clara-primary" disabled={state === "resolving"}>{state === "resolving" ? CLARA_PROGRESS[0][input.locale] : copy.assign}</button>
+              <button className="clara-primary" disabled={state === "resolving"}>{state === "resolving" ? progress[0][input.locale] : mode === "quick" ? (input.locale === "zh" ? "查找公司" : "Find Company") : copy.assign}</button>
             </form>}
-            {(state === "confirmation" || state === "researching") && <div className="clara-confirmation"><header><span>02</span><h2>{copy.confirmHeading}</h2></header>{candidates.map((candidate) => <CandidateCard key={candidate.candidateId} candidate={candidate} locale={input.locale} selected={candidate.candidateId === confirmedId} onConfirm={() => confirm(candidate)} />)}{confirmedId && <div className="clara-confirm-actions"><button type="button" onClick={reset}>{copy.edit}</button><button className="clara-primary" onClick={generate} disabled={state === "researching"}>{state === "researching" ? CLARA_PROGRESS[14][input.locale] : copy.generate}</button></div>}</div>}
+            {(state === "confirmation" || state === "researching") && <div className="clara-confirmation"><header><span>02</span><h2>{copy.confirmHeading}</h2></header>{candidates.map((candidate) => <CandidateCard key={candidate.candidateId} candidate={candidate} locale={input.locale} selected={candidate.candidateId === confirmedId} onConfirm={() => confirm(candidate)} />)}{confirmedId && <div className="clara-confirm-actions"><button type="button" onClick={reset}>{copy.edit}</button><button className="clara-primary" onClick={generate} disabled={state === "researching"}>{state === "researching" ? progress.at(-1)![input.locale] : mode === "quick" ? (input.locale === "zh" ? "生成企业调查简报" : "Build intelligence brief") : copy.generate}</button></div>}</div>}
             {error && <p className="clara-error" role="alert">{error}</p>}
             <p className="clara-disclosure">{copy.disclosure}</p>
           </section>

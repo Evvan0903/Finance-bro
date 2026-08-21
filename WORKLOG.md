@@ -1,5 +1,17 @@
 # FinBro Research Worklog
 
+## Clara Quick Company Intelligence — 2026-08-20
+
+- `saveToken` routing: Sol retained workflow boundaries, evidence/privacy decisions, and final review; the existing provider and report paths were inspected before reuse; routine UI, copy, tests, and documentation stayed in the low-risk implementation lane.
+- Product: added available bilingual **Quick Company Intelligence** at `/workflows/company-intelligence`; Clara now visibly separates it from **Outside-In Due Diligence**, which remains In Development. The original deep route remains intact.
+- Scope: name and/or website, optional location/industry hints, and Competitor, Potential Customer, Vendor, Partner, Sales Prospect, or General Research purposes. Confirmation-first entity resolution is unchanged.
+- Research/report: quick mode uses a selective plan (company website plus only relevant USAspending/Form D) and produces nine concise sections: snapshot; business; leadership; hiring; locations/contacts; customers/partners; activity; commercial signals; sources/gaps. It preserves Company Reported provenance, excludes personal contact information, does not fabricate role counts or historical hiring trends, and makes no investment recommendation.
+- Reuse: existing Identity Graph, candidate confirmation, SSRF-safe bounded crawler, evidence/claim registries, verification eligibility, source references, Markdown/PDF and CSV/XLSX export path, formal footer, bilingual rendering, and temporary persistence are shared rather than duplicated.
+- Preparation: added a disabled `runClaraModel` boundary with small/medium/strong task tiers. No paid LLM API or model call was activated.
+- Tests: focused Clara + Quick suite 17/17; full suite 110/110; ESLint; TypeScript; Vinext build; Vercel-compatible Next build; and `git diff --check` passed. No tests failed.
+- Limitations: ATS links are surfaced as public hiring infrastructure only; direct Greenhouse/Lever/Ashby/Workday role retrieval is not activated in this increment, so no role count/trend is asserted. Process-local research state remains unsuitable for cross-instance Vercel workflow persistence and is visibly documented. No manual Vercel deployment was performed.
+- Agents: Ethan, Mason, Nora, Felix, and Parker research workflows were not modified.
+
 ## Clara website-first entity resolution — 2026-08-05
 
 - `saveToken` routing: Sol owned strong-signal scoring, shared confirmation rules, low-confidence boundaries, and final review; Terra audited discovery, provider, security, storage, and regression paths; Luna audited bilingual candidate presentation and responsive behavior.

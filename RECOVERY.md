@@ -812,6 +812,39 @@ Use the production Mason workflow and monitor provider coverage. Preserve this a
 - EIA, external search, and private market-data integrations are intentionally future work.
 # Clara V1 recovery checkpoint — 2026-08-05
 
+## Current objective — Clara Quick Company Intelligence — 2026-08-20
+
+### Original objective
+
+Add a lightweight public-source business intelligence workflow for private companies without rebuilding Clara or modifying the other FinBro agents.
+
+### Completed tasks
+
+- Added the bilingual Quick Company Intelligence route, workflow selector, quick-purpose inputs, selective source plan, compact nine-section report, and a disabled future model-router abstraction.
+- Reused Clara's entity resolution, explicit confirmation, bounded website enrichment, evidence/claim controls, source hierarchy, export path, PDF renderer, and shared report styling.
+- Preserved the deep diligence route and marked Outside-In Due Diligence In Development in the available workflow UI.
+- Added targeted tests and passed 110/110 full tests, lint, type check, Vinext build, Vercel build, and whitespace validation.
+
+### Remaining tasks
+
+- No required implementation remains for this scoped Quick workflow.
+- Future: add reviewed direct ATS adapters, durable Vercel-safe persistence, and only then perform live multi-company/browser/PDF validation across serverless instances.
+
+### Current status
+
+Validated locally and committed as `04fdbb4` (`feat: add clara quick company intelligence workflow`); the authorized GitHub push remains next. `.DS_Store` is unrelated pre-existing state and must remain unstaged. No manual Vercel deployment is authorized.
+
+### Files modified
+
+- `site/app/ClaraPrivateDiligenceWorkflow.tsx`, `site/app/TeamWorkspace.tsx`, `site/app/globals.css`
+- `site/app/workflows/company-intelligence/page.tsx` and preserved deep route
+- `site/app/lib/private-diligence/{types,schema,engine,modelRouter}.ts`, quick planner/report builder, website provider, plan route
+- `site/tests/clara-quick-company-intelligence.test.mjs`, `site/README.md`, `site/docs/clara-private-diligence.md`, `WORKLOG.md`, `TODO.md`
+
+### Next recommended step
+
+Push commit `04fdbb4` to `origin/main` without manual deployment.
+
 ## Website-first entity-resolution increment — 2026-08-05
 
 ### Original objective

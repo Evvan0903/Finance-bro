@@ -1,5 +1,5 @@
 import { ClaraPrivateDiligenceWorkflow } from "../../ClaraPrivateDiligenceWorkflow";
 
 export default function PrivateCompanyDiligencePage() {
-  return <ClaraPrivateDiligenceWorkflow />;
+  return <ClaraPrivateDiligenceWorkflow mode="deep" />;
 }

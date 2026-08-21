@@ -3,9 +3,11 @@ import { assertClaimsHaveEvidence, buildClaimRegistry } from "./evidence/claimRe
 import { reconcileClaims } from "./evidence/claimReconciler";
 import { normalizeEvidenceRegistry } from "./evidence/evidenceRegistry";
 import { buildPrivateDiligenceProviderPlan } from "./planning/researchPlanner";
+import { buildQuickCompanyIntelligencePlan } from "./planning/quickResearchPlanner";
 import { createPrivateProviderRegistry, type PrivateProviderRegistryOptions } from "./providers/providerRegistry";
 import { executePrivateProvider } from "./providers/providerTypes";
 import { buildPrivateDiligenceReport } from "./reports/reportBuilder";
+import { buildQuickCompanyIntelligenceReport } from "./reports/quickReportBuilder";
 import type { EntityIdentityGraph, PrivateCompanyInput } from "./types";
 
 export class PrivateDiligenceEngineError extends Error {
@@ -25,7 +27,8 @@ export async function runPrivateDiligence(
     throw new PrivateDiligenceEngineError("ENTITY_NOT_RESOLVED", "The target entity is not sufficiently resolved");
   }
   const now = options.now ?? (() => new Date());
-  const providerPlan = buildPrivateDiligenceProviderPlan(input, graph);
+  const quickMode = input.workflowMode === "quick";
+  const providerPlan = quickMode ? buildQuickCompanyIntelligencePlan(input, graph) : buildPrivateDiligenceProviderPlan(input, graph);
   const registry = createPrivateProviderRegistry(options);
   const selected = providerPlan.filter((item) => item.selected)
     .map((item) => registry.get(item.providerId)).filter(Boolean);
@@ -53,10 +56,11 @@ export async function runPrivateDiligence(
   const informationGaps = buildInformationGaps(reconciled.claims, eligibleEvidence);
   const questions = buildDiligenceQuestions(informationGaps, reconciled.conflicts);
   const generatedAt = now().toISOString();
-  const report = buildPrivateDiligenceReport({
+  const reportArgs = {
     researchId, input, graph, providerPlan, evidence: eligibleEvidence,
     claims: reconciled.claims, conflicts: reconciled.conflicts, risks,
     informationGaps, questions, generatedAt,
-  });
+  };
+  const report = quickMode ? buildQuickCompanyIntelligenceReport(reportArgs) : buildPrivateDiligenceReport(reportArgs);
   return { providerPlan, providerResults, rawEvidence, normalizedEvidence, report };
 }

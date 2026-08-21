@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { privateDiligenceStore } from "../../../lib/private-diligence/persistence/researchStore";
 import { buildPrivateDiligenceProviderPlan } from "../../../lib/private-diligence/planning/researchPlanner";
+import { buildQuickCompanyIntelligencePlan } from "../../../lib/private-diligence/planning/quickResearchPlanner";
 
 export const runtime = "nodejs";
 
@@ -11,7 +12,9 @@ export async function POST(request: Request) {
   if (!record?.identityGraph) {
     return NextResponse.json({ code: "ENTITY_CONFIRMATION_REQUIRED", message: "Confirm the target company before provider planning" }, { status: 409 });
   }
-  const plan = buildPrivateDiligenceProviderPlan(record.input, record.identityGraph);
+  const plan = record.input.workflowMode === "quick"
+    ? buildQuickCompanyIntelligencePlan(record.input, record.identityGraph)
+    : buildPrivateDiligenceProviderPlan(record.input, record.identityGraph);
   privateDiligenceStore.update(researchId, { providerPlan: plan });
   return NextResponse.json({ researchId, plan });
 }

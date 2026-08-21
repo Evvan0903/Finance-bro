@@ -18,6 +18,8 @@ type TeamMember = {
   deliverables: string[];
   cta: string;
   route: string;
+  secondaryCta?: string;
+  secondaryRoute?: string;
   boundary?: string;
 };
 
@@ -69,23 +71,24 @@ const TEAM: TeamMember[] = [
     name: "Clara",
     title: "Private Company Diligence Analyst",
     status: "Available",
-    intro: "Investigates private companies using official records, public sources, company disclosures, and cross-source verification.",
+    intro: "Quickly researches private companies using public business information, company disclosures, and disciplined evidence labels.",
     responsibilities: [
       "Resolves private-company identities",
-      "Reviews registrations and official records",
-      "Researches founders, financing, relationships, contracts, and intellectual property",
-      "Verifies public claims and identifies conflicts, risks, and information gaps",
+      "Builds public-source company intelligence briefs",
+      "Finds business profiles, leadership, locations, contacts, and hiring signals",
+      "Labels customer and partner evidence and identifies information gaps",
     ],
     deliverables: [
-      "Private company diligence report",
+      "Quick Company Intelligence brief",
       "Entity identity profile",
       "Evidence and claim registers",
-      "Risk matrix and information-gap list",
-      "Follow-up diligence questions",
+      "Information-gap list",
     ],
-    cta: "Open Private Company Diligence",
-    route: "/workflows/private-company-diligence",
-    boundary: "Clara uses publicly accessible information only. She does not provide complete legal, financial, tax, cybersecurity, ownership, litigation, valuation, fraud, background-investigation, or investment conclusions.",
+    cta: "Start Quick Research",
+    route: "/workflows/company-intelligence",
+    secondaryCta: "Outside-In Due Diligence · In Development",
+    secondaryRoute: "/workflows/private-company-diligence",
+    boundary: "Quick Company Intelligence is available. Outside-In Due Diligence remains in development. Clara uses public business information only and does not provide investment, credit, fraud, valuation, or complete due-diligence conclusions.",
   },
   {
     id: "felix",
@@ -344,6 +347,7 @@ export function TeamWorkspace() {
                 <Link className="workspace-modal-cta" href={selected.route}>
                   {selected.cta}
                 </Link>
+                {selected.secondaryCta && <span className="workspace-modal-secondary" aria-disabled="true" data-route={selected.secondaryRoute}>{selected.secondaryCta}</span>}
               </div>
               <div className="workspace-modal-visual">
                 <div className="workspace-modal-workstation">
