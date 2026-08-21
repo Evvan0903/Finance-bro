@@ -32,6 +32,9 @@ export type ResolutionStatus =
   | "rejected"
   | "unresolved";
 export type MatchConfidence = "High" | "Medium" | "Low";
+export type TargetSelectionStatus = "unselected" | "userSelected" | "autoSelected";
+export type IdentityVerificationStatus = "unverified" | "partiallyVerified" | "verified" | "conflicting";
+export type EntityRelationshipType = "Target operating company" | "Possible legal entity" | "Parent" | "Subsidiary" | "Affiliate" | "DBA / Brand" | "Likely unrelated" | "Unknown relationship";
 
 export type EntityCandidate = {
   candidateId: string;
@@ -66,6 +69,9 @@ export type EntityCandidate = {
   matchScore: number;
   matchConfidence: MatchConfidence;
   resolutionStatus: ResolutionStatus;
+  targetSelectionStatus?: TargetSelectionStatus;
+  identityVerificationStatus?: IdentityVerificationStatus;
+  relationshipType?: EntityRelationshipType;
 };
 
 export type EntityIdentityGraph = {
@@ -100,6 +106,8 @@ export type EntityIdentityGraph = {
   industryLabels: string[];
   identityConfidence: MatchConfidence;
   resolutionStatus: ResolutionStatus;
+  targetSelectionStatus: TargetSelectionStatus;
+  identityVerificationStatus: IdentityVerificationStatus;
   identityLimitations: string[];
 };
 

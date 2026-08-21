@@ -13,15 +13,17 @@ Quick mode selects the website source first, then selective USAspending or Form 
 ## Execution model
 
 1. Validate that at least a company name or website is present; location, founder, industry, objective, language, and report depth remain optional.
-2. For website-first requests, normalize and safely reach the domain, then inspect at most 12 identity-focused pages to depth 2. Extract JSON-LD, title, metadata, Terms/Privacy legal names, addresses, people, email domains, social profiles, products, services, and affiliates where available.
-3. Score unique strong signals. Exact reachable domain plus an observed website organization name, exact domain plus a Terms/Privacy entity, an official legal-name match plus another signal, or a score of at least 60 is confirmable.
-4. A displayed Low-confidence candidate with an exact reachable domain may be explicitly user-confirmed. Its status becomes `userConfirmed`, confidence stays Low, and the report records the identity limitation while research continues. A Low candidate without a reachable domain requests more information.
-5. Frontend and backend import the same confirmation-eligibility function. High-confidence eligible candidates pass the confirmation gate automatically but remain visible and editable before report generation.
-6. Build an enriched identity graph containing website names, candidate legal names, Terms/Privacy entities, domains, email domains, people, addresses, social profiles, product categories, affiliates, identifiers, jurisdictions, and explicit relationship boundaries.
-7. Build a provider plan from enriched names, geography, and industry. Provider failures are typed and non-fatal.
-8. Register raw evidence, normalize supported fields, assign source tiers and verification eligibility, then exclude weak/lead-only evidence from final claims.
-9. Build evidence-linked claims, reconcile matching values, preserve conflicts, separate risks from information gaps, and generate follow-up questions.
-10. Generate a 20-section report with References and Evidence Register last.
+2. For website-first requests, normalize and safely reach the domain, then inspect at most 12 identity-focused pages to depth 2. For company-name-only requests, try a bounded set of deterministic public website candidates and accept only an organization-name match without a mismatch signal.
+3. If public identity information cannot be reached for a name-only request, create a server-bound provisional discovery lead from that request. It remains Low confidence, identity-unverified, and unusable as evidence; it exists only so the user can select the intended research target and let Clara continue discovery.
+4. Score unique strong signals. Exact reachable domain plus an observed website organization name, exact domain plus a Terms/Privacy entity, an official legal-name match plus another signal, or a score of at least 60 can support automatic selection.
+5. Keep target selection separate from legal-entity verification. Explicit selection requires a structurally valid candidate that belongs to the current research request, has server-side provenance, and is neither rejected nor likely unrelated. Missing website, legal name, location, people, or a high score does not by itself block explicit selection.
+6. Frontend and backend use the same deterministic selection helper. Explicit selection preserves Low/Medium/High confidence and records `userSelected`; automatic selection records `autoSelected`. Identity verification independently remains `unverified`, `partiallyVerified`, `verified`, or `conflicting`.
+7. In Quick mode, valid selection starts research immediately. If no eligible public evidence is available, Clara produces a Limited brief with explicit gaps and zero unsupported claims. Deep mode retains the evidence requirement.
+8. Build an enriched identity graph containing website names, candidate legal names, Terms/Privacy entities, domains, email domains, people, addresses, social profiles, product categories, affiliates, identifiers, jurisdictions, and explicit relationship boundaries.
+9. Build a provider plan from enriched names, geography, and industry. Provider failures are typed and non-fatal.
+10. Register raw evidence, normalize supported fields, assign source tiers and verification eligibility, then exclude weak/lead-only evidence from final claims.
+11. Build evidence-linked claims, reconcile matching values, preserve conflicts, separate risks from information gaps, and generate follow-up questions.
+12. Generate a 20-section report with References and Evidence Register last.
 
 The process-local store is intentionally ephemeral because no Vercel-safe database binding is configured. Research records may be lost on process restart and are not an authorization boundary. Durable encrypted storage, retention controls, and signed downloads are future work.
 
@@ -65,7 +67,7 @@ Company-site requests are server-side, accept HTTP/S only, reject credentials an
 ## Current limitations and future work
 
 - Website-only resolution depends on identity signals actually exposed by the site. If no name or identity signal is extractable, Clara requests a company name, location, or founder rather than fabricating a candidate.
-- Name-only candidate discovery needs a configured broad-web provider or an official identifier; V1 asks for a website, location, or founder when identity remains unresolved.
+- Name-only discovery is bounded and conservative. A provisional user-selected target can start Quick research, but it remains explicitly unverified until public sources establish identity; absence of evidence produces a Limited brief rather than an inferred company profile.
 - SEC Form D is available only after a verified CIK is discovered; absence of Form D is not evidence that financing did not occur.
 - SAM, USPTO, many state registries, licensing, and comprehensive litigation research require credentials, reviewed adapters, or manual verification.
 - Public websites do not establish audited revenue, valuation, beneficial ownership, customer concentration, security posture, or complete litigation history.

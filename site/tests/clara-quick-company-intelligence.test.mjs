@@ -19,6 +19,31 @@ test("accepts Quick Company Intelligence inputs and preserves the deep workflow 
   assert.equal(deep.workflowMode, "deep");
 });
 
+test("company-name-only starts discovery before requesting more information", async () => {
+  const discoverySource = await readFile(new URL("../app/lib/private-diligence/entity-resolution/candidateDiscovery.ts", import.meta.url), "utf8");
+  const candidateRoute = await readFile(new URL("../app/api/private-diligence/candidates/route.ts", import.meta.url), "utf8");
+  assert.match(discoverySource, /candidateWebsiteSeeds/);
+  assert.match(discoverySource, /discoverEntityCandidates\(researchId, \{ \.\.\.input, website \}/);
+  assert.match(candidateRoute, /const discovery = await discoverEntityCandidates/);
+  assert.match(candidateRoute, /needsMoreInformation: plausible\.length === 0/);
+});
+
+test("confirmation diagnostics prove target-selection parity without public exposure", async () => {
+  const route = await readFile(new URL("../app/api/private-diligence/confirm-entity/route.ts", import.meta.url), "utf8");
+  assert.match(route, /clara_target_selection_diagnostic/);
+  assert.match(route, /frontendEligibility/);
+  assert.match(route, /backendEligibility/);
+  assert.match(route, /researchSessionCreated: true/);
+  assert.doesNotMatch(route, /Additional identifying information is required before this target can be confirmed/);
+});
+
+test("automatically selected Quick targets enter the same research-start path", async () => {
+  const workflow = await readFile(new URL("../app/ClaraPrivateDiligenceWorkflow.tsx", import.meta.url), "utf8");
+  assert.match(workflow, /payload\.autoConfirmedCandidateId && mode === "quick"/);
+  assert.match(workflow, /await runResearch\(payload\.researchId\)/);
+  assert.match(workflow, /async function runResearch\(activeResearchId = researchId\)/);
+});
+
 test("exposes a compact bilingual quick workflow and preserves Clara's deep route", async () => {
   const workflow = await readFile(new URL("../app/ClaraPrivateDiligenceWorkflow.tsx", import.meta.url), "utf8");
   const quickRoute = await readFile(new URL("../app/workflows/company-intelligence/page.tsx", import.meta.url), "utf8");

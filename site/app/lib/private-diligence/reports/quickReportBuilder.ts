@@ -46,7 +46,9 @@ export function buildQuickCompanyIntelligenceReport(args: {
   ];
   const sections = [
     quickSection(0, [
-      label(locale, `Identified company: ${graph.canonicalName}`, `已识别公司：${graph.canonicalName}`),
+      graph.identityVerificationStatus === "unverified"
+        ? label(locale, `User-selected research target: ${graph.canonicalName} (identity not yet publicly verified)`, `用户选择的调查目标：${graph.canonicalName}（身份尚未通过公开来源核验）`)
+        : label(locale, `Identified company: ${graph.canonicalName}`, `已识别公司：${graph.canonicalName}`),
       label(locale, `Website: ${graph.domains[0] ?? "Not identified"}; public-source coverage: ${coverage}`, `网站：${graph.domains[0] ?? "未识别"}；公开来源覆盖：${coverage}`),
       label(locale, `Research purpose: ${input.quickResearchPurpose ?? "General Research"}`, `研究目的：${input.quickResearchPurpose ?? "通用调查"}`),
     ], claims.map((item) => item.claimId), evidence.map((item) => item.evidenceId)),

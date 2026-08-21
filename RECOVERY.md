@@ -1,5 +1,64 @@
 # Recovery Checkpoint
 
+## Current objective — Clara company discovery and target-selection unblock
+
+### Original objective
+
+Fix the blocking Clara Quick Company Intelligence start flow so a company name alone begins discovery, a user can explicitly select a plausible Low/Medium/High-confidence target despite incomplete legal-identity fields, frontend and backend selection rules agree, valid selection starts research, and unrelated failures no longer appear as a target-identification blocker. Preserve evidence discipline, current architecture, other agents, and the no-deployment boundary.
+
+### Completed
+
+- Followed `saveToken` routing and inspected the existing discovery, confirmation, Identity Graph, engine, report, provider, UI-state, diagnostic, and test paths before editing.
+- Separated `targetSelectionStatus` from `identityVerificationStatus` across candidates and the Identity Graph.
+- Added bounded name-led website discovery plus a server-bound provisional discovery lead when public identity information cannot be reached. The fallback is explicitly Low confidence and unverified.
+- Added deterministic target-selection validation for request ownership, provenance, structural validity, and unrelated/rejected status; missing legal name, website, location, founder, or a high score no longer blocks explicit user selection.
+- Aligned frontend and backend eligibility, added selected-target state, and removed the stale additional-identifiers error from valid confirmation.
+- Changed Quick mode to begin research immediately after selection and to produce a Limited, zero-fabrication brief when eligible evidence is absent. Deep mode remains unchanged.
+- Added sanitized confirmation diagnostics and expanded regression coverage for Low/Medium/High parity, tampered candidate IDs, unrelated candidates, name-only discovery, and direct research start.
+- Passed 21/21 focused tests, 114/114 full tests, ESLint, TypeScript, Vinext build, Vercel-compatible build, whitespace checks, live validation, and browser QA.
+- Updated `WORKLOG.md`, `TODO.md`, Clara developer documentation, and the sanitized diagnostic report.
+- Created `fix: unblock clara company discovery and target selection` and pushed it to `origin/main`; no manual deployment was performed.
+
+### Remaining tasks
+
+- No required task remains for this scoped blocker.
+- Durable Vercel-safe research-session storage remains a separately scoped future infrastructure task.
+
+### Current status
+
+The company-name-only, target-selection, and Quick research-start paths are unblocked and validated. Legal verification remains visibly independent from user selection, and insufficient public evidence yields a Limited brief rather than fabricated claims.
+
+### Files modified
+
+- `site/app/ClaraPrivateDiligenceWorkflow.tsx`
+- `site/app/api/private-diligence/candidates/route.ts`
+- `site/app/api/private-diligence/confirm-entity/route.ts`
+- `site/app/lib/private-diligence/copy.ts`
+- `site/app/lib/private-diligence/engine.ts`
+- `site/app/lib/private-diligence/entity-resolution/candidateDiscovery.ts`
+- `site/app/lib/private-diligence/entity-resolution/entityMatcher.ts`
+- `site/app/lib/private-diligence/entity-resolution/identityGraphBuilder.ts`
+- `site/app/lib/private-diligence/providers/providerTypes.ts`
+- `site/app/lib/private-diligence/providers/usaSpendingProvider.ts`
+- `site/app/lib/private-diligence/reports/quickReportBuilder.ts`
+- `site/app/lib/private-diligence/types.ts`
+- `site/scripts/validate-clara-website-first.mjs`
+- `site/tests/clara-private-diligence.test.mjs`
+- `site/tests/clara-quick-company-intelligence.test.mjs`
+- `site/docs/clara-private-diligence.md`
+- `PRIVATE_DILIGENCE_DIAGNOSTIC_REPORT.md`
+- `WORKLOG.md`, `RECOVERY.md`, and `TODO.md`
+
+### Next recommended step
+
+Verify any automatic GitHub integration separately if desired. Do not add persistence, ATS adapters, paid models, or a deep-workflow redesign as part of this completed blocker fix.
+
+### Assumptions and pending decisions
+
+- A user-selected research target is not a verified legal entity. Clara preserves that distinction in status, report labeling, limitations, and evidence eligibility.
+- The existing process-local store remains ephemeral and can lose records between serverless instances; this task intentionally did not migrate storage.
+- No manual Vercel deployment was authorized or performed.
+
 ## Current objective — Ethan market-provider credential loading and validation
 
 ### Original objective

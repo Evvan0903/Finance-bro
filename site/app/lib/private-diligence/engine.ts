@@ -23,8 +23,8 @@ export async function runPrivateDiligence(
   graph: EntityIdentityGraph,
   options: PrivateProviderRegistryOptions & { now?: () => Date } = {},
 ) {
-  if (!graph.legalNames.length || (graph.identityConfidence === "Low" && graph.resolutionStatus !== "userConfirmed")) {
-    throw new PrivateDiligenceEngineError("ENTITY_NOT_RESOLVED", "The target entity is not sufficiently resolved");
+  if (graph.targetSelectionStatus !== "userSelected" && graph.targetSelectionStatus !== "autoSelected") {
+    throw new PrivateDiligenceEngineError("ENTITY_NOT_RESOLVED", "A research target must be selected before research begins");
   }
   const now = options.now ?? (() => new Date());
   const quickMode = input.workflowMode === "quick";
@@ -44,7 +44,7 @@ export async function runPrivateDiligence(
   const eligibleEvidence = normalizedEvidence.filter((item) =>
     item.verificationEligibility === "finalEvidence" || item.verificationEligibility === "supportingEvidence",
   );
-  if (!eligibleEvidence.length) {
+  if (!eligibleEvidence.length && !quickMode) {
     throw new PrivateDiligenceEngineError(
       "INSUFFICIENT_PUBLIC_INFORMATION",
       "Insufficient public information was identified to produce a reliable diligence report",

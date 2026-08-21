@@ -44,7 +44,7 @@ const QUICK_PROGRESS = [
   { en: "Building the intelligence brief", zh: "正在生成企业调查简报" },
 ] as const;
 
-type WorkflowState = "input" | "resolving" | "confirmation" | "researching" | "report";
+type WorkflowState = "input" | "resolving" | "confirmation" | "targetSelected" | "researching" | "report" | "needsMoreInformation" | "error";
 
 async function jsonRequest(url: string, body: unknown) {
   const response = await fetch(url, {
@@ -81,6 +81,8 @@ const SIGNAL_ZH: Record<string, string> = {
   "Official email domain matches website": "官方邮箱域名与网站匹配",
   "Industry identified on official website": "官方网站已识别行业",
   "Website organization differs from supplied company name": "网站组织名称与输入的公司名称不同",
+  "Company name supplied by user as discovery lead": "用户提供的公司名称研究线索",
+  "Public website discovered for supplied company name": "已根据公司名称发现公开网站",
 };
 
 const UNRESOLVED_ZH: Record<string, string> = {
@@ -103,6 +105,8 @@ function CandidateCard({ candidate, onConfirm, locale, selected }: {
   const missing = copy.notIdentified;
   const signalLabel = (signal: string) => locale === "zh" ? SIGNAL_ZH[signal] ?? signal : signal;
   const unresolvedLabel = (field: string) => locale === "zh" ? UNRESOLVED_ZH[field] ?? field : field;
+  const relationshipLabel = candidate.relationshipType === "Unknown relationship" && locale === "zh"
+    ? "关系尚未确认" : candidate.relationshipType ?? (locale === "zh" ? "目标运营公司" : "Target operating company");
   return (
     <article className="clara-candidate-card" data-selected={selected}>
       <header>
@@ -118,13 +122,13 @@ function CandidateCard({ candidate, onConfirm, locale, selected }: {
         <div><dt>{locale === "zh" ? "行业" : "Industry"}</dt><dd>{candidate.industry ?? missing}</dd></div>
         <div><dt>{locale === "zh" ? "已知人员" : "Known people"}</dt><dd>{[...candidate.founders, ...candidate.executives].join(", ") || missing}</dd></div>
         <div><dt>{locale === "zh" ? "注册辖区" : "Registration jurisdiction"}</dt><dd>{candidate.registrationJurisdiction ?? missing}</dd></div>
-        <div><dt>{locale === "zh" ? "关系类型" : "Relationship type"}</dt><dd>{locale === "zh" ? "目标运营公司" : "Target operating company"}</dd></div>
+        <div><dt>{locale === "zh" ? "关系类型" : "Relationship type"}</dt><dd>{relationshipLabel}</dd></div>
       </dl>
       <div className="clara-match-signals">
         {candidate.matchSignals.map((signal) => <span key={signal}>{signalLabel(signal)}</span>)}
       </div>
       {candidate.unresolvedIdentityFields.length > 0 && <p className="clara-unresolved"><strong>{copy.unresolved}</strong>{candidate.unresolvedIdentityFields.map(unresolvedLabel).join(" · ")}</p>}
-      {candidate.matchConfidence === "Low" && candidate.websiteReachable && <p className="clara-candidate-warning">{copy.lowConfidenceWebsite}</p>}
+      {candidate.matchConfidence === "Low" && <p className="clara-candidate-warning">{copy.lowConfidenceWebsite}</p>}
       {eligibility.canConfirm && <button type="button" onClick={onConfirm} disabled={selected} aria-pressed={selected}>{selected ? copy.targetConfirmed : copy.confirm}</button>}
     </article>
   );
@@ -176,7 +180,9 @@ function ClaraReport({ report, researchId, onReset }: {
         <header className="clara-report-cover" data-pdf-block>
           <span>FINBRO · CLARA</span>
           <h1>{report.entity.canonicalName}</h1>
-          <h2>{report.locale === "zh" ? "公开来源私营公司尽调" : "Public-Source Private Company Due Diligence"}</h2>
+          <h2>{report.reportVersion === "clara-quick-v1"
+            ? report.locale === "zh" ? "快速企业调查简报" : "Quick Company Intelligence Brief"
+            : report.locale === "zh" ? "公开来源私营公司尽调" : "Public-Source Private Company Due Diligence"}</h2>
           <dl>
             <div><dt>{report.locale === "zh" ? "研究日期" : "Research date"}</dt><dd>{report.generatedAt.slice(0, 10)}</dd></div>
             <div><dt>{report.locale === "zh" ? "身份置信度" : "Identity confidence"}</dt><dd>{report.entity.identityConfidence}</dd></div>
@@ -215,7 +221,7 @@ export function ClaraPrivateDiligenceWorkflow({ mode = "deep" }: { mode?: ClaraW
   const [error, setError] = useState("");
   const copy = CLARA_COPY[input.locale];
   const progress = mode === "quick" ? QUICK_PROGRESS : CLARA_PROGRESS;
-  const progressIndex = state === "resolving" ? 0 : state === "confirmation" ? 1 : state === "researching" ? 3 : state === "report" ? progress.length : -1;
+  const progressIndex = state === "resolving" || state === "needsMoreInformation" ? 0 : state === "confirmation" ? 1 : state === "targetSelected" ? 2 : state === "researching" ? 3 : state === "report" ? progress.length : -1;
   const normalizedInput = useMemo(() => Object.fromEntries(Object.entries(input).map(([key, value]) => [key, typeof value === "string" && !value.trim() ? null : value])), [input]);
 
   useEffect(() => {
@@ -233,9 +239,10 @@ export function ClaraPrivateDiligenceWorkflow({ mode = "deep" }: { mode?: ClaraW
       setResearchId(payload.researchId);
       setCandidates(payload.candidates ?? []);
       setConfirmedId(payload.autoConfirmedCandidateId ?? "");
-      if (!payload.candidates?.length) { setError(payload.message ?? copy.insufficientIdentity); setState("input"); return; }
+      if (!payload.candidates?.length) { setError(payload.message ?? copy.insufficientIdentity); setState("needsMoreInformation"); return; }
+      if (payload.autoConfirmedCandidateId && mode === "quick") { setState("targetSelected"); await runResearch(payload.researchId); return; }
       setState("confirmation");
-    } catch (problem) { setError(problem instanceof Error ? problem.message : copy.insufficientIdentity); setState("input"); }
+    } catch (problem) { setError(problem instanceof Error ? problem.message : copy.insufficientIdentity); setState("error"); }
   }
 
   async function confirm(candidate: EntityCandidate) {
@@ -243,17 +250,23 @@ export function ClaraPrivateDiligenceWorkflow({ mode = "deep" }: { mode?: ClaraW
     try {
       await jsonRequest("/api/private-diligence/confirm-entity", { researchId, candidateId: candidate.candidateId });
       setConfirmedId(candidate.candidateId);
+      setState("targetSelected");
+      if (mode === "quick") await runResearch();
     } catch (problem) { setError(problem instanceof Error ? problem.message : copy.insufficientIdentity); }
+  }
+
+  async function runResearch(activeResearchId = researchId) {
+    setState("researching"); setError("");
+    try {
+      await jsonRequest("/api/private-diligence/plan", { researchId: activeResearchId });
+      const payload = await jsonRequest("/api/private-diligence/run", { researchId: activeResearchId });
+      setReport(payload.report); setState("report");
+    } catch (problem) { setError(problem instanceof Error ? problem.message : copy.insufficientEvidence); setState("confirmation"); }
   }
 
   async function generate() {
     if (!confirmedId) return;
-    setState("researching"); setError("");
-    try {
-      await jsonRequest("/api/private-diligence/plan", { researchId });
-      const payload = await jsonRequest("/api/private-diligence/run", { researchId });
-      setReport(payload.report); setState("report");
-    } catch (problem) { setError(problem instanceof Error ? problem.message : copy.insufficientEvidence); setState("confirmation"); }
+    await runResearch();
   }
 
   function reset() { setState("input"); setResearchId(""); setCandidates([]); setConfirmedId(""); setReport(null); setError(""); }
@@ -273,7 +286,7 @@ export function ClaraPrivateDiligenceWorkflow({ mode = "deep" }: { mode?: ClaraW
         <div className="clara-workspace">
           <aside className="clara-progress"><span>{input.locale === "zh" ? "工作流程" : "Research workflow"}</span><ol>{progress.map((item, index) => <li key={item.en} data-state={index < progressIndex ? "complete" : index === progressIndex ? "current" : "pending"}>{item[input.locale]}</li>)}</ol></aside>
           <section className="clara-panel">
-            {(state === "input" || state === "resolving") && <form onSubmit={discover}>
+            {(state === "input" || state === "resolving" || state === "needsMoreInformation" || state === "error") && <form onSubmit={discover}>
               <header><span>01</span><h2>{input.locale === "zh" ? "确定目标公司" : "Define the target company"}</h2></header>
               <div className="clara-form-grid">
                 <p className="clara-input-hint">{copy.identityInputHint}</p>
@@ -289,7 +302,7 @@ export function ClaraPrivateDiligenceWorkflow({ mode = "deep" }: { mode?: ClaraW
               </div>
               <button className="clara-primary" disabled={state === "resolving"}>{state === "resolving" ? progress[0][input.locale] : mode === "quick" ? (input.locale === "zh" ? "查找公司" : "Find Company") : copy.assign}</button>
             </form>}
-            {(state === "confirmation" || state === "researching") && <div className="clara-confirmation"><header><span>02</span><h2>{copy.confirmHeading}</h2></header>{candidates.map((candidate) => <CandidateCard key={candidate.candidateId} candidate={candidate} locale={input.locale} selected={candidate.candidateId === confirmedId} onConfirm={() => confirm(candidate)} />)}{confirmedId && <div className="clara-confirm-actions"><button type="button" onClick={reset}>{copy.edit}</button><button className="clara-primary" onClick={generate} disabled={state === "researching"}>{state === "researching" ? progress.at(-1)![input.locale] : mode === "quick" ? (input.locale === "zh" ? "生成企业调查简报" : "Build intelligence brief") : copy.generate}</button></div>}</div>}
+            {(state === "confirmation" || state === "targetSelected" || state === "researching") && <div className="clara-confirmation"><header><span>02</span><h2>{copy.confirmHeading}</h2></header>{candidates.map((candidate) => <CandidateCard key={candidate.candidateId} candidate={candidate} locale={input.locale} selected={candidate.candidateId === confirmedId} onConfirm={() => confirm(candidate)} />)}{confirmedId && mode === "deep" && <div className="clara-confirm-actions"><button type="button" onClick={reset}>{copy.edit}</button><button className="clara-primary" onClick={generate} disabled={state === "researching"}>{state === "researching" ? progress.at(-1)![input.locale] : copy.generate}</button></div>}</div>}
             {error && <p className="clara-error" role="alert">{error}</p>}
             <p className="clara-disclosure">{copy.disclosure}</p>
           </section>

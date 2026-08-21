@@ -4,6 +4,27 @@ Validation date: 2026-08-05
 
 This report records sanitized validation outcomes only. It contains no API keys, raw response bodies, request headers, local paths, or hardcoded production findings.
 
+## Company discovery and target-selection validation — 2026-08-20
+
+The blocking path was the reuse of legal-identity verification rules as target-selection rules. A name-only request could produce a candidate, but missing website/legal name/location/people or a Low score prevented the candidate route, UI, confirmation API, and engine from agreeing that the user could select it.
+
+Target selection now requires a structurally valid, server-owned candidate with request-bound provenance that is not rejected or likely unrelated. It does not assert that the legal identity is verified. Automatic selection still uses strong evidence thresholds; explicit user selection preserves the original confidence and records verification separately.
+
+| Scenario | Result | Key outcome |
+|---|---|---|
+| Name only, public lookup unavailable | Pass | Server-bound Low-confidence discovery lead remained unverified, was explicitly selectable, and produced a Limited Quick brief with no fabricated claims |
+| Name plus official website | Pass | Medium 65-point candidate remained incomplete but selectable; confirmation started research and produced a Strong Quick brief |
+| Low/Medium/High eligibility parity | Pass | Shared frontend and backend rules agreed for every confidence level |
+| Candidate from another request / tampered ID | Pass | Rejected before Identity Graph construction |
+| Rejected or likely unrelated candidate | Pass | Not selectable |
+| Valid selected target with no eligible evidence | Pass | Quick mode returned explicit information gaps rather than a false failure or unsupported claim |
+
+Sanitized confirmation diagnostics record controlled status/confidence fields, score, selection eligibility, frontend/backend parity, target-selection outcome, and whether the research session was created. They exclude provider bodies, raw URLs, secrets, stack traces, and personal data.
+
+Manual browser validation covered name-only and name-plus-website paths. Both advanced from candidate selection directly into Quick research; no stale additional-identifiers message appeared. Live website-first validation also passed company-name-only discovery and report generation. No manual deployment was performed.
+
+Automated validation: 21 focused tests passed, 114 full-suite tests passed, and ESLint, TypeScript, Vinext build, Vercel-compatible build, and `git diff --check` passed.
+
 ## Website-first resolution validation
 
 | Scenario | Result | Key outcome |

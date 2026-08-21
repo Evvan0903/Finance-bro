@@ -36,10 +36,10 @@ export function createUsaSpendingProvider(fetchImpl: typeof fetch = fetch): Priv
     sourceTier: 1,
     providerCategory: "governmentContract",
     isConfigured: () => true,
-    supports: (context) => context.identityGraph.legalNames.length > 0 && /united states|usa|u\.s\./i.test(context.input.country ?? "United States"),
+    supports: (context) => Boolean(context.identityGraph.canonicalName) && /united states|usa|u\.s\./i.test(context.input.country ?? "United States"),
     validateConfiguration: () => "success",
     search: async (context) => {
-      const names = [...context.identityGraph.legalNames, ...context.identityGraph.dbaNames].slice(0, 5);
+      const names = [context.identityGraph.canonicalName, ...context.identityGraph.legalNames, ...context.identityGraph.dbaNames].slice(0, 5);
       const accepted: Recipient[] = [];
       let rejectedWeakMatches = 0;
       for (const name of names) {

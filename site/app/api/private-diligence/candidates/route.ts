@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     const candidates = discovery.candidates;
     const plausible = candidates.filter((candidate) => getEntityConfirmationEligibility(candidate, true).canConfirm);
     const autoConfirmed = plausible.length === 1 && getEntityConfirmationEligibility(plausible[0]).autoConfirm
-      ? plausible[0]
+      ? { ...plausible[0], targetSelectionStatus: "autoSelected" as const }
       : null;
     const identityGraph = autoConfirmed ? buildIdentityGraph(autoConfirmed, input) : null;
     const now = new Date().toISOString();

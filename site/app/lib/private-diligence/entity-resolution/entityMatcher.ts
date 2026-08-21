@@ -23,8 +23,26 @@ function hasSignal(candidate: Pick<EntityCandidate, "matchSignals">, text: strin
   return candidate.matchSignals.includes(text);
 }
 
+export function canSelectTarget(
+  candidate: Pick<EntityCandidate, "candidateId" | "displayName" | "sourceIds" | "matchSignals" | "resolutionStatus" | "relationshipType">,
+  explicitUserConfirmation = false,
+) {
+  const malformed = !candidate.candidateId.trim() || !normalizeEntityName(candidate.displayName);
+  const rejected = candidate.resolutionStatus === "rejected" || candidate.relationshipType === "Likely unrelated";
+  const hasDiscoveryBasis = candidate.sourceIds.length > 0 || candidate.matchSignals.length > 0;
+  const selectable = explicitUserConfirmation && !malformed && !rejected && hasDiscoveryBasis;
+  return { selectable, malformed, rejected, hasDiscoveryBasis };
+}
+
+export function selectTargetCandidate(candidates: EntityCandidate[], candidateId: string) {
+  const candidate = candidates.find((item) => item.candidateId === candidateId) ?? null;
+  if (!candidate) return { candidate: null, selectable: false, reason: "candidateNotInResearch" as const };
+  const eligibility = canSelectTarget(candidate, true);
+  return { candidate, selectable: eligibility.selectable, reason: eligibility.selectable ? "selectable" as const : "rejected" as const };
+}
+
 export function getEntityConfirmationEligibility(
-  candidate: Pick<EntityCandidate, "matchSignals" | "matchScore" | "matchConfidence" | "websiteReachable" | "resolutionStatus">,
+  candidate: Pick<EntityCandidate, "candidateId" | "displayName" | "sourceIds" | "matchSignals" | "matchScore" | "matchConfidence" | "websiteReachable" | "resolutionStatus" | "relationshipType">,
   explicitUserConfirmation = false,
 ) {
   const exactDomain = hasSignal(candidate, "Exact confirmed domain match");
@@ -39,10 +57,13 @@ export function getEntityConfirmationEligibility(
     (exactDomain && termsEntity) ||
     (officialLegalName && additionalSignalCount > 0);
   const thresholdRule = candidate.matchScore >= 60;
+  const selectionPolicy = canSelectTarget(candidate, explicitUserConfirmation);
+  const explicitSelection = selectionPolicy.selectable;
   const lowDomainOverride = explicitUserConfirmation && exactDomain && candidate.websiteReachable;
-  const canConfirm = strongSignalRule || thresholdRule || lowDomainOverride;
+  const validCandidate = !selectionPolicy.malformed && !selectionPolicy.rejected && selectionPolicy.hasDiscoveryBasis;
+  const canConfirm = validCandidate && (strongSignalRule || thresholdRule || explicitSelection);
   const autoConfirm = canConfirm && candidate.matchConfidence === "High" && candidate.resolutionStatus !== "userConfirmed";
-  return { canConfirm, autoConfirm, strongSignalRule, thresholdRule, lowDomainOverride };
+  return { canConfirm, autoConfirm, strongSignalRule, thresholdRule, lowDomainOverride, explicitSelection };
 }
 
 export function scoreEntityCandidate(
@@ -71,6 +92,10 @@ export function scoreEntityCandidate(
     signals.add("Organization name confirmed on official website");
   } else if (inputName && websiteNames.length && websiteNameScore < 0.5) {
     signals.add("Website organization differs from supplied company name");
+  }
+  if (!input.website && candidate.domain && candidate.websiteReachable && websiteNameScore >= 0.8) {
+    score += 25;
+    signals.add("Public website discovered for supplied company name");
   }
   if (candidate.termsLegalNames.length || candidate.privacyLegalNames.length) {
     score += 20;
@@ -103,11 +128,15 @@ export function scoreEntityCandidate(
   const bounded = Math.min(100, score);
   const confidence: MatchConfidence = bounded >= 80 ? "High" : bounded >= 45 ? "Medium" : "Low";
   const provisional = {
+    candidateId: candidate.candidateId,
+    displayName: candidate.displayName,
+    sourceIds: candidate.sourceIds,
     matchScore: bounded,
     matchConfidence: confidence,
     matchSignals: [...signals],
     websiteReachable: candidate.websiteReachable,
     resolutionStatus: "unresolved" as const,
+    relationshipType: candidate.relationshipType,
   };
   const eligibility = getEntityConfirmationEligibility(provisional, false);
   const explicitEligibility = getEntityConfirmationEligibility(provisional, true);

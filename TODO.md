@@ -1,5 +1,19 @@
 # Institutional Equity Research Refactor and Shell Sample TODO
 
+## Clara company discovery and target-selection unblock
+
+- [x] Read `saveToken`, recovery notes, Clara discovery, candidate confirmation, state-machine, report, provider, and test paths.
+- [x] Trace the name-only failure through candidate discovery, frontend eligibility, confirmation, and research-start guards.
+- [x] Add bounded public discovery and a server-bound, explicitly unverified fallback discovery lead for company-name-only input.
+- [x] Separate explicit target selection from legal-entity verification while rejecting malformed, cross-request, or likely-unrelated candidates.
+- [x] Align frontend and backend selection eligibility and remove the stale identification blocker from valid confirmation.
+- [x] Start Quick research immediately after valid target selection and return an honest Limited brief when no eligible evidence exists.
+- [x] Add sanitized confirmation diagnostics without secrets, raw provider output, or personal information.
+- [x] Pass focused tests, the full suite, lint, TypeScript, both production builds, whitespace validation, live validation, and manual browser QA.
+- [x] Update developer and recovery documentation.
+- [x] Commit as `fix: unblock clara company discovery and target selection` and push to `origin/main` without manual deployment.
+- [ ] Future: replace process-local research state with Vercel-safe durable storage in a separately scoped infrastructure task.
+
 ## Clara Quick Company Intelligence
 
 - [x] Read `saveToken`, project notes, Clara implementation, entity resolution, provider/evidence/claim/export/report infrastructure, persistence, and tests.

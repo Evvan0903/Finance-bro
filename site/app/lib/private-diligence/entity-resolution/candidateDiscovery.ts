@@ -21,6 +21,17 @@ function unique(values: string[]) {
   return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
 }
 
+export function candidateWebsiteSeeds(companyName: string) {
+  const tokens = normalizeEntityName(companyName).split(" ").filter(Boolean);
+  const compactName = tokens.join("");
+  const withoutAi = tokens.at(-1) === "ai" ? tokens.slice(0, -1).join("") : "";
+  return unique([
+    withoutAi ? `https://${withoutAi}.ai` : "",
+    compactName ? `https://${compactName}.com` : "",
+    tokens.length > 1 && tokens[0].length >= 4 ? `https://${tokens[0]}.com` : "",
+  ]).slice(0, 3);
+}
+
 function unresolvedFields(candidate: Omit<EntityCandidate, "unresolvedIdentityFields" | "matchScore" | "matchConfidence" | "resolutionStatus" | "matchSignals">) {
   return [
     candidate.legalName ? null : "Legal entity name",
@@ -72,11 +83,48 @@ export async function discoverEntityCandidates(
     affiliateNames: [],
     websiteReachable: false,
     sourceIds: [],
+    targetSelectionStatus: "unselected" as const,
+    identityVerificationStatus: "unverified" as const,
+    relationshipType: "Target operating company" as const,
   };
   if (!source) {
-    const partial = { ...base, unresolvedIdentityFields: unresolvedFields(base) };
-    const scored = scoreEntityCandidate(input, partial);
-    return { candidates: [{ ...partial, ...scored }], websiteEvidence: [], websiteStatus: "notProvided" };
+    const attempts = await Promise.all(candidateWebsiteSeeds(input.companyName ?? "").map(async (website) => {
+      const result = await discoverEntityCandidates(researchId, { ...input, website }, { ...options, maxPages: Math.min(options.maxPages ?? 4, 4), maxDepth: Math.min(options.maxDepth ?? 1, 1) });
+      return result.candidates.map((candidate) => {
+        const rescored = scoreEntityCandidate(input, candidate);
+        return { ...candidate, ...rescored, targetSelectionStatus: "unselected" as const };
+      }).filter((candidate) =>
+        candidate.matchSignals.includes("Organization name confirmed on official website") &&
+        !candidate.matchSignals.includes("Website organization differs from supplied company name"),
+      ).map((candidate) => ({ candidate, evidence: result.websiteEvidence }));
+    }));
+    const discovered = attempts.flat();
+    const uniqueCandidates = [...new Map(discovered.map((item) => [item.candidate.domain ?? item.candidate.candidateId, item])).values()];
+    if (!uniqueCandidates.length && input.companyName) {
+      const provisionalBase = {
+        ...base,
+        displayName: input.companyName,
+        sourceIds: [`user-input-${researchId}`],
+        unresolvedIdentityFields: unresolvedFields({ ...base, displayName: input.companyName, sourceIds: [`user-input-${researchId}`] }),
+      };
+      const scored = scoreEntityCandidate(input, provisionalBase);
+      return {
+        candidates: [{
+          ...provisionalBase,
+          ...scored,
+          matchSignals: ["Company name supplied by user as discovery lead"],
+          resolutionStatus: "requiresUserConfirmation",
+          relationshipType: "Unknown relationship",
+        }],
+        websiteEvidence: [],
+        websiteStatus: "notProvided",
+      };
+    }
+    return {
+      candidates: uniqueCandidates.map((item) => item.candidate),
+      websiteEvidence: uniqueCandidates.flatMap((item) => item.evidence),
+      websiteStatus: uniqueCandidates.length ? "reachable" : "notProvided",
+    };
   }
   const seedCandidate: EntityCandidate = {
     ...base,
@@ -85,6 +133,9 @@ export async function discoverEntityCandidates(
     matchScore: 0,
     matchConfidence: "Low",
     resolutionStatus: "unresolved",
+    targetSelectionStatus: "unselected",
+    identityVerificationStatus: "unverified",
+    relationshipType: "Target operating company",
   };
   const provider = createCompanyWebsiteProvider({ ...options, maxPages: Math.min(options.maxPages ?? 12, 12), maxDepth: Math.min(options.maxDepth ?? 2, 2) });
   const context = { researchId, input, identityGraph: buildIdentityGraph(seedCandidate, input), now: () => new Date() };

@@ -9,11 +9,16 @@ export function buildIdentityGraph(
   input: PrivateCompanyInput,
 ): EntityIdentityGraph {
   const jurisdiction = compact([candidate.registrationJurisdiction]);
+  const targetSelectionStatus = candidate.targetSelectionStatus ??
+    (candidate.resolutionStatus === "autoConfirmed" ? "autoSelected" : candidate.resolutionStatus === "userConfirmed" ? "userSelected" : "unselected");
+  const identityVerificationStatus = candidate.identityVerificationStatus ??
+    (candidate.registrationNumbers.length && candidate.legalName && candidate.matchConfidence === "High"
+      ? "verified" : candidate.websiteReachable || candidate.legalName ? "partiallyVerified" : "unverified");
   return {
     entityId: `entity-${candidate.candidateId}`,
     canonicalName: candidate.legalName ?? candidate.displayName,
-    legalNames: compact([candidate.legalName, candidate.displayName, ...candidate.termsLegalNames, ...candidate.privacyLegalNames]),
-    dbaNames: compact([...candidate.dbaNames, ...candidate.websiteOrganizationNames]),
+    legalNames: compact([candidate.legalName, ...candidate.termsLegalNames, ...candidate.privacyLegalNames]),
+    dbaNames: compact([candidate.displayName, ...candidate.dbaNames, ...candidate.websiteOrganizationNames]),
     formerNames: compact(candidate.formerNames),
     domains: compact([candidate.domain]),
     emailDomains: compact(candidate.emailDomains),
@@ -45,11 +50,13 @@ export function buildIdentityGraph(
     industryLabels: compact([candidate.industry, input.industry]),
     identityConfidence: candidate.matchConfidence,
     resolutionStatus: candidate.resolutionStatus,
+    targetSelectionStatus,
+    identityVerificationStatus,
     identityLimitations: [
       ...(candidate.registrationNumbers.length ? [] : ["No official registration number was confirmed during entity resolution."]),
       ...(candidate.matchConfidence === "High" ? [] : ["The target entity required user confirmation because public identity signals were incomplete."]),
-      ...(candidate.resolutionStatus === "userConfirmed" && candidate.matchConfidence === "Low"
-        ? ["The target was explicitly user-confirmed at Low confidence; Clara continued external verification without treating the website identity as independently verified."]
+      ...(targetSelectionStatus === "userSelected" && candidate.matchConfidence === "Low"
+        ? ["Target selected by the user before full legal-entity verification. Clara will continue verifying the entity during research."]
         : []),
       ...candidate.unresolvedIdentityFields.map((field) => `${field} was not identified during website-first entity resolution.`),
       ...(input.founderOrExecutive && !candidate.founders.includes(input.founderOrExecutive)

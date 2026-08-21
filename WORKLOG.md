@@ -1,5 +1,19 @@
 # FinBro Research Worklog
 
+## Clara company discovery and target-selection unblock — 2026-08-20
+
+- `saveToken` routing: Sol retained the selection-versus-verification boundary and final review; repository tracing and live request diagnostics stayed in the research lane; scoped UI, route, test, and documentation edits stayed in the low-risk implementation lane.
+- Root cause: name-only discovery produced an unresolved candidate, while the candidate route, UI, confirmation API, and research engine all reused identity-verification gates as target-selection gates. Missing legal name, website, location, people, or a high score therefore prevented a user from selecting a plausible research target, and unrelated failures could surface as an identification error.
+- Discovery: a company name now starts bounded public website discovery. If no public identity source is reachable, Clara returns a server-bound provisional discovery lead using the supplied name; it is Low confidence, explicitly unverified, and never treated as a verified legal identity or factual evidence.
+- Selection: explicit user target selection is now distinct from automatic entity verification. Candidates must belong to the current research request, have server-side provenance, and not be rejected or likely unrelated. Low/Medium/High confidence and incomplete identity fields do not by themselves block explicit selection.
+- Research start: Quick Company Intelligence proceeds immediately after a valid selection. A target with no eligible public evidence returns a Limited brief with explicit gaps and no fabricated claims; Deep mode retains its stricter evidence requirement.
+- UI: added explicit resolving, confirmation, target-selected, researching, report, needs-more-information, and error states; localized Low-confidence guidance; and removed the stale additional-identifiers blocker from the valid confirmation path.
+- Diagnostics: confirmation logs only sanitized IDs, controlled confidence/status fields, frontend/backend eligibility parity, selection outcome, and session creation. No raw provider output, URLs, personal data, or secrets are logged.
+- Validation: focused Clara suites passed 21/21; the full suite passed 114/114; ESLint, TypeScript, Vinext build, Vercel-compatible build, and whitespace checks passed. Live website-first validation passed, including company-name-only discovery and report generation.
+- Manual browser QA: name-only `Abaka AI` produced a selectable Low-confidence provisional target and a Limited Quick brief when public lookup was unavailable; name plus official website produced a Medium 65-point candidate and a Strong Quick brief. No stale confirmation error appeared.
+- Scope: no ATS integration, paid LLM, deep-diligence redesign, durable persistence migration, or changes to Ethan, Mason, Nora, Felix, or Parker. Process-local state remains a known future infrastructure limitation. No manual deployment was performed.
+- Release: committed as `fix: unblock clara company discovery and target selection` and pushed to `origin/main`.
+
 ## Clara Quick Company Intelligence — 2026-08-20
 
 - `saveToken` routing: Sol retained workflow boundaries, evidence/privacy decisions, and final review; the existing provider and report paths were inspected before reuse; routine UI, copy, tests, and documentation stayed in the low-risk implementation lane.

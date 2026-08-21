@@ -71,10 +71,17 @@ scenarios.push({
 });
 
 const nameOnly = await discover(baseInput({ companyName: "Abaka AI" }));
+const nameOnlyCandidate = await confirm(nameOnly);
+const nameOnlyRun = nameOnlyCandidate
+  ? await request("/api/private-diligence/run", { researchId: nameOnly.researchId })
+  : { ok: false };
 scenarios.push({
   scenario: "company-name-only",
-  passed: nameOnly.needsMoreInformation === true && nameOnly.candidates.length === 0,
+  passed: Boolean(nameOnlyCandidate && nameOnlyRun.ok),
   needsMoreInformation: nameOnly.needsMoreInformation,
+  candidateConfidence: nameOnlyCandidate?.matchConfidence ?? null,
+  targetSelected: Boolean(nameOnlyCandidate),
+  reportGenerated: nameOnlyRun.ok,
 });
 
 const mismatch = await discover(baseInput({ companyName: "Unrelated Holdings", website: "https://www.abaka.ai/" }));

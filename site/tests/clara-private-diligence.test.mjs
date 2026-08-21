@@ -199,7 +199,35 @@ test("builds a low-confidence user-confirmed graph with a visible identity limit
   const built = builder.buildIdentityGraph(low, input({ companyName: null }));
   assert.equal(built.resolutionStatus, "userConfirmed");
   assert.equal(built.identityConfidence, "Low");
-  assert.match(built.identityLimitations.join(" "), /explicitly user-confirmed at Low confidence/i);
+  assert.match(built.identityLimitations.join(" "), /Target selected by the user before full legal-entity verification/i);
+  assert.equal(built.targetSelectionStatus, "userSelected");
+  assert.equal(built.identityVerificationStatus, "partiallyVerified");
+});
+
+test("separates explicit target selection from legal-entity verification", async () => {
+  const matcher = await import((await moduleUrl("../app/lib/private-diligence/entity-resolution/entityMatcher.ts")) + nonce());
+  const incomplete = entityCandidate({
+    displayName: "Abaka AI", legalName: null, city: null, state: null, country: null,
+    founders: [], executives: [], matchScore: 35, matchConfidence: "Low",
+    resolutionStatus: "requiresUserConfirmation", sourceIds: ["public-discovery-1"],
+    matchSignals: ["Public website discovered for supplied company name"],
+  });
+  assert.equal(matcher.getEntityConfirmationEligibility(incomplete, true).canConfirm, true);
+  assert.equal(matcher.canSelectTarget(incomplete, true).selectable, true);
+  assert.equal(matcher.selectTargetCandidate([incomplete], incomplete.candidateId).selectable, true);
+  assert.equal(matcher.selectTargetCandidate([incomplete], "tampered-id").reason, "candidateNotInResearch");
+  const second = { ...incomplete, candidateId: "candidate-second", displayName: "Abaka Analytics" };
+  assert.equal(matcher.selectTargetCandidate([incomplete, second], second.candidateId).candidate.displayName, "Abaka Analytics");
+  const unrelated = { ...incomplete, candidateId: "unrelated", relationshipType: "Likely unrelated" };
+  assert.equal(matcher.canSelectTarget(unrelated, true).selectable, false);
+  const noBasis = { ...incomplete, candidateId: "no-basis", sourceIds: [], matchSignals: [] };
+  assert.equal(matcher.canSelectTarget(noBasis, true).selectable, false);
+  for (const matchConfidence of ["Low", "Medium", "High"]) {
+    const candidate = { ...incomplete, candidateId: `candidate-${matchConfidence}`, matchConfidence };
+    const frontend = matcher.getEntityConfirmationEligibility(candidate, true).canConfirm;
+    const backend = matcher.selectTargetCandidate([candidate], candidate.candidateId).selectable;
+    assert.equal(frontend, backend, `${matchConfidence} frontend/backend selection parity`);
+  }
 });
 
 test("validates Clara input and scores exact identity signals deterministically", async () => {
