@@ -44,7 +44,7 @@ export function parsePrivateCompanyInput(value: unknown): PrivateCompanyInput {
     website,
     city: optionalText(input.city),
     state: optionalText(input.state),
-    country: optionalText(input.country) ?? "United States",
+    country: optionalText(input.country),
     founderOrExecutive: optionalText(input.founderOrExecutive),
     industry: optionalText(input.industry),
     researchObjective,

@@ -3,6 +3,7 @@ import * as XLSX from "xlsx";
 import { privateDiligenceStore } from "../../../lib/private-diligence/persistence/researchStore";
 import { privateDiligenceReportToMarkdown } from "../../../lib/private-diligence/reports/markdown";
 import { redactPrivateDiligenceText } from "../../../lib/private-diligence/security";
+import type { PrivateDiligenceReport } from "../../../lib/private-diligence/types";
 
 export const runtime = "nodejs";
 
@@ -32,7 +33,7 @@ function workbook(rows: Record<string, unknown>[], sheetName: string) {
   return XLSX.write(book, { type: "buffer", bookType: "xlsx" }) as Buffer;
 }
 
-function evidenceRows(report: NonNullable<ReturnType<typeof privateDiligenceStore.get>>["report"]) {
+function evidenceRows(report: PrivateDiligenceReport | null) {
   if (!report) return [];
   return report.evidence.map((item) => ({
     "Evidence ID": item.evidenceId,
@@ -54,7 +55,7 @@ function evidenceRows(report: NonNullable<ReturnType<typeof privateDiligenceStor
   }));
 }
 
-function claimRows(report: NonNullable<ReturnType<typeof privateDiligenceStore.get>>["report"]) {
+function claimRows(report: PrivateDiligenceReport | null) {
   return report?.claims.map((claim) => ({
     "Claim ID": claim.claimId,
     Category: claim.category,
@@ -69,7 +70,7 @@ function claimRows(report: NonNullable<ReturnType<typeof privateDiligenceStore.g
   })) ?? [];
 }
 
-function riskRows(report: NonNullable<ReturnType<typeof privateDiligenceStore.get>>["report"]) {
+function riskRows(report: PrivateDiligenceReport | null) {
   return report?.risks.map((risk) => ({
     "Risk ID": risk.riskId,
     Category: risk.category,
@@ -90,7 +91,7 @@ export async function POST(request: Request) {
     const type = typeof body?.type === "string" ? body.type : "";
     const format = typeof body?.format === "string" ? body.format : "";
     if (!/^[0-9a-f-]{36}$/i.test(researchId)) throw new Error("Invalid research identifier");
-    const report = privateDiligenceStore.get(researchId)?.report;
+    const report = (await privateDiligenceStore.get(researchId))?.report;
     if (!report) throw new Error("Diligence report was not found");
     if (type === "report" && format === "markdown") {
       return new Response(privateDiligenceReportToMarkdown(report), {

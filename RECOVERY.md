@@ -1030,3 +1030,24 @@ If a later task requests deployment verification, inspect the repository's autom
 - No Vercel-safe durable database binding is configured, so V1 uses disclosed ephemeral process-local storage.
 - SAM, USPTO, broad-web discovery, and unsupported state sources remain explicit configuration/manual-verification frameworks.
 - The GitHub push may trigger configured deployment automation; do not claim deployment success without separate verification.
+
+## Clara grounded discovery continuation — 2026-08-26
+
+### Original objective
+
+Finish real, grounded company-name discovery and permanently preserve candidate ownership across separate serverless requests.
+
+### Completed tasks
+
+- Added bounded Wikidata/Wikipedia discovery, deterministic official-website selection, website enrichment, grounded-only DeepSeek ranking, persistent Drizzle lifecycle storage, simplified Quick UI, and explicit candidate selection.
+- Passed 31 focused tests, 124 full tests, TypeScript, ESLint, Vinext/Next builds, whitespace checks, and all requested production-browser flows.
+
+### Remaining tasks and status
+
+- Implementation and local validation are complete. Production durable persistence remains blocked only by missing/unverified remote LibSQL credentials.
+- Required Vercel variables: `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN` (or `LIBSQL_DATABASE_URL`, `LIBSQL_AUTH_TOKEN`).
+
+### Files modified and next step
+
+- Clara UI, API routes, discovery/model/persistence/schema modules, Drizzle schema/migration, dependencies, and Clara tests.
+- Next: configure the remote database variables in Vercel before treating production candidate ownership as durable; do not deploy manually unless requested.

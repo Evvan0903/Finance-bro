@@ -488,6 +488,14 @@
 ## Next recommended step
 
 Monitor production extraction behavior before adding any new sector or issuer pack. Sites version 6 is live at `https://scopeline-research.evvan.chatgpt.site` and remains owner-only.
+
+## Clara grounded discovery continuation — 2026-08-26
+
+- Completed: minimal name/website Quick input; failure-only location/person hints; Wikidata and Wikipedia entity-to-official-website discovery; existing website enrichment; DeepSeek V4 Pro grounded-only ranking; durable Drizzle ResearchRequest/EntityCandidate/SelectedTarget lifecycle; canonical candidate reload on confirmation.
+- Validation: 31/31 focused Clara tests, 124/124 full tests, TypeScript, ESLint, Vinext build, Next/Vercel build, and `git diff --check` passed.
+- Browser: `Bolt` returned Bolt, Bolt Financial, and Bolt Food; Bolt Financial was manually selected, confirmed, and researched. Website-only and name+website Abaka AI both auto-selected, confirmed, and rendered Quick reports. No candidate-ownership error occurred.
+- Deployment requirement: Vercel production still requires `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` (or the documented `LIBSQL_*` aliases). These remote credentials were not present or verified, so production persistence is not claimed ready.
+- Scope: DeepSeek is discovery-only; its output is not report evidence. Luna, Kimi, Ethan, Mason, Nora, Felix, and Parker were not activated or modified.
 # Mason Government Data Market Analysis MVP — 2026-07-30
 
 - Routing: followed `skills/saveToken/SKILL.md`; Sol owned architecture and review, Terra handled repository/provider inspection, and Luna handled routine UI/copy guidance.

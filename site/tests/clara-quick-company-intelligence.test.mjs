@@ -26,6 +26,10 @@ test("company-name-only starts discovery before requesting more information", as
   assert.match(discoverySource, /discoverEntityCandidates\(researchId, \{ \.\.\.input, website \}/);
   assert.match(candidateRoute, /const discovery = await discoverEntityCandidates/);
   assert.match(candidateRoute, /needsMoreInformation: plausible\.length === 0/);
+  assert.match(discoverySource, /wikidataWebsiteSeeds/);
+  assert.match(discoverySource, /Public entity and official website identified by Wikidata/);
+  assert.match(discoverySource, /Special:EntityData/);
+  assert.doesNotMatch(discoverySource, /while \(.*candidates\.length < 5/);
 });
 
 test("confirmation diagnostics prove target-selection parity without public exposure", async () => {
@@ -50,10 +54,27 @@ test("exposes a compact bilingual quick workflow and preserves Clara's deep rout
   const deepRoute = await readFile(new URL("../app/workflows/private-company-diligence/page.tsx", import.meta.url), "utf8");
   assert.match(workflow, /Quick Company Intelligence/);
   assert.match(workflow, /Outside-In Due Diligence/);
-  assert.match(workflow, /Sales Prospect/);
+  assert.match(workflow, /data-quick-minimal/);
+  assert.match(workflow, /state === "needsMoreInformation"/);
+  assert.doesNotMatch(workflow, /mode === "quick" \? <select/);
   assert.match(workflow, /快速企业调查/);
   assert.match(quickRoute, /mode="quick"/);
   assert.match(deepRoute, /mode="deep"/);
+});
+
+test("quick entry exposes only company name and website until discovery returns zero candidates", async () => {
+  const [workflow, copy] = await Promise.all([
+    readFile(new URL("../app/ClaraPrivateDiligenceWorkflow.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/private-diligence/copy.ts", import.meta.url), "utf8"),
+  ]);
+  assert.match(copy, /Company name · Optional/);
+  assert.match(copy, /Company website · Optional/);
+  assert.match(copy, /Provide a company name, website, or both/);
+  assert.match(copy, /填写公司名称、官网，或两者之一/);
+  assert.match(copy, /Help Clara narrow it down/);
+  assert.match(workflow, /mode === "quick" && state === "needsMoreInformation"/);
+  assert.match(workflow, /copy\.fields\.location/);
+  assert.match(workflow, /copy\.fields\.founder/);
 });
 
 test("quick report remains evidence-backed and does not make investment claims", async () => {
@@ -66,4 +87,28 @@ test("quick report remains evidence-backed and does not make investment claims",
   assert.match(report, /personal emails, mobile numbers, and residential addresses are excluded/);
   assert.match(provider, /companyWebsite/);
   assert.doesNotMatch(provider, /webDiscovery/);
+});
+
+test("DeepSeek V4 Pro is isolated to structured medium-tier candidate discovery", async () => {
+  const originalFetch = globalThis.fetch;
+  const originalKey = process.env.DEEPSEEK_API_KEY;
+  process.env.DEEPSEEK_API_KEY = "test-only-key";
+  let requestBody;
+  globalThis.fetch = async (_url, init) => {
+    requestBody = JSON.parse(init.body);
+    return new Response(JSON.stringify({ choices: [{ message: { content: '{"candidates":[]}' } }] }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+  try {
+    const router = await import((await moduleUrl("../app/lib/private-diligence/modelRouter.ts")) + `#${Date.now()}`);
+    const result = await router.runClaraModel({ tier: "medium", task: "discover_company_candidates", input: { groundedPublicResults: [] }, schema: (value) => value });
+    assert.deepEqual(result, { candidates: [] });
+    assert.equal(requestBody.model, "deepseek-v4-pro");
+    assert.deepEqual(requestBody.response_format, { type: "json_object" });
+    assert.match(requestBody.messages[0].content, /exclusively from the supplied grounded public results/);
+    await assert.rejects(() => router.runClaraModel({ tier: "strong", task: "generate_quick_brief", input: {}, schema: (value) => value }), /TASK_DISABLED/);
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (originalKey === undefined) delete process.env.DEEPSEEK_API_KEY;
+    else process.env.DEEPSEEK_API_KEY = originalKey;
+  }
 });

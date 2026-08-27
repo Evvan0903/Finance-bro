@@ -31,15 +31,11 @@ export async function POST(request: Request) {
       identityGraph,
       providerPlan: [], providerResults: [], rawEvidence: discovery.websiteEvidence, normalizedEvidence: [], report: null, errorCode: null,
     };
-    privateDiligenceStore.set(record);
-    console.info(JSON.stringify({ event: "clara_candidate_discovery_diagnostic", researchRequestId: researchId, candidatesLength: plausible.length, candidateId: plausible[0]?.candidateId ?? null, candidateResearchRequestId: plausible[0]?.researchRequestId ?? null, initialSelectedCandidateId: plausible.length === 1 ? plausible[0].candidateId : null }));
-    const message = discovery.websiteStatus === "unreachable"
-      ? "Clara could not verify the company website. Add a company name, location, or founder and try again"
-      : discovery.websiteStatus === "insufficientIdentity"
-        ? "Clara could not identify a company from this website. Add a company name, location, or founder"
-        : plausible.length ? null : "Provide a website, location, or founder to distinguish the target entity";
+    await privateDiligenceStore.set(record);
+    if (process.env.NODE_ENV !== "production") console.info(JSON.stringify({ event: "clara_candidate_discovery_diagnostic", researchRequestId: researchId, candidatesLength: plausible.length, candidateId: plausible[0]?.candidateId ?? null, candidateResearchRequestId: plausible[0]?.researchRequestId ?? null, initialSelectedCandidateId: plausible.length === 1 ? plausible[0].candidateId : null }));
+    const message = plausible.length ? null : "Clara could not confidently identify the company from the information provided";
     return NextResponse.json({
-      researchId,
+      researchRequestId: researchId,
       candidates: plausible,
       autoConfirmedCandidateId: autoConfirmed?.candidateId ?? null,
       requiresUserConfirmation: !autoConfirmed && plausible.length > 0,

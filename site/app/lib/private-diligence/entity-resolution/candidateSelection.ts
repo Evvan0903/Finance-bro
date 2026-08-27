@@ -1,7 +1,7 @@
 import type { EntityCandidate } from "../types";
 
 export type ClaraConfirmationPayload = {
-  researchId: string;
+  researchRequestId: string;
   candidateId: string;
   explicitUserConfirmation: true;
 };
@@ -28,7 +28,7 @@ export function buildConfirmationPayload(
 ): ClaraConfirmationPayload | null {
   if (!researchId.trim() || !selectedCandidateId?.trim()) return null;
   return {
-    researchId,
+    researchRequestId: researchId,
     candidateId: selectedCandidateId,
     explicitUserConfirmation: true,
   };

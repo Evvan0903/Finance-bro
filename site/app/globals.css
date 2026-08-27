@@ -80,6 +80,9 @@
 .clara-form-grid label > span { font-size: .76rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--text-secondary); }
 .clara-form-grid input, .clara-form-grid select { width: 100%; min-height: 46px; border: 1px solid var(--border-medium); border-radius: 0; padding: 10px 12px; background: #fff; color: var(--text-primary); font: inherit; }
 .clara-form-grid input:focus, .clara-form-grid select:focus { outline: 2px solid var(--brand-blue-20); border-color: var(--brand-blue); }
+.clara-form-grid[data-quick-minimal="true"] .clara-input-hint { grid-column: 1 / -1; }
+.clara-narrow-fields { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px 20px; border-top: 1px solid var(--border-light); padding-top: 18px; }
+.clara-narrow-fields h3 { grid-column: 1 / -1; margin: 0; font-size: 1rem; }
 .clara-primary { margin-top: 28px; min-height: 48px; border: 1px solid var(--brand-blue); background: var(--brand-blue); color: #fff; padding: 12px 22px; font-weight: 800; cursor: pointer; }
 .clara-primary:disabled { opacity: .55; cursor: not-allowed; }
 .workspace-modal-secondary { display: inline-flex; margin-top: 10px; color: var(--text-muted); font-size: .8rem; }

@@ -1,6 +1,7 @@
 import { createCompanyWebsiteProvider } from "../providers/companyWebsiteProvider";
 import { buildIdentityGraph } from "./identityGraphBuilder";
 import { normalizeEntityName, scoreEntityCandidate } from "./entityMatcher";
+import { runClaraModel } from "../modelRouter";
 import type { EntityCandidate, PrivateCompanyInput, RawEvidence } from "../types";
 
 function fieldArray(record: RawEvidence | undefined, key: string) {
@@ -21,6 +22,83 @@ function unique(values: string[]) {
   return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
 }
 
+type PublicWebsiteSeed = { website: string; sourceId: string; displayName: string; description: string | null };
+
+export async function wikidataWebsiteSeeds(companyName: string, fetchImpl: typeof fetch): Promise<PublicWebsiteSeed[]> {
+  try {
+    const searchUrl = new URL("https://www.wikidata.org/w/api.php");
+    searchUrl.search = new URLSearchParams({ action: "wbsearchentities", search: companyName, language: "en", format: "json", limit: "8", origin: "*" }).toString();
+    const searchResponse = await fetchImpl(searchUrl, { headers: { Accept: "application/json", "User-Agent": "FinBro-Clara/1.0 public-company-discovery" }, signal: AbortSignal.timeout(7_000) });
+    if (!searchResponse.ok || Number(searchResponse.headers.get("content-length") ?? 0) > 1_000_000) return [];
+    const searchPayload = await searchResponse.json() as { search?: Array<{ id?: string; label?: string; description?: string }> };
+    const normalizedQuery = normalizeEntityName(companyName);
+    const possibleOrganizations = (searchPayload.search ?? []).filter((item) => {
+      const label = normalizeEntityName(item.label ?? "");
+      const description = item.description ?? "";
+      return Boolean(item.id && label && (label === normalizedQuery || label.startsWith(`${normalizedQuery} `)) && /company|business|bank|startup|corporation|manufacturer|software|technology|organisation|organization|brand/i.test(description));
+    }).slice(0, 6);
+    const entityIds = possibleOrganizations.map((item) => item.id!);
+    const wikipediaEntityIds: string[] = [];
+    const entityContext = new Map(possibleOrganizations.map((item) => [item.id!, { displayName: item.label ?? companyName, description: item.description ?? null }]));
+    const wikipediaTitles = new Map<string, string>();
+    {
+      const wikipediaUrl = new URL("https://en.wikipedia.org/w/api.php");
+      wikipediaUrl.search = new URLSearchParams({ action: "query", list: "search", srsearch: `${companyName} company`, format: "json", srlimit: "10", origin: "*" }).toString();
+      const wikipediaResponse = await fetchImpl(wikipediaUrl, { headers: { Accept: "application/json", "User-Agent": "FinBro-Clara/1.0 public-company-discovery" }, signal: AbortSignal.timeout(7_000) });
+      if (wikipediaResponse.ok && Number(wikipediaResponse.headers.get("content-length") ?? 0) <= 1_000_000) {
+        const wikipediaPayload = await wikipediaResponse.json() as { query?: { search?: Array<{ title?: string; snippet?: string }> } };
+        const titles = (wikipediaPayload.query?.search ?? []).filter((item) => {
+          const title = normalizeEntityName(item.title ?? "");
+          return (title === normalizedQuery || title.startsWith(`${normalizedQuery} `)) && /company|business|bank|startup|corporation|manufacturer|software|technology|brand/i.test(item.snippet ?? "");
+        }).map((item) => item.title!).slice(0, 8);
+        if (titles.length) {
+          const pagePropsUrl = new URL("https://en.wikipedia.org/w/api.php");
+          pagePropsUrl.search = new URLSearchParams({ action: "query", prop: "pageprops", titles: titles.join("|"), format: "json", origin: "*" }).toString();
+          const pagePropsResponse = await fetchImpl(pagePropsUrl, { headers: { Accept: "application/json", "User-Agent": "FinBro-Clara/1.0 public-company-discovery" }, signal: AbortSignal.timeout(7_000) });
+          if (pagePropsResponse.ok && Number(pagePropsResponse.headers.get("content-length") ?? 0) <= 1_000_000) {
+            const pagePropsPayload = await pagePropsResponse.json() as { query?: { pages?: Record<string, { title?: string; pageprops?: { wikibase_item?: string } }> } };
+            for (const page of Object.values(pagePropsPayload.query?.pages ?? {})) {
+              const entityId = page.pageprops?.wikibase_item;
+              if (!entityId) continue;
+              wikipediaEntityIds.push(entityId);
+              if (page.title) wikipediaTitles.set(entityId, page.title);
+              const searchResult = (wikipediaPayload.query?.search ?? []).find((item) => item.title === page.title);
+              entityContext.set(entityId, { displayName: (page.title ?? companyName).replace(/\s*\([^)]*\)\s*$/, ""), description: searchResult?.snippet?.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() ?? null });
+            }
+          }
+        }
+      }
+    }
+    const details = await Promise.all(unique([...wikipediaEntityIds, ...entityIds]).slice(0, 8).map(async (entityId) => {
+      const entityResponse = await fetchImpl(`https://www.wikidata.org/wiki/Special:EntityData/${encodeURIComponent(entityId)}.json`, { headers: { Accept: "application/json", "User-Agent": "FinBro-Clara/1.0 public-company-discovery" }, signal: AbortSignal.timeout(7_000) });
+      if (!entityResponse.ok || Number(entityResponse.headers.get("content-length") ?? 0) > 1_000_000) return null;
+      const payload = await entityResponse.json() as { entities?: Record<string, { claims?: { P856?: Array<{ mainsnak?: { datavalue?: { value?: unknown } } }> } }> };
+      const context = entityContext.get(entityId) ?? { displayName: companyName, description: null };
+      let website = payload.entities?.[entityId]?.claims?.P856?.[0]?.mainsnak?.datavalue?.value;
+      if ((typeof website !== "string" || !/^https?:\/\//i.test(website)) && wikipediaTitles.has(entityId)) {
+        const externalLinksUrl = new URL("https://en.wikipedia.org/w/api.php");
+        externalLinksUrl.search = new URLSearchParams({ action: "query", prop: "extlinks", titles: wikipediaTitles.get(entityId)!, ellimit: "50", format: "json", origin: "*" }).toString();
+        const externalLinksResponse = await fetchImpl(externalLinksUrl, { headers: { Accept: "application/json", "User-Agent": "FinBro-Clara/1.0 public-company-discovery" }, signal: AbortSignal.timeout(7_000) });
+        if (externalLinksResponse.ok && Number(externalLinksResponse.headers.get("content-length") ?? 0) <= 1_000_000) {
+          const externalLinksPayload = await externalLinksResponse.json() as { query?: { pages?: Record<string, { extlinks?: Array<{ "*"?: string }> }> } };
+          const nameToken = normalizeEntityName(context.displayName).split(" ").find((token) => token.length >= 3) ?? "";
+          const blocked = /(?:wikipedia|wikimedia|bloomberg|forbes|techcrunch|fortune|businessinsider|theinformation|axios|reuters|linkedin|facebook|instagram|twitter|x\.com|youtube)\./i;
+          website = Object.values(externalLinksPayload.query?.pages ?? {}).flatMap((page) => page.extlinks ?? []).map((item) => item["*"]).filter((link): link is string => {
+            if (!link || !/^https?:\/\//i.test(link)) return false;
+            const hostname = new URL(link).hostname.replace(/^www\./, "").toLowerCase();
+            return !blocked.test(hostname) && Boolean(nameToken && normalizeEntityName(hostname).includes(nameToken));
+          }).sort((left, right) => new URL(left).pathname.length - new URL(right).pathname.length)[0];
+        }
+      }
+      if (typeof website !== "string" || !/^https?:\/\//i.test(website)) return null;
+      return { website, sourceId: `wikidata-${entityId}`, ...context };
+    }));
+    return [...new Map(details.filter((item): item is PublicWebsiteSeed => Boolean(item)).map((item) => [new URL(item.website).hostname.replace(/^www\./, ""), item])).values()].slice(0, 5);
+  } catch {
+    return [];
+  }
+}
+
 export function candidateWebsiteSeeds(companyName: string) {
   const tokens = normalizeEntityName(companyName).split(" ").filter(Boolean);
   const compactName = tokens.join("");
@@ -28,8 +106,65 @@ export function candidateWebsiteSeeds(companyName: string) {
   return unique([
     withoutAi ? `https://${withoutAi}.ai` : "",
     compactName ? `https://${compactName}.com` : "",
+    compactName ? `https://${compactName}.ai` : "",
+    tokens.length > 1 ? `https://${tokens.join("-")}.com` : "",
     tokens.length > 1 && tokens[0].length >= 4 ? `https://${tokens[0]}.com` : "",
-  ]).slice(0, 3);
+  ]).slice(0, 5);
+}
+
+const RELATIONSHIPS = new Set(["Target operating company", "Possible legal entity", "Parent", "Subsidiary", "Affiliate", "DBA / Brand"]);
+const CONFIDENCE = new Set(["High", "Medium", "Low"]);
+
+async function semanticallyRankGroundedCandidates(input: PrivateCompanyInput, candidates: EntityCandidate[]) {
+  if (!process.env.DEEPSEEK_API_KEY || !candidates.length) return candidates;
+  try {
+    const result = await runClaraModel({
+      tier: "medium",
+      task: "discover_company_candidates",
+      input: {
+        companyName: input.companyName,
+        website: input.website,
+        groundedPublicResults: candidates.map((candidate) => ({
+          candidateId: candidate.candidateId,
+          displayName: candidate.displayName,
+          legalName: candidate.legalName,
+          website: candidate.website,
+          location: [candidate.city, candidate.state, candidate.country].filter(Boolean).join(", ") || null,
+          industry: candidate.industry,
+          knownPeople: [...candidate.founders, ...candidate.executives],
+          publicSourceIds: candidate.sourceIds,
+          deterministicMatchSignals: candidate.matchSignals,
+        })),
+      },
+      schema(value) {
+        if (!value || typeof value !== "object" || !Array.isArray((value as { candidates?: unknown }).candidates)) throw new Error("INVALID_DISCOVERY_JSON");
+        return (value as { candidates: unknown[] }).candidates.flatMap((item) => {
+          if (!item || typeof item !== "object") return [];
+          const row = item as Record<string, unknown>;
+          const candidateId = typeof row.candidateId === "string" ? row.candidateId : "";
+          const relationshipType = typeof row.relationshipType === "string" && RELATIONSHIPS.has(row.relationshipType) ? row.relationshipType : "Target operating company";
+          const confidence = typeof row.confidence === "string" && CONFIDENCE.has(row.confidence) ? row.confidence : null;
+          const matchReasons = Array.isArray(row.matchReasons) ? row.matchReasons.filter((reason): reason is string => typeof reason === "string" && reason.length <= 180).slice(0, 3) : [];
+          return candidateId ? [{ candidateId, relationshipType, confidence, matchReasons }] : [];
+        });
+      },
+    });
+    const grounded = new Map(candidates.map((candidate) => [candidate.candidateId, candidate]));
+    const selected = result.flatMap((selection) => {
+      const candidate = grounded.get(selection.candidateId);
+      if (!candidate) return [];
+      return [{
+        ...candidate,
+        relationshipType: selection.relationshipType as EntityCandidate["relationshipType"],
+        matchConfidence: (selection.confidence ?? candidate.matchConfidence) as EntityCandidate["matchConfidence"],
+        matchSignals: unique([...candidate.matchSignals, ...selection.matchReasons]),
+      }];
+    });
+    const selectedById = new Map(selected.map((candidate) => [candidate.candidateId, candidate]));
+    return candidates.map((candidate) => selectedById.get(candidate.candidateId) ?? candidate).slice(0, 5);
+  } catch {
+    return candidates;
+  }
 }
 
 function unresolvedFields(candidate: Omit<EntityCandidate, "unresolvedIdentityFields" | "matchScore" | "matchConfidence" | "resolutionStatus" | "matchSignals">) {
@@ -89,42 +224,44 @@ export async function discoverEntityCandidates(
     relationshipType: "Target operating company" as const,
   };
   if (!source) {
-    const attempts = await Promise.all(candidateWebsiteSeeds(input.companyName ?? "").map(async (website) => {
+    const publicSeeds = await wikidataWebsiteSeeds(input.companyName ?? "", options.fetchImpl ?? fetch);
+    const publicSeedByHost = new Map(publicSeeds.map((item) => [new URL(item.website).hostname.replace(/^www\./, "").toLowerCase(), item]));
+    const websites = unique([...publicSeeds.map((item) => item.website), ...candidateWebsiteSeeds(input.companyName ?? "")]).slice(0, 8);
+    const attempts = await Promise.all(websites.map(async (website) => {
       const result = await discoverEntityCandidates(researchId, { ...input, website }, { ...options, maxPages: Math.min(options.maxPages ?? 4, 4), maxDepth: Math.min(options.maxDepth ?? 1, 1) });
-      return result.candidates.map((candidate) => {
+      const host = new URL(website).hostname.replace(/^www\./, "").toLowerCase();
+      const publicSeed = publicSeedByHost.get(host);
+      const publicLead = publicSeed ? {
+        ...base,
+        candidateId: crypto.randomUUID(),
+        displayName: publicSeed.displayName,
+        website: publicSeed.website,
+        domain: host,
+        industry: publicSeed.description,
+        sourceIds: [publicSeed.sourceId],
+        unresolvedIdentityFields: unresolvedFields({ ...base, displayName: publicSeed.displayName, website: publicSeed.website, domain: host, industry: publicSeed.description, sourceIds: [publicSeed.sourceId] }),
+        matchSignals: ["Public entity and official website identified by Wikidata"],
+        matchScore: 35,
+        matchConfidence: "Low" as const,
+        resolutionStatus: "requiresUserConfirmation" as const,
+      } : null;
+      const enrichedCandidates = result.candidates.map((candidate) => {
         const rescored = scoreEntityCandidate(input, candidate);
-        return { ...candidate, ...rescored, targetSelectionStatus: "unselected" as const };
+        const seed = candidate.domain ? publicSeedByHost.get(candidate.domain) : null;
+        return { ...candidate, ...rescored, sourceIds: unique([...candidate.sourceIds, ...(seed ? [seed.sourceId] : [])]), targetSelectionStatus: "unselected" as const };
       }).filter((candidate) =>
-        candidate.matchSignals.includes("Organization name confirmed on official website") &&
-        !candidate.matchSignals.includes("Website organization differs from supplied company name"),
-      ).map((candidate) => ({ candidate, evidence: result.websiteEvidence }));
+        candidate.matchSignals.includes("Organization name confirmed on official website") && !candidate.matchSignals.includes("Website organization differs from supplied company name"),
+      );
+      const groundedCandidates = enrichedCandidates.length ? enrichedCandidates : publicLead ? [publicLead] : [];
+      return groundedCandidates.map((candidate) => ({ candidate, evidence: enrichedCandidates.length ? result.websiteEvidence : [] }));
     }));
     const discovered = attempts.flat();
     const uniqueCandidates = [...new Map(discovered.map((item) => [item.candidate.domain ?? item.candidate.candidateId, item])).values()];
-    if (!uniqueCandidates.length && input.companyName) {
-      const provisionalBase = {
-        ...base,
-        displayName: input.companyName,
-        sourceIds: [`user-input-${researchId}`],
-        unresolvedIdentityFields: unresolvedFields({ ...base, displayName: input.companyName, sourceIds: [`user-input-${researchId}`] }),
-      };
-      const scored = scoreEntityCandidate(input, provisionalBase);
-      return {
-        candidates: [{
-          ...provisionalBase,
-          ...scored,
-          matchSignals: ["Company name supplied by user as discovery lead"],
-          resolutionStatus: "requiresUserConfirmation",
-          relationshipType: "Unknown relationship",
-        }],
-        websiteEvidence: [],
-        websiteStatus: "notProvided",
-      };
-    }
+    const ranked = await semanticallyRankGroundedCandidates(input, uniqueCandidates.map((item) => item.candidate));
     return {
-      candidates: uniqueCandidates.map((item) => item.candidate),
+      candidates: ranked,
       websiteEvidence: uniqueCandidates.flatMap((item) => item.evidence),
-      websiteStatus: uniqueCandidates.length ? "reachable" : "notProvided",
+      websiteStatus: ranked.length ? "reachable" : "notProvided",
     };
   }
   const seedCandidate: EntityCandidate = {

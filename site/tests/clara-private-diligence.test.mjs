@@ -93,10 +93,12 @@ test("discovers website-only identity signals and preserves Company Reported evi
   });
   const graphUrl = await moduleUrl("../app/lib/private-diligence/entity-resolution/identityGraphBuilder.ts");
   const matcherUrl = await moduleUrl("../app/lib/private-diligence/entity-resolution/entityMatcher.ts");
+  const modelUrl = `data:text/javascript,${encodeURIComponent('export async function runClaraModel(){throw new Error("MODEL_DISABLED_IN_FIXTURE") }')}`;
   const discoveryUrl = await moduleUrl("../app/lib/private-diligence/entity-resolution/candidateDiscovery.ts", {
     '"../providers/companyWebsiteProvider"': JSON.stringify(providerUrl),
     '"./identityGraphBuilder"': JSON.stringify(graphUrl),
     '"./entityMatcher"': JSON.stringify(matcherUrl),
+    '"../modelRouter"': JSON.stringify(modelUrl),
   });
   const { discoverEntityCandidates } = await import(discoveryUrl + nonce());
   const pages = {
@@ -136,6 +138,28 @@ test("discovers website-only identity signals and preserves Company Reported evi
     resolveHost: async () => [{ address: "93.184.216.34", family: 4 }], paths: ["/"],
   });
   assert.equal(titleOnly.candidates[0].displayName, "Beacon Labs");
+
+  const ambiguous = await discoverEntityCandidates("research-multi", input({ companyName: "Acme AI", website: null, city: null, state: null, country: null, founderOrExecutive: null, industry: null }), {
+    fetchImpl: async (url) => {
+      const target = new URL(String(url));
+      if (target.pathname === "/robots.txt") return new Response("User-agent: *\nDisallow:", { headers: { "content-type": "text/plain" } });
+      return new Response(`<!doctype html><title>Acme AI</title><script type="application/ld+json">{"@type":"Organization","name":"Acme AI","url":"${target.origin}"}</script>`, { headers: { "content-type": "text/html" } });
+    },
+    resolveHost: async () => [{ address: "93.184.216.34", family: 4 }], paths: ["/"],
+  });
+  assert.ok(ambiguous.candidates.length >= 2 && ambiguous.candidates.length <= 5);
+  assert.equal(ambiguous.candidates.every((item) => item.researchRequestId === "research-multi" && item.candidateId && item.sourceIds.length), true);
+
+  const oneGrounded = await discoverEntityCandidates("research-one", input({ companyName: "Acme AI", website: null, city: null, state: null, country: null, founderOrExecutive: null, industry: null }), {
+    fetchImpl: async (url) => {
+      const target = new URL(String(url));
+      if (target.pathname === "/robots.txt") return new Response("User-agent: *\nDisallow:", { headers: { "content-type": "text/plain" } });
+      if (target.hostname !== "acme.ai") return new Response("", { status: 404, headers: { "content-type": "text/html" } });
+      return new Response('<!doctype html><title>Acme AI</title><script type="application/ld+json">{"@type":"Organization","name":"Acme AI"}</script>', { headers: { "content-type": "text/html" } });
+    },
+    resolveHost: async () => [{ address: "93.184.216.34", family: 4 }], paths: ["/"],
+  });
+  assert.equal(oneGrounded.candidates.length, 1);
 });
 
 test("uses page-title fallback, flags name mismatches, and shares low-score confirmation rules", async () => {

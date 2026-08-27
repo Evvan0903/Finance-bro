@@ -397,3 +397,14 @@
 - [x] Pass final full test suite, Vercel-compatible build, responsive browser/PDF/Markdown QA, and whitespace checks.
 - [x] Update final diagnostics and recovery notes.
 - [x] Commit exactly `feat: build clara private company diligence mvp` and push `origin/main` without manual Vercel deployment.
+
+## Clara grounded discovery continuation
+
+- [x] Keep Quick input limited to company name and website, with fallback hints only after zero candidates.
+- [x] Add bounded Wikidata/Wikipedia discovery and official-website enrichment without fabricated candidates.
+- [x] Restrict DeepSeek V4 Pro to grounded candidate discovery and structured JSON.
+- [x] Persist ResearchRequest, EntityCandidate, and SelectedTarget with Drizzle; remove process-local record storage.
+- [x] Validate separate-process ownership, cross-request rejection, explicit multi-candidate selection, and Quick report start.
+- [x] Pass 31/31 focused tests, 124/124 full tests, TypeScript, ESLint, Vinext build, Next/Vercel build, and whitespace checks.
+- [x] Browser-validate name-only, website-only, name+website, selection, confirmation, and report generation.
+- [ ] Configure and verify `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` in Vercel before claiming production persistence readiness.

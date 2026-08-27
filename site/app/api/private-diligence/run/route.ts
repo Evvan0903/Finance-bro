@@ -8,14 +8,14 @@ export const maxDuration = 60;
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const researchId = typeof body?.researchId === "string" ? body.researchId : "";
-  const record = privateDiligenceStore.get(researchId);
+  const record = await privateDiligenceStore.get(researchId);
   if (!record?.identityGraph || !record.confirmedCandidate) {
     return NextResponse.json({ code: "ENTITY_CONFIRMATION_REQUIRED", message: "Confirm the target company before generating a report" }, { status: 409 });
   }
   try {
-    privateDiligenceStore.update(researchId, { stage: "sourceRetrieval", stageStatus: "running" });
+    await privateDiligenceStore.update(researchId, { stage: "sourceRetrieval", stageStatus: "running" });
     const result = await runPrivateDiligence(researchId, record.input, record.identityGraph);
-    privateDiligenceStore.update(researchId, {
+    await privateDiligenceStore.update(researchId, {
       stage: "reportValidation", stageStatus: "complete",
       providerPlan: result.providerPlan,
       providerResults: result.providerResults,
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
   } catch (error) {
     const known = error instanceof PrivateDiligenceEngineError;
     const code = known ? error.code : "PRIVATE_DILIGENCE_FAILED";
-    privateDiligenceStore.update(researchId, { stageStatus: "failed", errorCode: code });
+    await privateDiligenceStore.update(researchId, { stageStatus: "failed", errorCode: code });
     return NextResponse.json({
       code,
       message: error instanceof PrivateDiligenceEngineError

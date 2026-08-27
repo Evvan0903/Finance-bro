@@ -19,7 +19,7 @@ test("one candidate is selected automatically and produces an ID-only confirmati
   const selectedCandidateId = selection.initialSelectedCandidateId(candidates);
   assert.equal(selectedCandidateId, "candidate-1");
   assert.deepEqual(selection.buildConfirmationPayload("research-1", selectedCandidateId), {
-    researchId: "research-1",
+    researchRequestId: "research-1",
     candidateId: "candidate-1",
     explicitUserConfirmation: true,
   });
@@ -69,4 +69,6 @@ test("UI and confirmation route enforce explicit selection and ownership invaria
   assert.doesNotMatch(workflow, /confirm\(candidate\)/);
   assert.match(route, /explicitUserConfirmation = body\?\.explicitUserConfirmation === true/);
   assert.match(route, /candidateBelongsToResearch\(candidate, researchId\)/);
+  assert.match(route, /privateDiligenceStore\.getCandidate\(researchId, candidateId\)/);
+  assert.match(route, /privateDiligenceStore\.persistSelection/);
 });

@@ -7,13 +7,12 @@ import { CLARA_COPY, CLARA_PROGRESS } from "./lib/private-diligence/copy";
 import { buildConfirmationPayload, initialSelectedCandidateId, selectCandidateId } from "./lib/private-diligence/entity-resolution/candidateSelection";
 import { getEntityConfirmationEligibility } from "./lib/private-diligence/entity-resolution/entityMatcher";
 import { REPORT_RENDERING_MODEL } from "./lib/report-rendering-model";
-import type { ClaraWorkflowMode, DiligenceLocale, EntityCandidate, PrivateCompanyInput, PrivateDiligenceReport, QuickResearchPurpose, ResearchObjective } from "./lib/private-diligence/types";
+import type { ClaraWorkflowMode, DiligenceLocale, EntityCandidate, PrivateCompanyInput, PrivateDiligenceReport, ResearchObjective } from "./lib/private-diligence/types";
 
 const OBJECTIVES: ResearchObjective[] = [
   "General diligence", "Investor screening", "Vendor diligence",
   "Acquisition screening", "Partnership review", "Customer review",
 ];
-const QUICK_PURPOSES: QuickResearchPurpose[] = ["Competitor", "Potential Customer", "Vendor", "Partner", "Sales Prospect", "General Research"];
 
 const OBJECTIVE_LABELS: Record<DiligenceLocale, Record<ResearchObjective, string>> = {
   en: Object.fromEntries(OBJECTIVES.map((objective) => [objective, objective])) as Record<ResearchObjective, string>,
@@ -28,15 +27,11 @@ const OBJECTIVE_LABELS: Record<DiligenceLocale, Record<ResearchObjective, string
 };
 
 const EMPTY_INPUT: PrivateCompanyInput = {
-  companyName: null, website: null, city: null, state: null, country: "United States",
+  companyName: null, website: null, city: null, state: null, country: null,
   founderOrExecutive: null, industry: null, researchObjective: "General diligence",
   locale: "en", reportDepth: "Standard",
 };
 
-const QUICK_LABELS: Record<DiligenceLocale, Record<QuickResearchPurpose, string>> = {
-  en: Object.fromEntries(QUICK_PURPOSES.map((purpose) => [purpose, purpose])) as Record<QuickResearchPurpose, string>,
-  zh: { Competitor: "竞争对手", "Potential Customer": "潜在客户", Vendor: "供应商", Partner: "合作伙伴", "Sales Prospect": "销售线索", "General Research": "通用调查" },
-};
 const QUICK_PROGRESS = [
   { en: "Finding the company", zh: "正在查找公司" }, { en: "Confirming the target", zh: "正在确认目标" },
   { en: "Reviewing the company website", zh: "正在审查公司网站" }, { en: "Checking leadership and ownership signals", zh: "正在核查管理层和所有权信号" },
@@ -84,6 +79,7 @@ const SIGNAL_ZH: Record<string, string> = {
   "Website organization differs from supplied company name": "网站组织名称与输入的公司名称不同",
   "Company name supplied by user as discovery lead": "用户提供的公司名称研究线索",
   "Public website discovered for supplied company name": "已根据公司名称发现公开网站",
+  "Public entity and official website identified by Wikidata": "Wikidata 已识别公开实体及官方网站",
 };
 
 const UNRESOLVED_ZH: Record<string, string> = {
@@ -240,12 +236,12 @@ export function ClaraPrivateDiligenceWorkflow({ mode = "deep" }: { mode?: ClaraW
       const payload = await jsonRequest("/api/private-diligence/candidates", { input: normalizedInput });
       const discoveredCandidates: EntityCandidate[] = payload.candidates ?? [];
       const initialSelection = initialSelectedCandidateId(discoveredCandidates);
-      setResearchId(payload.researchId);
+      setResearchId(payload.researchRequestId);
       setCandidates(discoveredCandidates);
       setSelectedCandidateId(initialSelection);
       setConfirmedId(payload.autoConfirmedCandidateId ?? "");
-      console.info(JSON.stringify({ event: "clara_candidate_selection_state", researchRequestId: payload.researchId, candidatesLength: discoveredCandidates.length, candidateId: discoveredCandidates[0]?.candidateId ?? null, candidateResearchRequestId: discoveredCandidates[0]?.researchRequestId ?? null, selectedCandidateId: initialSelection }));
-      if (!discoveredCandidates.length) { setError(payload.message ?? copy.insufficientIdentity); setState("needsMoreInformation"); return; }
+      if (process.env.NODE_ENV !== "production") console.info(JSON.stringify({ event: "clara_candidate_selection_state", researchRequestId: payload.researchRequestId, candidatesLength: discoveredCandidates.length, candidateId: discoveredCandidates[0]?.candidateId ?? null, candidateResearchRequestId: discoveredCandidates[0]?.researchRequestId ?? null, selectedCandidateId: initialSelection }));
+      if (!discoveredCandidates.length) { setError(copy.discoveryNoMatch); setState("needsMoreInformation"); return; }
       setState("confirmation");
     } catch (problem) { setError(problem instanceof Error ? problem.message : copy.insufficientIdentity); setState("error"); }
   }
@@ -261,7 +257,7 @@ export function ClaraPrivateDiligenceWorkflow({ mode = "deep" }: { mode?: ClaraW
     if (!confirmationPayload) return;
     setError("");
     try {
-      console.info(JSON.stringify({ event: "clara_confirmation_request", researchRequestId: confirmationPayload.researchId, candidateId: confirmationPayload.candidateId, selectedCandidateId, explicitUserConfirmation: true }));
+      if (process.env.NODE_ENV !== "production") console.info(JSON.stringify({ event: "clara_confirmation_request", researchRequestId: confirmationPayload.researchRequestId, candidateId: confirmationPayload.candidateId, selectedCandidateId, explicitUserConfirmation: true }));
       await jsonRequest("/api/private-diligence/confirm-entity", confirmationPayload);
       setConfirmedId(confirmationPayload.candidateId);
       setState("targetSelected");
@@ -283,7 +279,10 @@ export function ClaraPrivateDiligenceWorkflow({ mode = "deep" }: { mode?: ClaraW
     await runResearch();
   }
 
-  function reset() { setState("input"); setResearchId(""); setCandidates([]); setSelectedCandidateId(null); setConfirmedId(""); setReport(null); setError(""); }
+  function reset() {
+    setInput({ ...EMPTY_INPUT, locale: input.locale, workflowMode: mode, quickResearchPurpose: "General Research" });
+    setState("input"); setResearchId(""); setCandidates([]); setSelectedCandidateId(null); setConfirmedId(""); setReport(null); setError("");
+  }
 
   return (
     <main className="clara-shell">
@@ -302,16 +301,19 @@ export function ClaraPrivateDiligenceWorkflow({ mode = "deep" }: { mode?: ClaraW
           <section className="clara-panel">
             {(state === "input" || state === "resolving" || state === "needsMoreInformation" || state === "error") && <form onSubmit={discover}>
               <header><span>01</span><h2>{input.locale === "zh" ? "确定目标公司" : "Define the target company"}</h2></header>
-              <div className="clara-form-grid">
-                <p className="clara-input-hint">{copy.identityInputHint}</p>
+              <div className="clara-form-grid" data-quick-minimal={mode === "quick"}>
+                <p className="clara-input-hint">{mode === "quick" ? copy.quickInputHint : copy.identityInputHint}</p>
                 <label><span>{copy.fields.companyName}</span><input required={!input.website} value={input.companyName ?? ""} onChange={(event) => update("companyName", event.target.value || null)} /></label>
                 <label><span>{copy.fields.website}</span><input inputMode="url" required={!input.companyName} placeholder="https://example.com" value={input.website ?? ""} onChange={(event) => update("website", event.target.value || null)} /></label>
-                <label><span>{copy.fields.city}</span><input value={input.city ?? ""} onChange={(event) => update("city", event.target.value || null)} /></label>
-                <label><span>{copy.fields.state}</span><input value={input.state ?? ""} onChange={(event) => update("state", event.target.value || null)} /></label>
-                <label><span>{copy.fields.country}</span><input value={input.country ?? ""} onChange={(event) => update("country", event.target.value || null)} /></label>
-                <label><span>{copy.fields.founder}</span><input value={input.founderOrExecutive ?? ""} onChange={(event) => update("founderOrExecutive", event.target.value || null)} /></label>
-                <label><span>{copy.fields.industry}</span><input value={input.industry ?? ""} onChange={(event) => update("industry", event.target.value || null)} /></label>
-                <label><span>{mode === "quick" ? (input.locale === "zh" ? "研究目的" : "Research purpose") : copy.fields.objective}</span>{mode === "quick" ? <select value={input.quickResearchPurpose} onChange={(event) => update("quickResearchPurpose", event.target.value as QuickResearchPurpose)}>{QUICK_PURPOSES.map((purpose) => <option key={purpose} value={purpose}>{QUICK_LABELS[input.locale][purpose]}</option>)}</select> : <select value={input.researchObjective} onChange={(event) => update("researchObjective", event.target.value as ResearchObjective)}>{OBJECTIVES.map((objective) => <option key={objective} value={objective}>{OBJECTIVE_LABELS[input.locale][objective]}</option>)}</select>}</label>
+                {mode === "quick" && state === "needsMoreInformation" && <div className="clara-narrow-fields"><h3>{copy.narrowHeading}</h3><label><span>{copy.fields.location}</span><input value={input.city ?? ""} onChange={(event) => update("city", event.target.value || null)} /></label><label><span>{copy.fields.founder}</span><input value={input.founderOrExecutive ?? ""} onChange={(event) => update("founderOrExecutive", event.target.value || null)} /></label></div>}
+                {mode === "deep" && <>
+                  <label><span>{copy.fields.city}</span><input value={input.city ?? ""} onChange={(event) => update("city", event.target.value || null)} /></label>
+                  <label><span>{copy.fields.state}</span><input value={input.state ?? ""} onChange={(event) => update("state", event.target.value || null)} /></label>
+                  <label><span>{copy.fields.country}</span><input value={input.country ?? ""} onChange={(event) => update("country", event.target.value || null)} /></label>
+                  <label><span>{copy.fields.founder}</span><input value={input.founderOrExecutive ?? ""} onChange={(event) => update("founderOrExecutive", event.target.value || null)} /></label>
+                  <label><span>{copy.fields.industry}</span><input value={input.industry ?? ""} onChange={(event) => update("industry", event.target.value || null)} /></label>
+                  <label><span>{copy.fields.objective}</span><select value={input.researchObjective} onChange={(event) => update("researchObjective", event.target.value as ResearchObjective)}>{OBJECTIVES.map((objective) => <option key={objective} value={objective}>{OBJECTIVE_LABELS[input.locale][objective]}</option>)}</select></label>
+                </>}
                 {mode === "deep" && <label><span>{copy.fields.depth}</span><select value={input.reportDepth} onChange={(event) => update("reportDepth", event.target.value as "Standard" | "Compact")}><option value="Standard">{input.locale === "zh" ? "标准" : "Standard"}</option><option value="Compact">{input.locale === "zh" ? "精简" : "Compact"}</option></select></label>}
               </div>
               <button className="clara-primary" disabled={state === "resolving"}>{state === "resolving" ? progress[0][input.locale] : mode === "quick" ? (input.locale === "zh" ? "查找公司" : "Find Company") : copy.assign}</button>
