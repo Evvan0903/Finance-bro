@@ -86,6 +86,7 @@ test("quick report remains evidence-backed and does not make investment claims",
   assert.match(report, /not investment recommendations/);
   assert.match(report, /personal emails, mobile numbers, and residential addresses are excluded/);
   assert.match(provider, /companyWebsite/);
+  assert.match(provider, /serpApiWebSearch/);
   assert.doesNotMatch(provider, /webDiscovery/);
 });
 
