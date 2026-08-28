@@ -127,6 +127,46 @@
 .clara-report-section > header span { color: var(--brand-blue); font-weight: 800; }
 .clara-report-section h2 { margin: 0; font-size: 1.55rem; letter-spacing: -.025em; }
 .clara-report-section > p { margin: 10px 0; color: var(--text-secondary); line-height: 1.62; }
+.clara-visual-dashboard { padding: 34px clamp(28px,6vw,76px); border-top: 1px solid var(--border-light); background-color: var(--surface-primary); background-image: linear-gradient(var(--brand-blue-04) 1px, transparent 1px), linear-gradient(90deg, var(--brand-blue-04) 1px, transparent 1px); background-size: 32px 32px; }
+.clara-visual-dashboard-header { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
+.clara-visual-dashboard-header > div > span { color: var(--brand-blue); font-size: .68rem; font-weight: 800; letter-spacing: .15em; }
+.clara-visual-dashboard-header h2 { margin: 4px 0 0; font-size: 1.7rem; letter-spacing: -.03em; }
+.clara-visual-dashboard-header > p { max-width: 480px; margin: 0; color: var(--text-muted); font-size: .78rem; line-height: 1.5; text-align: right; }
+.clara-visual-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
+.clara-visual-card { margin-top: 14px; padding: 20px; border: 1px solid var(--border-light); background: rgba(255,255,255,.96); }
+.clara-visual-grid .clara-visual-card { margin-top: 0; }
+.clara-visual-card > header { display: flex; align-items: start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.clara-visual-card > header h3 { margin: 0; font-size: 1rem; letter-spacing: -.015em; }
+.clara-visual-card > header p { max-width: 300px; margin: 0; color: var(--text-muted); font-size: .7rem; line-height: 1.45; text-align: right; }
+.clara-coverage-list { display: grid; gap: 10px; }
+.clara-coverage-row > div:first-child { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 5px; font-size: .75rem; }
+.clara-coverage-row small { color: var(--text-muted); }
+.clara-coverage-track { height: 5px; overflow: hidden; background: var(--surface-muted); }
+.clara-coverage-track span { display: block; height: 100%; background: var(--brand-blue); transition: width .15s ease; }
+.clara-quality-bar { display: flex; height: 18px; overflow: hidden; border: 1px solid var(--border-light); }
+.clara-quality-bar span { min-width: 2px; height: 100%; }
+.clara-quality-legend { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px 16px; margin-top: 18px; }
+.clara-quality-legend div { display: grid; grid-template-columns: 9px 1fr auto; align-items: center; gap: 8px; color: var(--text-secondary); font-size: .72rem; }
+.clara-quality-legend i { width: 8px; height: 8px; }
+.clara-quality-legend strong { color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.clara-hiring-total { display: flex; align-items: baseline; gap: 12px; padding-bottom: 18px; border-bottom: 1px solid var(--border-light); }
+.clara-hiring-total strong { color: var(--brand-blue); font-size: 2.8rem; line-height: 1; letter-spacing: -.06em; }
+.clara-hiring-total span { color: var(--text-secondary); font-size: .82rem; }
+.clara-hiring-breakdowns { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 14px; margin-top: 18px; }
+.clara-hiring-breakdown h4 { margin: 0 0 9px; font-size: .72rem; }
+.clara-hiring-breakdown div { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-top: 1px solid var(--border-light); color: var(--text-secondary); font-size: .7rem; }
+.clara-visual-empty { min-height: 88px; display: grid; place-items: center; margin: 0; padding: 18px; border: 1px dashed var(--border-medium); background: var(--surface-subtle); color: var(--text-muted); font-size: .76rem; text-align: center; }
+.clara-visual-empty.compact { min-height: 0; margin-top: 14px; padding: 10px; }
+.clara-activity-timeline { display: grid; }
+.clara-activity-timeline > article { position: relative; padding: 0 0 20px 22px; border-left: 1px solid var(--border-medium); }
+.clara-activity-timeline > article:last-child { padding-bottom: 0; }
+.clara-activity-timeline > article::before { content: ""; position: absolute; left: -5px; top: 2px; width: 9px; height: 9px; border-radius: 50%; background: var(--brand-blue); box-shadow: 0 0 0 4px var(--brand-blue-08); }
+.clara-activity-timeline > article > div { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+.clara-activity-timeline time { color: var(--text-primary); font-family: ui-monospace,SFMono-Regular,Menlo,monospace; font-size: .7rem; }
+.clara-activity-timeline span { padding: 3px 7px; background: var(--brand-blue-08); color: var(--brand-blue); font-size: .62rem; font-weight: 700; }
+.clara-activity-timeline p { margin: 8px 0 5px; color: var(--text-secondary); font-size: .78rem; line-height: 1.5; }
+.clara-activity-timeline a { color: var(--brand-blue); font-size: .68rem; overflow-wrap: anywhere; }
+.clara-source-register .clara-reference-list { margin-top: 0; }
 .clara-table-wrap { overflow-x: auto; margin-top: 18px; }
 .clara-table-wrap table { width: 100%; border-collapse: collapse; min-width: 700px; }
 .clara-table-wrap th, .clara-table-wrap td { text-align: left; border-bottom: 1px solid var(--border-light); padding: 10px; vertical-align: top; }
@@ -149,6 +189,8 @@
   .clara-progress { position: static; }
   .clara-progress ol { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .clara-report-cover dl { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .clara-visual-grid { grid-template-columns: 1fr; }
+  .clara-hiring-breakdowns { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
 
 @media (max-width: 560px) {
@@ -161,6 +203,10 @@
   .clara-results { padding: 24px 12px 64px; }
   .clara-report-cover, .clara-report-section { padding-left: 22px; padding-right: 22px; }
   .clara-report-section > header { grid-template-columns: 40px 1fr; }
+  .clara-visual-dashboard { padding: 28px 20px; }
+  .clara-visual-dashboard-header, .clara-visual-card > header { display: block; }
+  .clara-visual-dashboard-header > p, .clara-visual-card > header p { margin-top: 8px; text-align: left; }
+  .clara-hiring-breakdowns, .clara-quality-legend { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 600px) {
@@ -179,7 +225,7 @@
   .clara-header, .clara-hero, .clara-workspace, .clara-report-actions { display: none !important; }
   .clara-results { padding: 0; }
   .clara-report { border: 0; box-shadow: none; max-width: none; }
-  .clara-report-section, .clara-report-cover { break-inside: avoid; }
+  .clara-report-section, .clara-report-cover, .clara-visual-card { break-inside: avoid; }
 }
 
 * {

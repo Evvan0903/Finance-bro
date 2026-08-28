@@ -351,6 +351,7 @@ export type ReportSection = {
   number: string;
   title: { en: string; zh: string };
   paragraphs: string[];
+  paragraphsByLocale?: { en: string[]; zh: string[] };
   claimIds: string[];
   evidenceIds: string[];
 };
@@ -388,7 +389,9 @@ export type PrivateDiligenceReport = {
     sourceTier: SourceTier;
   }>;
   disclosure: string;
+  disclosureByLocale?: { en: string; zh: string };
   methodologyLimitations: string[];
+  methodologyLimitationsByLocale?: { en: string[]; zh: string[] };
 };
 
 export type PrivateDiligenceResearchRecord = {

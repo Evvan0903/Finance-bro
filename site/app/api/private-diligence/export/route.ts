@@ -90,11 +90,12 @@ export async function POST(request: Request) {
     const researchId = typeof body?.researchId === "string" ? body.researchId : "";
     const type = typeof body?.type === "string" ? body.type : "";
     const format = typeof body?.format === "string" ? body.format : "";
+    const locale = body?.locale === "zh" ? "zh" : "en";
     if (!/^[0-9a-f-]{36}$/i.test(researchId)) throw new Error("Invalid research identifier");
     const report = (await privateDiligenceStore.get(researchId))?.report;
     if (!report) throw new Error("Diligence report was not found");
     if (type === "report" && format === "markdown") {
-      return new Response(privateDiligenceReportToMarkdown(report), {
+      return new Response(privateDiligenceReportToMarkdown(report, locale), {
         headers: {
           "Content-Type": "text/markdown; charset=utf-8",
           "Content-Disposition": `attachment; filename="finbro-clara-${researchId}.md"`,

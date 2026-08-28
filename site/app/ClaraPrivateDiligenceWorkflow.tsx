@@ -3,9 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ClaraQuickReportVisuals } from "./ClaraQuickReportVisuals";
 import { CLARA_COPY, CLARA_PROGRESS } from "./lib/private-diligence/copy";
 import { buildConfirmationPayload, initialSelectedCandidateId, selectCandidateId } from "./lib/private-diligence/entity-resolution/candidateSelection";
 import { getEntityConfirmationEligibility } from "./lib/private-diligence/entity-resolution/entityMatcher";
+import { quickReportDisclosure, quickReportParagraphs } from "./lib/private-diligence/reports/quickReportPresentation";
 import { REPORT_RENDERING_MODEL } from "./lib/report-rendering-model";
 import type { ClaraWorkflowMode, DiligenceLocale, EntityCandidate, PrivateCompanyInput, PrivateDiligenceReport, ResearchObjective } from "./lib/private-diligence/types";
 
@@ -131,19 +133,34 @@ function CandidateCard({ candidate, onSelect, locale, selected }: {
   );
 }
 
-function ClaraReport({ report, researchId, onReset }: {
+function ClaraReport({ report, researchId, onReset, locale }: {
   report: PrivateDiligenceReport;
   researchId: string;
   onReset: () => void;
+  locale: DiligenceLocale;
 }) {
-  const copy = CLARA_COPY[report.locale];
+  const copy = CLARA_COPY[locale];
   const reportRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
+  const localizedQuickSections = useMemo(() => new Map(
+    quickReportParagraphs(report, locale).map((section) => [section.sectionId, section]),
+  ), [report, locale]);
+  const coverageLabel = locale === "zh"
+    ? ({
+        "Strong public-source coverage": "公开来源覆盖较强",
+        "Moderate public-source coverage": "公开来源覆盖中等",
+        "Limited public-source coverage": "公开来源覆盖有限",
+        "Insufficient entity resolution": "实体识别信息不足",
+      } as const)[report.coverageStatus]
+    : report.coverageStatus;
+  const identityLabel = locale === "zh"
+    ? ({ High: "高", Medium: "中", Low: "低" } as const)[report.entity.identityConfidence]
+    : report.entity.identityConfidence;
 
   async function exportServer(type: "report" | "evidence" | "claims" | "risks", format: "markdown" | "csv" | "xlsx") {
     const response = await fetch("/api/private-diligence/export", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ researchId, type, format }),
+      body: JSON.stringify({ researchId, type, format, locale }),
     });
     await downloadResponse(response, `finbro-clara-${type}.${format === "markdown" ? "md" : format}`);
   }
@@ -156,7 +173,7 @@ function ClaraReport({ report, researchId, onReset }: {
       await exportReportPdf(reportRef.current, {
         ticker: "CLARA", agentId: "clara", subject: report.entity.canonicalName,
         researchDate: report.generatedAt.slice(0, 10),
-        filename: `finbro-clara-${report.entity.canonicalName}-${report.generatedAt.slice(0, 10)}.pdf`,
+        filename: `finbro-clara-${report.entity.canonicalName}-${report.generatedAt.slice(0, 10)}-${locale}.pdf`,
       });
     } finally { setExporting(false); }
   }
@@ -173,27 +190,28 @@ function ClaraReport({ report, researchId, onReset }: {
         <button type="button" onClick={() => exportServer("claims", "xlsx")}>{copy.claimsXlsx}</button>
         <button type="button" onClick={() => exportServer("risks", "csv")}>{copy.riskCsv}</button>
       </div>
-      <div className="clara-report" ref={reportRef} data-rendering-model={REPORT_RENDERING_MODEL.pdf}>
+      <div className="clara-report" ref={reportRef} data-rendering-model={REPORT_RENDERING_MODEL.pdf} data-report-locale={locale}>
         <header className="clara-report-cover" data-pdf-block>
           <span>FINBRO · CLARA</span>
           <h1>{report.entity.canonicalName}</h1>
           <h2>{report.reportVersion === "clara-quick-v1"
-            ? report.locale === "zh" ? "快速企业调查简报" : "Quick Company Intelligence Brief"
-            : report.locale === "zh" ? "公开来源私营公司尽调" : "Public-Source Private Company Due Diligence"}</h2>
+            ? locale === "zh" ? "快速企业调查简报" : "Quick Company Intelligence Brief"
+            : locale === "zh" ? "公开来源私营公司尽调" : "Public-Source Private Company Due Diligence"}</h2>
           <dl>
-            <div><dt>{report.locale === "zh" ? "研究日期" : "Research date"}</dt><dd>{report.generatedAt.slice(0, 10)}</dd></div>
-            <div><dt>{report.locale === "zh" ? "身份置信度" : "Identity confidence"}</dt><dd>{report.entity.identityConfidence}</dd></div>
-            <div><dt>{report.locale === "zh" ? "证据覆盖" : "Evidence coverage"}</dt><dd>{report.coverageStatus}</dd></div>
-            <div><dt>{report.locale === "zh" ? "报告版本" : "Report version"}</dt><dd>{report.reportVersion}</dd></div>
+            <div><dt>{locale === "zh" ? "研究日期" : "Research date"}</dt><dd>{report.generatedAt.slice(0, 10)}</dd></div>
+            <div><dt>{locale === "zh" ? "身份置信度" : "Identity confidence"}</dt><dd>{identityLabel}</dd></div>
+            <div><dt>{locale === "zh" ? "证据覆盖" : "Evidence coverage"}</dt><dd>{coverageLabel}</dd></div>
+            <div><dt>{locale === "zh" ? "报告版本" : "Report version"}</dt><dd>{report.reportVersion}</dd></div>
           </dl>
-          <p>{report.disclosure}</p>
+          <p>{report.reportVersion === "clara-quick-v1" ? quickReportDisclosure(report, locale) : report.disclosure}</p>
         </header>
+        {report.reportVersion === "clara-quick-v1" && <ClaraQuickReportVisuals report={report} locale={locale} />}
         {report.sections.map((section) => (
           <section className="clara-report-section" key={section.sectionId} data-pdf-block>
-            <header><span>{section.number}</span><h2>{section.title[report.locale]}</h2></header>
-            {section.paragraphs.map((paragraph, index) => <p key={`${section.sectionId}-${index}`}>{paragraph}</p>)}
+            <header><span>{section.number}</span><h2>{section.title[locale]}</h2></header>
+            {(report.reportVersion === "clara-quick-v1" ? localizedQuickSections.get(section.sectionId)?.paragraphs ?? section.paragraphs : section.paragraphs).map((paragraph, index) => <p key={`${section.sectionId}-${index}`}>{paragraph}</p>)}
             {section.sectionId === "17" && (
-              <div className="clara-table-wrap"><table><thead><tr><th>{report.locale === "zh" ? "优先级" : "Priority"}</th><th>{report.locale === "zh" ? "缺失信息" : "Missing information"}</th><th>{report.locale === "zh" ? "建议证据" : "Recommended evidence"}</th></tr></thead><tbody>{report.informationGaps.map((gap) => <tr key={gap.gapId}><td>{gap.priority}</td><td>{gap.missingInformation}</td><td>{gap.recommendedEvidence.join("; ")}</td></tr>)}</tbody></table></div>
+              <div className="clara-table-wrap"><table><thead><tr><th>{locale === "zh" ? "优先级" : "Priority"}</th><th>{locale === "zh" ? "缺失信息" : "Missing information"}</th><th>{locale === "zh" ? "建议证据" : "Recommended evidence"}</th></tr></thead><tbody>{report.informationGaps.map((gap) => <tr key={gap.gapId}><td>{gap.priority}</td><td>{gap.missingInformation}</td><td>{gap.recommendedEvidence.join("; ")}</td></tr>)}</tbody></table></div>
             )}
             {section.sectionId === "18" && (
               <div className="clara-question-list">{report.questions.map((question) => <article key={question.questionId}><span>{question.priority}</span><h3>{question.question}</h3><p>{question.reason}</p><small>{question.recommendedEvidence.join("; ")}</small></article>)}</div>
@@ -203,6 +221,20 @@ function ClaraReport({ report, researchId, onReset }: {
             )}
           </section>
         ))}
+        {report.reportVersion === "clara-quick-v1" && <section className="clara-report-section clara-source-register" data-pdf-block>
+          <header><span>SRC</span><h2>{locale === "zh" ? "证据与来源" : "Evidence and Sources"}</h2></header>
+          {report.references.length ? <ol className="clara-reference-list">{report.references.map((reference) => {
+            const evidence = report.evidence.find((item) => item.evidenceId === reference.evidenceId);
+            const status = evidence?.officialRecord
+              ? (locale === "zh" ? "已验证" : "Verified")
+              : evidence?.companyReported
+                ? (locale === "zh" ? "公司自行披露" : "Management Reported")
+                : evidence?.independentlyPublished
+                  ? (locale === "zh" ? "部分验证" : "Partially Verified")
+                  : (locale === "zh" ? "未验证" : "Unverified");
+            return <li key={reference.evidenceId}><a href={reference.sourceUrl} target="_blank" rel="noreferrer">{reference.sourceTitle}</a><span>{status} · {locale === "zh" ? "来源层级" : "Tier"} {reference.sourceTier} · {reference.publicationDate ?? reference.retrievedAt.slice(0, 10)}</span></li>;
+          })}</ol> : <p>{locale === "zh" ? "未识别可展示的公开来源" : "No displayable public sources were identified"}</p>}
+        </section>}
       </div>
     </div>
   );
@@ -286,7 +318,7 @@ export function ClaraPrivateDiligenceWorkflow({ mode = "deep" }: { mode?: ClaraW
 
   return (
     <main className="clara-shell">
-      <header className="clara-header"><Link href="/" aria-label={copy.back}><span>F</span> FINBRO</Link><div><strong>CLARA</strong><span>{copy.role}</span></div><button type="button" onClick={() => update("locale", input.locale === "en" ? "zh" : "en")}>{input.locale === "en" ? "中文" : "EN"}</button></header>
+      <header className="clara-header"><Link href="/" aria-label={copy.back}><span>F</span> FINBRO</Link><div><strong>CLARA</strong><span>{copy.role}</span></div><button type="button" data-testid="clara-locale-toggle" onClick={() => update("locale", input.locale === "en" ? "zh" : "en")}>{input.locale === "en" ? "中文" : "EN"}</button></header>
       <section className="clara-hero">
         <div><span>{mode === "quick" ? (input.locale === "zh" ? "快速企业调查" : "QUICK COMPANY INTELLIGENCE") : "PUBLIC-SOURCE DILIGENCE"}</span><h1>{mode === "quick" ? (input.locale === "zh" ? "快速企业调查" : "Quick Company Intelligence") : copy.heading}</h1><p>{mode === "quick" ? (input.locale === "zh" ? "快速研究竞争对手、客户、供应商、合作伙伴和销售线索的公开商业信息" : "Fast public-source research for competitors, customers, vendors, partners, and sales prospects") : copy.subheading}</p><small>{mode === "quick" ? (input.locale === "zh" ? "仅限公开业务信息 · 并非完整尽调" : "Public business information only · not complete due diligence") : copy.publicOnly}</small></div>
         <Image src="/team/clara-workstation.svg" alt="Clara at a private company diligence workstation" width={560} height={360} priority />
@@ -324,7 +356,7 @@ export function ClaraPrivateDiligenceWorkflow({ mode = "deep" }: { mode?: ClaraW
           </section>
         </div>
       )}
-      {state === "report" && report && <ClaraReport report={report} researchId={researchId} onReset={reset} />}
+      {state === "report" && report && <ClaraReport report={report} researchId={researchId} onReset={reset} locale={report.reportVersion === "clara-quick-v1" ? input.locale : report.locale} />}
     </main>
   );
 }
