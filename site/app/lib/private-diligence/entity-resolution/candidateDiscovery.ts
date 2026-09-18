@@ -1,5 +1,6 @@
 import { createCompanyWebsiteProvider } from "../providers/companyWebsiteProvider";
 import { buildIdentityGraph } from "./identityGraphBuilder";
+import { analyzeLegalEntities } from "./legalEntityDiscovery";
 import { normalizeEntityName, scoreEntityCandidate } from "./entityMatcher";
 import { runClaraModel } from "../modelRouter";
 import type { EntityCandidate, PrivateCompanyInput, RawEvidence } from "../types";
@@ -16,6 +17,59 @@ function pageRecords(evidence: RawEvidence[], ...types: string[]) {
 function meaningfulTitle(value: string) {
   const first = value.split(/\s+(?:\||—|–|-|·)\s+/)[0]?.trim() ?? "";
   return /^(?:home|welcome|untitled company page)$/i.test(first) || first.length < 2 ? null : first;
+}
+
+function identitySimilarity(left: string, right: string) {
+  const a = normalizeEntityName(left);
+  const b = normalizeEntityName(right);
+  if (!a || !b) return 0;
+  if (a === b) return 1;
+  const leftTokens = new Set(a.split(" "));
+  const rightTokens = new Set(b.split(" "));
+  const shared = [...leftTokens].filter((token) => rightTokens.has(token)).length;
+  return shared / Math.max(leftTokens.size, rightTokens.size);
+}
+
+function domainIdentityLabel(domain: string | null) {
+  const label = domain?.replace(/^www\./, "").split(".")[0] ?? "";
+  return label.replace(/[-_]+/g, " ");
+}
+
+function hasIdentityShape(value: string) {
+  const normalized = normalizeEntityName(value);
+  const tokens = normalized.split(" ").filter(Boolean);
+  if (!normalized || value.length > 100 || tokens.length > 8) return false;
+  // Repeated menu labels are a page chrome pattern, not an organization name.
+  if (tokens.length >= 4 && new Set(tokens).size / tokens.length < 0.75) return false;
+  return true;
+}
+
+export function selectSupportedDisplayName(args: {
+  userSearchName: string | null;
+  domain: string | null;
+  organizationNames: string[];
+  pageTitles: string[];
+  legalNames: string[];
+}) {
+  const shapedOrganizations = unique(args.organizationNames).filter(hasIdentityShape);
+  const shapedTitles = unique(args.pageTitles).filter(hasIdentityShape);
+  const domainLabel = domainIdentityLabel(args.domain);
+  const contexts = unique([args.userSearchName ?? "", domainLabel, ...shapedTitles]);
+  const contextSupported = (name: string) => contexts.some((context) => identitySimilarity(name, context) >= 0.5);
+  const supportedOrganizations = shapedOrganizations.filter((name) => !args.userSearchName || contextSupported(name));
+  const supportedTitles = shapedTitles.filter((name) => !args.userSearchName || contextSupported(name));
+  const userNameSupported = Boolean(args.userSearchName && hasIdentityShape(args.userSearchName) &&
+    (identitySimilarity(args.userSearchName, domainLabel) >= 0.8 ||
+      supportedOrganizations.some((name) => identitySimilarity(name, args.userSearchName!) >= 0.5) ||
+      supportedTitles.some((name) => identitySimilarity(name, args.userSearchName!) >= 0.5)));
+  const evidencedDisplayName = userNameSupported
+    ? args.userSearchName!.trim()
+    : supportedOrganizations[0] ?? supportedTitles[0] ?? null;
+  const legalContexts = unique([args.userSearchName ?? "", domainLabel, evidencedDisplayName ?? "", ...supportedOrganizations]);
+  const supportedLegalNames = unique(args.legalNames).filter((name) => hasIdentityShape(name) &&
+    legalContexts.some((context) => identitySimilarity(name, context) >= 0.5));
+  const displayName = evidencedDisplayName ?? supportedLegalNames[0] ?? null;
+  return { displayName, supportedOrganizations, supportedTitles, supportedLegalNames };
 }
 
 function unique(values: string[]) {
@@ -112,15 +166,28 @@ export function candidateWebsiteSeeds(companyName: string) {
   ]).slice(0, 5);
 }
 
+/** Candidate ranking is not legal identity verification. Reachable, source-backed exact brands get a visible slot. */
+export function rankCandidateOptions(candidates: EntityCandidate[], companyName: string | null) {
+  const name = normalizeEntityName(companyName ?? "");
+  const rank = (c: EntityCandidate) => (c.websiteReachable ? 100 : 0) + (normalizeEntityName(c.displayName)===name?50:0) + c.matchScore;
+  return [...candidates].sort((a,b)=>rank(b)-rank(a));
+}
+export function hasFirstPartyBrandCandidate(candidate: EntityCandidate, companyName: string | null) {
+  const name=normalizeEntityName(companyName ?? "");
+  const label=normalizeEntityName(candidate.domain?.split('.')[0] ?? "");
+  const domainName = candidate.domain?.endsWith(".ai") ? name.replace(/ ai$/, "") : name;
+  return Boolean(name && candidate.websiteReachable && label===domainName.replaceAll(" ","") && candidate.pageTitles.some(title=>(" "+normalizeEntityName(title)+" ").includes(" "+name+" ")));
+}
+
 const RELATIONSHIPS = new Set(["Target operating company", "Possible legal entity", "Parent", "Subsidiary", "Affiliate", "DBA / Brand"]);
 const CONFIDENCE = new Set(["High", "Medium", "Low"]);
 
-async function semanticallyRankGroundedCandidates(input: PrivateCompanyInput, candidates: EntityCandidate[]) {
-  if (!process.env.DEEPSEEK_API_KEY || !candidates.length) return candidates;
+async function semanticallyRankGroundedCandidates(input: PrivateCompanyInput, candidates: EntityCandidate[], fetchImpl?: typeof fetch) {
+  if (!process.env.DEEPSEEK_API_KEY || !candidates.length) return rankCandidateOptions(candidates,input.companyName).slice(0,5);
   try {
     const result = await runClaraModel({
       tier: "medium",
-      task: "discover_company_candidates",
+      task: "discover_company_candidates", fetchImpl,
       input: {
         companyName: input.companyName,
         website: input.website,
@@ -156,14 +223,14 @@ async function semanticallyRankGroundedCandidates(input: PrivateCompanyInput, ca
       return [{
         ...candidate,
         relationshipType: selection.relationshipType as EntityCandidate["relationshipType"],
-        matchConfidence: (selection.confidence ?? candidate.matchConfidence) as EntityCandidate["matchConfidence"],
+        matchConfidence: (selection.confidence === "Low" ? "Low" : candidate.matchConfidence) as EntityCandidate["matchConfidence"],
         matchSignals: unique([...candidate.matchSignals, ...selection.matchReasons]),
       }];
     });
     const selectedById = new Map(selected.map((candidate) => [candidate.candidateId, candidate]));
-    return candidates.map((candidate) => selectedById.get(candidate.candidateId) ?? candidate).slice(0, 5);
+    return rankCandidateOptions(candidates.map((candidate) => selectedById.get(candidate.candidateId) ?? candidate), input.companyName).slice(0, 5);
   } catch {
-    return candidates;
+    return rankCandidateOptions(candidates, input.companyName).slice(0, 5);
   }
 }
 
@@ -199,6 +266,8 @@ export async function discoverEntityCandidates(
     formerNames: [],
     website: source?.toString() ?? null,
     domain: source?.hostname.replace(/^www\./, "").toLowerCase() ?? null,
+    description: null,
+    identitySourceUrl: source?.toString() ?? null,
     city: null,
     state: null,
     country: null,
@@ -226,7 +295,7 @@ export async function discoverEntityCandidates(
   if (!source) {
     const publicSeeds = await wikidataWebsiteSeeds(input.companyName ?? "", options.fetchImpl ?? fetch);
     const publicSeedByHost = new Map(publicSeeds.map((item) => [new URL(item.website).hostname.replace(/^www\./, "").toLowerCase(), item]));
-    const websites = unique([...publicSeeds.map((item) => item.website), ...candidateWebsiteSeeds(input.companyName ?? "")]).slice(0, 8);
+    const websites = unique([...candidateWebsiteSeeds(input.companyName ?? "").slice(0, 2), ...publicSeeds.map((item) => item.website)]).slice(0, 8);
     const attempts = await Promise.all(websites.map(async (website) => {
       const result = await discoverEntityCandidates(researchId, { ...input, website }, { ...options, maxPages: Math.min(options.maxPages ?? 4, 4), maxDepth: Math.min(options.maxDepth ?? 1, 1) });
       const host = new URL(website).hostname.replace(/^www\./, "").toLowerCase();
@@ -237,9 +306,10 @@ export async function discoverEntityCandidates(
         displayName: publicSeed.displayName,
         website: publicSeed.website,
         domain: host,
-        industry: publicSeed.description,
+        description: publicSeed.description,
+        identitySourceUrl: publicSeed.website,
         sourceIds: [publicSeed.sourceId],
-        unresolvedIdentityFields: unresolvedFields({ ...base, displayName: publicSeed.displayName, website: publicSeed.website, domain: host, industry: publicSeed.description, sourceIds: [publicSeed.sourceId] }),
+        unresolvedIdentityFields: unresolvedFields({ ...base, displayName: publicSeed.displayName, website: publicSeed.website, domain: host, description: publicSeed.description, sourceIds: [publicSeed.sourceId] }),
         matchSignals: ["Public entity and official website identified by Wikidata"],
         matchScore: 35,
         matchConfidence: "Low" as const,
@@ -250,14 +320,14 @@ export async function discoverEntityCandidates(
         const seed = candidate.domain ? publicSeedByHost.get(candidate.domain) : null;
         return { ...candidate, ...rescored, sourceIds: unique([...candidate.sourceIds, ...(seed ? [seed.sourceId] : [])]), targetSelectionStatus: "unselected" as const };
       }).filter((candidate) =>
-        candidate.matchSignals.includes("Organization name confirmed on official website") && !candidate.matchSignals.includes("Website organization differs from supplied company name"),
+        (candidate.matchSignals.includes("Organization name confirmed on official website") && !candidate.matchSignals.includes("Website organization differs from supplied company name")) || hasFirstPartyBrandCandidate(candidate, input.companyName),
       );
       const groundedCandidates = enrichedCandidates.length ? enrichedCandidates : publicLead ? [publicLead] : [];
       return groundedCandidates.map((candidate) => ({ candidate, evidence: enrichedCandidates.length ? result.websiteEvidence : [] }));
     }));
     const discovered = attempts.flat();
     const uniqueCandidates = [...new Map(discovered.map((item) => [item.candidate.domain ?? item.candidate.candidateId, item])).values()];
-    const ranked = await semanticallyRankGroundedCandidates(input, uniqueCandidates.map((item) => item.candidate));
+    const ranked = await semanticallyRankGroundedCandidates(input, uniqueCandidates.map((item) => item.candidate), options.fetchImpl);
     return {
       candidates: ranked,
       websiteEvidence: uniqueCandidates.flatMap((item) => item.evidence),
@@ -299,9 +369,15 @@ export async function discoverEntityCandidates(
   const privacy = pageRecords(evidence, "privacy");
   const termsLegalNames = unique(terms.flatMap((item) => [...fieldArray(item, "legalNames"), ...fieldArray(item, "legalEntityMentions")]));
   const privacyLegalNames = unique(privacy.flatMap((item) => [...fieldArray(item, "legalNames"), ...fieldArray(item, "legalEntityMentions")]));
-  const discoveredNames = unique([...organizationNames, ...legalNames, ...termsLegalNames, ...privacyLegalNames, ...pageTitles]);
-  const displayName = organizationNames[0] ?? legalNames[0] ?? termsLegalNames[0] ?? privacyLegalNames[0] ?? pageTitles[0] ?? "";
-  if (!displayName || !discoveredNames.some((name) => normalizeEntityName(name))) {
+  const selectedIdentity = selectSupportedDisplayName({
+    userSearchName: input.companyName,
+    domain: base.domain,
+    organizationNames,
+    pageTitles,
+    legalNames: [...termsLegalNames, ...privacyLegalNames, ...legalNames],
+  });
+  const displayName = selectedIdentity.displayName ?? "";
+  if (!displayName) {
     return { candidates: [], websiteEvidence: evidence, websiteStatus: "insufficientIdentity" };
   }
   const addresses = unique(evidence.flatMap((item) => fieldArray(item, "addresses")));
@@ -310,24 +386,31 @@ export async function discoverEntityCandidates(
   const countries = unique(evidence.flatMap((item) => fieldArray(item, "countries")));
   const descriptions = unique(evidence.map((item) => item.structuredData.description)
     .filter((item): item is string => typeof item === "string" && Boolean(item.trim())));
+  // A name in site-wide disclosures may be an advisory subsidiary. Apply the
+  // same source/relationship rules used by research before labeling the card.
+  const legalDiscovery = analyzeLegalEntities({ ...context.identityGraph, canonicalName: displayName, confirmedDisplayName: displayName }, evidence, context.now().toISOString());
+  const acceptedLegalNames = legalDiscovery.secQueryLegalNames;
   const candidateBase = {
     ...base,
     displayName,
-    legalName: termsLegalNames[0] ?? privacyLegalNames[0] ?? legalNames[0] ?? null,
-    dbaNames: unique([...organizationNames, ...pageTitles].filter((name) => normalizeEntityName(name) !== normalizeEntityName(displayName))),
+    legalName: acceptedLegalNames[0] ?? null,
+    dbaNames: selectedIdentity.supportedOrganizations
+      .filter((name) => normalizeEntityName(name) !== normalizeEntityName(displayName)),
     city: cities[0] ?? null,
     state: states[0] ?? null,
     country: countries[0] ?? null,
-    industry: unique(evidence.flatMap((item) => fieldArray(item, "industryLabels")))[0] ?? descriptions[0]?.slice(0, 160) ?? null,
+    description: descriptions[0]?.slice(0, 240) ?? null,
+    identitySourceUrl: evidence[0]?.sourceUrl ?? base.website,
+    industry: unique(evidence.flatMap((item) => fieldArray(item, "industryLabels")))[0] ?? null,
     founders: unique(evidence.flatMap((item) => fieldArray(item, "founders"))),
     executives: unique(evidence.flatMap((item) => fieldArray(item, "executives"))),
     addresses,
     phoneNumbers: unique(evidence.flatMap((item) => fieldArray(item, "phoneNumbers"))),
     emailDomains: unique(evidence.flatMap((item) => fieldArray(item, "emailDomains"))),
-    websiteOrganizationNames: organizationNames.length ? organizationNames : pageTitles.slice(0, 1),
-    termsLegalNames,
-    privacyLegalNames,
-    pageTitles,
+    websiteOrganizationNames: selectedIdentity.supportedOrganizations,
+    termsLegalNames: termsLegalNames.filter((name) => acceptedLegalNames.includes(name)),
+    privacyLegalNames: privacyLegalNames.filter((name) => acceptedLegalNames.includes(name)),
+    pageTitles: selectedIdentity.supportedTitles,
     socialProfiles: unique(evidence.flatMap((item) => fieldArray(item, "socialProfiles"))),
     productCategories: unique(evidence.flatMap((item) => [...fieldArray(item, "products"), ...fieldArray(item, "services")])),
     affiliateNames: unique(evidence.flatMap((item) => fieldArray(item, "affiliateNames"))),

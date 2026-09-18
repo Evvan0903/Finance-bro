@@ -1,0 +1,657 @@
+{
+  "validationMode": "real Tavily, isolated Next.js, Tavily primary; fallback exercised using mocked transports in automated tests",
+  "researchId": "b54d82c2-1554-4a54-a577-7136bf4c893d",
+  "isolatedDatabase": "/var/folders/px/4c6br34515x5zxjxf7b0x_6w0000gn/T/clara-funding-live-bclynW/clara.db",
+  "runtimeConfiguration": [
+    {
+      "phase": "runtime",
+      "tavilyConfigured": true,
+      "primary": "tavily"
+    },
+    {
+      "phase": "runtime",
+      "tavilyConfigured": true,
+      "primary": "tavily"
+    }
+  ],
+  "httpStatus": {
+    "discovery": 200,
+    "confirmation": 200,
+    "run": 200,
+    "reportRead": 200,
+    "cachedRun": 200
+  },
+  "checks": {
+    "freshDatabaseRead": true,
+    "persistedEqualsReportApi": true,
+    "confirmedGraphUnchanged": true,
+    "alreadyComplete": true,
+    "toolExecutionCounts": {
+      "before": 4,
+      "after": 4
+    }
+  },
+  "connectivity": {
+    "configured": true,
+    "reason": "results",
+    "urls": [
+      "https://graphiq.ai/dossier/abaka-aidata-annotation-collection-processing-for-ai",
+      "https://www.abaka.ai/team"
+    ],
+    "attempts": [
+      {
+        "provider": "tavily",
+        "attempted": true,
+        "reason": "results",
+        "reportedCredits": 1,
+        "httpStatus": 200
+      },
+      {
+        "provider": "serpapi",
+        "attempted": false,
+        "reason": "notNeeded"
+      }
+    ],
+    "usage": {
+      "logicalOperations": 1,
+      "outboundAttempts": 1,
+      "cacheHits": 0,
+      "reportedCredits": 1,
+      "estimatedTavilyCredits": 0,
+      "estimatedSerpApiRequests": 0
+    }
+  },
+  "applicationSearchDiagnostics": [
+    {
+      "compatibilityProviderId": "serpApiWebSearch",
+      "queries": [
+        {
+          "reason": "results",
+          "attempts": [
+            {
+              "provider": "tavily",
+              "attempted": true,
+              "reason": "results",
+              "reportedCredits": 1,
+              "httpStatus": 200
+            },
+            {
+              "provider": "serpapi",
+              "attempted": false,
+              "reason": "notNeeded"
+            }
+          ]
+        },
+        {
+          "reason": "results",
+          "attempts": [
+            {
+              "provider": "tavily",
+              "attempted": true,
+              "reason": "results",
+              "reportedCredits": 1,
+              "httpStatus": 200
+            },
+            {
+              "provider": "serpapi",
+              "attempted": false,
+              "reason": "notNeeded"
+            }
+          ]
+        },
+        {
+          "reason": "results",
+          "attempts": [
+            {
+              "provider": "tavily",
+              "attempted": true,
+              "reason": "results",
+              "reportedCredits": 1,
+              "httpStatus": 200
+            },
+            {
+              "provider": "serpapi",
+              "attempted": false,
+              "reason": "notNeeded"
+            }
+          ]
+        },
+        {
+          "reason": "results",
+          "attempts": [
+            {
+              "provider": "tavily",
+              "attempted": true,
+              "reason": "results",
+              "reportedCredits": 1,
+              "httpStatus": 200
+            },
+            {
+              "provider": "serpapi",
+              "attempted": false,
+              "reason": "notNeeded"
+            }
+          ]
+        },
+        {
+          "reason": "results",
+          "attempts": [
+            {
+              "provider": "tavily",
+              "attempted": true,
+              "reason": "results",
+              "reportedCredits": 1,
+              "httpStatus": 200
+            },
+            {
+              "provider": "serpapi",
+              "attempted": false,
+              "reason": "notNeeded"
+            }
+          ]
+        },
+        {
+          "reason": "results",
+          "attempts": [
+            {
+              "provider": "tavily",
+              "attempted": true,
+              "reason": "results",
+              "reportedCredits": 1,
+              "httpStatus": 200
+            },
+            {
+              "provider": "serpapi",
+              "attempted": false,
+              "reason": "notNeeded"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "compatibilityProviderId": "serpApiWebSearch",
+      "queries": [
+        {
+          "reason": "results",
+          "attempts": [
+            {
+              "provider": "tavily",
+              "attempted": true,
+              "reason": "results",
+              "reportedCredits": 1,
+              "httpStatus": 200
+            },
+            {
+              "provider": "serpapi",
+              "attempted": false,
+              "reason": "notNeeded"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "compatibilityProviderId": "serpApiWebSearch",
+      "queries": [
+        {
+          "reason": "results",
+          "attempts": [
+            {
+              "provider": "tavily",
+              "attempted": true,
+              "reason": "results",
+              "reportedCredits": 1,
+              "httpStatus": 200
+            },
+            {
+              "provider": "serpapi",
+              "attempted": false,
+              "reason": "notNeeded"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "compatibilityProviderId": "serpApiWebSearch",
+      "queries": [
+        {
+          "reason": "results",
+          "attempts": [
+            {
+              "provider": "tavily",
+              "attempted": true,
+              "reason": "results",
+              "reportedCredits": 1,
+              "httpStatus": 200
+            },
+            {
+              "provider": "serpapi",
+              "attempted": false,
+              "reason": "notNeeded"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "networkSearchResponses": [
+    {
+      "company": "Abaka AI",
+      "kind": "tavily",
+      "host": "api.tavily.com",
+      "path": "/search",
+      "startedAt": "2026-09-18T05:08:46.028Z",
+      "phase": "response",
+      "status": 200,
+      "elapsedMs": 1398
+    },
+    {
+      "company": "Abaka AI",
+      "kind": "tavily",
+      "host": "api.tavily.com",
+      "path": "/search",
+      "startedAt": "2026-09-18T05:08:46.028Z",
+      "phase": "metadata",
+      "credits": 1,
+      "requestId": "4ed4d6d6-0205-44df-9415-5399e7e33f0e",
+      "urls": [
+        "https://www.linkedin.com/company/abaka-ai",
+        "https://graphiq.ai/dossier/abaka-aidata-annotation-collection-processing-for-ai",
+        "https://www.abaka.ai/team",
+        "https://finance.yahoo.com/sectors/technology/articles/abaka-ai-secures-8m-expand-140242975.html"
+      ]
+    },
+    {
+      "company": "Abaka AI",
+      "kind": "tavily",
+      "host": "api.tavily.com",
+      "path": "/search",
+      "startedAt": "2026-09-18T05:08:47.430Z",
+      "phase": "response",
+      "status": 200,
+      "elapsedMs": 1215
+    },
+    {
+      "company": "Abaka AI",
+      "kind": "tavily",
+      "host": "api.tavily.com",
+      "path": "/search",
+      "startedAt": "2026-09-18T05:08:47.430Z",
+      "phase": "metadata",
+      "credits": 1,
+      "requestId": "b2a856a4-5d98-4c42-b840-02bc79083ecb",
+      "urls": [
+        "https://www.abaka.ai/team",
+        "https://www.abaka.jp/team",
+        "https://www.forbes.com/profile/jack-lin",
+        "https://www.linkedin.com/in/jack-d-lin"
+      ]
+    },
+    {
+      "company": "Abaka AI",
+      "kind": "tavily",
+      "host": "api.tavily.com",
+      "path": "/search",
+      "startedAt": "2026-09-18T05:08:48.645Z",
+      "phase": "response",
+      "status": 200,
+      "elapsedMs": 870
+    },
+    {
+      "company": "Abaka AI",
+      "kind": "tavily",
+      "host": "api.tavily.com",
+      "path": "/search",
+      "startedAt": "2026-09-18T05:08:48.645Z",
+      "phase": "metadata",
+      "credits": 1,
+      "requestId": "bfd2f01f-5465-424b-8d20-d948f6209732",
+      "urls": [
+        "https://www.abaka.ai/team",
+        "https://www.americanbanker.com/video/digital-banking-2023/case-study-deepening-customer-relationships-and-growing-customer-lifetime-value-with-ai-driven-analytics",
+        "https://www.youtube.com/watch?v=g13UP2B29Ek",
+        "https://www.abaka.ai/careers"
+      ]
+    },
+    {
+      "company": "Abaka AI",
+      "kind": "tavily",
+      "host": "api.tavily.com",
+      "path": "/search",
+      "startedAt": "2026-09-18T05:08:49.517Z",
+      "phase": "response",
+      "status": 200,
+      "elapsedMs": 846
+    },
+    {
+      "company": "Abaka AI",
+      "kind": "tavily",
+      "host": "api.tavily.com",
+      "path": "/search",
+      "startedAt": "2026-09-18T05:08:49.517Z",
+      "phase": "metadata",
+      "credits": 1,
+      "requestId": "79e22010-a3a4-4b03-858d-dcdf6ccc56b2",
+      "urls": [
+        "https://www.facebook.com/groups/731959757473755/posts/1707586143244440",
+        "https://www.linkedin.com/jobs/view/machine-learning-engineer-at-abaka-ai-4341002791",
+        "http://job-boards.greenhouse.io/abakaai",
+        "https://www.abaka.ai/careers"
+      ]
+    },
+    {
+      "company": "Abaka AI",
+      "kind": "tavily",
+      "host": "api.tavily.com",
+      "path": "/search",
+      "startedAt": "2026-09-18T05:08:50.364Z",
+      "phase": "response",
+      "status": 200,
+      "elapsedMs": 1344
+    },
+    {
+      "company": "Abaka AI",
+      "kind": "tavily",
+      "host": "api.tavily.com",
+      "path": "/search",
+      "startedAt": "2026-09-18T05:08:50.364Z",
+      "phase": "metadata",
+      "credits": 1,
+      "requestId": "632fec40-1e8c-4b6a-ad0f-2fffdd7d3664",
+      "urls": [
+        "https://www.abaka.ai/blog/ai-powered-data-annotation-technologies",
+        "https://x.com/abaka_ai",
+        "https://getlatka.com/companies/abaka.ai",
+        "https://www.abaka.ai/blog/enterprise-ai-fortune-500-pilots-to-production"
+      ]
+    },
+    {
+      "company": "Abaka AI",
+      "kind": "tavily",
+      "host": "api.tavily.com",
+      "path": "/search",
+      "startedAt": "2026-09-18T05:08:51.709Z",
+      "phase": "response",
+      "status": 200,
+      "elapsedMs": 1047
+    },
+    {
+      "company": "Abaka AI",
+      "kind": "tavily",
+      "host": "api.tavily.com",
+      "path": "/search",
+      "startedAt": "2026-09-18T05:08:51.709Z",
+      "phase": "metadata",
+      "credits": 1,
+      "requestId": "76066944-0a36-4fbd-8207-b7e74388990f",
+      "urls": [
+        "https://tracxn.com/d/companies/abaka/__0v8jNw0JpLMOBBjtz8ua3bNuuXbsyNVFnKF4waq4rTU/funding-and-investors",
+        "https://app.dealroom.co/news/note/abaka-ai-secures-8m-series-a-to-expand-multimodal-ai-data-infrastructure",
+        "https://finance.yahoo.com/sectors/technology/articles/abaka-ai-secures-8m-expand-140242975.html",
+        "https://www.linkedin.com/posts/abaka-ai_abakaai-ai-ainews-activity-7353747735012859905-kZie"
+      ]
+    },
+    {
+      "company": "Abaka AI",
+      "kind": "tavily",
+      "host": "api.tavily.com",
+      "path": "/search",
+      "startedAt": "2026-09-18T05:08:58.358Z",
+      "phase": "response",
+      "status": 200,
+      "elapsedMs": 2767
+    },
+    {
+      "company": "Abaka AI",
+      "kind": "tavily",
+      "host": "api.tavily.com",
+      "path": "/search",
+      "startedAt": "2026-09-18T05:08:58.358Z",
+      "phase": "metadata",
+      "credits": 1,
+      "requestId": "117fb9ca-5522-436a-a502-daf2e287b1e0",
+      "urls": [
+        "https://www.abaka.ai/blog/gpt-realtime-and-high-quality-audio-data",
+        "https://www.abaka.ai/blog/snorkel"
+      ]
+    },
+    {
+      "company": "Abaka AI",
+      "kind": "tavily",
+      "host": "api.tavily.com",
+      "path": "/search",
+      "startedAt": "2026-09-18T05:09:03.827Z",
+      "phase": "response",
+      "status": 200,
+      "elapsedMs": 924
+    },
+    {
+      "company": "Abaka AI",
+      "kind": "tavily",
+      "host": "api.tavily.com",
+      "path": "/search",
+      "startedAt": "2026-09-18T05:09:03.827Z",
+      "phase": "metadata",
+      "credits": 1,
+      "requestId": "0e2a8399-98b6-431e-afdd-6986d0633159",
+      "urls": [
+        "https://finance.yahoo.com/sectors/technology/articles/abaka-ai-secures-8m-expand-140242975.html",
+        "https://finance.yahoo.com/news/publicai-joins-forces-abaka-ai-153200161.html"
+      ]
+    },
+    {
+      "company": "Abaka AI",
+      "kind": "tavily",
+      "host": "api.tavily.com",
+      "path": "/search",
+      "startedAt": "2026-09-18T05:09:07.737Z",
+      "phase": "response",
+      "status": 200,
+      "elapsedMs": 1949
+    },
+    {
+      "company": "Abaka AI",
+      "kind": "tavily",
+      "host": "api.tavily.com",
+      "path": "/search",
+      "startedAt": "2026-09-18T05:09:07.737Z",
+      "phase": "metadata",
+      "credits": 1,
+      "requestId": "83881ed8-ccc1-4073-b1ac-f2980a8abb2c",
+      "urls": [
+        "https://tracxn.com/d/companies/abaka/__0v8jNw0JpLMOBBjtz8ua3bNuuXbsyNVFnKF4waq4rTU/funding-and-investors",
+        "https://www.fintechfutures.com/ai-in-fintech/ai-powered-pension-solution-abaka-raises-6-5m-in-series-a"
+      ]
+    }
+  ],
+  "applicationRequests": {
+    "tavily": 9,
+    "serpapi": 0,
+    "providerReportedCredits": 9
+  },
+  "initialSandboxTransportFailure": {
+    "attempts": 1,
+    "providerResponseReceived": false,
+    "reason": "upstreamUnavailable",
+    "billing": "unknown; estimated 1 credit, not included in provider-reported credits"
+  },
+  "persistedTavilyEvidenceCount": 14,
+  "linkedClaimCount": 24,
+  "proofPaths": [
+    {
+      "originalUrl": "https://www.abaka.ai/team",
+      "sourceTitle": "Abaka AI - AI Data Annotation & Solution - Your Data Partner In The AI Industry",
+      "evidenceId": "serpapi-b54d82c2-1554-4a54-a577-7136bf4c893d-3",
+      "searchDiscovery": {
+        "url": "https://www.abaka.ai/team",
+        "title": "Meet the Team",
+        "position": 3,
+        "searchProvider": "tavily",
+        "searchRetrievedAt": "2026-09-18T05:08:47.427Z",
+        "providerRequestId": "4ed4d6d6-0205-44df-9415-5399e7e33f0e",
+        "relevanceScore": 0.80405265
+      },
+      "claims": [
+        {
+          "claimId": "claim-2",
+          "claimType": "product",
+          "statement": "high-quality datasets is identified as a product",
+          "status": "CompanyReported"
+        },
+        {
+          "claimId": "claim-3",
+          "claimType": "service",
+          "statement": "data collection is identified as a service",
+          "status": "CompanyReported"
+        },
+        {
+          "claimId": "claim-4",
+          "claimType": "service",
+          "statement": "data cleaning is identified as a service",
+          "status": "CompanyReported"
+        },
+        {
+          "claimId": "claim-5",
+          "claimType": "service",
+          "statement": "data annotation is identified as a service",
+          "status": "CompanyReported"
+        },
+        {
+          "claimId": "claim-15",
+          "claimType": "executiveRole",
+          "statement": "Tom Tang is identified as CEO",
+          "status": "CompanyReported"
+        },
+        {
+          "claimId": "claim-16",
+          "claimType": "executiveRole",
+          "statement": "Yunfei Zhao is identified as Chief Operating Officer",
+          "status": "CompanyReported"
+        },
+        {
+          "claimId": "claim-17",
+          "claimType": "executiveRole",
+          "statement": "Zihan Wang is identified as VP of Research",
+          "status": "CompanyReported"
+        },
+        {
+          "claimId": "claim-22",
+          "claimType": "legalName",
+          "statement": "The identified legal or operating name is Abaka AI",
+          "status": "Corroborated"
+        },
+        {
+          "claimId": "claim-23",
+          "claimType": "description",
+          "statement": "Abaka AI offers data collection, data cleaning, data annotation, and high-quality datasets for world-class Automobile AI, Generative AI, and Embodied AI industry leaders.",
+          "status": "CompanyReported"
+        },
+        {
+          "claimId": "claim-24",
+          "claimType": "executive",
+          "statement": "Tom Tang is identified in company leadership information",
+          "status": "CompanyReported"
+        },
+        {
+          "claimId": "claim-25",
+          "claimType": "executive",
+          "statement": "Yunfei Zhao is identified in company leadership information",
+          "status": "CompanyReported"
+        },
+        {
+          "claimId": "claim-26",
+          "claimType": "executive",
+          "statement": "Zihan Wang is identified in company leadership information",
+          "status": "CompanyReported"
+        }
+      ],
+      "referenceInPersistedReport": true
+    },
+    {
+      "originalUrl": "https://www.forbes.com/profile/jack-lin/",
+      "sourceTitle": "Jack Lin",
+      "evidenceId": "serpapi-b54d82c2-1554-4a54-a577-7136bf4c893d-6",
+      "searchDiscovery": {
+        "url": "https://www.forbes.com/profile/jack-lin",
+        "title": "Jack Lin",
+        "position": 3,
+        "searchProvider": "tavily",
+        "searchRetrievedAt": "2026-09-18T05:08:48.645Z",
+        "providerRequestId": "b2a856a4-5d98-4c42-b840-02bc79083ecb",
+        "relevanceScore": 0.65966886
+      },
+      "claims": [
+        {
+          "claimId": "claim-28",
+          "claimType": "funding.amount",
+          "statement": "amount: 20000000",
+          "status": "PubliclyReported"
+        },
+        {
+          "claimId": "claim-29",
+          "claimType": "funding.amountMeaning",
+          "statement": "amountMeaning: cumulative",
+          "status": "PubliclyReported"
+        },
+        {
+          "claimId": "claim-30",
+          "claimType": "funding.eventStatus",
+          "statement": "eventStatus: unknown",
+          "status": "PubliclyReported"
+        },
+        {
+          "claimId": "claim-31",
+          "claimType": "founder",
+          "statement": "Jack Lin is identified as a founder",
+          "status": "PubliclyReported"
+        }
+      ],
+      "referenceInPersistedReport": true
+    }
+  ],
+  "funding": {
+    "requests": {
+      "search": 3,
+      "fetch": 6,
+      "sec": 0,
+      "model": 3
+    },
+    "announcementStatus": "partial",
+    "secStatus": "issuer_unresolved",
+    "issuerAssociations": [],
+    "events": [
+      {
+        "eventId": "funding-serpapi-b54d82c2-1554-4a54-a577-7136bf4c893d-6-0",
+        "sourceKind": "announcement",
+        "fields": {
+          "amount": {
+            "value": 20000000,
+            "evidenceId": "serpapi-b54d82c2-1554-4a54-a577-7136bf4c893d-6",
+            "sourceUrl": "https://www.forbes.com/profile/jack-lin/",
+            "publicationDate": null
+          },
+          "amountMeaning": {
+            "value": "cumulative",
+            "evidenceId": "serpapi-b54d82c2-1554-4a54-a577-7136bf4c893d-6",
+            "sourceUrl": "https://www.forbes.com/profile/jack-lin/",
+            "publicationDate": null
+          },
+          "eventStatus": {
+            "value": "unknown",
+            "evidenceId": "serpapi-b54d82c2-1554-4a54-a577-7136bf4c893d-6",
+            "sourceUrl": "https://www.forbes.com/profile/jack-lin/",
+            "publicationDate": null
+          }
+        }
+      }
+    ]
+  },
+  "limitations": [
+    "One live company only; no live SerpApi quota claim.",
+    "Abaka legal entity and SEC issuer remain unresolved; no Form D fetched.",
+    "Original publishers may block requests or return interstitials; retrieved HTTP 200 does not guarantee substantive article text.",
+    "Funding amount remains cumulative; currency unspecified and eventStatus unknown. Existing extraction/identity policies unchanged."
+  ]
+}

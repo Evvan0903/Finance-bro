@@ -1,0 +1,215 @@
+{
+  "diagnosticType": "live local browser baseline",
+  "environment": {
+    "application": "Next.js development server",
+    "route": "/workflows/company-intelligence",
+    "mode": "quick",
+    "database": "isolated local SQLite",
+    "browserFlowCompleted": true,
+    "fixturesOrMocksUsed": false,
+    "providerCredentialsPrinted": false,
+    "optionalPlaywrightBrowserAvailable": false
+  },
+  "input": {
+    "companyName": "Abaka AI",
+    "website": "https://abaka.ai/"
+  },
+  "identity": {
+    "researchId": "80d6fba3-aefb-4826-8f78-ed7f5e11e0a3",
+    "candidateId": "0e4ef165-19a1-41e7-8d80-5d4952d73c73",
+    "confirmedEntity": "Abaka AI",
+    "matchScore": 65,
+    "matchConfidence": "Medium",
+    "targetSelectionStatus": "userSelected",
+    "identityVerificationStatus": "unverified",
+    "matchSignals": [
+      "Exact confirmed domain match",
+      "Organization name confirmed on official website",
+      "Official email domain matches website"
+    ]
+  },
+  "providerTrace": [
+    {
+      "provider": "companyWebsite",
+      "selected": true,
+      "status": "success",
+      "usableEvidence": 8,
+      "entityMatches": 8,
+      "sanitizedIssue": null,
+      "lastSuccessfulRetrievalTime": "2026-09-16T04:54:09.820Z"
+    },
+    {
+      "provider": "serpApiWebSearch",
+      "selected": true,
+      "status": "success",
+      "queries": [
+        "\"Abaka AI\" company overview products services",
+        "\"Abaka AI\" founder CEO leadership",
+        "\"Abaka AI\" customers partners case study",
+        "\"Abaka AI\" jobs hiring careers",
+        "\"Abaka AI\" news 2026 2025",
+        "\"Abaka AI\" funding acquisition investors"
+      ],
+      "usableEvidence": 7,
+      "entityMatches": 7,
+      "sanitizedIssue": null,
+      "lastSuccessfulRetrievalTime": "2026-09-16T04:54:17.032Z"
+    },
+    {
+      "provider": "usaSpending",
+      "selected": true,
+      "status": "upstreamUnavailable",
+      "usableEvidence": 0,
+      "entityMatches": 0,
+      "sanitizedIssue": "Provider request did not return usable public evidence",
+      "lastSuccessfulRetrievalTime": null
+    },
+    {
+      "provider": "secFormD",
+      "selected": false,
+      "status": "skipped",
+      "reason": "No verified CIK"
+    },
+    {
+      "provider": "GreenhouseAdapter",
+      "selected": true,
+      "status": "success_with_jobs",
+      "usableEvidence": 9,
+      "observedOpenRoles": 9,
+      "retrievedAt": "2026-09-16T04:54:23.423Z"
+    }
+  ],
+  "pipelineCounts": {
+    "officialWebsitePagesFetched": 8,
+    "serpApiOriginalPagesFetched": 7,
+    "hiringRecordsExtracted": 9,
+    "rawEvidence": 24,
+    "normalizedEvidence": 23,
+    "reportClaims": 16,
+    "claimTypes": {
+      "description": 10,
+      "legalName": 5,
+      "founder": 1
+    },
+    "products": 0,
+    "services": 0,
+    "customerTypes": 0,
+    "keyPartners": 0
+  },
+  "keySourceTrace": [
+    {
+      "url": "https://www.abaka.ai/services/data_collection",
+      "httpOutcome": "successfully fetched; exact status code not persisted",
+      "usableTextCharacters": 1884,
+      "rawTextSignal": "Global Data Collection at Scale; data collection, data cleaning, and data annotation are stated on the page",
+      "structuredProducts": [],
+      "structuredServices": [],
+      "reportOutcome": "page is referenced, but the service facts are not represented as structured products/services or claims",
+      "earliestLossStage": "HTML extraction"
+    },
+    {
+      "url": "https://www.abaka.ai/team",
+      "httpOutcome": "successfully fetched; exact status code not persisted",
+      "usableTextCharacters": 3395,
+      "rawTextSignal": "Meet the Team; Tom Tang is described as CEO",
+      "structuredFounders": [],
+      "structuredExecutives": [],
+      "reportOutcome": "Tom Tang does not appear in the leadership section",
+      "earliestLossStage": "HTML extraction"
+    },
+    {
+      "url": "https://www.abaka.ai/services/talent",
+      "httpOutcome": "successfully fetched; exact status code not persisted",
+      "usableTextCharacters": 2240,
+      "rawTextSignal": "Human Intelligence Inside Your Platform; enterprise-ready talent",
+      "structuredProducts": [],
+      "structuredServices": [],
+      "reportOutcome": "service proposition does not appear as a fact",
+      "earliestLossStage": "HTML extraction"
+    },
+    {
+      "url": "https://job-boards.greenhouse.io/abakaai/jobs/4056029009",
+      "httpOutcome": "Greenhouse adapter succeeded",
+      "usableTextCharacters": "unknown: raw job body length is not persisted",
+      "structuredHiringRecords": 9,
+      "reportOutcome": "report states that 9 public open roles were observed",
+      "earliestLossStage": null
+    }
+  ],
+  "normalizationAndAssembly": {
+    "rawBodyTextPreservedInRawEvidence": true,
+    "rawBodyTextPreservedInNormalizedEvidence": false,
+    "claimTypesSupportedForVisibleBusinessFacts": [
+      "description",
+      "product"
+    ],
+    "serviceClaimSupported": false,
+    "customerOrPartnerClaimSupported": false,
+    "recentActivityClaimSupported": false,
+    "coverageStatus": "Strong public-source coverage"
+  },
+  "finalReportOutput": [
+    {
+      "section": "Company Snapshot",
+      "claimCount": 16,
+      "evidenceCount": 23,
+      "summary": "Shows selected identity, website, research purpose, and two source-description paragraphs"
+    },
+    {
+      "section": "Business and Products",
+      "claimCount": 13,
+      "evidenceCount": 3,
+      "summary": "Shows two source-description paragraphs; no product or service list; pricing and revenue mix not identified"
+    },
+    {
+      "section": "Ownership and Leadership",
+      "claimCount": 2,
+      "evidenceCount": 2,
+      "summary": "Shows Jack Lin only; Tom Tang from the fetched team page is absent"
+    },
+    {
+      "section": "Hiring and Growth Signals",
+      "claimCount": 4,
+      "evidenceCount": 2,
+      "summary": "Correctly reports 9 point-in-time Greenhouse roles"
+    },
+    {
+      "section": "Locations and Contact Information",
+      "claimCount": 0,
+      "evidenceCount": 0,
+      "summary": "Shows the website only"
+    },
+    {
+      "section": "Customers and Partners",
+      "claimCount": 1,
+      "evidenceCount": 2,
+      "summary": "Lists reviewed source titles and a caveat, but no attributable customer or partner fact"
+    },
+    {
+      "section": "Recent Business Activity",
+      "claimCount": 4,
+      "evidenceCount": 2,
+      "summary": "Lists reviewed source titles and a caveat, but no event timeline or activity fact"
+    },
+    {
+      "section": "Key Commercial Signals",
+      "claimCount": 0,
+      "evidenceCount": 0,
+      "summary": "Shows generic hiring and public-data limitations"
+    },
+    {
+      "section": "Sources and Information Gaps",
+      "claimCount": 0,
+      "evidenceCount": 23,
+      "summary": "Shows ownership, revenue, customer, hiring-verification, and litigation gaps"
+    }
+  ],
+  "fallbacksAndModels": {
+    "fixtures": "none",
+    "cachedReport": "none observed",
+    "llmPlannerOrReportWriterInvoked": false,
+    "deepSeekCandidateRankingInvoked": false,
+    "toolRegistryResearchStateCoveragePlannerActiveInQuickUiPath": false,
+    "note": "The current Quick UI path calls runPrivateDiligence directly and assembles the report deterministically"
+  }
+}

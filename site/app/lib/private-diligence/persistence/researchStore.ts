@@ -1,8 +1,9 @@
 import { createClient } from "@libsql/client";
 import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/libsql";
-import { entityCandidates, researchRequests, selectedTargets } from "../../../../db/schema";
+import { entityCandidates, hiringJobPostings, hiringResearchRuns, researchRequests, selectedTargets } from "../../../../db/schema";
 import type { EntityCandidate, PrivateDiligenceResearchRecord } from "../types";
+import type { HiringActivityResult } from "../hiring/types";
 
 const databaseUrl = process.env.TURSO_DATABASE_URL ?? process.env.LIBSQL_DATABASE_URL ??
   (process.env.VERCEL ? null : `file:${process.env.CLARA_LOCAL_DATABASE_PATH ?? "clara.db"}`);
@@ -27,6 +28,10 @@ function ensureSchema() {
     `CREATE TABLE IF NOT EXISTS entity_candidates (id TEXT PRIMARY KEY NOT NULL, research_request_id TEXT NOT NULL REFERENCES research_requests(id) ON DELETE CASCADE, display_name TEXT NOT NULL, legal_name TEXT, website TEXT, location TEXT, industry TEXT, relationship_type TEXT NOT NULL, confidence TEXT NOT NULL, match_reasons_json TEXT NOT NULL, provenance_json TEXT NOT NULL, selectable INTEGER NOT NULL, candidate_json TEXT NOT NULL, created_at TEXT NOT NULL)`,
     `CREATE INDEX IF NOT EXISTS entity_candidates_request_idx ON entity_candidates(research_request_id)`,
     `CREATE TABLE IF NOT EXISTS selected_targets (research_request_id TEXT PRIMARY KEY NOT NULL REFERENCES research_requests(id) ON DELETE CASCADE, candidate_id TEXT NOT NULL REFERENCES entity_candidates(id), selection_status TEXT NOT NULL, selected_at TEXT NOT NULL, identity_verification_status TEXT NOT NULL, identity_confidence TEXT NOT NULL)`,
+    `CREATE TABLE IF NOT EXISTS hiring_research_runs (id TEXT PRIMARY KEY NOT NULL, research_request_id TEXT NOT NULL REFERENCES research_requests(id) ON DELETE CASCADE, company_id TEXT NOT NULL, status TEXT NOT NULL, source_url TEXT, adapter TEXT, retrieved_at TEXT NOT NULL, result_json TEXT NOT NULL, created_at TEXT NOT NULL)`,
+    `CREATE INDEX IF NOT EXISTS hiring_research_runs_request_idx ON hiring_research_runs(research_request_id, retrieved_at)`,
+    `CREATE TABLE IF NOT EXISTS hiring_job_postings (id TEXT PRIMARY KEY NOT NULL, hiring_run_id TEXT NOT NULL REFERENCES hiring_research_runs(id) ON DELETE CASCADE, job_id TEXT NOT NULL, company_id TEXT NOT NULL, title TEXT NOT NULL, location TEXT, country TEXT, remote INTEGER, function TEXT, seniority TEXT, source_url TEXT NOT NULL, source_type TEXT NOT NULL, source_job_id TEXT, posted_at TEXT, retrieved_at TEXT NOT NULL, job_json TEXT NOT NULL)`,
+    `CREATE INDEX IF NOT EXISTS hiring_job_postings_company_idx ON hiring_job_postings(company_id, retrieved_at)`,
   ], "write").then(() => undefined);
   return ready;
 }
@@ -100,7 +105,7 @@ export const privateDiligenceStore = {
     await this.set(next);
     return next;
   },
-  async persistSelection(researchId: string, candidate: EntityCandidate, recordUpdates: Partial<PrivateDiligenceResearchRecord>) {
+  async persistSelection(researchId: string, candidate: EntityCandidate, selectedAt: string, recordUpdates: Partial<PrivateDiligenceResearchRecord>) {
     const next = await this.update(researchId, recordUpdates);
     if (!next) return null;
     const { db } = getConnection();
@@ -108,17 +113,58 @@ export const privateDiligenceStore = {
       researchRequestId: researchId,
       candidateId: candidate.candidateId,
       selectionStatus: candidate.targetSelectionStatus ?? "userSelected",
-      selectedAt: new Date().toISOString(),
+      selectedAt,
       identityVerificationStatus: candidate.identityVerificationStatus ?? "unverified",
       identityConfidence: candidate.matchConfidence,
     }).onConflictDoUpdate({ target: selectedTargets.researchRequestId, set: {
       candidateId: candidate.candidateId,
       selectionStatus: candidate.targetSelectionStatus ?? "userSelected",
-      selectedAt: new Date().toISOString(),
+      selectedAt,
       identityVerificationStatus: candidate.identityVerificationStatus ?? "unverified",
       identityConfidence: candidate.matchConfidence,
     } });
     return next;
+  },
+  async persistHiringActivity(researchId: string, result: HiringActivityResult) {
+    await ensureSchema();
+    const existing = await this.get(researchId);
+    if (!existing) return null;
+    const { db } = getConnection();
+    const now = new Date().toISOString();
+    const runId = crypto.randomUUID();
+    const retrievedAt = result.summary.sources[0]?.retrievedAt ?? now;
+    await db.insert(hiringResearchRuns).values({
+      id: runId,
+      researchRequestId: researchId,
+      companyId: result.companyId,
+      status: result.status,
+      sourceUrl: result.selectedSource?.url ?? null,
+      adapter: result.adapter,
+      retrievedAt,
+      resultJson: JSON.stringify(result),
+      createdAt: now,
+    });
+    if (result.jobs.length) {
+      await db.insert(hiringJobPostings).values(result.jobs.map((job, index) => ({
+        id: `${runId}:${index + 1}`,
+        hiringRunId: runId,
+        jobId: job.id,
+        companyId: job.companyId,
+        title: job.title,
+        location: job.location ?? null,
+        country: job.country ?? null,
+        remote: job.remote ?? null,
+        function: job.function ?? null,
+        seniority: job.seniority ?? null,
+        sourceUrl: job.sourceUrl,
+        sourceType: job.sourceType,
+        sourceJobId: job.sourceJobId ?? null,
+        postedAt: job.postedAt ?? null,
+        retrievedAt: job.retrievedAt,
+        jobJson: JSON.stringify(job),
+      })));
+    }
+    return this.update(researchId, { hiringIntelligence: result });
   },
 };
 

@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ClaraQuickReportVisuals } from "./ClaraQuickReportVisuals";
+import { ClaraFundingResearch } from "./ClaraFundingResearch";
+import { ClaraHiringIntelligence } from "./ClaraHiringIntelligence";
 import { CLARA_COPY, CLARA_PROGRESS } from "./lib/private-diligence/copy";
 import { buildConfirmationPayload, initialSelectedCandidateId, selectCandidateId } from "./lib/private-diligence/entity-resolution/candidateSelection";
 import { getEntityConfirmationEligibility } from "./lib/private-diligence/entity-resolution/entityMatcher";
@@ -101,7 +103,6 @@ function CandidateCard({ candidate, onSelect, locale, selected }: {
 }) {
   const copy = CLARA_COPY[locale];
   const eligibility = getEntityConfirmationEligibility(candidate, true);
-  const missing = copy.notIdentified;
   const signalLabel = (signal: string) => locale === "zh" ? SIGNAL_ZH[signal] ?? signal : signal;
   const unresolvedLabel = (field: string) => locale === "zh" ? UNRESOLVED_ZH[field] ?? field : field;
   const relationshipLabel = candidate.relationshipType === "Unknown relationship" && locale === "zh"
@@ -114,14 +115,13 @@ function CandidateCard({ candidate, onSelect, locale, selected }: {
       </header>
       {candidate.websiteReachable && <p className="clara-candidate-provenance">{copy.companyReportedIdentity}</p>}
       <dl>
-        <div><dt>{locale === "zh" ? "公司或品牌" : "Company or brand"}</dt><dd>{candidate.displayName || missing}</dd></div>
-        <div><dt>{copy.legalName}</dt><dd>{candidate.legalName ?? missing}</dd></div>
-        <div><dt>{locale === "zh" ? "网站" : "Website"}</dt><dd>{candidate.website ?? missing}</dd></div>
-        <div><dt>{locale === "zh" ? "地点" : "Location"}</dt><dd>{[candidate.city, candidate.state, candidate.country].filter(Boolean).join(", ") || candidate.addresses[0] || missing}</dd></div>
-        <div><dt>{locale === "zh" ? "行业" : "Industry"}</dt><dd>{candidate.industry ?? missing}</dd></div>
-        <div><dt>{locale === "zh" ? "已知人员" : "Known people"}</dt><dd>{[...candidate.founders, ...candidate.executives].join(", ") || missing}</dd></div>
-        <div><dt>{locale === "zh" ? "注册辖区" : "Registration jurisdiction"}</dt><dd>{candidate.registrationJurisdiction ?? missing}</dd></div>
+        {candidate.legalName && <div><dt>{copy.legalName}</dt><dd>{candidate.legalName}</dd></div>}
+        {candidate.website && <div><dt>{locale === "zh" ? "网站" : "Website"}</dt><dd><a href={candidate.website} target="_blank" rel="noreferrer">{candidate.domain ?? candidate.website}</a></dd></div>}
+        {candidate.description && <div><dt>{copy.businessDescription}</dt><dd>{candidate.description}</dd></div>}
+        {([candidate.city, candidate.state, candidate.country].filter(Boolean).join(", ") || candidate.addresses[0]) && <div><dt>{locale === "zh" ? "地点" : "Location"}</dt><dd>{[candidate.city, candidate.state, candidate.country].filter(Boolean).join(", ") || candidate.addresses[0]}</dd></div>}
+        {candidate.industry && <div><dt>{locale === "zh" ? "行业" : "Industry"}</dt><dd>{candidate.industry}</dd></div>}
         <div><dt>{locale === "zh" ? "关系类型" : "Relationship type"}</dt><dd>{relationshipLabel}</dd></div>
+        {candidate.identitySourceUrl && candidate.identitySourceUrl !== candidate.website && <div><dt>{copy.identitySource}</dt><dd><a href={candidate.identitySourceUrl} target="_blank" rel="noreferrer">{candidate.identitySourceUrl}</a></dd></div>}
       </dl>
       <div className="clara-match-signals">
         {candidate.matchSignals.map((signal) => <span key={signal}>{signalLabel(signal)}</span>)}
@@ -206,10 +206,16 @@ function ClaraReport({ report, researchId, onReset, locale }: {
           <p>{report.reportVersion === "clara-quick-v1" ? quickReportDisclosure(report, locale) : report.disclosure}</p>
         </header>
         {report.reportVersion === "clara-quick-v1" && <ClaraQuickReportVisuals report={report} locale={locale} />}
-        {report.sections.map((section) => (
+        {report.reportVersion !== "clara-quick-v1" && <ClaraHiringIntelligence report={report} locale={locale} />}
+        <ClaraFundingResearch report={report} locale={locale} />
+        {report.sections.filter((section) => section.sectionId !== "funding").map((section) => (
           <section className="clara-report-section" key={section.sectionId} data-pdf-block>
             <header><span>{section.number}</span><h2>{section.title[locale]}</h2></header>
             {(report.reportVersion === "clara-quick-v1" ? localizedQuickSections.get(section.sectionId)?.paragraphs ?? section.paragraphs : section.paragraphs).map((paragraph, index) => <p key={`${section.sectionId}-${index}`}>{paragraph}</p>)}
+            {report.adaptiveResearch && section.claimIds?.some(id=>report.claims.find(c=>c.claimId===id)?.researchFact) && <ul className="clara-reference-list">{section.claimIds.flatMap(id=>{
+              const fact=report.claims.find(c=>c.claimId===id)?.researchFact;
+              return fact ? [<li key={id}><a href={fact.sourceUrl} target="_blank" rel="noreferrer">{locale === "zh" ? "原始证据" : "Original evidence"}</a><span>{fact.excerpt}</span></li>] : [];
+            })}</ul>}
             {section.sectionId === "17" && (
               <div className="clara-table-wrap"><table><thead><tr><th>{locale === "zh" ? "优先级" : "Priority"}</th><th>{locale === "zh" ? "缺失信息" : "Missing information"}</th><th>{locale === "zh" ? "建议证据" : "Recommended evidence"}</th></tr></thead><tbody>{report.informationGaps.map((gap) => <tr key={gap.gapId}><td>{gap.priority}</td><td>{gap.missingInformation}</td><td>{gap.recommendedEvidence.join("; ")}</td></tr>)}</tbody></table></div>
             )}
@@ -316,6 +322,14 @@ export function ClaraPrivateDiligenceWorkflow({ mode = "deep" }: { mode?: ClaraW
     setState("input"); setResearchId(""); setCandidates([]); setSelectedCandidateId(null); setConfirmedId(""); setReport(null); setError("");
   }
 
+  function requestDifferentCompany() {
+    setInput((current) => ({ ...current, website: null }));
+    setCandidates([]); setSelectedCandidateId(null); setConfirmedId(""); setError("");
+    setState("needsMoreInformation");
+  }
+
+  const activeTarget = candidates.find((candidate) => candidate.candidateId === confirmedId) ?? null;
+
   return (
     <main className="clara-shell">
       <header className="clara-header"><Link href="/" aria-label={copy.back}><span>F</span> FINBRO</Link><div><strong>CLARA</strong><span>{copy.role}</span></div><button type="button" data-testid="clara-locale-toggle" onClick={() => update("locale", input.locale === "en" ? "zh" : "en")}>{input.locale === "en" ? "中文" : "EN"}</button></header>
@@ -350,7 +364,7 @@ export function ClaraPrivateDiligenceWorkflow({ mode = "deep" }: { mode?: ClaraW
               </div>
               <button className="clara-primary" disabled={state === "resolving"}>{state === "resolving" ? progress[0][input.locale] : mode === "quick" ? (input.locale === "zh" ? "查找公司" : "Find Company") : copy.assign}</button>
             </form>}
-            {(state === "confirmation" || state === "targetSelected" || state === "researching") && <div className="clara-confirmation"><header><span>02</span><h2>{copy.confirmHeading}</h2></header>{candidates.map((candidate) => <CandidateCard key={candidate.candidateId} candidate={candidate} locale={input.locale} selected={candidate.candidateId === selectedCandidateId} onSelect={() => selectCandidate(candidate.candidateId)} />)}<div className="clara-confirm-actions"><button type="button" onClick={reset}>{copy.edit}</button>{confirmedId && mode === "deep" ? <button className="clara-primary" onClick={generate} disabled={state === "researching"}>{state === "researching" ? progress.at(-1)![input.locale] : copy.generate}</button> : <button className="clara-primary" onClick={confirmSelected} disabled={!selectedCandidateId || state === "researching"}>{copy.confirm}</button>}</div></div>}
+            {(state === "confirmation" || state === "targetSelected" || state === "researching") && <div className="clara-confirmation"><header><span>02</span><h2>{copy.confirmHeading}</h2></header>{activeTarget && <div className="clara-active-target"><span>{copy.activeTarget}</span><strong>{activeTarget.displayName}</strong><small>{activeTarget.domain}</small></div>}{candidates.map((candidate) => <CandidateCard key={candidate.candidateId} candidate={candidate} locale={input.locale} selected={candidate.candidateId === selectedCandidateId} onSelect={() => selectCandidate(candidate.candidateId)} />)}<div className="clara-confirm-actions"><button type="button" onClick={requestDifferentCompany}>{copy.notMyCompany}</button><small>{copy.provideWebsite}</small>{confirmedId && mode === "deep" ? <button className="clara-primary" onClick={generate} disabled={state === "researching"}>{state === "researching" ? progress.at(-1)![input.locale] : copy.generate}</button> : <button className="clara-primary" onClick={confirmSelected} disabled={!selectedCandidateId || state === "researching"}>{copy.confirm}</button>}</div></div>}
             {error && <p className="clara-error" role="alert">{error}</p>}
             <p className="clara-disclosure">{copy.disclosure}</p>
           </section>

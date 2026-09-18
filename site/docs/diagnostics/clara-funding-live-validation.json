@@ -1,0 +1,429 @@
+[
+  {
+    "company": "Cohere",
+    "researchId": "8cef80b4-275d-4825-8d48-e0d23361b9be",
+    "stageStatus": "complete",
+    "legalNames": [
+      "Cohere Inc"
+    ],
+    "claimTypes": [
+      "legalName",
+      "description",
+      "funding.eventStatus",
+      "funding.amount",
+      "funding.amountMeaning",
+      "funding.valuation",
+      "funding.investor1",
+      "funding.investorRole1",
+      "funding.investor2",
+      "funding.investorRole2",
+      "funding.investor3",
+      "funding.investorRole3",
+      "funding.investor4",
+      "funding.investorRole4",
+      "funding.investor5",
+      "funding.investorRole5"
+    ],
+    "funding": {
+      "events": [
+        {
+          "eventId": "funding-serpapi-8cef80b4-275d-4825-8d48-e0d23361b9be-2-funding-2-0",
+          "entityId": "entity-4456be43-e454-4fdd-864b-a37127986a70",
+          "sourceKind": "announcement",
+          "fields": {
+            "eventStatus": {
+              "value": "announced",
+              "evidenceId": "serpapi-8cef80b4-275d-4825-8d48-e0d23361b9be-2-funding-2",
+              "sourceUrl": "https://www.investpsp.com/en/news/fresh-funding-enables-cohere-to-accelerate-its-global-expansion-and-build-the-next-generation-of-secure-enterprise-and-sovereign-ai-solutions/",
+              "excerpt": "Today, we’re excited to announce Cohere’s latest $500M raise at a $6.8B valuation in an oversubscribed round led by Radical Ventures and Inovia Capital, with additional participation from existing investors including AMD Ventures, NVIDIA, PSP Investments, and Salesforce Ventures, as well as new investors, including Healthcare of Ontario Pension Plan (“HOOPP”), among others.",
+              "locator": "visibleText:354",
+              "publicationDate": null,
+              "retrievedAt": "2026-09-16T21:37:03.653Z"
+            },
+            "amount": {
+              "value": 500000000,
+              "evidenceId": "serpapi-8cef80b4-275d-4825-8d48-e0d23361b9be-2-funding-2",
+              "sourceUrl": "https://www.investpsp.com/en/news/fresh-funding-enables-cohere-to-accelerate-its-global-expansion-and-build-the-next-generation-of-secure-enterprise-and-sovereign-ai-solutions/",
+              "excerpt": "Today, we’re excited to announce Cohere’s latest $500M raise at a $6.8B valuation in an oversubscribed round led by Radical Ventures and Inovia Capital, with additional participation from existing investors including AMD Ventures, NVIDIA, PSP Investments, and Salesforce Ventures, as well as new investors, including Healthcare of Ontario Pension Plan (“HOOPP”), among others.",
+              "locator": "visibleText:354",
+              "publicationDate": null,
+              "retrievedAt": "2026-09-16T21:37:03.653Z"
+            },
+            "amountMeaning": {
+              "value": "current_round",
+              "evidenceId": "serpapi-8cef80b4-275d-4825-8d48-e0d23361b9be-2-funding-2",
+              "sourceUrl": "https://www.investpsp.com/en/news/fresh-funding-enables-cohere-to-accelerate-its-global-expansion-and-build-the-next-generation-of-secure-enterprise-and-sovereign-ai-solutions/",
+              "excerpt": "Today, we’re excited to announce Cohere’s latest $500M raise at a $6.8B valuation in an oversubscribed round led by Radical Ventures and Inovia Capital, with additional participation from existing investors including AMD Ventures, NVIDIA, PSP Investments, and Salesforce Ventures, as well as new investors, including Healthcare of Ontario Pension Plan (“HOOPP”), among others.",
+              "locator": "visibleText:354",
+              "publicationDate": null,
+              "retrievedAt": "2026-09-16T21:37:03.653Z"
+            },
+            "valuation": {
+              "value": 6800000000,
+              "evidenceId": "serpapi-8cef80b4-275d-4825-8d48-e0d23361b9be-2-funding-2",
+              "sourceUrl": "https://www.investpsp.com/en/news/fresh-funding-enables-cohere-to-accelerate-its-global-expansion-and-build-the-next-generation-of-secure-enterprise-and-sovereign-ai-solutions/",
+              "excerpt": "Today, we’re excited to announce Cohere’s latest $500M raise at a $6.8B valuation in an oversubscribed round led by Radical Ventures and Inovia Capital, with additional participation from existing investors including AMD Ventures, NVIDIA, PSP Investments, and Salesforce Ventures, as well as new investors, including Healthcare of Ontario Pension Plan (“HOOPP”), among others.",
+              "locator": "visibleText:354",
+              "publicationDate": null,
+              "retrievedAt": "2026-09-16T21:37:03.653Z"
+            },
+            "investor1": {
+              "value": "Radical Ventures",
+              "evidenceId": "serpapi-8cef80b4-275d-4825-8d48-e0d23361b9be-2-funding-2",
+              "sourceUrl": "https://www.investpsp.com/en/news/fresh-funding-enables-cohere-to-accelerate-its-global-expansion-and-build-the-next-generation-of-secure-enterprise-and-sovereign-ai-solutions/",
+              "excerpt": "Today, we’re excited to announce Cohere’s latest $500M raise at a $6.8B valuation in an oversubscribed round led by Radical Ventures and Inovia Capital, with additional participation from existing investors including AMD Ventures, NVIDIA, PSP Investments, and Salesforce Ventures, as well as new investors, including Healthcare of Ontario Pension Plan (“HOOPP”), among others.",
+              "locator": "visibleText:354",
+              "publicationDate": null,
+              "retrievedAt": "2026-09-16T21:37:03.653Z"
+            },
+            "investorRole1": {
+              "value": "lead",
+              "evidenceId": "serpapi-8cef80b4-275d-4825-8d48-e0d23361b9be-2-funding-2",
+              "sourceUrl": "https://www.investpsp.com/en/news/fresh-funding-enables-cohere-to-accelerate-its-global-expansion-and-build-the-next-generation-of-secure-enterprise-and-sovereign-ai-solutions/",
+              "excerpt": "Today, we’re excited to announce Cohere’s latest $500M raise at a $6.8B valuation in an oversubscribed round led by Radical Ventures and Inovia Capital, with additional participation from existing investors including AMD Ventures, NVIDIA, PSP Investments, and Salesforce Ventures, as well as new investors, including Healthcare of Ontario Pension Plan (“HOOPP”), among others.",
+              "locator": "visibleText:354",
+              "publicationDate": null,
+              "retrievedAt": "2026-09-16T21:37:03.653Z"
+            },
+            "investor2": {
+              "value": "Inovia Capital",
+              "evidenceId": "serpapi-8cef80b4-275d-4825-8d48-e0d23361b9be-2-funding-2",
+              "sourceUrl": "https://www.investpsp.com/en/news/fresh-funding-enables-cohere-to-accelerate-its-global-expansion-and-build-the-next-generation-of-secure-enterprise-and-sovereign-ai-solutions/",
+              "excerpt": "Today, we’re excited to announce Cohere’s latest $500M raise at a $6.8B valuation in an oversubscribed round led by Radical Ventures and Inovia Capital, with additional participation from existing investors including AMD Ventures, NVIDIA, PSP Investments, and Salesforce Ventures, as well as new investors, including Healthcare of Ontario Pension Plan (“HOOPP”), among others.",
+              "locator": "visibleText:354",
+              "publicationDate": null,
+              "retrievedAt": "2026-09-16T21:37:03.653Z"
+            },
+            "investorRole2": {
+              "value": "lead",
+              "evidenceId": "serpapi-8cef80b4-275d-4825-8d48-e0d23361b9be-2-funding-2",
+              "sourceUrl": "https://www.investpsp.com/en/news/fresh-funding-enables-cohere-to-accelerate-its-global-expansion-and-build-the-next-generation-of-secure-enterprise-and-sovereign-ai-solutions/",
+              "excerpt": "Today, we’re excited to announce Cohere’s latest $500M raise at a $6.8B valuation in an oversubscribed round led by Radical Ventures and Inovia Capital, with additional participation from existing investors including AMD Ventures, NVIDIA, PSP Investments, and Salesforce Ventures, as well as new investors, including Healthcare of Ontario Pension Plan (“HOOPP”), among others.",
+              "locator": "visibleText:354",
+              "publicationDate": null,
+              "retrievedAt": "2026-09-16T21:37:03.653Z"
+            },
+            "investor3": {
+              "value": "AMD Ventures",
+              "evidenceId": "serpapi-8cef80b4-275d-4825-8d48-e0d23361b9be-2-funding-2",
+              "sourceUrl": "https://www.investpsp.com/en/news/fresh-funding-enables-cohere-to-accelerate-its-global-expansion-and-build-the-next-generation-of-secure-enterprise-and-sovereign-ai-solutions/",
+              "excerpt": "Today, we’re excited to announce Cohere’s latest $500M raise at a $6.8B valuation in an oversubscribed round led by Radical Ventures and Inovia Capital, with additional participation from existing investors including AMD Ventures, NVIDIA, PSP Investments, and Salesforce Ventures, as well as new investors, including Healthcare of Ontario Pension Plan (“HOOPP”), among others.",
+              "locator": "visibleText:354",
+              "publicationDate": null,
+              "retrievedAt": "2026-09-16T21:37:03.653Z"
+            },
+            "investorRole3": {
+              "value": "participant",
+              "evidenceId": "serpapi-8cef80b4-275d-4825-8d48-e0d23361b9be-2-funding-2",
+              "sourceUrl": "https://www.investpsp.com/en/news/fresh-funding-enables-cohere-to-accelerate-its-global-expansion-and-build-the-next-generation-of-secure-enterprise-and-sovereign-ai-solutions/",
+              "excerpt": "Today, we’re excited to announce Cohere’s latest $500M raise at a $6.8B valuation in an oversubscribed round led by Radical Ventures and Inovia Capital, with additional participation from existing investors including AMD Ventures, NVIDIA, PSP Investments, and Salesforce Ventures, as well as new investors, including Healthcare of Ontario Pension Plan (“HOOPP”), among others.",
+              "locator": "visibleText:354",
+              "publicationDate": null,
+              "retrievedAt": "2026-09-16T21:37:03.653Z"
+            },
+            "investor4": {
+              "value": "NVIDIA",
+              "evidenceId": "serpapi-8cef80b4-275d-4825-8d48-e0d23361b9be-2-funding-2",
+              "sourceUrl": "https://www.investpsp.com/en/news/fresh-funding-enables-cohere-to-accelerate-its-global-expansion-and-build-the-next-generation-of-secure-enterprise-and-sovereign-ai-solutions/",
+              "excerpt": "Today, we’re excited to announce Cohere’s latest $500M raise at a $6.8B valuation in an oversubscribed round led by Radical Ventures and Inovia Capital, with additional participation from existing investors including AMD Ventures, NVIDIA, PSP Investments, and Salesforce Ventures, as well as new investors, including Healthcare of Ontario Pension Plan (“HOOPP”), among others.",
+              "locator": "visibleText:354",
+              "publicationDate": null,
+              "retrievedAt": "2026-09-16T21:37:03.653Z"
+            },
+            "investorRole4": {
+              "value": "participant",
+              "evidenceId": "serpapi-8cef80b4-275d-4825-8d48-e0d23361b9be-2-funding-2",
+              "sourceUrl": "https://www.investpsp.com/en/news/fresh-funding-enables-cohere-to-accelerate-its-global-expansion-and-build-the-next-generation-of-secure-enterprise-and-sovereign-ai-solutions/",
+              "excerpt": "Today, we’re excited to announce Cohere’s latest $500M raise at a $6.8B valuation in an oversubscribed round led by Radical Ventures and Inovia Capital, with additional participation from existing investors including AMD Ventures, NVIDIA, PSP Investments, and Salesforce Ventures, as well as new investors, including Healthcare of Ontario Pension Plan (“HOOPP”), among others.",
+              "locator": "visibleText:354",
+              "publicationDate": null,
+              "retrievedAt": "2026-09-16T21:37:03.653Z"
+            },
+            "investor5": {
+              "value": "PSP Investments",
+              "evidenceId": "serpapi-8cef80b4-275d-4825-8d48-e0d23361b9be-2-funding-2",
+              "sourceUrl": "https://www.investpsp.com/en/news/fresh-funding-enables-cohere-to-accelerate-its-global-expansion-and-build-the-next-generation-of-secure-enterprise-and-sovereign-ai-solutions/",
+              "excerpt": "Today, we’re excited to announce Cohere’s latest $500M raise at a $6.8B valuation in an oversubscribed round led by Radical Ventures and Inovia Capital, with additional participation from existing investors including AMD Ventures, NVIDIA, PSP Investments, and Salesforce Ventures, as well as new investors, including Healthcare of Ontario Pension Plan (“HOOPP”), among others.",
+              "locator": "visibleText:354",
+              "publicationDate": null,
+              "retrievedAt": "2026-09-16T21:37:03.653Z"
+            },
+            "investorRole5": {
+              "value": "participant",
+              "evidenceId": "serpapi-8cef80b4-275d-4825-8d48-e0d23361b9be-2-funding-2",
+              "sourceUrl": "https://www.investpsp.com/en/news/fresh-funding-enables-cohere-to-accelerate-its-global-expansion-and-build-the-next-generation-of-secure-enterprise-and-sovereign-ai-solutions/",
+              "excerpt": "Today, we’re excited to announce Cohere’s latest $500M raise at a $6.8B valuation in an oversubscribed round led by Radical Ventures and Inovia Capital, with additional participation from existing investors including AMD Ventures, NVIDIA, PSP Investments, and Salesforce Ventures, as well as new investors, including Healthcare of Ontario Pension Plan (“HOOPP”), among others.",
+              "locator": "visibleText:354",
+              "publicationDate": null,
+              "retrievedAt": "2026-09-16T21:37:03.653Z"
+            }
+          },
+          "limitations": [
+            "Source-reported financing; missing fields remain unknown. Reprints are not independent confirmation."
+          ]
+        }
+      ],
+      "announcementStatus": "partial",
+      "secStatus": "inaccessible",
+      "gaps": [
+        "Financing currency is unspecified"
+      ],
+      "limitations": [
+        "SEC: Required server configuration is missing",
+        "A request cap or research deadline was reached; unresolved questions remain.",
+        "Bounded public-source review, not complete funding history. No amounts are summed. Separate source statements are not automatically the same event."
+      ],
+      "modelRuns": [
+        {
+          "task": "extract_funding",
+          "status": "validated",
+          "acceptedEvents": 0
+        },
+        {
+          "task": "extract_funding",
+          "status": "validated",
+          "acceptedEvents": 1
+        },
+        {
+          "task": "plan_funding_followup",
+          "status": "validated_action"
+        }
+      ],
+      "actions": [
+        {
+          "action": "sec_funding",
+          "input": {},
+          "targetGap": "sec_issuer_and_form_d",
+          "reasonCode": "routine_discovery",
+          "status": "invalidConfiguration"
+        },
+        {
+          "action": "funding_search",
+          "input": {
+            "query": "site:cohere.com \"Cohere\" funding financing announcement"
+          },
+          "targetGap": "initial_financing_discovery",
+          "reasonCode": "routine_discovery",
+          "status": "success"
+        },
+        {
+          "action": "funding_search",
+          "input": {
+            "query": "\"Cohere\" funding financing investment announcement"
+          },
+          "targetGap": "initial_financing_discovery",
+          "reasonCode": "routine_discovery",
+          "status": "success"
+        },
+        {
+          "action": "funding_search",
+          "input": {
+            "query": "\"Cohere\" funding round total funding currency valuation investors"
+          },
+          "targetGap": "Financing currency is unspecified",
+          "reasonCode": "resolve_funding_gap",
+          "status": "success"
+        }
+      ],
+      "requests": {
+        "search": 3,
+        "fetch": 6,
+        "sec": 0,
+        "model": 3
+      },
+      "researchStateId": "41aa2267-c762-4326-b815-6824b031e1ad"
+    },
+    "executions": [
+      {
+        "tool_name": "sec_funding",
+        "status": "partial",
+        "input_json": "{}"
+      },
+      {
+        "tool_name": "funding_search",
+        "status": "success",
+        "input_json": "{\"query\":\"site:cohere.com \\\"Cohere\\\" funding financing announcement\"}"
+      },
+      {
+        "tool_name": "funding_search",
+        "status": "success",
+        "input_json": "{\"query\":\"\\\"Cohere\\\" funding financing investment announcement\"}"
+      },
+      {
+        "tool_name": "funding_search",
+        "status": "success",
+        "input_json": "{\"query\":\"\\\"Cohere\\\" funding round total funding currency valuation investors\"}"
+      }
+    ],
+    "checks": {
+      "freshDatabaseConnection": true,
+      "allFieldEvidenceLinksPresent": true,
+      "completedReportCache": true,
+      "noNewExecutionOnReload": true
+    }
+  },
+  {
+    "company": "Abaka AI",
+    "researchId": "44d53d8d-9b4b-4069-845a-0a6acf28349d",
+    "stageStatus": "complete",
+    "legalNames": [],
+    "claimTypes": [
+      "description",
+      "product",
+      "service",
+      "executive",
+      "executiveRole",
+      "legalName",
+      "funding.amount",
+      "funding.amountMeaning",
+      "funding.eventStatus",
+      "founder"
+    ],
+    "funding": {
+      "events": [
+        {
+          "eventId": "funding-serpapi-44d53d8d-9b4b-4069-845a-0a6acf28349d-5-0",
+          "entityId": "entity-a101e571-c47e-40bc-9b14-889f7c04a74d",
+          "sourceKind": "announcement",
+          "fields": {
+            "amount": {
+              "value": 20000000,
+              "evidenceId": "serpapi-44d53d8d-9b4b-4069-845a-0a6acf28349d-5",
+              "sourceUrl": "https://www.forbes.com/profile/jack-lin/",
+              "excerpt": "Abaka AI has raised $20 million in total funding, and its investors include China's Spinel Capital and Future Value Capital.",
+              "locator": "visibleText:397",
+              "publicationDate": null,
+              "retrievedAt": "2026-09-16T21:40:05.987Z"
+            },
+            "amountMeaning": {
+              "value": "cumulative",
+              "evidenceId": "serpapi-44d53d8d-9b4b-4069-845a-0a6acf28349d-5",
+              "sourceUrl": "https://www.forbes.com/profile/jack-lin/",
+              "excerpt": "Abaka AI has raised $20 million in total funding, and its investors include China's Spinel Capital and Future Value Capital.",
+              "locator": "visibleText:397",
+              "publicationDate": null,
+              "retrievedAt": "2026-09-16T21:40:05.987Z"
+            },
+            "eventStatus": {
+              "value": "announced",
+              "evidenceId": "serpapi-44d53d8d-9b4b-4069-845a-0a6acf28349d-5",
+              "sourceUrl": "https://www.forbes.com/profile/jack-lin/",
+              "excerpt": "Abaka AI has raised $20 million in total funding, and its investors include China's Spinel Capital and Future Value Capital.",
+              "locator": "visibleText:397",
+              "publicationDate": null,
+              "retrievedAt": "2026-09-16T21:40:05.987Z"
+            }
+          },
+          "limitations": [
+            "Source-reported financing; missing fields remain unknown. Reprints are not independent confirmation."
+          ]
+        }
+      ],
+      "announcementStatus": "partial",
+      "secStatus": "inaccessible",
+      "gaps": [
+        "Financing currency is unspecified",
+        "Cumulative funding needs separation from the current round",
+        "SEC issuer association remains unresolved in this request"
+      ],
+      "limitations": [
+        "SEC: Required server configuration is missing",
+        "Follow-up planning INVALID_FUNDING_PLAN; initial results retained.",
+        "A request cap or research deadline was reached; unresolved questions remain.",
+        "Bounded public-source review, not complete funding history. No amounts are summed. Separate source statements are not automatically the same event."
+      ],
+      "modelRuns": [
+        {
+          "task": "extract_funding",
+          "status": "validated",
+          "acceptedEvents": 0
+        },
+        {
+          "task": "extract_funding",
+          "status": "validated",
+          "acceptedEvents": 0
+        },
+        {
+          "task": "plan_funding_followup",
+          "status": "validated_action"
+        },
+        {
+          "task": "plan_funding_followup",
+          "status": "failed",
+          "code": "INVALID_FUNDING_PLAN"
+        }
+      ],
+      "actions": [
+        {
+          "action": "sec_funding",
+          "input": {},
+          "targetGap": "sec_issuer_and_form_d",
+          "reasonCode": "routine_discovery",
+          "status": "invalidConfiguration"
+        },
+        {
+          "action": "funding_search",
+          "input": {
+            "query": "site:abaka.ai \"Abaka AI\" funding financing announcement"
+          },
+          "targetGap": "initial_financing_discovery",
+          "reasonCode": "routine_discovery",
+          "status": "partial"
+        },
+        {
+          "action": "funding_search",
+          "input": {
+            "query": "\"Abaka AI\" funding financing investment announcement"
+          },
+          "targetGap": "initial_financing_discovery",
+          "reasonCode": "routine_discovery",
+          "status": "success"
+        },
+        {
+          "action": "funding_search",
+          "input": {
+            "query": "\"Abaka AI\" funding round total funding currency valuation investors"
+          },
+          "targetGap": "Cumulative funding needs separation from the current round",
+          "reasonCode": "resolve_funding_gap",
+          "status": "success"
+        }
+      ],
+      "requests": {
+        "search": 3,
+        "fetch": 4,
+        "sec": 0,
+        "model": 4
+      },
+      "researchStateId": "d7145f22-0d32-4bf6-b4ad-f473095f6cb3"
+    },
+    "executions": [
+      {
+        "tool_name": "sec_funding",
+        "status": "partial",
+        "input_json": "{}"
+      },
+      {
+        "tool_name": "funding_search",
+        "status": "partial",
+        "input_json": "{\"query\":\"site:abaka.ai \\\"Abaka AI\\\" funding financing announcement\"}"
+      },
+      {
+        "tool_name": "funding_search",
+        "status": "success",
+        "input_json": "{\"query\":\"\\\"Abaka AI\\\" funding financing investment announcement\"}"
+      },
+      {
+        "tool_name": "funding_search",
+        "status": "success",
+        "input_json": "{\"query\":\"\\\"Abaka AI\\\" funding round total funding currency valuation investors\"}"
+      }
+    ],
+    "checks": {
+      "freshDatabaseConnection": true,
+      "allFieldEvidenceLinksPresent": true,
+      "completedReportCache": true,
+      "noNewExecutionOnReload": true
+    }
+  }
+]

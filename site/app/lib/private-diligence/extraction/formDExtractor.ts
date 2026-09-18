@@ -10,10 +10,11 @@ function text(document: string, tags: string[]) {
 function numberValue(value: string | null) {
   if (!value || /indefinite|decline|not disclosed/i.test(value)) return null;
   const numeric = Number(value.replace(/[$,\s]/g, ""));
-  return Number.isFinite(numeric) ? numeric : null;
+  return Number.isFinite(numeric) && numeric >= 0 ? numeric : null;
 }
 
 export type ExtractedFormD = {
+  previousAccessionNumber: string | null;
   issuerLegalName: string | null;
   jurisdiction: string | null;
   principalPlaceOfBusiness: string | null;
@@ -36,6 +37,7 @@ export function extractFormD(document: string): ExtractedFormD {
       return [first, middle, last].filter(Boolean).join(" ");
     }).filter(Boolean);
   return {
+    previousAccessionNumber: text(document, ["previousAccessionNumber"]),
     issuerLegalName: text(document, ["entityName", "issuerName", "primaryName"]),
     jurisdiction: text(document, ["jurisdictionOfInc", "jurisdictionOfIncorporation"]),
     principalPlaceOfBusiness: [
@@ -44,11 +46,13 @@ export function extractFormD(document: string): ExtractedFormD {
     ].filter(Boolean).join(", ") || null,
     industryGroup: text(document, ["industryGroupType", "industryGroup"]),
     relatedPersons: [...new Set(relatedPersons)],
-    offeringType: text(document, ["typeOfSecurity", "securityType"]),
+    offeringType: /<isEquity>\s*true\s*<\/isEquity>/i.test(document)
+      ? /<isDebtType>\s*true\s*<\/isDebtType>/i.test(document) ? "mixed" : "equity"
+      : /<isDebtType>\s*true\s*<\/isDebtType>/i.test(document) ? "debt" : text(document, ["typeOfSecurity", "securityType"]),
     offeringAmount: numberValue(text(document, ["totalOfferingAmount"])),
     amountSold: numberValue(text(document, ["totalAmountSold"])),
     remainingAmount: numberValue(text(document, ["totalRemaining"])),
-    firstSaleDate: text(document, ["dateOfFirstSale"]),
+    firstSaleDate: /<yetToOccur>\s*true\s*<\/yetToOccur>/i.test(document) ? null : text(document, ["dateOfFirstSale"])?.match(/\d{4}-\d{2}-\d{2}/)?.[0] ?? null,
     numberOfInvestors: numberValue(text(document, ["totalNumberAlreadyInvested", "numberOfInvestors"])),
   };
 }

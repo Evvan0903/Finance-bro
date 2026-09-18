@@ -16,12 +16,13 @@ export function reconcileClaims(
   const evidenceMap = new Map(evidence.map((item) => [item.evidenceId, item]));
   const groups = new Map<string, PrivateCompanyClaim[]>();
   for (const claim of claims) {
+    if (claim.fundingEventId || claim.researchFact) continue; // Funding statements retain field-level attribution; no name/amount-only corroboration.
     const source = evidenceMap.get(claim.evidenceIds[0]);
     const recordKey = claim.category === "Government"
       ? String(source?.normalizedFields.awardId ?? claim.evidenceIds[0])
       : claim.category === "Financing"
         ? String(source?.normalizedFields.accessionNumber ?? claim.period ?? claim.evidenceIds[0])
-        : ["description", "product", "founder", "executive", "customer", "partner"].includes(claim.claimType)
+        : ["description", "product", "service", "founder", "executive", "executiveRole", "formerExecutiveRole", "customer", "partner", "businessActivity"].includes(claim.claimType)
           ? valueKey(claim.normalizedValue, claim.claimType)
           : "single-value";
     const key = `${claim.claimType}|${claim.entityId}|${recordKey}`;
@@ -57,7 +58,7 @@ export function reconcileClaims(
       continue;
     }
     const sources = group.flatMap((claim) => claim.evidenceIds).map((id) => evidenceMap.get(id)).filter(Boolean) as NormalizedEvidence[];
-    const official = sources.some((item) => item.officialRecord);
+    const official = sources.some((item) => item.officialRecord && item.providerId !== "secFormD");
     const company = sources.some((item) => item.companyReported);
     const independent = sources.some((item) => item.independentlyPublished);
     for (const claim of group) {

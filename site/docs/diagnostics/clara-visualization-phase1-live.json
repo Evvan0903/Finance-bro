@@ -1,0 +1,786 @@
+{
+  "isolatedDatabase": true,
+  "runs": [
+    {
+      "company": "Abaka",
+      "researchId": "1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016",
+      "generatedAt": "2026-09-18T20:53:47.893Z",
+      "live": true,
+      "checks": {
+        "fundingFieldsMatchStored": true,
+        "fundingRecordCountMatches": true,
+        "recentItemsMatchStoredClaims": true,
+        "jobRowsMatchSnapshot": true,
+        "apiEqualsPersisted": true,
+        "adapterLeavesReportUnchanged": true,
+        "reportIdentityEqualsConfirmed": true,
+        "hiringSnapshotMatchesReport": true
+      },
+      "input": {
+        "companyName": "Abaka",
+        "website": "https://www.abaka.ai"
+      },
+      "view": {
+        "funding": {
+          "financings": [],
+          "cumulative": [],
+          "offerings": [],
+          "unclassified": [],
+          "omittedFields": 0
+        },
+        "hiring": {
+          "status": "success",
+          "count": 9,
+          "retrievedDates": [
+            "2026-09-18"
+          ],
+          "functions": [
+            {
+              "label": "Other",
+              "count": 4
+            },
+            {
+              "label": "Engineering",
+              "count": 2
+            },
+            {
+              "label": "Data / AI",
+              "count": 1
+            },
+            {
+              "label": "Marketing",
+              "count": 1
+            },
+            {
+              "label": "Sales",
+              "count": 1
+            }
+          ],
+          "seniority": [
+            {
+              "label": "Unknown",
+              "count": 4
+            },
+            {
+              "label": "Lead",
+              "count": 2
+            },
+            {
+              "label": "Manager",
+              "count": 2
+            },
+            {
+              "label": "Entry",
+              "count": 1
+            }
+          ],
+          "locations": [
+            {
+              "label": "Mountain View, CA",
+              "count": 9
+            }
+          ],
+          "remote": [
+            {
+              "label": "Remote not indicated",
+              "count": 9
+            }
+          ],
+          "sources": [
+            {
+              "url": "https://job-boards.greenhouse.io/abakaai/jobs/4056029009",
+              "retrievedAt": "2026-09-18T20:53:35.076Z"
+            }
+          ],
+          "jobs": [
+            {
+              "id": "greenhouse-c26f40cb5dc4d1658f",
+              "title": "Brand Designer",
+              "location": "Mountain View, CA",
+              "url": "https://job-boards.greenhouse.io/abakaai/jobs/4289289009",
+              "evidenceIds": [
+                "hiring-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-1"
+              ]
+            },
+            {
+              "id": "greenhouse-3a69951d96ba87ed44",
+              "title": "Business Development Associate",
+              "location": "Mountain View, CA",
+              "url": "https://job-boards.greenhouse.io/abakaai/jobs/4371035009",
+              "evidenceIds": [
+                "hiring-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-2"
+              ]
+            },
+            {
+              "id": "greenhouse-d4db650324d71dfb4e",
+              "title": "Machine Learning Engineer",
+              "location": "Mountain View, CA",
+              "url": "https://job-boards.greenhouse.io/abakaai/jobs/4056035009",
+              "evidenceIds": [
+                "hiring-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-3"
+              ]
+            },
+            {
+              "id": "greenhouse-e224a3e48bd94f0ad0",
+              "title": "Member of Technical Staff, Infra",
+              "location": "Mountain View, CA",
+              "url": "https://job-boards.greenhouse.io/abakaai/jobs/4371172009",
+              "evidenceIds": [
+                "hiring-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-4"
+              ]
+            },
+            {
+              "id": "greenhouse-c95af8439ff1bc4c50",
+              "title": "Member of Technical Staff, Platform",
+              "location": "Mountain View, CA",
+              "url": "https://job-boards.greenhouse.io/abakaai/jobs/4371192009",
+              "evidenceIds": [
+                "hiring-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-5"
+              ]
+            },
+            {
+              "id": "greenhouse-be1f5f88e80be04c5d",
+              "title": "Office Administrator",
+              "location": "Mountain View, CA",
+              "url": "https://job-boards.greenhouse.io/abakaai/jobs/4399004009",
+              "evidenceIds": [
+                "hiring-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-6"
+              ]
+            },
+            {
+              "id": "greenhouse-deef0669abfc37390a",
+              "title": "Project Manager",
+              "location": "Mountain View, CA",
+              "url": "https://job-boards.greenhouse.io/abakaai/jobs/4056032009",
+              "evidenceIds": [
+                "hiring-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-7"
+              ]
+            },
+            {
+              "id": "greenhouse-d78de212a6d4e64a18",
+              "title": "Robotics Research Engineer",
+              "location": "Mountain View, CA",
+              "url": "https://job-boards.greenhouse.io/abakaai/jobs/4399002009",
+              "evidenceIds": [
+                "hiring-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-8"
+              ]
+            },
+            {
+              "id": "greenhouse-f3ec4d6582dc34c30c",
+              "title": "Social Media Manager",
+              "location": "Mountain View, CA",
+              "url": "https://job-boards.greenhouse.io/abakaai/jobs/4398154009",
+              "evidenceIds": [
+                "hiring-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-9"
+              ]
+            }
+          ],
+          "limitations": []
+        },
+        "recent": [],
+        "coverage": [
+          {
+            "id": "identity",
+            "status": "partial",
+            "evidenceIds": [
+              "serpapi-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-1",
+              "serpapi-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-2",
+              "serpapi-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-3",
+              "serpapi-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-4",
+              "serpapi-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-1-research-3",
+              "serpapi-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-2-research-3",
+              "serpapi-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-3-research-3"
+            ],
+            "claimIds": [
+              "claim-25",
+              "claim-29",
+              "claim-30",
+              "claim-31",
+              "claim-33",
+              "claim-34",
+              "claim-35"
+            ],
+            "gaps": [],
+            "limitations": [
+              "tavily was used only to locate this original page; the search-result snippet was not retained as evidence.",
+              "Statements on the selected company's domain remain Company Reported unless independently corroborated.",
+              "No official registration number was confirmed during entity resolution.",
+              "The target entity required user confirmation because public identity signals were incomplete.",
+              "Legal entity name was not identified during website-first entity resolution.",
+              "Office location was not identified during website-first entity resolution.",
+              "Industry was not identified during website-first entity resolution.",
+              "Founders or executives was not identified during website-first entity resolution.",
+              "Registration jurisdiction was not identified during website-first entity resolution.",
+              "Official registration identifier was not identified during website-first entity resolution.",
+              "Affiliates, parents, subsidiaries, and founder-owned entities remain separate unless a relationship is explicitly evidenced."
+            ]
+          },
+          {
+            "id": "products",
+            "status": "supported",
+            "evidenceIds": [
+              "website-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-1",
+              "website-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-2",
+              "website-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-3",
+              "website-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-4",
+              "website-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-5",
+              "website-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-6",
+              "website-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-8",
+              "serpapi-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-1-research-3"
+            ],
+            "claimIds": [
+              "claim-3",
+              "claim-4",
+              "claim-5",
+              "claim-6",
+              "claim-9",
+              "claim-10",
+              "claim-32"
+            ],
+            "gaps": [],
+            "limitations": [
+              "Website statements are Company Reported unless independently corroborated.",
+              "tavily was used only to locate this original page; the search-result snippet was not retained as evidence.",
+              "Statements on the selected company's domain remain Company Reported unless independently corroborated."
+            ]
+          },
+          {
+            "id": "leadership",
+            "status": "supported",
+            "evidenceIds": [
+              "website-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-8",
+              "serpapi-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-1"
+            ],
+            "claimIds": [
+              "claim-14",
+              "claim-15",
+              "claim-16",
+              "claim-17",
+              "claim-19",
+              "claim-20",
+              "claim-21",
+              "claim-22",
+              "claim-23",
+              "claim-24",
+              "claim-26",
+              "claim-27",
+              "claim-28"
+            ],
+            "gaps": [],
+            "limitations": [
+              "Website statements are Company Reported unless independently corroborated.",
+              "tavily was used only to locate this original page; the search-result snippet was not retained as evidence.",
+              "Statements on the selected company's domain remain Company Reported unless independently corroborated."
+            ]
+          },
+          {
+            "id": "funding",
+            "status": "source-unavailable",
+            "evidenceIds": [],
+            "claimIds": [],
+            "gaps": [
+              "No source-grounded financing event found in the recorded scope",
+              "SEC issuer association remains unresolved in this request"
+            ],
+            "limitations": [
+              "SEC: issuer_unresolved",
+              "A request cap or research deadline was reached; unresolved questions remain.",
+              "Bounded public-source review, not complete funding history. No amounts are summed. Separate source statements are not automatically the same event."
+            ]
+          },
+          {
+            "id": "hiring",
+            "status": "supported",
+            "evidenceIds": [
+              "hiring-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-1",
+              "hiring-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-2",
+              "hiring-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-3",
+              "hiring-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-4",
+              "hiring-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-5",
+              "hiring-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-6",
+              "hiring-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-7",
+              "hiring-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-8",
+              "hiring-1b6ecbe3-a4bb-4a9c-88b0-74c84a92c016-9"
+            ],
+            "claimIds": [],
+            "gaps": [],
+            "limitations": []
+          },
+          {
+            "id": "recent",
+            "status": "searched-not-found",
+            "evidenceIds": [],
+            "claimIds": [],
+            "gaps": [],
+            "limitations": []
+          }
+        ]
+      },
+      "storedFundingRecords": 0,
+      "storedHiringStatus": "success_with_jobs",
+      "persistedHiringSnapshotCount": 2,
+      "storedJobCount": 9,
+      "modelStop": "sources_exhausted",
+      "requestCounts": {
+        "search": 8,
+        "page": 33,
+        "model": 6,
+        "official": 0,
+        "tools": 8
+      }
+    },
+    {
+      "company": "Mercury",
+      "researchId": "628b283a-58f7-43f9-9f5c-c6eeae8d7066",
+      "generatedAt": "2026-09-18T20:58:28.014Z",
+      "live": true,
+      "checks": {
+        "fundingFieldsMatchStored": true,
+        "fundingRecordCountMatches": true,
+        "recentItemsMatchStoredClaims": true,
+        "jobRowsMatchSnapshot": true,
+        "apiEqualsPersisted": true,
+        "adapterLeavesReportUnchanged": true,
+        "reportIdentityEqualsConfirmed": true,
+        "hiringSnapshotMatchesReport": true
+      },
+      "input": {
+        "companyName": "Mercury",
+        "website": "https://mercury.com"
+      },
+      "view": {
+        "funding": {
+          "financings": [
+            {
+              "id": "funding-serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-1-0",
+              "kind": "financing",
+              "fields": [
+                {
+                  "key": "roundLabel",
+                  "value": "Series C",
+                  "source": {
+                    "evidenceId": "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-1",
+                    "url": "https://mercury.com/blog/introducing-new-cfo-cco",
+                    "title": "Introducing our new CFO and CCO | Mercury",
+                    "attribution": "company-reported"
+                  }
+                },
+                {
+                  "key": "eventStatus",
+                  "value": "announced",
+                  "source": {
+                    "evidenceId": "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-1",
+                    "url": "https://mercury.com/blog/introducing-new-cfo-cco",
+                    "title": "Introducing our new CFO and CCO | Mercury",
+                    "attribution": "company-reported"
+                  }
+                }
+              ],
+              "date": null,
+              "dateMeaning": null,
+              "publishedAt": "2025-05-15",
+              "round": "Series C",
+              "conflicting": false,
+              "latestDated": false,
+              "limitations": [
+                "Source-reported financing; missing fields remain unknown. Reprints are not independent confirmation."
+              ]
+            },
+            {
+              "id": "funding-serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2-0",
+              "kind": "financing",
+              "fields": [
+                {
+                  "key": "amount",
+                  "value": 200000000,
+                  "source": {
+                    "evidenceId": "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2",
+                    "url": "https://mercury.com/blog/series-d-announcement",
+                    "title": "Announcing Mercury’s Series D | Mercury",
+                    "attribution": "company-reported"
+                  }
+                },
+                {
+                  "key": "amountMeaning",
+                  "value": "current_round",
+                  "source": {
+                    "evidenceId": "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2",
+                    "url": "https://mercury.com/blog/series-d-announcement",
+                    "title": "Announcing Mercury’s Series D | Mercury",
+                    "attribution": "company-reported"
+                  }
+                },
+                {
+                  "key": "valuation",
+                  "value": 5200000000,
+                  "source": {
+                    "evidenceId": "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2",
+                    "url": "https://mercury.com/blog/series-d-announcement",
+                    "title": "Announcing Mercury’s Series D | Mercury",
+                    "attribution": "company-reported"
+                  }
+                },
+                {
+                  "key": "roundLabel",
+                  "value": "Series D",
+                  "source": {
+                    "evidenceId": "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2",
+                    "url": "https://mercury.com/blog/series-d-announcement",
+                    "title": "Announcing Mercury’s Series D | Mercury",
+                    "attribution": "company-reported"
+                  }
+                },
+                {
+                  "key": "eventStatus",
+                  "value": "announced",
+                  "source": {
+                    "evidenceId": "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2",
+                    "url": "https://mercury.com/blog/series-d-announcement",
+                    "title": "Announcing Mercury’s Series D | Mercury",
+                    "attribution": "company-reported"
+                  }
+                }
+              ],
+              "date": null,
+              "dateMeaning": null,
+              "publishedAt": "2026-05-20",
+              "round": "Series D",
+              "conflicting": false,
+              "latestDated": false,
+              "limitations": [
+                "Source-reported financing; missing fields remain unknown. Reprints are not independent confirmation."
+              ]
+            }
+          ],
+          "cumulative": [
+            {
+              "id": "funding-serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2-funding-2-0",
+              "kind": "cumulative",
+              "fields": [
+                {
+                  "key": "amount",
+                  "value": 546000000,
+                  "source": {
+                    "evidenceId": "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2-funding-2",
+                    "url": "https://tracxn.com/d/companies/mercury/__-dy_y1zwFzkqbNCyn2g-gNminxfshx6VQ-XaTWJx7DM",
+                    "title": "Mercury - 2026 Company Profile, Team, Funding & Competitors - Tracxn",
+                    "attribution": "independently-reported"
+                  }
+                },
+                {
+                  "key": "amountMeaning",
+                  "value": "cumulative",
+                  "source": {
+                    "evidenceId": "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2-funding-2",
+                    "url": "https://tracxn.com/d/companies/mercury/__-dy_y1zwFzkqbNCyn2g-gNminxfshx6VQ-XaTWJx7DM",
+                    "title": "Mercury - 2026 Company Profile, Team, Funding & Competitors - Tracxn",
+                    "attribution": "independently-reported"
+                  }
+                },
+                {
+                  "key": "eventStatus",
+                  "value": "unknown",
+                  "source": {
+                    "evidenceId": "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2-funding-2",
+                    "url": "https://tracxn.com/d/companies/mercury/__-dy_y1zwFzkqbNCyn2g-gNminxfshx6VQ-XaTWJx7DM",
+                    "title": "Mercury - 2026 Company Profile, Team, Funding & Competitors - Tracxn",
+                    "attribution": "independently-reported"
+                  }
+                }
+              ],
+              "date": null,
+              "dateMeaning": null,
+              "publishedAt": "2021-08-17",
+              "round": null,
+              "conflicting": false,
+              "latestDated": false,
+              "limitations": [
+                "Source-reported financing; missing fields remain unknown. Reprints are not independent confirmation."
+              ]
+            }
+          ],
+          "offerings": [],
+          "unclassified": [],
+          "omittedFields": 0
+        },
+        "hiring": {
+          "status": "unavailable",
+          "count": null,
+          "retrievedDates": [],
+          "functions": [],
+          "seniority": [],
+          "locations": [],
+          "remote": [],
+          "sources": [],
+          "jobs": [],
+          "limitations": [
+            "A public careers source was discovered but did not return usable job data.",
+            "Browser fallback did not return a usable public careers page"
+          ]
+        },
+        "recent": [
+          {
+            "id": "claim-32",
+            "claimIds": [
+              "claim-32"
+            ],
+            "evidenceIds": [
+              "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2-research-3"
+            ],
+            "eventType": "development",
+            "eventDate": null,
+            "publishedAt": "2025-03-25",
+            "sources": [
+              {
+                "evidenceId": "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2-research-3",
+                "url": "https://mercury.com/blog/series-c-announcement",
+                "title": "Announcing Mercury&#x27;s Series C | Mercury",
+                "attribution": "company-reported"
+              }
+            ],
+            "conflicting": false
+          },
+          {
+            "id": "claim-33",
+            "claimIds": [
+              "claim-33"
+            ],
+            "evidenceIds": [
+              "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2-research-3"
+            ],
+            "eventType": "development",
+            "eventDate": null,
+            "publishedAt": "2025-03-25",
+            "sources": [
+              {
+                "evidenceId": "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2-research-3",
+                "url": "https://mercury.com/blog/series-c-announcement",
+                "title": "Announcing Mercury&#x27;s Series C | Mercury",
+                "attribution": "company-reported"
+              }
+            ],
+            "conflicting": false
+          },
+          {
+            "id": "claim-34",
+            "claimIds": [
+              "claim-34"
+            ],
+            "evidenceIds": [
+              "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2-research-3"
+            ],
+            "eventType": "development",
+            "eventDate": null,
+            "publishedAt": "2025-03-25",
+            "sources": [
+              {
+                "evidenceId": "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2-research-3",
+                "url": "https://mercury.com/blog/series-c-announcement",
+                "title": "Announcing Mercury&#x27;s Series C | Mercury",
+                "attribution": "company-reported"
+              }
+            ],
+            "conflicting": false
+          }
+        ],
+        "coverage": [
+          {
+            "id": "identity",
+            "status": "partial",
+            "evidenceIds": [
+              "website-628b283a-58f7-43f9-9f5c-c6eeae8d7066-1",
+              "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-1",
+              "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2",
+              "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-3",
+              "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-4",
+              "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-5",
+              "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-6",
+              "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2-research-3",
+              "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-1-funding-1",
+              "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2-funding-2"
+            ],
+            "claimIds": [
+              "claim-1",
+              "claim-20",
+              "claim-26",
+              "claim-27",
+              "claim-28",
+              "claim-30",
+              "claim-31",
+              "claim-35",
+              "claim-36",
+              "claim-40"
+            ],
+            "gaps": [],
+            "limitations": [
+              "Website statements are Company Reported unless independently corroborated.",
+              "tavily was used only to locate this original page; the search-result snippet was not retained as evidence.",
+              "Statements on the selected company's domain remain Company Reported unless independently corroborated.",
+              "Independent publication does not make this source an official company or government record.",
+              "No official registration number was confirmed during entity resolution.",
+              "The target entity required user confirmation because public identity signals were incomplete.",
+              "Industry was not identified during website-first entity resolution.",
+              "Registration jurisdiction was not identified during website-first entity resolution.",
+              "Official registration identifier was not identified during website-first entity resolution.",
+              "Affiliates, parents, subsidiaries, and founder-owned entities remain separate unless a relationship is explicitly evidenced."
+            ]
+          },
+          {
+            "id": "products",
+            "status": "supported",
+            "evidenceIds": [
+              "website-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2"
+            ],
+            "claimIds": [
+              "claim-8"
+            ],
+            "gaps": [],
+            "limitations": [
+              "Website statements are Company Reported unless independently corroborated."
+            ]
+          },
+          {
+            "id": "leadership",
+            "status": "supported",
+            "evidenceIds": [
+              "website-628b283a-58f7-43f9-9f5c-c6eeae8d7066-1",
+              "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-1",
+              "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-5"
+            ],
+            "claimIds": [
+              "claim-3",
+              "claim-4",
+              "claim-5",
+              "claim-16",
+              "claim-17",
+              "claim-29"
+            ],
+            "gaps": [],
+            "limitations": [
+              "Website statements are Company Reported unless independently corroborated.",
+              "tavily was used only to locate this original page; the search-result snippet was not retained as evidence.",
+              "Statements on the selected company's domain remain Company Reported unless independently corroborated."
+            ]
+          },
+          {
+            "id": "funding",
+            "status": "partial",
+            "evidenceIds": [
+              "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-1",
+              "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2",
+              "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2-funding-2"
+            ],
+            "claimIds": [
+              "claim-18",
+              "claim-19",
+              "claim-21",
+              "claim-22",
+              "claim-23",
+              "claim-24",
+              "claim-25",
+              "claim-37",
+              "claim-38",
+              "claim-39"
+            ],
+            "gaps": [
+              "Announced financing lacks a supported amount",
+              "Financing currency is unspecified",
+              "Cumulative funding needs separation from the current round",
+              "SEC issuer association remains unresolved in this request"
+            ],
+            "limitations": [
+              "tavily was used only to locate this original page; the search-result snippet was not retained as evidence.",
+              "Statements on the selected company's domain remain Company Reported unless independently corroborated.",
+              "Independent publication does not make this source an official company or government record.",
+              "SEC: issuer_unresolved",
+              "A request cap or research deadline was reached; unresolved questions remain.",
+              "Bounded public-source review, not complete funding history. No amounts are summed. Separate source statements are not automatically the same event."
+            ]
+          },
+          {
+            "id": "hiring",
+            "status": "source-unavailable",
+            "evidenceIds": [],
+            "claimIds": [],
+            "gaps": [
+              "Current job openings require direct ATS verification"
+            ],
+            "limitations": [
+              "A public careers source was discovered but did not return usable job data.",
+              "Browser fallback did not return a usable public careers page"
+            ]
+          },
+          {
+            "id": "recent",
+            "status": "supported",
+            "evidenceIds": [
+              "serpapi-628b283a-58f7-43f9-9f5c-c6eeae8d7066-2-research-3"
+            ],
+            "claimIds": [
+              "claim-32",
+              "claim-33",
+              "claim-34"
+            ],
+            "gaps": [],
+            "limitations": [
+              "tavily was used only to locate this original page; the search-result snippet was not retained as evidence.",
+              "Statements on the selected company's domain remain Company Reported unless independently corroborated."
+            ]
+          }
+        ]
+      },
+      "storedFundingRecords": 3,
+      "storedHiringStatus": "browser_fallback_failed",
+      "persistedHiringSnapshotCount": 2,
+      "storedJobCount": 0,
+      "modelStop": "coverage_sufficient",
+      "requestCounts": {
+        "search": 8,
+        "page": 39,
+        "model": 6,
+        "official": 2,
+        "tools": 7
+      }
+    }
+  ],
+  "outboundRequestRecords": 121,
+  "validationDate": "2026-09-18",
+  "routeSequence": [
+    "POST /api/private-diligence/candidates",
+    "POST /api/private-diligence/confirm-entity",
+    "POST /api/private-diligence/plan",
+    "POST /api/private-diligence/run",
+    "GET /api/private-diligence/report/:researchId"
+  ],
+  "renderChecks": {
+    "desktopWidth": 1280,
+    "mobileWidth": 390,
+    "mobileScrollWidth": 390,
+    "locales": [
+      "en",
+      "zh"
+    ],
+    "newResearchCallsOnInteraction": 0,
+    "observerCounts": {
+      "Abaka": {
+        "before": 59,
+        "after": 59
+      },
+      "Mercury": {
+        "before": 121,
+        "after": 121
+      }
+    },
+    "browserConsoleErrors": 0,
+    "evidenceDetailsExpanded": true,
+    "sourceLinkOpened": "https://mercury.com/blog/series-d-announcement",
+    "sourceLinkResult": "Original article loaded in browser",
+    "sourceCheckFedBackIntoResearch": false
+  },
+  "notes": [
+    "Fresh research IDs in a newly created isolated SQLite database; no production data or caches modified.",
+    "Counts are from each report snapshot, never a sum across hiring_research_runs.",
+    "Actual live runs had no Form D offering and no successful zero-job result. Those states were tested with stable fixtures.",
+    "These are presentation-validation observations, not independently reconciled financial conclusions."
+  ]
+}

@@ -1,0 +1,342 @@
+{
+  "researchId": "4bdb529d-fcdf-4693-9c2d-e4a3ffecb938",
+  "inputCompanyName": "Mercury",
+  "inputWebsite": null,
+  "confirmedDomain": "mercury.com",
+  "candidateLegalName": null,
+  "checks": {
+    "persistedEqualsReportApi": true
+  },
+  "stateStatus": "completed",
+  "adaptiveStopReason": "planner_unavailable_or_invalid",
+  "actions": [],
+  "budget": {
+    "limits": {
+      "search": 9,
+      "page": 44,
+      "model": 8,
+      "official": 8,
+      "tools": 10
+    },
+    "used": {
+      "search": 6,
+      "page": 36,
+      "model": 5,
+      "official": 2,
+      "tools": 6
+    },
+    "elapsedMs": 12964,
+    "queries": [
+      "site:mercury.com \"Mercury\" founders leadership team",
+      "site:mercury.com \"Mercury\" announcements news 2026",
+      "site:sec.gov/Archives/edgar/data/ \"Mercury Technologies, Inc.\" \"D\"",
+      "site:mercury.com \"Mercury\" funding financing announcement",
+      "(\"Mercury\" OR \"Mercury Technologies, Inc.\") \"mercury.com\" funding financing investment announcement",
+      "\"Mercury\" \"mercury.com\" funding round total funding currency valuation investors"
+    ],
+    "requests": [
+      {
+        "kind": "search",
+        "host": "serpapi.com",
+        "path": "/search.json",
+        "status": 429
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/robots.txt",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/",
+        "status": 200
+      },
+      {
+        "kind": "search",
+        "host": "api.tavily.com",
+        "path": "/search",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/contact",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/about",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/contact/sales",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/legal/privacy",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/legal",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/company",
+        "status": 404
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/team",
+        "status": 404
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/leadership",
+        "status": 404
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/products",
+        "status": 404
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/services",
+        "status": 404
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/news",
+        "status": 404
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/careers",
+        "status": 308
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/blog/how-i-ceo-taking-advice-as-leader",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/blog/introducing-new-cfo-cco",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/blog/how-i-ceo-thinking-about-competitors",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/jobs",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/terms",
+        "status": 404
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/privacy",
+        "status": 404
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/legal/terms",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/legal/invoice-payer-terms-addendum",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/legal/invoicing-merchant-terms-addendum",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/legal/consumer-privacy",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/legal/accountant-terms",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/legal/esign",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/legal/sms",
+        "status": 200
+      },
+      {
+        "kind": "model",
+        "host": "api.deepseek.com",
+        "path": "/chat/completions",
+        "status": 200
+      },
+      {
+        "kind": "model",
+        "host": "api.deepseek.com",
+        "path": "/chat/completions",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/company/careers",
+        "status": 404
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/sitemap.xml",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/jobs/ai-usage-guidelines",
+        "status": 200
+      },
+      {
+        "kind": "search",
+        "host": "api.tavily.com",
+        "path": "/search",
+        "status": 200
+      },
+      {
+        "kind": "official",
+        "host": "data.sec.gov",
+        "path": "/submissions/CIK0001719932.json",
+        "status": 200
+      },
+      {
+        "kind": "official",
+        "host": "data.sec.gov",
+        "path": "/submissions/CIK0001049521.json",
+        "status": 200
+      },
+      {
+        "kind": "search",
+        "host": "api.tavily.com",
+        "path": "/search",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/blog/series-a",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "mercury.com",
+        "path": "/blog/series-c-announcement",
+        "status": 200
+      },
+      {
+        "kind": "model",
+        "host": "api.deepseek.com",
+        "path": "/chat/completions",
+        "status": 200
+      },
+      {
+        "kind": "model",
+        "host": "api.deepseek.com",
+        "path": "/chat/completions",
+        "status": 200
+      },
+      {
+        "kind": "search",
+        "host": "api.tavily.com",
+        "path": "/search",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "www.linkedin.com",
+        "path": "/posts/hugoangelmar_today-mercury-announced-a-300-million-series-activity-7310712654887596032-yd0v",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "finovate.com",
+        "path": "/mercury-raises-300-million-boosts-valuation-to-3-5-billion",
+        "status": 301
+      },
+      {
+        "kind": "page",
+        "host": "finovate.com",
+        "path": "/mercury-raises-300-million-boosts-valuation-to-3-5-billion/",
+        "status": 200
+      },
+      {
+        "kind": "model",
+        "host": "api.deepseek.com",
+        "path": "/chat/completions",
+        "status": 200
+      },
+      {
+        "kind": "search",
+        "host": "api.tavily.com",
+        "path": "/search",
+        "status": 200
+      },
+      {
+        "kind": "page",
+        "host": "tracxn.com",
+        "path": "/d/companies/mercury/__-dy_y1zwFzkqbNCyn2g-gNminxfshx6VQ-XaTWJx7DM",
+        "status": 200
+      }
+    ]
+  },
+  "browserChecks": {
+    "explicitConfirmation": true,
+    "reportRendered": true,
+    "originalQuoteLinksVisible": true,
+    "failedHiringCountShownAsUnavailable": true,
+    "consoleErrorsReturned": []
+  },
+  "limitations": "This browser run did not reproduce the earlier Series D discovery. Planner follow-up failed/unavailable; report retained gaps."
+}

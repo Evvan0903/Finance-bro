@@ -100,7 +100,7 @@ export type SafeCompanyFetchOptions = {
   timeoutMs?: number;
   maxBytes?: number;
   maxRedirects?: number;
-  expectedContent?: "html" | "text";
+  expectedContent?: "html" | "text" | "xml";
 };
 
 export async function safeCompanyFetch(
@@ -123,7 +123,7 @@ export async function safeCompanyFetch(
     try {
       const response = await fetchImpl(url, {
         method: "GET",
-        headers: { Accept: options.expectedContent === "text" ? "text/plain,*/*;q=0.1" : "text/html,application/xhtml+xml" },
+        headers: { Accept: options.expectedContent === "text" ? "text/plain,*/*;q=0.1" : options.expectedContent === "xml" ? "application/xml,text/xml,application/rss+xml;q=0.9" : "text/html,application/xhtml+xml" },
         redirect: "manual",
         cache: "no-store",
         signal: controller.signal,
@@ -140,6 +140,8 @@ export async function safeCompanyFetch(
       const contentType = response.headers.get("content-type") ?? "";
       const allowedType = options.expectedContent === "text"
         ? /text\/(?:plain|html)/i.test(contentType)
+        : options.expectedContent === "xml"
+          ? /(?:application|text)\/(?:xml|rss\+xml)/i.test(contentType)
         : /text\/html|application\/xhtml\+xml/i.test(contentType);
       if (!allowedType) throw new PrivateDiligenceFetchError("unsupportedContentType", "Company website response was not HTML");
       const declaredLength = Number(response.headers.get("content-length") ?? 0);

@@ -94,7 +94,12 @@ test("discovers website-only identity signals and preserves Company Reported evi
   const graphUrl = await moduleUrl("../app/lib/private-diligence/entity-resolution/identityGraphBuilder.ts");
   const matcherUrl = await moduleUrl("../app/lib/private-diligence/entity-resolution/entityMatcher.ts");
   const modelUrl = `data:text/javascript,${encodeURIComponent('export async function runClaraModel(){throw new Error("MODEL_DISABLED_IN_FIXTURE") }')}`;
+  const legalUrl = await moduleUrl("../app/lib/private-diligence/entity-resolution/legalEntityDiscovery.ts", {
+    '"../extraction/htmlExtractor"': JSON.stringify(htmlUrl),
+    '"../security"': JSON.stringify(securityUrl),
+  });
   const discoveryUrl = await moduleUrl("../app/lib/private-diligence/entity-resolution/candidateDiscovery.ts", {
+    '"./legalEntityDiscovery"': JSON.stringify(legalUrl),
     '"../providers/companyWebsiteProvider"': JSON.stringify(providerUrl),
     '"./identityGraphBuilder"': JSON.stringify(graphUrl),
     '"./entityMatcher"': JSON.stringify(matcherUrl),
@@ -103,7 +108,7 @@ test("discovers website-only identity signals and preserves Company Reported evi
   const { discoverEntityCandidates } = await import(discoveryUrl + nonce());
   const pages = {
     "/": `<!doctype html><title>Acme Robotics | Automation</title><meta name="description" content="Industrial robotics"><a href="/terms">Terms</a><script type="application/ld+json">{"@type":"Organization","name":"Acme Robotics","industry":"Robotics","email":"hello@acme.example","address":{"addressLocality":"Austin","addressRegion":"Texas","addressCountry":"United States"}}</script><p>hello@acme.example</p>`,
-    "/terms": `<!doctype html><title>Terms | Acme Robotics</title><p>These Terms are provided by Acme Robotics, Inc.</p>`,
+    "/terms": `<!doctype html><title>Terms | Acme Robotics</title><p>Acme Robotics, Inc. ("Acme Robotics", "we") operates this website.</p>`,
     "/privacy": `<!doctype html><title>Privacy | Acme Robotics</title><p>Acme Robotics, Inc. controls this privacy policy.</p>`,
     "/contact": `<!doctype html><title>Contact | Acme Robotics</title><address>1 Main Street, Austin, Texas</address>`,
     "/team": `<!doctype html><title>Team | Acme Robotics</title><p>Founded by Avery Chen</p>`,
@@ -121,7 +126,7 @@ test("discovers website-only identity signals and preserves Company Reported evi
   assert.equal(result.candidates.length, 1);
   const candidate = result.candidates[0];
   assert.equal(candidate.displayName, "Acme Robotics");
-  assert.equal(candidate.legalName, "Acme Robotics, Inc");
+  assert.equal(candidate.legalName, "Acme Robotics, Inc.");
   assert.equal(candidate.city, "Austin");
   assert.equal(candidate.industry, "Robotics");
   assert.deepEqual(candidate.founders, ["Avery Chen"]);
@@ -138,6 +143,23 @@ test("discovers website-only identity signals and preserves Company Reported evi
     resolveHost: async () => [{ address: "93.184.216.34", family: 4 }], paths: ["/"],
   });
   assert.equal(titleOnly.candidates[0].displayName, "Beacon Labs");
+
+  const contaminatedName = await discoverEntityCandidates("research-name-lock", input({
+    companyName: "Cohere", website: "https://cohere.example", city: null, state: null,
+    country: null, founderOrExecutive: null, industry: null,
+  }), {
+    fetchImpl: async (url) => String(url).endsWith("robots.txt")
+      ? new Response("User-agent: *\nDisallow:", { headers: { "content-type": "text/plain" } })
+      : new Response(`<!doctype html><title>Cohere | Enterprise AI</title><h1>Build with secure AI</h1>
+          <script type="application/ld+json">{"@type":"Organization","name":"Solutions Solutions Resources Resources Blog Blog Research Research Company","legalName":"Cohere Privacy Policy Cohere Inc"}</script>`,
+        { headers: { "content-type": "text/html" } }),
+    resolveHost: async () => [{ address: "93.184.216.34", family: 4 }], paths: ["/"],
+  });
+  assert.equal(contaminatedName.candidates[0].displayName, "Cohere");
+  assert.equal(contaminatedName.candidates[0].legalName, null);
+  assert.equal(contaminatedName.candidates[0].websiteOrganizationNames.includes("Solutions Solutions Resources Resources Blog Blog Research Research Company"), false);
+  assert.deepEqual(contaminatedName.candidates[0].dbaNames, []);
+  assert.equal(contaminatedName.candidates[0].description, null);
 
   const ambiguous = await discoverEntityCandidates("research-multi", input({ companyName: "Acme AI", website: null, city: null, state: null, country: null, founderOrExecutive: null, industry: null }), {
     fetchImpl: async (url) => {
@@ -226,6 +248,9 @@ test("builds a low-confidence user-confirmed graph with a visible identity limit
   assert.match(built.identityLimitations.join(" "), /Target selected by the user before full legal-entity verification/i);
   assert.equal(built.targetSelectionStatus, "userSelected");
   assert.equal(built.identityVerificationStatus, "partiallyVerified");
+  assert.equal(built.canonicalName, "Acme Robotics");
+  assert.equal(built.confirmedDisplayName, "Acme Robotics");
+  assert.equal(built.selectedCandidateId, "candidate-website");
 });
 
 test("separates explicit target selection from legal-entity verification", async () => {
@@ -347,13 +372,17 @@ test("blocks SSRF, cross-domain redirects, oversized responses, and unsupported 
 
 test("filters and parses SEC Form D without changing the shared SEC client", async () => {
   const extractorUrl = await moduleUrl("../app/lib/private-diligence/extraction/formDExtractor.ts");
+  const issuerUrl = await moduleUrl("../app/lib/private-diligence/entity-resolution/secIssuerResolution.ts", {
+    '"../extraction/formDExtractor"': JSON.stringify(extractorUrl),
+  });
   const secStub = "data:text/javascript,export const secClient={};";
   const providerUrl = await moduleUrl("../app/lib/private-diligence/providers/secFormDProvider.ts", {
     '"../../sec-client"': JSON.stringify(secStub),
     '"../extraction/formDExtractor"': JSON.stringify(extractorUrl),
+    '"../entity-resolution/secIssuerResolution"': JSON.stringify(issuerUrl),
   });
   const { createSecFormDProvider, selectFormDFilings } = await import(providerUrl + nonce());
-  const payload = { filings: { recent: {
+  const payload = { name: "Acme Robotics, Inc.", website: "https://acme.example", filings: { recent: {
     form: ["D", "D/A", "10-K"], accessionNumber: ["0000000123-26-000001", "0000000123-26-000002", "bad"],
     filingDate: ["2026-01-03", "2026-02-04", "2026-03-01"], primaryDocument: ["primary_doc.xml", "amendment.xml", "tenk.htm"],
   } } };
@@ -361,7 +390,7 @@ test("filters and parses SEC Form D without changing the shared SEC client", asy
   const document = `<edgarSubmission><entityName>Acme Robotics, Inc.</entityName><jurisdictionOfInc>Delaware</jurisdictionOfInc><totalOfferingAmount>5000000</totalOfferingAmount><totalAmountSold>3250000</totalAmountSold><dateOfFirstSale>2026-01-01</dateOfFirstSale><relatedPersonInfo><firstName>Avery</firstName><lastName>Chen</lastName></relatedPersonInfo></edgarSubmission>`;
   const client = { getSubmissions: async () => payload, getFilingDocument: async () => document };
   const provider = createSecFormDProvider(client);
-  const context = { researchId: "research-1", input: input(), identityGraph: graph({ cikCandidates: ["0000000123"] }), now: () => new Date("2026-08-05T00:00:00Z") };
+  const context = { researchId: "research-1", input: input(), identityGraph: graph({ cikCandidates: ["0000000123"], legalNames: ["Acme Robotics, Inc."], domains: ["acme.example"] }), now: () => new Date("2026-08-05T00:00:00Z") };
   const searched = await provider.search(context);
   const evidence = await provider.normalize(await provider.fetchDetails(searched.records, context), context);
   assert.equal(evidence.length, 2);
@@ -409,7 +438,7 @@ test("maps provider failures to typed non-fatal statuses", async () => {
   for (const [code, expected] of [
     ["SEC_RATE_LIMITED", "rateLimited"], ["rateLimited", "rateLimited"],
     ["SEC_TIMEOUT", "timeout"], ["malformedResponse", "parseFailed"],
-    ["blockedAddress", "invalidRequest"], ["SEC_FORBIDDEN", "authenticationFailed"],
+    ["blockedAddress", "invalidRequest"], ["SEC_FORBIDDEN", "upstreamUnavailable"],
   ]) assert.equal(providerTypes.classifyPrivateProviderError({ code }), expected);
   const failing = {
     providerId: "test", providerName: "Test", sourceTier: 1, providerCategory: "officialRegistration",
@@ -500,7 +529,8 @@ test("keeps Clara UI bilingual, confirmation-consistent, export-safe, and isolat
   assert.match(workflow, /getEntityConfirmationEligibility/);
   assert.match(confirmRoute, /getEntityConfirmationEligibility\(candidate, true\)/);
   assert.doesNotMatch(confirmRoute, /A plausible target company must be confirmed/);
-  assert.match(workflow, /Not identified|notIdentified/);
+  assert.match(workflow, /candidate\.description/);
+  assert.match(workflow, /candidate\.identitySourceUrl/);
   assert.match(workflow, /lowConfidenceWebsite/);
   assert.match(workflow, /downloadMarkdown/);
   assert.match(workflow, /evidenceXlsx/);

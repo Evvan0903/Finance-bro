@@ -72,6 +72,7 @@ export function buildPrivateDiligenceReport(args: {
   informationGaps: InformationGap[];
   questions: DueDiligenceQuestion[];
   generatedAt: string;
+  hiringIntelligence?: import("../hiring/types").HiringActivityResult | null;
 }): PrivateDiligenceReport {
   const { input, graph, claims, evidence, conflicts, risks, informationGaps, questions } = args;
   const locale = input.locale;
@@ -160,5 +161,6 @@ export function buildPrivateDiligenceReport(args: {
       "Absence of public information is an information gap, not evidence of misconduct or the absence of an event.",
       "Document-room diligence and uploaded-document review are outside Clara V1.",
     ],
+    hiringIntelligence: args.hiringIntelligence ?? null,
   };
 }

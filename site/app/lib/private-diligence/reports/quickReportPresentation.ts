@@ -122,23 +122,26 @@ function buildCoverage(report: PrivateDiligenceReport): QuickCoverageDatum[] {
   const predicates: Record<QuickCoverageId, (item: NormalizedEvidence) => boolean> = {
     overview: (item) => hasField(item, ["organizationName", "description"]),
     productsServices: (item) => hasField(item, ["products", "services"]),
-    leadership: (item) => hasField(item, ["founders", "executives"]) || evidenceTopics(item).includes("leadership"),
-    hiring: (item) => evidenceTopics(item).includes("hiring") || stringValues([item], "links").some(isRoleUrl),
-    customers: (item) => evidenceTopics(item).includes("customersPartners") || hasField(item, ["customers"]),
-    partners: (item) => evidenceTopics(item).includes("customersPartners") || hasField(item, ["partners"]),
-    recentActivity: (item) => evidenceTopics(item).includes("recentActivity"),
-    fundingAcquisitions: (item) => evidenceTopics(item).includes("fundingAcquisitions") || hasField(item, ["offeringAmount", "amountSold", "acquisition"]),
+    leadership: (item) => hasField(item, ["founders", "executives"]),
+    hiring: (item) => hasField(item, ["jobTitle"]) || stringValues([item], "links").some(isRoleUrl),
+    customers: (item) => hasField(item, ["customers"]),
+    partners: (item) => hasField(item, ["partners"]),
+    recentActivity: (item) => hasField(item, ["businessActivity"]),
+    fundingAcquisitions: (item) => Boolean(item.fundingEvents?.length) || hasField(item, ["offeringAmount", "amountSold", "acquisition"]),
   };
   const claimTypes: Record<QuickCoverageId, string[]> = {
-    overview: ["legalName", "description"], productsServices: ["product", "service"],
-    leadership: ["founder", "executive"], hiring: ["job", "hiring"],
-    customers: ["customer"], partners: ["partner"], recentActivity: ["businessActivity"],
-    fundingAcquisitions: ["offeringAmount", "amountSold", "firstSaleDate", "acquisition"],
+    overview: ["legalName", "description", "research.overview"], productsServices: ["product", "service", "research.products"],
+    leadership: ["founder", "executive", "executiveRole", "formerExecutiveRole", "research.people"], hiring: ["job", "hiring"],
+    customers: ["customer"], partners: ["partner"], recentActivity: ["businessActivity", "research.recent"],
+    fundingAcquisitions: ["offeringAmount", "amountSold", "firstSaleDate", "acquisition", "funding.amount", "funding.valuation", "funding.roundLabel"],
   };
   return COVERAGE_ORDER.map((id) => {
-    const matchingEvidence = report.evidence.filter(predicates[id]);
     const matchingClaims = report.claims.filter((claim) => claimTypes[id].includes(claim.claimType));
-    return { id, covered: matchingEvidence.length > 0 || matchingClaims.length > 0, claimCount: matchingClaims.length, evidenceCount: matchingEvidence.length };
+    const ids = new Set(matchingClaims.flatMap(c=>c.evidenceIds));
+    const matchingEvidence = report.evidence.filter(e=>predicates[id](e) || ids.has(e.evidenceId));
+    const hiringObserved = id === "hiring" && Boolean(report.hiringIntelligence && ["success_with_jobs", "success_zero_jobs"].includes(report.hiringIntelligence.status));
+    if (id === "hiring" && report.hiringIntelligence) return { id, covered: hiringObserved || report.hiringIntelligence.jobs.length > 0, claimCount: matchingClaims.length, evidenceCount: matchingEvidence.length };
+    return { id, covered: matchingEvidence.length > 0 || matchingClaims.length > 0 || hiringObserved, claimCount: matchingClaims.length, evidenceCount: matchingEvidence.length };
   });
 }
 
@@ -164,9 +167,21 @@ function buildHiring(report: PrivateDiligenceReport): QuickHiringData {
 }
 
 function buildTimeline(report: PrivateDiligenceReport): QuickTimelineItem[] {
+  if (report.adaptiveResearch) {
+    const items = report.claims.filter(c=>c.researchFact?.topic==="recent" && c.researchFact.publicationDate).map(c=>{
+      const fact=c.researchFact!;
+      const source=report.evidence.find(e=>e.evidenceId===fact.evidenceId)!;
+      return {evidenceId:fact.evidenceId,date:fact.publicationDate,eventType:source?eventType(source):"other" as const,description:fact.value,sourceTitle:source?.sourceTitle ?? "Original source",sourceUrl:fact.sourceUrl,evidenceStatus:qualityId(c.status)};
+    });
+    return [...new Map(items.map(item=>[item.evidenceId,item])).values()].sort((a,b)=>(b.date??"").localeCompare(a.date??""));
+  }
+  const eventEvidenceIds = new Set(report.claims
+    .filter((claim) => ["businessActivity", "acquisition", "offeringAmount", "amountSold", "firstSaleDate"].includes(claim.claimType))
+    .flatMap((claim) => claim.evidenceIds));
   return report.evidence.filter((item) => {
     const topics = evidenceTopics(item);
-    return (topics.includes("recentActivity") || topics.includes("fundingAcquisitions")) && eventType(item) !== "other";
+    return eventEvidenceIds.has(item.evidenceId) &&
+      (topics.includes("recentActivity") || topics.includes("fundingAcquisitions")) && eventType(item) !== "other";
   }).map((item) => {
     const linkedClaims = report.claims.filter((claim) => claim.evidenceIds.includes(item.evidenceId));
     const status = linkedClaims.length ? qualityId(linkedClaims[0].status) : evidenceQuality(item);

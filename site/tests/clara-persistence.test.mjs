@@ -7,9 +7,11 @@ import test from "node:test";
 
 function run(script, databasePath) {
   return new Promise((resolve, reject) => {
+    const env = { ...process.env, CLARA_LOCAL_DATABASE_PATH: databasePath, DEEPSEEK_API_KEY: "" };
+    for (const key of ["TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN", "LIBSQL_DATABASE_URL", "LIBSQL_AUTH_TOKEN"]) delete env[key];
     const child = spawn(process.execPath, ["--import", "tsx", "--input-type=module", "-e", script], {
       cwd: new URL("..", import.meta.url),
-      env: { ...process.env, CLARA_LOCAL_DATABASE_PATH: databasePath, DEEPSEEK_API_KEY: "" },
+      env,
       stdio: ["ignore", "pipe", "pipe"],
     });
     let stdout = "";
@@ -48,12 +50,16 @@ test("candidate ownership persists across separate runtime processes without mod
 
 test("persistence source contains normalized tables and no process-local record Map", async () => {
   const { readFile } = await import("node:fs/promises");
-  const [schema, store] = await Promise.all([
+  const [schema, store, stateStore] = await Promise.all([
     readFile(new URL("../db/schema.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/private-diligence/persistence/researchStore.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/private-diligence/state/researchStateStore.ts", import.meta.url), "utf8"),
   ]);
   assert.match(schema, /researchRequests/);
   assert.match(schema, /entityCandidates/);
   assert.match(schema, /selectedTargets/);
+  assert.match(schema, /claraResearchStates/);
+  assert.match(schema, /claraToolExecutions/);
   assert.doesNotMatch(store, /globalThis|new Map/);
+  assert.doesNotMatch(stateStore, /globalThis|new Map/);
 });

@@ -7,6 +7,7 @@ function compact(values: Array<string | null | undefined>) {
 export function buildIdentityGraph(
   candidate: EntityCandidate,
   input: PrivateCompanyInput,
+  options: { confirmedAt?: string | null } = {},
 ): EntityIdentityGraph {
   const jurisdiction = compact([candidate.registrationJurisdiction]);
   const targetSelectionStatus = candidate.targetSelectionStatus ??
@@ -16,7 +17,14 @@ export function buildIdentityGraph(
       ? "verified" : candidate.websiteReachable || candidate.legalName ? "partiallyVerified" : "unverified");
   return {
     entityId: `entity-${candidate.candidateId}`,
-    canonicalName: candidate.legalName ?? candidate.displayName,
+    // The selected brand/display name is the immutable report identity.
+    // Legal names remain separate evidence and must not silently replace it.
+    canonicalName: candidate.displayName,
+    selectedCandidateId: candidate.candidateId,
+    confirmedDisplayName: candidate.displayName,
+    confirmedWebsite: candidate.website,
+    identityEvidenceIds: compact(candidate.sourceIds),
+    confirmedAt: options.confirmedAt ?? null,
     legalNames: compact([candidate.legalName, ...candidate.termsLegalNames, ...candidate.privacyLegalNames]),
     dbaNames: compact([candidate.displayName, ...candidate.dbaNames, ...candidate.websiteOrganizationNames]),
     formerNames: compact(candidate.formerNames),

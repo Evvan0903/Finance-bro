@@ -1,3 +1,5 @@
+import type { HiringActivityResult } from "./hiring/types";
+
 export type DiligenceLocale = "en" | "zh";
 export type ReportDepth = "Standard" | "Compact";
 export type ResearchObjective =
@@ -45,6 +47,8 @@ export type EntityCandidate = {
   formerNames: string[];
   website: string | null;
   domain: string | null;
+  description?: string | null;
+  identitySourceUrl?: string | null;
   city: string | null;
   state: string | null;
   country: string | null;
@@ -78,6 +82,11 @@ export type EntityCandidate = {
 export type EntityIdentityGraph = {
   entityId: string;
   canonicalName: string;
+  selectedCandidateId?: string;
+  confirmedDisplayName?: string;
+  confirmedWebsite?: string | null;
+  identityEvidenceIds?: string[];
+  confirmedAt?: string | null;
   legalNames: string[];
   dbaNames: string[];
   formerNames: string[];
@@ -169,7 +178,24 @@ export type VerificationEligibility =
   | "leadOnly"
   | "excluded";
 
+export type EvidenceFactCandidate = {
+  factType: "product" | "service" | "executiveRole";
+  value: string;
+  personName: string | null;
+  role: string | null;
+  temporalStatus: "current" | "historical" | "notApplicable";
+  excerpt: string;
+  locator: string | null;
+  extractionMethod: "jsonLd" | "visibleText";
+  evidenceId: string;
+  sourceUrl: string;
+  publicationDate: string | null;
+  retrievedAt: string;
+  companyReported: boolean;
+};
+
 export type NormalizedEvidence = {
+  researchFacts?: import("./research/types").SourceFact[];
   evidenceId: string;
   entityId: string;
   providerId: string;
@@ -178,6 +204,8 @@ export type NormalizedEvidence = {
   subjectName: string;
   subjectIdentifiers: string[];
   normalizedFields: Record<string, string | number | boolean | null | string[]>;
+  fundingEvents?: import("./funding/types").FundingEvent[];
+  factCandidates?: EvidenceFactCandidate[];
   sourceTitle: string;
   sourceUrl: string;
   publicationDate: string | null;
@@ -202,6 +230,9 @@ export type ClaimStatus =
 export type ClaimMateriality = "Critical" | "High" | "Medium" | "Low";
 
 export type PrivateCompanyClaim = {
+  researchFact?: import("./research/types").SourceFact;
+  fundingEventId?: string;
+  fundingField?: import("./funding/types").FundingField;
   claimId: string;
   researchId: string;
   entityId: string;
@@ -327,6 +358,9 @@ export type ProviderDiagnostic = {
 };
 
 export type PrivateProviderResult = {
+  legalEntityDiscovery?: import("./entity-resolution/legalEntityDiscovery").LegalEntityDiscovery;
+  searchDiagnostics?: Omit<import("./search/sharedSearch").SearchOutcome, "leads">[];
+  secIssuerAssociations?: import("./entity-resolution/secIssuerResolution").SecIssuerAssociation[];
   providerId: string;
   providerName: string;
   sourceTier: SourceTier;
@@ -357,6 +391,8 @@ export type ReportSection = {
 };
 
 export type PrivateDiligenceReport = {
+  adaptiveResearch?: import("./research/types").AdaptiveResearch;
+  fundingResearch?: import("./funding/types").FundingResearch;
   reportId: string;
   researchId: string;
   reportVersion: "clara-v1" | "clara-quick-v1";
@@ -392,9 +428,13 @@ export type PrivateDiligenceReport = {
   disclosureByLocale?: { en: string; zh: string };
   methodologyLimitations: string[];
   methodologyLimitationsByLocale?: { en: string[]; zh: string[] };
+  // Current observed public jobs are an evidence-backed snapshot, never a
+  // historical headcount or employee-growth assertion.
+  hiringIntelligence?: HiringActivityResult | null;
 };
 
 export type PrivateDiligenceResearchRecord = {
+  legalEntityDiscovery?: import("./entity-resolution/legalEntityDiscovery").LegalEntityDiscovery;
   researchId: string;
   createdAt: string;
   updatedAt: string;
@@ -408,6 +448,7 @@ export type PrivateDiligenceResearchRecord = {
   providerResults: PrivateProviderResult[];
   rawEvidence: RawEvidence[];
   normalizedEvidence: NormalizedEvidence[];
+  hiringIntelligence: HiringActivityResult | null;
   report: PrivateDiligenceReport | null;
   errorCode: string | null;
 };

@@ -1,0 +1,38 @@
+[
+  {
+    "company": "Abaka",
+    "researchId": "154fbca0-324e-4cac-8dc0-b94c24319251",
+    "originalGeneralQuotes": 10,
+    "retainedGeneralQuotes": 9,
+    "removed": [
+      {
+        "topic": "products",
+        "quote": "Datasets Abaka Forge Platform RL Environment Physical AI",
+        "evidenceId": "serpapi-154fbca0-324e-4cac-8dc0-b94c24319251-1-research-3"
+      }
+    ],
+    "note": "Deterministic replay of final topic guards against actual persisted live originals, no model/network/data injection; historical live DB record left unchanged."
+  },
+  {
+    "company": "Mercury",
+    "researchId": "edc3727b-bdeb-4e3d-80f7-dadb6dc48267",
+    "originalGeneralQuotes": 6,
+    "retainedGeneralQuotes": 5,
+    "removed": [
+      {
+        "topic": "people",
+        "quote": "Mercury was founded with the idea of making banking better for ambitious endeavors.",
+        "evidenceId": "website-edc3727b-bdeb-4e3d-80f7-dadb6dc48267-2"
+      }
+    ],
+    "note": "Deterministic replay of final topic guards against actual persisted live originals, no model/network/data injection; historical live DB record left unchanged."
+  },
+  {
+    "company": "Vanta",
+    "researchId": "2836753f-a215-4fa9-9caa-bc03b2e08876",
+    "originalGeneralQuotes": 7,
+    "retainedGeneralQuotes": 7,
+    "removed": [],
+    "note": "Deterministic replay of final topic guards against actual persisted live originals, no model/network/data injection; historical live DB record left unchanged."
+  }
+]

@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { extractCompanyPage, type ExtractedCompanyPage } from "../extraction/htmlExtractor";
+import { extractFundingParagraphs, extractCompanyPage, type ExtractedCompanyPage } from "../extraction/htmlExtractor";
 import { normalizeOfficialCompanyUrl, robotsDisallows, safeCompanyFetch } from "../security";
 import type { RawEvidence } from "../types";
 import type { PrivateCompanyProvider, ProviderSearchResult } from "./providerTypes";
@@ -16,6 +16,7 @@ type WebsiteRecord = {
   pageType: string;
   depth: number;
   extracted: ExtractedCompanyPage;
+  fundingText: string;
 };
 
 export type CompanyWebsiteProviderOptions = {
@@ -106,7 +107,7 @@ export function createCompanyWebsiteProvider(
               timeoutMs: Math.min(options.timeoutMs ?? 5_000, 8_000),
             });
             const resolved = new URL(response.url);
-            return { url: response.url, pageType: pageType(resolved), depth: urlDepth(resolved), extracted: extractCompanyPage(response.text) };
+            return { url: response.url, pageType: pageType(resolved), depth: urlDepth(resolved), extracted: extractCompanyPage(response.text), fundingText: extractFundingParagraphs(response.text) };
           } catch {
             return null;
           }
@@ -132,6 +133,8 @@ export function createCompanyWebsiteProvider(
       const output: RawEvidence[] = [];
       for (const [index, record] of (records as WebsiteRecord[]).entries()) {
         const extracted = record.extracted;
+        const profilePage = !["terms","privacy","legal"].includes(record.pageType);
+        const leadershipPage = ["about","leadership"].includes(record.pageType);
         const rawText = [extracted.description, ...extracted.headings, extracted.bodyText]
           .filter(Boolean).join("\n").slice(0, 120_000);
         const contentHash = createHash("sha256").update(rawText).digest("hex");
@@ -149,6 +152,7 @@ export function createCompanyWebsiteProvider(
           retrievedAt: context.now().toISOString(),
           rawText,
           structuredData: {
+            fundingText: record.fundingText,
             pageTitle: extracted.title,
             pageType: record.pageType,
             crawlDepth: record.depth,
@@ -159,8 +163,8 @@ export function createCompanyWebsiteProvider(
             legalNames: extracted.legalNames,
             legalEntityMentions: extracted.legalEntityMentions,
             alternateNames: extracted.alternateNames,
-            founders: extracted.founders,
-            executives: extracted.executives,
+            founders: leadershipPage ? extracted.founders : extracted.organizationFounders,
+            executives: leadershipPage ? extracted.executives : [],
             addresses: extracted.addresses,
             cities: extracted.cities,
             states: extracted.states,
@@ -168,8 +172,9 @@ export function createCompanyWebsiteProvider(
             industryLabels: extracted.industryLabels,
             emailDomains: extracted.emailDomains,
             phoneNumbers: extracted.phoneNumbers,
-            products: extracted.products,
-            services: extracted.services,
+            products: profilePage ? extracted.products : [],
+            services: profilePage ? extracted.services : [],
+            factCandidates: profilePage ? extracted.factCandidates.filter(c=>c.factType!=="executiveRole" || leadershipPage) : [],
             socialProfiles: extracted.socialProfiles,
             links: extracted.links,
             affiliateNames: extracted.affiliateNames,
@@ -177,8 +182,8 @@ export function createCompanyWebsiteProvider(
               organizationName: extracted.organizationNames,
               legalName: [...extracted.legalNames, ...extracted.legalEntityMentions],
               location: extracted.addresses,
-              founders: extracted.founders,
-              executives: extracted.executives,
+              founders: leadershipPage ? extracted.founders : extracted.organizationFounders,
+              executives: leadershipPage ? extracted.executives : [],
               industry: extracted.industryLabels,
             }).filter(([, value]) => value.length).map(([key]) => key),
             evidenceStatus: "Company Reported",

@@ -1,0 +1,23 @@
+{
+  "date": "2026-09-18",
+  "tests": {
+    "passed": 264,
+    "failed": 0
+  },
+  "lint": "passed",
+  "typecheck": "passed",
+  "nextProductionBuild": "passed_with_existing_warnings",
+  "diffCheck": "passed",
+  "liveRouteCompanies": [
+    "Abaka",
+    "Mercury",
+    "Vanta"
+  ],
+  "liveDatabase": "isolated local SQLite; no production connection",
+  "finalTopicFilters": "replayed against persisted live originals; see final-filter-replay.json",
+  "browser": "explicit confirmation and rendered report checked; unknown role count displayed; see browser-validation.json",
+  "environmentChanged": false,
+  "committed": false,
+  "pushed": false,
+  "deployed": false
+}

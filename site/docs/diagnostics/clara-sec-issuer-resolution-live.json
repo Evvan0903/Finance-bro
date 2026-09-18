@@ -1,0 +1,153 @@
+{
+  "validatedAt": "2026-09-18T03:23:23.041Z",
+  "environment": "isolated local database; actual candidates/confirm-entity/run/report HTTP routes",
+  "secUserAgent": "configured; request-header equality observed; value redacted",
+  "finalRuns": [
+    {
+      "company": "Cohere",
+      "researchId": "b8d8e9ee-190f-466d-b3e5-9d57cc3e52c0",
+      "stageStatus": "complete",
+      "secProviderStatus": "noData",
+      "secStatus": "issuer_unresolved",
+      "requests": {
+        "search": 4,
+        "fetch": 6,
+        "sec": 1,
+        "model": 3
+      },
+      "issuerAssociations": [
+        {
+          "cik": "0001798355",
+          "entityId": "entity-20ecc0af-cba5-4bde-9ec7-d35f50f01854",
+          "secIssuerName": "Cohere Inc.",
+          "decision": "unresolved",
+          "reasonCodes": [
+            "legal_name_match",
+            "official_legal_entity_statement",
+            "business_address_conflict",
+            "identity_conflict",
+            "insufficient_corroboration"
+          ],
+          "matchedSignals": [
+            {
+              "code": "legal_name_match",
+              "references": [
+                {
+                  "evidenceId": "sec-submissions-0001798355",
+                  "sourceUrl": "https://data.sec.gov/submissions/CIK0001798355.json",
+                  "locator": "name,website,addresses",
+                  "excerpt": "{\"name\":\"Cohere Inc.\",\"addresses\":{\"mailing\":{\"street1\":\"530 E. MCDOWELL ROAD #107412\",\"street2\":null,\"city\":\"PHOENIX\",\"stateOrCountry\":\"AZ\",\"zipCode\":\"85004\",\"stateOrCountryDescription\":\"AZ\",\"isForeignLocation\":null,\"foreignStateTerritory\":null,\"country\":null,\"countryCode\":null},\"business\":{\"street1\":\"530 E. MCDOWELL ROAD #107412\",\"street2\":null,\"city\":\"PHOENIX\",\"stateOrCountry\":\"AZ\",\"zipCode\":\"85004\",\"stateOrCountryDescription\":\"AZ\",\"isForeignLocation\":null,\"foreignStateTerritory\":null,\"country\":null,\"countryCode\":null}}}",
+                  "publicationDate": null,
+                  "retrievedAt": "2026-09-18T03:20:20.309Z"
+                },
+                {
+                  "evidenceId": "identityGraph:entity-20ecc0af-cba5-4bde-9ec7-d35f50f01854",
+                  "sourceUrl": "https://cohere.com/",
+                  "locator": "legalNames; sources:website-b8d8e9ee-190f-466d-b3e5-9d57cc3e52c0-1,website-b8d8e9ee-190f-466d-b3e5-9d57cc3e52c0-2,website-b8d8e9ee-190f-466d-b3e5-9d57cc3e52c0-3,website-b8d8e9ee-190f-466d-b3e5-9d57cc3e52c0-4,website-b8d8e9ee-190f-466d-b3e5-9d57cc3e52c0-5,website-b8d8e9ee-190f-466d-b3e5-9d57cc3e52c0-6,website-b8d8e9ee-190f-466d-b3e5-9d57cc3e52c0-7",
+                  "excerpt": "Cohere Inc; Cohere Inc",
+                  "publicationDate": null,
+                  "retrievedAt": "2026-09-18T03:20:15.135Z"
+                }
+              ]
+            },
+            {
+              "code": "official_legal_entity_statement",
+              "references": [
+                {
+                  "evidenceId": "website-b8d8e9ee-190f-466d-b3e5-9d57cc3e52c0-6",
+                  "sourceUrl": "https://cohere.com/privacy",
+                  "locator": "rawText:0",
+                  "excerpt": "Cohere Inc. values and respects your privacy. We have prepared this privacy policy to explain the manner in which we collect, use and disclose personal information through our Website and through our AI-powered services, including our language model platform.\nReady to put AI to work?\nCohere Privacy Policy\n1. Who This Policy Applies To\n2. Collection and Use of Personal Information\n2.1. Visit our Website or Use the Platform\n2.2. Administer Platform Accounts\n2.3. Research and Model Improvement\n2.4. Marketing, Sales, and Events\n2.5. Cohere Labs Programs\n2.6. Security and Compliance\n2.7. Customer S",
+                  "publicationDate": null,
+                  "retrievedAt": "2026-09-18T03:20:16.315Z"
+                },
+                {
+                  "evidenceId": "sec-submissions-0001798355",
+                  "sourceUrl": "https://data.sec.gov/submissions/CIK0001798355.json",
+                  "locator": "name,website,addresses",
+                  "excerpt": "{\"name\":\"Cohere Inc.\",\"addresses\":{\"mailing\":{\"street1\":\"530 E. MCDOWELL ROAD #107412\",\"street2\":null,\"city\":\"PHOENIX\",\"stateOrCountry\":\"AZ\",\"zipCode\":\"85004\",\"stateOrCountryDescription\":\"AZ\",\"isForeignLocation\":null,\"foreignStateTerritory\":null,\"country\":null,\"countryCode\":null},\"business\":{\"street1\":\"530 E. MCDOWELL ROAD #107412\",\"street2\":null,\"city\":\"PHOENIX\",\"stateOrCountry\":\"AZ\",\"zipCode\":\"85004\",\"stateOrCountryDescription\":\"AZ\",\"isForeignLocation\":null,\"foreignStateTerritory\":null,\"country\":null,\"countryCode\":null}}}",
+                  "publicationDate": null,
+                  "retrievedAt": "2026-09-18T03:20:20.309Z"
+                }
+              ]
+            }
+          ],
+          "conflictingSignals": [
+            {
+              "code": "business_address_conflict",
+              "references": [
+                {
+                  "evidenceId": "sec-submissions-0001798355",
+                  "sourceUrl": "https://data.sec.gov/submissions/CIK0001798355.json",
+                  "locator": "name,website,addresses",
+                  "excerpt": "{\"name\":\"Cohere Inc.\",\"addresses\":{\"mailing\":{\"street1\":\"530 E. MCDOWELL ROAD #107412\",\"street2\":null,\"city\":\"PHOENIX\",\"stateOrCountry\":\"AZ\",\"zipCode\":\"85004\",\"stateOrCountryDescription\":\"AZ\",\"isForeignLocation\":null,\"foreignStateTerritory\":null,\"country\":null,\"countryCode\":null},\"business\":{\"street1\":\"530 E. MCDOWELL ROAD #107412\",\"street2\":null,\"city\":\"PHOENIX\",\"stateOrCountry\":\"AZ\",\"zipCode\":\"85004\",\"stateOrCountryDescription\":\"AZ\",\"isForeignLocation\":null,\"foreignStateTerritory\":null,\"country\":null,\"countryCode\":null}}}",
+                  "publicationDate": null,
+                  "retrievedAt": "2026-09-18T03:20:20.309Z"
+                },
+                {
+                  "evidenceId": "website-b8d8e9ee-190f-466d-b3e5-9d57cc3e52c0-6",
+                  "sourceUrl": "https://cohere.com/privacy",
+                  "locator": "rawText:26969",
+                  "excerpt": "Mailing Address: 171 John Street, Suite 200, Toronto, ON Canada M5T 1X3",
+                  "publicationDate": null,
+                  "retrievedAt": "2026-09-18T03:20:16.315Z"
+                }
+              ]
+            }
+          ],
+          "evaluatedAt": "2026-09-18T03:20:20.309Z",
+          "downstreamStage": "issuer_resolution"
+        }
+      ],
+      "rawSecEvidenceCount": 0,
+      "reportSecEvidenceCount": 0,
+      "formDEvents": 0,
+      "announcementEvents": 1,
+      "checks": {
+        "freshDatabaseRead": true,
+        "reportApiStatus": 200,
+        "persistedReportEqualsApi": true,
+        "allFundingFieldEvidenceLinksPresent": true,
+        "confirmedIdentityUnchanged": true,
+        "associationAuditPersisted": true
+      },
+      "limitations": [
+        "SEC: issuer_unresolved",
+        "A request cap or research deadline was reached; unresolved questions remain.",
+        "Bounded public-source review, not complete funding history. No amounts are summed. Separate source statements are not automatically the same event."
+      ]
+    },
+    {
+      "company": "Abaka AI",
+      "researchId": "793c6d23-9a8f-47a9-a808-df2aba03d593",
+      "stageStatus": "complete",
+      "secProviderStatus": "noData",
+      "secStatus": "issuer_unresolved",
+      "requests": {
+        "search": 2,
+        "fetch": 4,
+        "sec": 0,
+        "model": 2
+      },
+      "issuerAssociations": [],
+      "rawSecEvidenceCount": 0,
+      "reportSecEvidenceCount": 0,
+      "formDEvents": 0,
+      "announcementEvents": 1,
+      "checks": {
+        "freshDatabaseRead": true,
+        "reportApiStatus": 200,
+        "persistedReportEqualsApi": true,
+        "allFundingFieldEvidenceLinksPresent": true,
+        "confirmedIdentityUnchanged": true,
+        "associationAuditPersisted": true
+      },
+      "limitations": [
+        "SEC: issuer_unresolved",
+        "Follow-up planning INVALID_FUNDING_PLAN; initial results retained.",
+        "Bounded public-source review, not complete funding history. No amounts are summed. Separate source statements are not automatically the same event."
+      ]
+    }
+  ],
+  "scope": "Final rules only. Exploratory requests are not successful issuer-validation evidence. No production data or configuration changed."
+}

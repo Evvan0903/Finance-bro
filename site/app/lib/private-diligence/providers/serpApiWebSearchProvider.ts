@@ -1,5 +1,6 @@
+import { createSharedSearch, safeDiscoveryUrl, searchProviderStatus, type DiscoveryLead, type SearchOptions } from "../search/sharedSearch";
 import { createHash } from "node:crypto";
-import { extractCompanyPage, type ExtractedCompanyPage } from "../extraction/htmlExtractor";
+import { extractFundingParagraphs, extractCompanyPage, type ExtractedCompanyPage } from "../extraction/htmlExtractor";
 import { normalizeEntityName } from "../entity-resolution/entityMatcher";
 import { safeCompanyFetch } from "../security";
 import type { RawEvidence } from "../types";
@@ -21,6 +22,7 @@ export type SerpApiSearchLead = {
   snippet: string | null;
   topics: SerpApiSearchTopic[];
   position: number;
+  discovery?: Omit<DiscoveryLead, "snippet">;
 };
 
 type SerpApiFetchedPage = {
@@ -28,10 +30,15 @@ type SerpApiFetchedPage = {
   title: string;
   topics: SerpApiSearchTopic[];
   extracted: ExtractedCompanyPage;
+  fundingText?: string;
   publicationDate: string | null;
+  discovery?: Omit<DiscoveryLead, "snippet">;
 };
 
-export type SerpApiWebSearchProviderOptions = {
+export type SerpApiWebSearchProviderOptions = Omit<SearchOptions, "session" | "fetchImpl"> & {
+  searchSession?: SearchOptions["session"];
+  searchFetchImpl?: typeof fetch;
+  queries?: SerpApiSearchQuery[];
   apiKey?: string | null;
   fetchImpl?: typeof fetch;
   resolveHost?: Parameters<typeof safeCompanyFetch>[1]["resolveHost"];
@@ -42,7 +49,7 @@ export type SerpApiWebSearchProviderOptions = {
 };
 
 class SerpApiProviderError extends Error {
-  constructor(readonly code: "invalidConfiguration" | "rateLimited" | "timeout" | "malformedResponse" | "responseTooLarge" | "upstreamUnavailable") {
+  constructor(readonly code: "quotaExhausted" | "invalidConfiguration" | "rateLimited" | "timeout" | "malformedResponse" | "responseTooLarge" | "upstreamUnavailable") {
     super(code);
     this.name = "SerpApiProviderError";
   }
@@ -86,7 +93,9 @@ export function buildSerpApiQueries(context: PrivateProviderContext) {
 
 function canonicalResultUrl(value: string) {
   try {
-    const url = new URL(value);
+    const safe = safeDiscoveryUrl(value);
+    if (!safe) return null;
+    const url = new URL(safe);
     if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) return null;
     if ((url.protocol === "https:" && url.port && url.port !== "443") ||
         (url.protocol === "http:" && url.port && url.port !== "80")) return null;
@@ -95,7 +104,7 @@ function canonicalResultUrl(value: string) {
     if (/\.(?:pdf|docx?|xlsx?|pptx?|zip|jpe?g|png|gif|webp)$/i.test(url.pathname)) return null;
     url.hash = "";
     for (const key of [...url.searchParams.keys()]) {
-      if (/^(?:utm_.+|gclid|fbclid|ref|source)$/i.test(key)) url.searchParams.delete(key);
+      if (/^(?:utm_.+|gclid|fbclid)$/i.test(key)) url.searchParams.delete(key);
     }
     if (url.pathname !== "/") url.pathname = url.pathname.replace(/\/+$/, "");
     return url.toString();
@@ -144,27 +153,9 @@ export function deduplicateSerpApiLeads(leads: SerpApiSearchLead[]) {
   return [...output.values()];
 }
 
-function responseError(status: number) {
-  if (status === 401 || status === 403) return new SerpApiProviderError("invalidConfiguration");
-  if (status === 429) return new SerpApiProviderError("rateLimited");
-  return new SerpApiProviderError("upstreamUnavailable");
-}
-
-async function parseSearchResponse(response: Response) {
-  if (!response.ok) throw responseError(response.status);
-  const text = await response.text();
-  if (new TextEncoder().encode(text).byteLength > 1_000_000) throw new SerpApiProviderError("responseTooLarge");
-  let payload: unknown;
-  try { payload = JSON.parse(text); } catch { throw new SerpApiProviderError("malformedResponse"); }
-  if (payload && typeof payload === "object" && typeof (payload as { error?: unknown }).error === "string") {
-    throw new SerpApiProviderError("upstreamUnavailable");
-  }
-  return payload;
-}
-
-function publicationDate(html: string, extracted: ExtractedCompanyPage) {
+export function publicationDate(html: string, extracted: ExtractedCompanyPage) {
   const candidates = [
-    ...extracted.jsonLd.flatMap((item) => [item.datePublished, item.dateModified]),
+    ...extracted.jsonLd.flatMap((item) => [item.datePublished]),
     ...[...html.matchAll(/<meta\b[^>]*(?:property|name)=["'](?:article:published_time|date|datePublished)["'][^>]*content=["']([^"']+)["'][^>]*>/gi)].map((match) => match[1]),
   ];
   for (const value of candidates) {
@@ -188,63 +179,53 @@ function entityMatch(page: SerpApiFetchedPage, context: PrivateProviderContext) 
   if (officialDomain) return { confidence: "High" as const, signals: ["user-confirmed company domain"] };
   const name = normalizeEntityName(context.identityGraph.canonicalName);
   const text = normalizeEntityName([page.extracted.title, page.extracted.description, page.extracted.bodyText].filter(Boolean).join(" "));
-  return text.includes(name)
-    ? { confidence: "Medium" as const, signals: ["original page names selected company"] }
+  const domainLinked = page.extracted.links.some(link => {
+    try { return sameCompanyDomain(new URL(link, page.url).hostname, context.identityGraph.domains); } catch { return false; }
+  }) || context.identityGraph.domains.some(domain => page.extracted.bodyText.toLowerCase().includes(domain.toLowerCase()));
+  return text.includes(name) && domainLinked
+    ? { confidence: "Medium" as const, signals: ["original page names selected company and links its confirmed domain"] }
     : { confidence: "Low" as const, signals: ["search lead lacked a strong original-page entity match"] };
-}
-
-function statusPriority(statuses: string[]) {
-  if (statuses.includes("rateLimited")) return "rateLimited" as const;
-  if (statuses.includes("invalidConfiguration")) return "authenticationFailed" as const;
-  if (statuses.includes("timeout")) return "timeout" as const;
-  if (statuses.includes("malformedResponse") || statuses.includes("responseTooLarge")) return "parseFailed" as const;
-  return "upstreamUnavailable" as const;
 }
 
 export function createSerpApiWebSearchProvider(
   options: SerpApiWebSearchProviderOptions = {},
 ): PrivateCompanyProvider {
-  const apiKey = options.apiKey === undefined ? process.env.SERPAPI_API_KEY?.trim() || null : options.apiKey?.trim() || null;
+
   const fetchImpl = options.fetchImpl ?? fetch;
   const maxSearches = Math.max(1, Math.min(options.maxSearches ?? 6, 6));
   const resultsPerSearch = Math.max(1, Math.min(options.resultsPerSearch ?? 4, 6));
   const maxFetchedUrls = Math.max(1, Math.min(options.maxFetchedUrls ?? 10, 12));
   const timeoutMs = Math.max(2_000, Math.min(options.timeoutMs ?? 8_000, 12_000));
 
+  const router = createSharedSearch({ ...options, session: options.searchSession, fetchImpl: options.searchFetchImpl ?? fetchImpl, maxAttempts: options.maxAttempts ?? maxSearches, timeoutMs });
   return {
+    getSearchDiagnostics: () => router.diagnostics.length ? router.diagnostics.map(result => ({ reason: result.reason, attempts: result.attempts, cacheHit: result.cacheHit })) : router.isConfigured() ? [] : [{ reason: "missingConfiguration", attempts: ["serpapi", "tavily"].map(provider => ({ provider: provider as "serpapi" | "tavily", attempted: false, reason: "missingConfiguration" as const })) }],
     providerId: "serpApiWebSearch",
-    providerName: "SerpApi original-source web research",
+    providerName: "Original-source web research",
     sourceTier: 3,
     providerCategory: "independentVerification",
-    isConfigured: () => Boolean(apiKey),
+    isConfigured: () => router.isConfigured(),
     supports: (context) => context.input.workflowMode === "quick" &&
-      ["userSelected", "autoSelected"].includes(context.identityGraph.targetSelectionStatus),
-    validateConfiguration: () => apiKey ? "success" : "invalidConfiguration",
+      context.identityGraph.targetSelectionStatus === "userSelected",
+    validateConfiguration: () => router.isConfigured() ? "success" : "invalidConfiguration",
     search: async (context): Promise<ProviderSearchResult> => {
-      if (!apiKey) return { status: "invalidConfiguration", records: [], sanitizedIssue: "Required server configuration is missing" };
-      const queries = buildSerpApiQueries(context).slice(0, maxSearches);
-      const attempts = await Promise.all(queries.map(async (item) => {
-        try {
-          const url = new URL("https://serpapi.com/search.json");
-          url.search = new URLSearchParams({ engine: "google", q: item.query, api_key: apiKey, num: String(resultsPerSearch), output: "json", hl: "en", safe: "active" }).toString();
-          const response = await fetchImpl(url, { method: "GET", headers: { Accept: "application/json" }, cache: "no-store", signal: AbortSignal.timeout(timeoutMs) });
-          const payload = await parseSearchResponse(response);
-          return { status: "success" as const, leads: normalizeSerpApiOrganicResults(payload, item.topic, resultsPerSearch) };
-        } catch (error) {
-          if (error instanceof SerpApiProviderError) return { status: error.code, leads: [] };
-          if (error instanceof Error && error.name === "AbortError") return { status: "timeout", leads: [] };
-          return { status: "upstreamUnavailable", leads: [] };
-        }
-      }));
-      const leads = deduplicateSerpApiLeads(attempts.flatMap((item) => item.leads)).slice(0, maxFetchedUrls);
-      const failures = attempts.filter((item) => item.status !== "success").map((item) => item.status);
-      if (!attempts.some((item) => item.status === "success")) {
-        return { status: statusPriority(failures), records: [], sanitizedIssue: "Web search provider did not return usable discovery leads" };
+      const queries = (options.queries ?? buildSerpApiQueries(context)).slice(0, maxSearches);
+      // Sequential dispatch allows a confirmed auth/quota failure to stop later paid attempts.
+      const attempts: Array<{reason: import("../search/sharedSearch").SearchReason; leads: SerpApiSearchLead[]}> = [];
+      for (const item of queries) {
+        const result = await router.search({ query: item.query, limit: resultsPerSearch });
+        attempts.push({ ...result, leads: result.leads.map((lead) => {
+          const discovery = { url: lead.url, title: lead.title, position: lead.position, searchProvider: lead.searchProvider, searchRetrievedAt: lead.searchRetrievedAt, providerRequestId: lead.providerRequestId, relevanceScore: lead.relevanceScore, publicationDateHint: lead.publicationDateHint };
+          return { ...lead, topics: [item.topic], discovery };
+        }) });
       }
+      const balanced = Array.from({length:resultsPerSearch},(_,position)=>attempts.flatMap(attempt=>attempt.leads[position] ? [attempt.leads[position]] : [])).flat();
+      const leads = deduplicateSerpApiLeads(balanced).slice(0, maxFetchedUrls);
+      const failures = attempts.filter((item) => !["results", "empty", "filteredOut"].includes(item.reason));
       return {
-        status: leads.length ? (failures.length ? "partial" : "success") : "noData",
+        status: leads.length ? (failures.length ? "partial" : "success") : failures.length ? searchProviderStatus(failures[0].reason) : "noData",
         records: leads,
-        sanitizedIssue: leads.length ? null : "Web search returned no supported original-page URLs",
+        sanitizedIssue: failures.length ? `Search limitation: ${failures.map(item => item.reason).join(", ")}` : leads.length ? null : "Web search returned no supported original-page URLs",
       };
     },
     fetchDetails: async (records) => {
@@ -260,7 +241,7 @@ export function createSerpApiWebSearchProvider(
             maxBytes: 1_500_000,
           });
           const extracted = extractCompanyPage(response.text);
-          return { url: response.url, title: extracted.title || lead.title, topics: lead.topics, extracted, publicationDate: publicationDate(response.text, extracted) };
+          return { url: response.url, title: extracted.title || lead.title, topics: lead.topics, discovery: lead.discovery, extracted, fundingText: extractFundingParagraphs(response.text), publicationDate: publicationDate(response.text, extracted) };
         } catch {
           return null;
         }
@@ -275,6 +256,19 @@ export function createSerpApiWebSearchProvider(
       const organizationNames = extracted.organizationNames.filter((name) =>
         normalizeEntityName(name) === normalizeEntityName(context.identityGraph.canonicalName));
       const overviewTopic = page.topics.includes("overviewProducts");
+      const leadershipTopic = page.topics.includes("leadership") && !/\/(?:products?|customers?|case-studies|solutions?)\b/i.test(new URL(page.url).pathname);
+      const canonicalName = normalizeEntityName(context.identityGraph.canonicalName);
+      const factCandidates = extracted.factCandidates.filter((candidate) => {
+        const topicMatches = ((candidate.factType === "product" || candidate.factType === "service") && overviewTopic) ||
+          (candidate.factType === "executiveRole" && leadershipTopic);
+        if (!topicMatches) return false;
+        return companyReported || normalizeEntityName(candidate.excerpt).includes(canonicalName);
+      });
+      const products = factCandidates.filter((candidate) => candidate.factType === "product").map((candidate) => candidate.value);
+      const services = factCandidates.filter((candidate) => candidate.factType === "service").map((candidate) => candidate.value);
+      const executives = factCandidates
+        .filter((candidate) => candidate.factType === "executiveRole" && candidate.temporalStatus === "current" && candidate.personName)
+        .map((candidate) => candidate.personName!);
       return {
         evidenceId: `serpapi-${context.researchId}-${index + 1}`,
         researchId: context.researchId,
@@ -289,13 +283,16 @@ export function createSerpApiWebSearchProvider(
         retrievedAt: context.now().toISOString(),
         rawText,
         structuredData: {
+          searchDiscovery: page.discovery ?? null,
+          fundingText: page.fundingText ?? "",
           organizationName: organizationNames[0] ?? (companyReported ? context.identityGraph.canonicalName : null),
           organizationNames,
           description: overviewTopic ? extracted.description : null,
-          products: overviewTopic ? extracted.products : [],
-          services: overviewTopic ? extracted.services : [],
-          founders: page.topics.includes("leadership") ? extracted.founders : [],
-          executives: page.topics.includes("leadership") ? extracted.executives : [],
+          products,
+          services,
+          founders: leadershipTopic ? extracted.founders : [],
+          executives,
+          factCandidates,
           links: page.topics.includes("hiring") ? extracted.links : [],
           sourceSummary: extracted.description,
           searchTopics: page.topics,
@@ -309,7 +306,7 @@ export function createSerpApiWebSearchProvider(
         independentlyPublished: !companyReported,
         contentHash: createHash("sha256").update(`${page.url}\n${rawText}`).digest("hex"),
         limitations: [
-          "SerpApi was used only to locate this original page; the search-result snippet was not retained as evidence.",
+          `${page.discovery?.searchProvider ?? "Web search"} was used only to locate this original page; the search-result snippet was not retained as evidence.`,
           companyReported
             ? "Statements on the selected company's domain remain Company Reported unless independently corroborated."
             : "Independent publication does not make this source an official company or government record.",

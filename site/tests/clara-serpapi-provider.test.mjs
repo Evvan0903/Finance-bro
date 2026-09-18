@@ -19,10 +19,12 @@ const reportUrl = await moduleUrl("../app/lib/private-diligence/reports/quickRep
 const htmlUrl = await moduleUrl("../app/lib/private-diligence/extraction/htmlExtractor.ts");
 const matcherUrl = await moduleUrl("../app/lib/private-diligence/entity-resolution/entityMatcher.ts");
 const securityUrl = await moduleUrl("../app/lib/private-diligence/security.ts");
+const sharedSearchUrl = await moduleUrl("../app/lib/private-diligence/search/sharedSearch.ts");
 const providerUrl = await moduleUrl("../app/lib/private-diligence/providers/serpApiWebSearchProvider.ts", {
   '"../extraction/htmlExtractor"': JSON.stringify(htmlUrl),
   '"../entity-resolution/entityMatcher"': JSON.stringify(matcherUrl),
   '"../security"': JSON.stringify(securityUrl),
+  '"../search/sharedSearch"': JSON.stringify(sharedSearchUrl),
 });
 const providerTypesUrl = await moduleUrl("../app/lib/private-diligence/providers/providerTypes.ts");
 const plannerUrl = await moduleUrl("../app/lib/private-diligence/planning/quickResearchPlanner.ts");
@@ -75,7 +77,7 @@ test("normalizes bounded organic results and rejects malformed responses", () =>
 
 test("reports a missing key without attempting a request", async () => {
   let calls = 0;
-  const provider = createSerpApiWebSearchProvider({ apiKey: null, fetchImpl: async () => { calls += 1; return new Response(); } });
+  const provider = createSerpApiWebSearchProvider({ apiKey: null, tavilyApiKey: null, fetchImpl: async () => { calls += 1; return new Response(); } });
   assert.equal(provider.isConfigured(), false);
   assert.equal(provider.validateConfiguration(), "invalidConfiguration");
   const result = await executePrivateProvider(provider, context());
@@ -84,11 +86,11 @@ test("reports a missing key without attempting a request", async () => {
 });
 
 test("contains API failures and malformed responses without throwing", async () => {
-  const failed = createSerpApiWebSearchProvider({ apiKey: "test-only", fetchImpl: async () => new Response("upstream", { status: 500 }) });
+  const failed = createSerpApiWebSearchProvider({ apiKey: "test-only", tavilyApiKey: null, fetchImpl: async () => new Response("upstream", { status: 500 }) });
   assert.equal((await executePrivateProvider(failed, context())).status, "upstreamUnavailable");
 
   const malformed = createSerpApiWebSearchProvider({
-    apiKey: "test-only",
+    apiKey: "test-only", tavilyApiKey: null,
     fetchImpl: async () => new Response(JSON.stringify({ organic_results: "not-an-array" }), { status: 200, headers: { "content-type": "application/json" } }),
   });
   assert.equal((await executePrivateProvider(malformed, context())).status, "parseFailed");
@@ -125,14 +127,14 @@ test("selects SerpApi research only after the target is confirmed", () => {
 test("drops SerpApi snippets before original-page evidence normalization", async () => {
   const snippet = "UNVERIFIED_SNIPPET_MUST_NOT_ENTER_EVIDENCE";
   const provider = createSerpApiWebSearchProvider({
-    apiKey: "test-only", maxSearches: 1, maxFetchedUrls: 1,
+    apiKey: "test-only", tavilyApiKey: null, maxSearches: 1, maxFetchedUrls: 1,
     resolveHost: async () => [{ address: "93.184.216.34", family: 4 }],
     fetchImpl: async (url) => {
       const target = new URL(String(url));
       if (target.hostname === "serpapi.com") {
         return new Response(JSON.stringify({ organic_results: [{ position: 1, title: "Abaka AI profile", link: "https://news.example/abaka", snippet }] }), { status: 200, headers: { "content-type": "application/json" } });
       }
-      return new Response('<!doctype html><title>Abaka AI profile</title><meta name="description" content="Original publisher profile of Abaka AI"><h1>Abaka AI</h1><p>Abaka AI provides data services.</p>', { status: 200, headers: { "content-type": "text/html" } });
+      return new Response('<!doctype html><title>Abaka AI profile</title><meta name="description" content="Original publisher profile of Abaka AI"><main><h1>Abaka AI</h1><p>Abaka AI provides data services.</p><a href="https://www.abaka.ai">Company website</a><section><h2>Other companies</h2><p>Tamnoon offers a managed cloud security platform.</p></section></main>', { status: 200, headers: { "content-type": "text/html" } });
     },
   });
   const searched = await provider.search(context());
@@ -145,6 +147,9 @@ test("drops SerpApi snippets before original-page evidence normalization", async
   assert.equal(evidence[0].entityMatchConfidence, "Medium");
   assert.doesNotMatch(JSON.stringify(evidence), new RegExp(snippet));
   assert.match(evidence[0].rawText, /Original publisher profile/);
+  assert.deepEqual(evidence[0].structuredData.services, ["data services"]);
+  assert.deepEqual(evidence[0].structuredData.products, []);
+  assert.doesNotMatch(JSON.stringify(evidence[0].structuredData.factCandidates), /Tamnoon|cloud security platform/i);
   assert.ok(evidence[0].limitations.some((item) => /snippet was not retained/i.test(item)));
 });
 
@@ -159,4 +164,11 @@ test("Quick report still builds when SerpApi is unavailable", () => {
   assert.equal(report.reportVersion, "clara-quick-v1");
   assert.equal(report.references.length, 0);
   assert.ok(report.sections.length > 0);
+});
+
+ test("name-only original pages stay discovery leads, including same-name unrelated people", async () => {
+  const provider = createSerpApiWebSearchProvider({apiKey:"test-only",tavilyApiKey:null,maxSearches:1,maxFetchedUrls:1,resolveHost:async()=>[{address:"93.184.216.34",family:4}],fetchImpl:async(url)=>String(url).includes("serpapi.com")?new Response(JSON.stringify({organic_results:[{title:"Abaka AI profile",link:"https://news.example/unrelated"}]}),{headers:{"content-type":"application/json"}}):new Response('<html><title>Abaka AI namesake</title><main>Abaka AI appears in this unrelated directory without a company-domain reference.</main></html>',{headers:{"content-type":"text/html"}})});
+  const search=await provider.search(context());
+  const evidence=await provider.normalize(await provider.fetchDetails(search.records,context()),context());
+  assert.equal(evidence[0].entityMatchConfidence,"Low");
 });

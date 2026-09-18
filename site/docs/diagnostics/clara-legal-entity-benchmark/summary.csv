@@ -1,0 +1,7 @@
+company,before_first_legal_name,after_sec_query_names,legal_status,before_cik_count,after_cik_count,verified_before,verified_after,false_positive_legal_selections_after
+Glean,"Glean Technologies, Inc","Glean Technologies, Inc.",selected,0,2,0,0,0
+Mercury,"Mercury Advisory, LLC","Mercury Technologies, Inc.",selected,0,2,0,0,0
+Ramp,,,unresolved,0,0,0,0,0
+Rippling,"Rippling Lending, Inc",,unresolved,0,0,0,0,0
+Vanta,,Vanta Inc.,selected,0,2,0,0,0
+Cribl,,"Cribl, Inc.",selected,0,2,0,0,0

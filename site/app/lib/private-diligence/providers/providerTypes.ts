@@ -24,6 +24,8 @@ export type ProviderSearchResult = {
 };
 
 export interface PrivateCompanyProvider {
+  getSearchDiagnostics?(): Omit<import("../search/sharedSearch").SearchOutcome, "leads">[];
+  getIssuerAssociations?(): import("../entity-resolution/secIssuerResolution").SecIssuerAssociation[];
   providerId: string;
   providerName: string;
   sourceTier: SourceTier;
@@ -75,13 +77,27 @@ export function classifyPrivateProviderError(error: unknown): ProviderStatus {
     : "";
   if (code === "rateLimited" || code === "SEC_RATE_LIMITED") return "rateLimited";
   if (code === "timeout" || code === "SEC_TIMEOUT") return "timeout";
-  if (code === "invalidConfiguration" || code === "SEC_FORBIDDEN") return "authenticationFailed";
+  if (code === "SEC_FORBIDDEN") return "upstreamUnavailable";
+  if (code === "invalidConfiguration") return "authenticationFailed";
   if (code === "malformedResponse" || code === "responseTooLarge" || code === "unsupportedContentType") return "parseFailed";
   if (code === "invalidRequest" || code === "invalidUrl" || code === "blockedAddress" || code === "redirectRejected") return "invalidRequest";
   return "upstreamUnavailable";
 }
 
 export async function executePrivateProvider(
+  provider: PrivateCompanyProvider,
+  context: PrivateProviderContext,
+): Promise<PrivateProviderResult> {
+  const result = await executeProvider(provider, context);
+  if (provider.getIssuerAssociations) result.secIssuerAssociations = provider.getIssuerAssociations();
+  if (provider.getSearchDiagnostics) {
+    result.searchDiagnostics = provider.getSearchDiagnostics();
+    result.diagnostic.requestAttempted = result.searchDiagnostics.some(query => query.attempts.some(attempt => attempt.attempted));
+  }
+  return result;
+}
+
+async function executeProvider(
   provider: PrivateCompanyProvider,
   context: PrivateProviderContext,
 ): Promise<PrivateProviderResult> {
@@ -104,7 +120,7 @@ export async function executePrivateProvider(
     const evidence = await provider.normalize(details, context);
     const status: ProviderStatus = evidence.length
       ? search.status
-      : "noData";
+      : search.records.length && !details.length ? "upstreamUnavailable" : "noData";
     return {
       providerId: provider.providerId,
       providerName: provider.providerName,
@@ -124,12 +140,16 @@ export async function executePrivateProvider(
         entityMatches: evidence.filter((item) => item.entityMatchConfidence !== "Low").length,
         rejectedWeakMatches: search.rejectedWeakMatches ?? 0,
         rateLimitState: "clear",
-        sanitizedIssue: null,
+        sanitizedIssue: status === "upstreamUnavailable" ? "Discovered original sources could not be retrieved" : null,
         lastSuccessfulRetrievalTime: evidence.length ? context.now().toISOString() : null,
       },
     };
   } catch (error) {
     const status = classifyPrivateProviderError(error);
-    return emptyProviderResult(provider, status, context, "Provider request did not return usable public evidence");
+    const code = error && typeof error === "object" && "code" in error ? String(error.code) : "";
+    const issue = code === "SEC_FORBIDDEN" ? "SEC public-data access rejected with HTTP 403; this is an access restriction, not an SEC API-key failure"
+      : code === "SEC_ISSUER_DISCOVERY_UNAVAILABLE" ? "SEC issuer candidate discovery failed before SEC submissions retrieval"
+      : "Provider request did not return usable public evidence";
+    return emptyProviderResult(provider, status, context, issue);
   }
 }

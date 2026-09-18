@@ -1,4 +1,4 @@
-import type { EntityCandidate } from "../types";
+import type { EntityCandidate, PrivateDiligenceResearchRecord } from "../types";
 
 export type ClaraConfirmationPayload = {
   researchRequestId: string;
@@ -20,6 +20,16 @@ export function selectCandidateId(candidates: EntityCandidate[], candidateId: st
 
 export function candidateBelongsToResearch(candidate: EntityCandidate, researchId: string) {
   return Boolean(researchId.trim()) && candidate.researchRequestId === researchId;
+}
+
+export function hasLockedConfirmedTarget(record: Pick<PrivateDiligenceResearchRecord, "confirmedCandidate" | "identityGraph">) {
+  const candidate = record.confirmedCandidate;
+  const graph = record.identityGraph;
+  if (!candidate || !graph || graph.targetSelectionStatus !== "userSelected") return false;
+  return graph.selectedCandidateId === candidate.candidateId &&
+    graph.confirmedDisplayName === candidate.displayName &&
+    graph.canonicalName === candidate.displayName &&
+    (!candidate.domain || graph.domains.includes(candidate.domain));
 }
 
 export function buildConfirmationPayload(

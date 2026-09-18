@@ -19,6 +19,23 @@ export async function POST(request: Request) {
     if (!record || !candidate || !explicitUserConfirmation) {
       return NextResponse.json({ code: "TARGET_CANDIDATE_NOT_FOUND", message: "The selected candidate does not belong to this research request" }, { status: 404 });
     }
+    if (record.confirmedCandidate || record.identityGraph) {
+      const sameTarget = record.confirmedCandidate?.candidateId === candidateId &&
+        record.identityGraph?.selectedCandidateId === candidateId;
+      if (sameTarget && record.identityGraph) {
+        return NextResponse.json({
+          researchRequestId: researchId,
+          entity: record.identityGraph,
+          targetSelectionStatus: record.identityGraph.targetSelectionStatus,
+          identityVerificationStatus: record.identityGraph.identityVerificationStatus,
+          alreadyConfirmed: true,
+        });
+      }
+      return NextResponse.json({
+        code: "TARGET_ALREADY_CONFIRMED",
+        message: "This research request is already locked to a different company; start a new company search to change the target",
+      }, { status: 409 });
+    }
     const ownershipMatches = record.researchId === researchId && candidateBelongsToResearch(candidate, researchId);
     if (!ownershipMatches) {
       if (process.env.NODE_ENV !== "production") console.info(JSON.stringify({ event: "clara_target_ownership_diagnostic", incomingResearchRequestId: researchId, incomingCandidateId: candidateId, loadedResearchRequestId: record.researchId, loadedCandidateId: candidate.candidateId, candidateResearchRequestId: candidate.researchRequestId, ownershipMatches: false }));
@@ -31,8 +48,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ code: "TARGET_SELECTION_REJECTED", message: "This candidate cannot be selected because its discovery provenance is invalid or it was classified as unrelated" }, { status: 409 });
     }
     const confirmed = { ...candidate, resolutionStatus: "userConfirmed" as const, targetSelectionStatus: "userSelected" as const };
-    const graph = buildIdentityGraph(confirmed, record.input);
-    await privateDiligenceStore.persistSelection(researchId, confirmed, {
+    const confirmedAt = new Date().toISOString();
+    const graph = buildIdentityGraph(confirmed, record.input, { confirmedAt });
+    await privateDiligenceStore.persistSelection(researchId, confirmed, confirmedAt, {
       confirmedCandidate: confirmed,
       identityGraph: graph,
       stage: "providerPlanning",

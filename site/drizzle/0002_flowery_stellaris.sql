@@ -1,0 +1,2 @@
+CREATE INDEX `hiring_job_postings_company_idx` ON `hiring_job_postings` (`company_id`,`retrieved_at`);--> statement-breakpoint
+CREATE INDEX `hiring_research_runs_request_idx` ON `hiring_research_runs` (`research_request_id`,`retrieved_at`);

@@ -48,6 +48,43 @@ test("automatically selected Quick candidates wait for explicit confirmation bef
   assert.match(workflow, /if \(mode === "quick"\) await runResearch\(\)/);
 });
 
+test("Quick and Deep discovery always require explicit confirmation and research endpoints enforce the locked target", async () => {
+  const [candidateRoute, confirmRoute, planRoute, runRoute, engine] = await Promise.all([
+    readFile(new URL("../app/api/private-diligence/candidates/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/private-diligence/confirm-entity/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/private-diligence/plan/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/private-diligence/run/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/private-diligence/engine.ts", import.meta.url), "utf8"),
+  ]);
+  assert.doesNotMatch(candidateRoute, /input\.workflowMode !== "quick"/);
+  assert.match(candidateRoute, /confirmedCandidate: null/);
+  assert.match(candidateRoute, /requiresUserConfirmation: plausible\.length > 0/);
+  assert.match(confirmRoute, /TARGET_ALREADY_CONFIRMED/);
+  assert.match(confirmRoute, /alreadyConfirmed: true/);
+  assert.match(confirmRoute, /candidateBelongsToResearch\(candidate, researchId\)/);
+  assert.match(planRoute, /hasLockedConfirmedTarget\(record\)/);
+  assert.match(runRoute, /hasLockedConfirmedTarget\(record\)/);
+  assert.match(runRoute, /RESEARCH_ALREADY_RUNNING/);
+  assert.match(runRoute, /alreadyComplete: true/);
+  assert.match(engine, /graph\.targetSelectionStatus !== "userSelected"/);
+  assert.doesNotMatch(engine, /graph\.targetSelectionStatus !== "autoSelected"/);
+});
+
+test("candidate cards expose supported identity context and a website-led retry path", async () => {
+  const [workflow, copy] = await Promise.all([
+    readFile(new URL("../app/ClaraPrivateDiligenceWorkflow.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/private-diligence/copy.ts", import.meta.url), "utf8"),
+  ]);
+  assert.match(workflow, /candidate\.description/);
+  assert.match(workflow, /candidate\.identitySourceUrl/);
+  assert.match(workflow, /requestDifferentCompany/);
+  assert.match(workflow, /activeTarget\.displayName/);
+  assert.match(workflow, /activeTarget\.domain/);
+  assert.match(copy, /Confirm and research this company/);
+  assert.match(copy, /Not the company I mean/);
+  assert.match(copy, /提供正确官网并重新搜索/);
+});
+
 test("exposes a compact bilingual quick workflow and preserves Clara's deep route", async () => {
   const workflow = await readFile(new URL("../app/ClaraPrivateDiligenceWorkflow.tsx", import.meta.url), "utf8");
   const quickRoute = await readFile(new URL("../app/workflows/company-intelligence/page.tsx", import.meta.url), "utf8");
@@ -90,7 +127,7 @@ test("quick report remains evidence-backed and does not make investment claims",
   assert.doesNotMatch(provider, /webDiscovery/);
 });
 
-test("DeepSeek V4 Pro is isolated to structured medium-tier candidate discovery", async () => {
+test("DeepSeek V4 Pro keeps discovery and agent planning as separate structured medium-tier tasks", async () => {
   const originalFetch = globalThis.fetch;
   const originalKey = process.env.DEEPSEEK_API_KEY;
   process.env.DEEPSEEK_API_KEY = "test-only-key";
@@ -106,6 +143,14 @@ test("DeepSeek V4 Pro is isolated to structured medium-tier candidate discovery"
     assert.equal(requestBody.model, "deepseek-v4-pro");
     assert.deepEqual(requestBody.response_format, { type: "json_object" });
     assert.match(requestBody.messages[0].content, /exclusively from the supplied grounded public results/);
+    globalThis.fetch = async (_url, init) => {
+      requestBody = JSON.parse(init.body);
+      return new Response(JSON.stringify({ choices: [{ message: { content: '{"action":"stop","reasonCode":"blocked"}' } }] }), { status: 200, headers: { "content-type": "application/json" } });
+    };
+    const planner = await router.runClaraModel({ tier: "medium", task: "plan_next_research_action", input: { coverage: { readyToComplete: false } }, schema: (value) => value });
+    assert.deepEqual(planner, { action: "stop", reasonCode: "blocked" });
+    assert.match(requestBody.messages[0].content, /Choose at most one next action/);
+    assert.doesNotMatch(requestBody.messages[0].content, /scratchpad fields[\s\S]*scratchpad/);
     await assert.rejects(() => router.runClaraModel({ tier: "strong", task: "generate_quick_brief", input: {}, schema: (value) => value }), /TASK_DISABLED/);
   } finally {
     globalThis.fetch = originalFetch;

@@ -110,7 +110,10 @@ test("language toggle is client-only and does not call research or SerpApi", asy
 test("calculates deterministic coverage without treating it as confidence", () => {
   const data = presentation.buildQuickReportVisualizations(report());
   assert.deepEqual(data.coverage.map((item) => item.id), ["overview", "productsServices", "leadership", "hiring", "customers", "partners", "recentActivity", "fundingAcquisitions"]);
-  assert.equal(data.coverage.every((item) => item.covered), true);
+  assert.deepEqual(Object.fromEntries(data.coverage.map((item) => [item.id, item.covered])), {
+    overview: true, productsServices: true, leadership: true, hiring: true,
+    customers: true, partners: true, recentActivity: false, fundingAcquisitions: false,
+  });
   assert.equal(data.coverage.find((item) => item.id === "customers").claimCount, 1);
   assert.equal(data.coverage.find((item) => item.id === "partners").claimCount, 1);
 });
@@ -132,13 +135,9 @@ test("aggregates only observed ATS roles and available job attributes", () => {
   assert.deepEqual(data.hiring.seniority, []);
 });
 
-test("orders dated timeline evidence first and keeps undated events undated", () => {
+test("does not create a timeline from topic tags and source summaries without event claims", () => {
   const data = presentation.buildQuickReportVisualizations(report());
-  assert.equal(data.timeline.length, 2);
-  assert.equal(data.timeline[0].evidenceId, "recent");
-  assert.equal(data.timeline[0].date, "2026-08-20");
-  assert.equal(data.timeline[1].evidenceId, "funding");
-  assert.equal(data.timeline[1].date, null);
+  assert.deepEqual(data.timeline, []);
 });
 
 test("returns useful empty visualization data without fabricated values", () => {
