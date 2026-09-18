@@ -28,6 +28,7 @@ export type ClaraPlannerContext = {
     status: ResearchState["status"];
     observations: ResearchState["observations"];
     activeGaps: ResearchStateGap[];
+    verification?: { verified: import('../verification/types').VerificationFinding[]; unverified: import('../verification/types').VerificationFinding[]; rejected: import('../verification/types').VerificationFinding[] };
   };
   coverage: CoverageAssessment;
   availableTools: PlannerToolDefinition[];

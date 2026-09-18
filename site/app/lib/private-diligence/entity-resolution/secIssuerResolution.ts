@@ -1,5 +1,6 @@
 import type { EntityIdentityGraph, RawEvidence } from "../types";
 import { extractFormD } from "../extraction/formDExtractor";
+import { verificationResult, type VerificationResult } from "../verification/types";
 
 export type SecAddress = { street1?: string; street2?: string; city?: string; stateOrCountry?: string; zipCode?: string };
 export type SecIssuerMetadata = {
@@ -14,6 +15,7 @@ export type IssuerIdentitySignal = {
   code: string; references: IssuerIdentityReference[];
 };
 export type SecIssuerAssociation = {
+  verification?: VerificationResult;
   cik: string; entityId: string; secIssuerName: string | null;
   decision: "verified" | "unresolved" | "rejected";
   reasonCodes: string[]; matchedSignals: IssuerIdentitySignal[]; conflictingSignals: IssuerIdentitySignal[];
@@ -40,7 +42,20 @@ function namePattern(name: string) {
   return name.match(/[a-z0-9]+/gi)?.map(escape).join("[\\s.,'’&-]*") ?? "(?!)";
 }
 
-/** Only already-retrieved issuer documents may be used before verification. Never fetch an unresolved issuer's filing. */
+/** Legacy decision is a compatibility alias; the shared result is the governance decision. */
+export function verifySecAssociation(association: SecIssuerAssociation): VerificationResult {
+  const matched = association.matchedSignals, conflicts = association.conflictingSignals;
+  const legal = matched.some(s => s.code === 'legal_name_match');
+  const corroborated = matched.some(s => ['official_domain_match', 'business_address_match', 'related_person_match', 'official_legal_entity_statement', 'historical_identity_consistent'].includes(s.code));
+  const rejected = association.decision === 'rejected' || association.downstreamError === 'filing_issuer_conflict' || conflicts.some(s => s.code === 'official_domain_conflict' || s.code === 'historical_legal_name_conflict' || s.code === 'legal_name_conflict' && !conflicts.some(c => c.code === 'affiliate_relationship_unresolved'));
+  const status = rejected ? 'rejected' : legal && corroborated && !conflicts.length ? 'verified' : 'unverified';
+  return verificationResult(status, association.evaluatedAt,
+    [...matched.map(s=>s.code), ...conflicts.map(s=>s.code), ...(status==='unverified'?['sec_issuer_association_unverified']:[]), ...(rejected?['entity_mismatch']:[])],
+    matched.flatMap(s=>s.references.map(r=>r.evidenceId)), status==='unverified' ? [...(!legal?['strong_legal_name_match']:[]), ...(!corroborated?['corroborating_identity_signal']:[]), ...(conflicts.length?['resolve_identity_conflict']:[])] : [],
+    conflicts.flatMap(s=>s.references.map(r=>r.evidenceId)));
+}
+
+/** Resolve association independently of whether a document is displayed provisionally. */
 export function resolveSecIssuer(payload: SecIssuerMetadata, graph: EntityIdentityGraph, options: {
   cik: string; now: string; identityEvidence?: RawEvidence[];
 }): SecIssuerAssociation {
@@ -147,8 +162,11 @@ export function resolveSecIssuer(payload: SecIssuerMetadata, graph: EntityIdenti
   const decision = conflictingSignals.length
     ? (conflictingSignals.some((s) => s.code === "legal_name_conflict") && !conflictingSignals.some((s) => s.code === "affiliate_relationship_unresolved") ? "rejected" : "unresolved")
     : legalMatch && corroborated ? "verified" : "unresolved";
-  return { cik, entityId: graph.entityId, secIssuerName: payload.name ?? null, decision,
+  const association: SecIssuerAssociation = { cik, entityId: graph.entityId, secIssuerName: payload.name ?? null, decision,
     reasonCodes: [...new Set([...matchedSignals.map((s) => s.code), ...conflictingSignals.map((s) => s.code),
       ...(conflictingSignals.length ? ["identity_conflict"] : []), ...(decision === "unresolved" ? ["insufficient_corroboration"] : []), ...(decision === "rejected" ? ["candidate_rejected"] : [])])],
     matchedSignals, conflictingSignals, evaluatedAt: options.now, downstreamStage: "issuer_resolution" };
+  association.verification = verifySecAssociation(association);
+  association.decision = association.verification.status === 'unverified' ? 'unresolved' : association.verification.status;
+  return association;
 }

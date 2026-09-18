@@ -5,7 +5,7 @@ export type SourceFact = {
 };
 export type AdaptiveResearch = {
   facts: SourceFact[];
-  coverage: { topic: string; status: 'company-reported' | 'independently-reported' | 'conflicting' | 'searched-not-found' | 'source-unavailable' | 'not-researched'; evidenceIds: string[] }[];
+  coverage: { topic: string; status: 'company-reported' | 'independently-reported' | 'partial' | 'conflicting' | 'searched-not-found' | 'source-unavailable' | 'not-researched'; evidenceIds: string[] }[];
   actions: { toolName: string; query: string; gap: string; status: string; evidenceIds: string[] }[];
   modelRuns: { task: string; status: string; acceptedFacts?: number }[];
   stopReason: string;

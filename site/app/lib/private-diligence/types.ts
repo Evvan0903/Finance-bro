@@ -150,6 +150,7 @@ export type ProviderStatus =
   | "manualVerificationRequired";
 
 export type RawEvidence = {
+  verification?: import('./verification/types').VerificationResult;
   evidenceId: string;
   researchId: string;
   entityId: string;
@@ -195,6 +196,7 @@ export type EvidenceFactCandidate = {
 };
 
 export type NormalizedEvidence = {
+  verification?: import('./verification/types').VerificationResult;
   researchFacts?: import("./research/types").SourceFact[];
   evidenceId: string;
   entityId: string;
@@ -230,6 +232,7 @@ export type ClaimStatus =
 export type ClaimMateriality = "Critical" | "High" | "Medium" | "Low";
 
 export type PrivateCompanyClaim = {
+  verification?: import('./verification/types').VerificationResult;
   researchFact?: import("./research/types").SourceFact;
   fundingEventId?: string;
   fundingField?: import("./funding/types").FundingField;
@@ -391,6 +394,7 @@ export type ReportSection = {
 };
 
 export type PrivateDiligenceReport = {
+  verification?: import('./verification/types').VerificationLedger;
   adaptiveResearch?: import("./research/types").AdaptiveResearch;
   fundingResearch?: import("./funding/types").FundingResearch;
   reportId: string;

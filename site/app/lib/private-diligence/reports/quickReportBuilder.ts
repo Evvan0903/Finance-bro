@@ -196,7 +196,7 @@ export function buildQuickCompanyIntelligenceReport(args: {
     ], locale, unique([...claims.filter((item) => ["description", "product", "service"].includes(item.claimType)).map((item) => item.claimId), ...claimIdsForEvidence(claims, businessEvidence)]), evidenceIds(businessEvidence)),
     quickSection(2, [
       ...(people.length ? [pair(`Publicly identified founders or executives: ${people.join(", ")}`, `公开识别的创始人或高管：${people.join("、")}`)] : []),
-      ...(currentRoleClaims.length ? [pair(`Current executive roles explicitly stated by reviewed sources: ${currentRoleClaims.map((claim) => String(claim.normalizedValue)).join(", ")}`, `已审查来源明确陈述的现任高管职位：${currentRoleClaims.map((claim) => String(claim.normalizedValue)).join("、")}`)] : []),
+      ...(currentRoleClaims.length ? [pair(`Executive roles stated by reviewed sources, as of their publication/retrieval dates: ${currentRoleClaims.map((claim) => String(claim.normalizedValue)).join(", ")}`, `已审查来源在其发布／检索时点陈述的高管职位：${currentRoleClaims.map((claim) => String(claim.normalizedValue)).join("、")}`)] : []),
       ...(formerRoleClaims.length ? [pair(`Historical executive roles explicitly stated by reviewed sources: ${formerRoleClaims.map((claim) => String(claim.normalizedValue)).join(", ")}`, `已审查来源明确陈述的历史高管职位：${formerRoleClaims.map((claim) => String(claim.normalizedValue)).join("、")}`)] : []),
       ...sourceParagraphs(supportedLeadershipEvidence, pair("leadership", "管理层")),
       pair("Ownership is unverified. A founder, CEO, or executive is not treated as an owner without separate supporting evidence", "所有权尚未验证。创始人、CEO 或高管在没有独立支持证据时不会被视为所有者"),
@@ -250,7 +250,7 @@ export function buildQuickCompanyIntelligenceReport(args: {
       if (topic === "people") paragraphs.push(pair("Roles are stated as of the source; ownership is not inferred.", "职位仅代表来源陈述；不据此推断所有权。"));
       sections[index] = quickSection(index, paragraphs, locale, sourced.map(c=>c.claimId), unique(sourced.flatMap(c=>c.evidenceIds)));
     }
-    const coverage = args.adaptiveResearch.coverage.map(c=>pair(`${c.topic}: ${c.status}`, `${({overview:"公司概览",products:"产品与服务",people:"主要人员",recent:"近期动态"} as Record<string,string>)[c.topic] ?? c.topic}：${({"company-reported":"公司自行披露","independently-reported":"独立来源报道","conflicting":"存在冲突","searched-not-found":"已搜索但未找到可接受证据","source-unavailable":"来源不可用","not-researched":"未完成该项研究"} as Record<string,string>)[c.status]}`));
+    const coverage = args.adaptiveResearch.coverage.map(c=>pair(`${c.topic}: ${c.status}`, `${({overview:"公司概览",products:"产品与服务",people:"主要人员",recent:"近期动态"} as Record<string,string>)[c.topic] ?? c.topic}：${({"partial":"部分支持／仍有待核验信息","company-reported":"公司自行披露","independently-reported":"独立来源报道","conflicting":"存在冲突","searched-not-found":"已搜索但未找到可接受证据","source-unavailable":"来源不可用","not-researched":"未完成该项研究"} as Record<string,string>)[c.status]}`));
     coverage.push(pair("Ownership, revenue, IP and litigation were not researched. Missing public evidence is not evidence of absence.", "未开展股权、收入、知识产权及诉讼专项研究。缺少公开证据不代表不存在。"));
     sections[8] = quickSection(8,coverage,locale,[],evidence.map(e=>e.evidenceId));
   }

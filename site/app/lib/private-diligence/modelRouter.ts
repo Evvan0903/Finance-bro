@@ -27,6 +27,7 @@ export async function runClaraModel<T>({ tier, task, input, schema, fetchImpl = 
     ? [
         "Return one JSON object only. Choose at most one next action from the supplied registered tools.",
         "Prioritize a missing required topic, then a relevant retryable gap, then an optional topic.",
+        "Verification decisions belong to the deterministic harness. Use unverified findings to propose additional corroboration; never promote, reject, or overwrite their status. Rejected candidates are audit context, not company facts.",
         "Never invent tools, companies, identifiers, URLs, evidence, completion, or confirmation.",
         "Use only the authoritative company input supplied in context. Do not include reasoning, thought, or scratchpad fields.",
         "If coverage is sufficient, stop with coverage_sufficient. If candidates await user selection, stop with requires_user_confirmation.",

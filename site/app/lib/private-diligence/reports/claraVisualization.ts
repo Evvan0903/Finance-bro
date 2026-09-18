@@ -29,7 +29,7 @@ export type CoverageDatum = {
 
 const unique = <T,>(values: T[]) => [...new Set(values)];
 const supported = new Set(['Verified', 'Corroborated', 'CompanyReported', 'PubliclyReported', 'Conflicting']);
-const eligible = (e: NormalizedEvidence, report: PrivateDiligenceReport) => e.entityId === report.entity.entityId && ['finalEvidence', 'supportingEvidence'].includes(e.verificationEligibility);
+const eligible = (e: NormalizedEvidence, report: PrivateDiligenceReport) => (!e.verification || e.verification.status==='verified') && e.entityId === report.entity.entityId && ['finalEvidence', 'supportingEvidence'].includes(e.verificationEligibility);
 export function visualSourceUrl(value: string): string | null {
   try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password ? url.href : null; } catch { return null; }
 }
@@ -47,7 +47,7 @@ function indexEvidence(report: PrivateDiligenceReport) {
 }
 function usableClaims(report: PrivateDiligenceReport) {
   const evidence = indexEvidence(report);
-  return report.claims.filter(c => c.entityId === report.entity.entityId && supported.has(c.status) && c.evidenceIds.some(id => evidence.has(id)));
+  return report.claims.filter(c => (!c.verification || c.verification.status==='verified') && c.entityId === report.entity.entityId && supported.has(c.status) && c.evidenceIds.some(id => evidence.has(id)));
 }
 function isConflicting(report: PrivateDiligenceReport, claims: PrivateCompanyClaim[], ids: string[], matchesType = (type: string) => claims.some(c => c.claimType === type)) {
   return claims.some(c => c.status === 'Conflicting' || c.conflictingEvidenceIds.length > 0) ||
@@ -59,8 +59,9 @@ export function buildFundingTimelineData(report: PrivateDiligenceReport): Fundin
   const evidence = indexEvidence(report), observations: FundingObservation[] = [];
   let omittedFields = 0;
   for (const event of report.fundingResearch?.events ?? []) {
-    if (event.entityId !== report.entity.entityId) continue;
+    if (event.entityId !== report.entity.entityId || event.verification && event.verification.status!=='verified') continue;
     const fields = Object.entries(event.fields).flatMap(([key, field]): VisualField[] => {
+      if(field.verification && field.verification.status!=='verified')return [];
       const page = evidence.get(field.evidenceId);
       if (!page || !field.excerpt || (typeof field.value === 'number' && !Number.isFinite(field.value))) { omittedFields++; return []; }
       return [{ key, value: field.value, source: source(page, field.excerpt, field.sourceUrl) }];
@@ -99,6 +100,7 @@ export function buildHiringVisualizationData(report: PrivateDiligenceReport): Hi
   const result = report.hiringIntelligence;
   const empty: HiringVisualizationData = { status: 'not-researched', count: null, retrievedDates: [], functions: [], locations: [], seniority: [], remote: [], sources: [], jobs: [], limitations: [] };
   if (!result) return empty;
+  if(result.verification && result.verification.status!=='verified') return {...empty,status:result.verification.status==='rejected'?'unavailable':'partial',limitations:result.verification.reasonCodes};
   if (result.companyId !== report.entity.entityId) return { ...empty, status: 'unavailable' };
   const success = ['success_with_jobs', 'success_zero_jobs'].includes(result.status);
   const partial = result.status === 'partial';
@@ -171,6 +173,8 @@ export function buildResearchCoverageData(report: PrivateDiligenceReport): Cover
       ids.push(...hiring.jobs.flatMap(j => j.evidenceIds)); limitations.push(...hiring.limitations);
     }
     if (gaps.length && status === 'supported') status = 'partial';
+    const domain = ({identity:'identity',leadership:'leadership',funding:'funding',hiring:'hiring',recent:'recent'} as Record<string,string>)[id];
+    if(report.verification?.findings.some(f=>f.domain===domain&&f.verification.status==='unverified') && !['source-unavailable','conflicting'].includes(status))status='partial';
     if (isConflicting(report, allSelected, ids, matches) || adaptive?.status === 'conflicting') status = 'conflicting';
     return { id, status, evidenceIds: unique(ids), claimIds: allSelected.map(c => c.claimId), gaps: unique(gaps), limitations: unique(limitations) };
   });

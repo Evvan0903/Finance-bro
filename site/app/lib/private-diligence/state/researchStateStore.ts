@@ -7,6 +7,10 @@ import type { ClaraToolResult } from "../tools/types";
 import { applyToolExecutionToResearchState, toolExecutionFromResult } from "./researchStateReducer";
 import { sanitizeToolInput } from "./sanitizeToolInput";
 import type { ConfirmedCompanyReference, ResearchState, ResearchStateStatus, ToolExecutionRecord } from "./types";
+import { evaluateVerification, type VerificationInput } from '../verification/governance';
+import { normalizeEvidenceRegistry } from '../evidence/evidenceRegistry';
+import { buildClaimRegistry } from '../evidence/claimRegistry';
+import { reconcileClaims } from '../evidence/claimReconciler';
 
 const databaseUrl = process.env.TURSO_DATABASE_URL ?? process.env.LIBSQL_DATABASE_URL ??
   (process.env.VERCEL ? null : `file:${process.env.CLARA_LOCAL_DATABASE_PATH ?? "clara.db"}`);
@@ -151,6 +155,15 @@ export const researchStateStore = {
     identityGraph?: EntityIdentityGraph | null;
   }) {
     await ensureSchema();
+    // Never trust a model/tool's proposed status. The server evaluates original evidence.
+    const data = args.result.data as Partial<VerificationInput> & {secIssuerAssociations?: VerificationInput['issuerAssociations']; jobs?: unknown[]; summary?: unknown} | undefined;
+    const graph = args.identityGraph;
+    const normalized=normalizeEvidenceRegistry(args.result.evidence);
+    const verification = graph ? evaluateVerification({graph,rawEvidence:args.result.evidence,
+      claims:reconcileClaims(buildClaimRegistry(args.result.evidence[0]?.researchId??graph.entityId,graph.entityId,normalized.map(e=>({...e,verificationEligibility:'supportingEvidence'}))),normalized).claims,
+      fundingResearch:data?.fundingResearch, issuerAssociations:data?.secIssuerAssociations??data?.issuerAssociations,
+      hiringIntelligence:data?.hiringIntelligence??(Array.isArray(data?.jobs)&&data?.summary?data as unknown as import('../hiring/types').HiringActivityResult:null),now:args.result.metadata.completedAt}) : undefined;
+    const evaluatedResult = {...args.result,metadata:{...args.result.metadata,verification}};
     const { db } = getConnection();
     return db.transaction(async (tx) => {
       const stateRow = await tx.select({ stateJson: claraResearchStates.stateJson }).from(claraResearchStates)
@@ -171,7 +184,7 @@ export const researchStateStore = {
       const execution = toolExecutionFromResult({
         id: crypto.randomUUID(), researchStateId: args.researchStateId, toolName: args.toolName,
         attempt: (latest[0]?.attempt ?? 0) + 1,
-        input: sanitizeToolInput(args.input), result: args.result,
+        input: sanitizeToolInput(args.input), result: evaluatedResult,
       });
       const next = applyToolExecutionToResearchState(state, execution);
       await tx.insert(claraToolExecutions).values({

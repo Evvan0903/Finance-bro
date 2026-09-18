@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { secClient, type SecClient } from "../../sec-client";
 import { extractFormD } from "../extraction/formDExtractor";
-import { resolveSecIssuer, type SecIssuerAssociation, type SecIssuerMetadata } from "../entity-resolution/secIssuerResolution";
+import { resolveSecIssuer, verifySecAssociation, type SecIssuerAssociation, type SecIssuerMetadata } from "../entity-resolution/secIssuerResolution";
 import type { RawEvidence } from "../types";
 import type { PrivateCompanyProvider } from "./providerTypes";
 
@@ -61,16 +61,18 @@ export function createSecFormDProvider(client: SecClient = secClient, options: {
   discoverCiks?: (context: import("./providerTypes").PrivateProviderContext) => Promise<string[]>;
   requireUserAgent?: boolean;
   identityEvidence?: RawEvidence[];
+  includeProvisional?: boolean;
 } = {}): PrivateCompanyProvider {
   const requireUserAgent = options.requireUserAgent ?? client === secClient;
   const associations: SecIssuerAssociation[] = [];
   const submissionsByCik = new Map<string, SubmissionPayload>();
   const retrievedIdentityEvidence: RawEvidence[] = [];
+  const permitted = (association?: SecIssuerAssociation) => Boolean(association && (association.decision === 'verified' || options.includeProvisional && verifySecAssociation(association).status === 'unverified' && association.matchedSignals.some(s=>s.code==='legal_name_match')));
   const failure = (association: SecIssuerAssociation, error: unknown) => {
     association.downstreamError = error && typeof error === "object" && "code" in error ? String(error.code) : "upstreamUnavailable";
   };
   return {
-    getIssuerAssociations: () => structuredClone(associations),
+    getIssuerAssociations: () => structuredClone(associations.map(a=>{const verification=verifySecAssociation(a);return {...a,decision:verification.status==='unverified'?'unresolved' as const:verification.status,verification};})),
     providerId: "secFormD",
     providerName: "SEC EDGAR Form D",
     sourceTier: 1,
@@ -95,18 +97,18 @@ export function createSecFormDProvider(client: SecClient = secClient, options: {
         submissionsByCik.set(cik, submissions);
         const association = resolveSecIssuer(submissions, context.identityGraph, { cik, now: context.now().toISOString(), identityEvidence: options.identityEvidence });
         Object.assign(pending, association);
-        if (association.decision !== "verified") continue;
-        verified = true;
+        if (!permitted(association)) continue;
+        verified ||= association.decision === 'verified';
         pending.downstreamStage = "filing_availability";
         records.push(...selectFormDFilings(submissions, cik).slice(0, 3));
       }
-      return { status: records.length ? "success" as const : "noData" as const, records, sanitizedIssue: verified ? "No Form D found in recent submissions; older history was not searched" : "issuer_unresolved" };
+      return { status: records.length ? verified ? "success" as const : "partial" as const : "noData" as const, records, sanitizedIssue: !verified ? "issuer_unresolved" : records.length ? null : "No Form D found in recent submissions; older history was not searched" };
     },
     fetchDetails: async (records, context) => {
       const output: FilingRecord[] = [];
       for (const record of records as Omit<FilingRecord, "document">[]) {
         const association = associations.find((a) => a.cik === record.cik.padStart(10, "0"));
-        if (association?.decision !== "verified") throw Object.assign(new Error("SEC_ISSUER_NOT_VERIFIED"), { code: "invalidRequest" });
+        if (!association || !permitted(association)) throw Object.assign(new Error("SEC_ISSUER_NOT_PERMITTED"), { code: "invalidRequest" });
         association.downstreamStage = "filing_retrieval";
         let document: string;
         try { document = await client.getFilingDocument(record.filingUrl); }
@@ -133,7 +135,7 @@ export function createSecFormDProvider(client: SecClient = secClient, options: {
           cik: record.cik, now: context.now().toISOString(), identityEvidence: [...(options.identityEvidence ?? []), ...retrievedIdentityEvidence],
         });
         Object.assign(association, rechecked);
-        if (association.decision !== "verified") {
+        if (!permitted(association)) {
           association.downstreamError = "filing_identity_conflict";
           throw Object.assign(new Error("SEC_FILING_IDENTITY_CONFLICT"), { code: "invalidRequest" });
         }
@@ -143,7 +145,7 @@ export function createSecFormDProvider(client: SecClient = secClient, options: {
     },
     normalize: async (records, context) => (records as FilingRecord[]).map((record, index): RawEvidence => {
       const association = associations.find((a) => a.cik === record.cik.padStart(10, "0"));
-      if (association?.decision !== "verified") throw Object.assign(new Error("SEC_ISSUER_NOT_VERIFIED"), { code: "invalidRequest" });
+      if (!association || !permitted(association)) throw Object.assign(new Error("SEC_ISSUER_NOT_PERMITTED"), { code: "invalidRequest" });
       association.downstreamStage = "evidence";
       const extracted = extractFormD(record.document);
       const evidenceId = `sec-form-d-${context.researchId}-${index + 1}`;
@@ -163,7 +165,10 @@ export function createSecFormDProvider(client: SecClient = secClient, options: {
         fields[key] = { value, evidenceId, sourceUrl: `https://data.sec.gov/submissions/CIK${record.cik.padStart(10, "0")}.json`, excerpt: `${key}: ${value}`, locator: "filings.recent", publicationDate: record.filingDate, retrievedAt: context.now().toISOString() };
       }
       if (extracted.previousAccessionNumber) fields.previousAccessionNumber = { ...fields.accessionNumber, value: extracted.previousAccessionNumber, sourceUrl: record.filingUrl, excerpt: extracted.previousAccessionNumber, locator: "xml:previousAccessionNumber" };
+      const verification = verifySecAssociation(association);
+      for (const field of Object.values(fields)) field.verification = verification;
       return {
+        verification,
         evidenceId: `sec-form-d-${context.researchId}-${index + 1}`,
         researchId: context.researchId,
         entityId: context.identityGraph.entityId,
@@ -176,9 +181,9 @@ export function createSecFormDProvider(client: SecClient = secClient, options: {
         publicationDate: record.filingDate === "Not disclosed" ? null : record.filingDate,
         retrievedAt: context.now().toISOString(),
         rawText: record.document,
-        structuredData: { ...extracted, cik: record.cik, form: record.form, accessionNumber: record.accessionNumber, fundingEvents: [{ eventId: `formD-${record.accessionNumber}`, entityId: context.identityGraph.entityId, sourceKind: "formD", fields, limitations: ["Issuer disclosure hosted by SEC, not independently verified by SEC. USD offering total and amount sold are distinct; no total funding is calculated.", record.form === "D/A" ? "Amendment; not a new financing round. Previous accession is linked only when explicitly disclosed." : "Notice of offering; not proof of a completed round.", "Only the three most recent Form D filings in recent submissions were in scope; older history not searched."] }] },
+        structuredData: { ...extracted, cik: record.cik, form: record.form, accessionNumber: record.accessionNumber, secIssuerAssociation: structuredClone(association), filingMetadata: { cik: record.cik, form: record.form, accessionNumber: record.accessionNumber, filingDate: record.filingDate }, fundingEvents: [{ eventId: `formD-${record.accessionNumber}`, entityId: context.identityGraph.entityId, sourceKind: "formD", verification, fields, limitations: ["Issuer disclosure hosted by SEC, not independently verified by SEC. USD offering total and amount sold are distinct; no total funding is calculated.", record.form === "D/A" ? "Amendment; not a new financing round. Previous accession is linked only when explicitly disclosed." : "Notice of offering; not proof of a completed round.", "Only the three most recent Form D filings in recent submissions were in scope; older history not searched."] }] },
         matchedEntitySignals: [`CIK ${record.cik}`, ...(extracted.issuerLegalName ? [`Filed issuer ${extracted.issuerLegalName}`] : [])],
-        entityMatchConfidence: "High",
+        entityMatchConfidence: association.decision === 'verified' ? "High" : "Medium",
         companyReported: true,
         officialRecord: true,
         independentlyPublished: false,

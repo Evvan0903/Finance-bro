@@ -128,6 +128,7 @@ export async function researchFunding(context: ClaraToolContext, existing: RawEv
     const discoveryDiagnostics: NonNullable<PrivateProviderResult["searchDiagnostics"]> = [];
     const provider = createSecFormDProvider(new SecClient({ fetchImpl: budget.fetch(), maxAttempts: 2, timeoutMs: 5000, minimumIntervalMs: 300, sleep: (ms) => new Promise((resolve) => setTimeout(resolve, Math.min(ms, Math.max(0, budget.deadline - Date.now())))) }), {
       requireUserAgent: true,
+      includeProvisional: true,
       identityEvidence,
       discoverCiks: async () => {
         if (graph.cikCandidates.length) return [];
@@ -157,7 +158,7 @@ export async function researchFunding(context: ClaraToolContext, existing: RawEv
     result.actions.push({ action: "sec_funding", input: {}, targetGap: "sec_issuer_and_form_d", reasonCode: "routine_discovery", status: outcome.status });
     providerResults.push(outcome); evidence.push(...outcome.evidence);
     result.events.push(...outcome.evidence.flatMap((e) => e.structuredData.fundingEvents as FundingEvent[] ?? []));
-    result.secStatus = outcome.evidence.length ? "supported" : outcome.diagnostic.sanitizedIssue === "issuer_unresolved" ? "issuer_unresolved" : outcome.status === "noData" ? "no_information" : "inaccessible";
+    result.secStatus = outcome.evidence.some(e=>e.verification?.status==='verified') ? "supported" : outcome.diagnostic.sanitizedIssue === "issuer_unresolved" ? "issuer_unresolved" : outcome.status === "noData" ? "no_information" : "inaccessible";
     if (outcome.diagnostic.sanitizedIssue) result.limitations.push(`SEC: ${outcome.diagnostic.sanitizedIssue}`);
   };
   await secTask();

@@ -5121,3 +5121,17 @@ tbody th, .driver-table a strong { color: #003FC2; }
   .clara-funding-observation, .clara-count-chart, .clara-development-list > li { break-inside: avoid; }
   .clara-visual-phase-one .clara-visual-card { break-inside: auto; }
 }
+
+/* Provisional evidence stays visibly separate from canonical report facts. */
+.clara-unverified-information { margin: 24px clamp(18px, 4vw, 64px); padding: 24px; border: 1px solid #e1b955; border-left: 5px solid var(--amber); background: var(--amber-soft); color: var(--text-secondary); }
+.clara-unverified-information h2 { font-size: 1.45rem; margin: 0 0 12px; }
+.clara-unverified-information h3 { font-size: 1.1rem; margin: 24px 0 12px; }
+.clara-unverified-information h4 { font-size: 1rem; margin: 0 0 8px; }
+.clara-unverified-information p, .clara-unverified-information blockquote { line-height: 1.6; font-size: .9rem; overflow-wrap: anywhere; }
+.clara-unverified-information article { padding: 16px 0; border-top: 1px solid #e9d9af; }
+.clara-unverified-information summary { cursor: pointer; font-size: .9rem; }
+.clara-unverified-information a { text-decoration: underline; color: var(--amber); overflow-wrap: anywhere; }
+.clara-unverified-information blockquote { margin: 12px 0; padding-left: 12px; border-left: 2px solid #c9a157; }
+.clara-unverified-information small { overflow-wrap: anywhere; }
+.clara-unverified-information summary:focus-visible, .clara-unverified-information a:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
+@media (max-width: 700px) { .clara-unverified-information { padding: 18px; margin: 18px; } }

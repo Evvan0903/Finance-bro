@@ -72,6 +72,7 @@ export function buildPrivateDiligenceReport(args: {
   informationGaps: InformationGap[];
   questions: DueDiligenceQuestion[];
   generatedAt: string;
+  verification?: import("../verification/types").VerificationLedger;
   hiringIntelligence?: import("../hiring/types").HiringActivityResult | null;
 }): PrivateDiligenceReport {
   const { input, graph, claims, evidence, conflicts, risks, informationGaps, questions } = args;
@@ -79,6 +80,8 @@ export function buildPrivateDiligenceReport(args: {
   const claimIds = (types: string[]) => claims.filter((claim) => types.includes(claim.claimType)).map((claim) => claim.claimId);
   const evidenceIds = (types: string[]) => claims.filter((claim) => types.includes(claim.claimType)).flatMap((claim) => claim.evidenceIds);
   const legal = claims.filter((claim) => ["legalName", "jurisdiction"].includes(claim.claimType));
+  const legalNames = args.verification ? legal.filter(c=>c.claimType==="legalName").map(c=>String(c.normalizedValue)) : graph.legalNames;
+  const jurisdictions = args.verification ? legal.filter(c=>c.claimType==="jurisdiction").map(c=>String(c.normalizedValue)) : graph.registrationJurisdictions;
   const founders = claims.filter((claim) => ["founder", "executive"].includes(claim.claimType));
   const financing = claims.filter((claim) => ["offeringAmount", "amountSold", "firstSaleDate", "numberOfInvestors"].includes(claim.claimType));
   const awards = claims.filter((claim) => claim.claimType.startsWith("award"));
@@ -102,7 +105,7 @@ export function buildPrivateDiligenceReport(args: {
     ], claims.map((claim) => claim.claimId), evidence.map((item) => item.evidenceId)),
     section(1, [
       label(locale, `Canonical company: ${graph.canonicalName}`, `规范公司名称：${graph.canonicalName}`),
-      label(locale, `Identity basis: ${graph.legalNames.join("; ")}; domains ${graph.domains.join("; ") || "not verified"}; jurisdictions ${graph.registrationJurisdictions.join("; ") || "not verified"}`, `身份依据：${graph.legalNames.join("；")}；域名 ${graph.domains.join("；") || "未验证"}；注册辖区 ${graph.registrationJurisdictions.join("；") || "未验证"}`),
+      label(locale, `Identity basis: ${legalNames.join("; ") || "not verified"}; domains ${graph.domains.join("; ") || "not verified"}; jurisdictions ${jurisdictions.join("; ") || "not verified"}`, `身份依据：${legalNames.join("；") || "未核验"}；域名 ${graph.domains.join("；") || "未验证"}；注册辖区 ${jurisdictions.join("；") || "未验证"}`),
       ...graph.identityLimitations,
     ], claimIds(["legalName"]), evidenceIds(["legalName"])),
     legal.length ? section(2, legal.map((claim) => `${claim.statement} — ${claim.status}`), legal.map((claim) => claim.claimId), legal.flatMap((claim) => claim.evidenceIds)) : null,

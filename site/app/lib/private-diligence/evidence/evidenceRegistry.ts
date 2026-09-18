@@ -1,6 +1,8 @@
 import type { EvidenceFactCandidate, NormalizedEvidence, RawEvidence, VerificationEligibility } from "../types";
 
 function eligibility(evidence: RawEvidence): VerificationEligibility {
+  if (evidence.verification?.status === 'rejected') return 'excluded';
+  if (evidence.verification?.status === 'unverified') return 'leadOnly';
   if (evidence.entityMatchConfidence === "Low") return evidence.sourceTier === 4 ? "excluded" : "leadOnly";
   if (evidence.sourceTier === 4) return "leadOnly";
   if (evidence.sourceTier === 1 && evidence.officialRecord) return "finalEvidence";
@@ -59,6 +61,7 @@ export function normalizeEvidenceRegistry(rawEvidence: RawEvidence[]) {
   }
   return [...unique.values()].map((evidence): NormalizedEvidence => ({
     evidenceId: evidence.evidenceId,
+    verification: evidence.verification,
     entityId: evidence.entityId,
     providerId: evidence.providerId,
     sourceTier: evidence.sourceTier,

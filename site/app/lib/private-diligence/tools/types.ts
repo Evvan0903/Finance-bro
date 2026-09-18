@@ -65,6 +65,7 @@ export type ClaraToolResult<T> = {
   resolvedGapCodes?: string[];
   errors: ToolError[];
   metadata: {
+    verification?: import('../verification/types').VerificationLedger;
     toolName: string;
     startedAt: string;
     completedAt: string;

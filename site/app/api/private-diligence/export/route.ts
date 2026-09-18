@@ -50,6 +50,8 @@ function evidenceRows(report: PrivateDiligenceReport | null) {
     "Company reported": item.companyReported,
     "Independent source": item.independentlyPublished,
     "Verification eligibility": item.verificationEligibility,
+    "Verification status": item.verification?.status ?? "Legacy: not evaluated",
+    "Verification reasons": item.verification?.reasonCodes ?? [],
     "Linked claims": report.claims.filter((claim) => claim.evidenceIds.includes(item.evidenceId)).map((claim) => claim.claimId),
     Limitations: item.limitations,
   }));
@@ -62,6 +64,8 @@ function claimRows(report: PrivateDiligenceReport | null) {
     Claim: claim.statement,
     "Normalized value": claim.normalizedValue,
     Status: claim.status,
+    "Verification status": claim.verification?.status ?? "Legacy: not evaluated",
+    "Verification reasons": claim.verification?.reasonCodes ?? [],
     Confidence: claim.confidence,
     Materiality: claim.materiality,
     "Evidence IDs": claim.evidenceIds,

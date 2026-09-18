@@ -63,6 +63,7 @@ export type HiringIntelligenceSummary = {
 };
 
 export type HiringActivityResult = {
+  verification?: import('../verification/types').VerificationResult;
   companyId: string;
   status: HiringActivityStatus;
   sourceCandidates: CareerSourceCandidate[];

@@ -22,6 +22,9 @@ import { buildQuickCompanyIntelligenceReport } from "./reports/quickReportBuilde
 import { hiringEvidenceFromResult } from "./evidence/hiringEvidence";
 import { researchHiringActivity } from "./hiring";
 import type { EntityIdentityGraph, PrivateCompanyInput } from "./types";
+import { canonicalResearch, verifiedConflicts } from './verification/governance';
+import { attachVerificationReport } from './verification/presentation';
+import { researchStateStore } from './state/researchStateStore';
 
 export class PrivateDiligenceEngineError extends Error {
   constructor(readonly code: "ENTITY_NOT_RESOLVED" | "INSUFFICIENT_PUBLIC_INFORMATION", message: string) {
@@ -102,21 +105,32 @@ export async function runPrivateDiligence(
       "Insufficient public information was identified to produce a reliable diligence report",
     );
   }
-  const seededClaims = assertClaimsHaveEvidence(buildClaimRegistry(researchId, graph.entityId, eligibleEvidence));
-  const reconciled = reconcileClaims(seededClaims, eligibleEvidence);
-  const risks = buildRiskFindings(graph, reconciled.claims, reconciled.conflicts);
-  const informationGaps = buildInformationGaps(reconciled.claims, eligibleEvidence);
-  const questions = buildDiligenceQuestions(informationGaps, reconciled.conflicts);
+  // Candidate construction is not approval: every candidate goes through domain governance.
+  const seededClaims = assertClaimsHaveEvidence(buildClaimRegistry(researchId, graph.entityId, normalizedEvidence.map(e=>({...e,verificationEligibility:'supportingEvidence'}))));
+  const reconciled = reconcileClaims(seededClaims, normalizedEvidence);
   const generatedAt = now().toISOString();
+  const material = {graph,rawEvidence:[...rawEvidence,...hiringEvidence],claims:reconciled.claims,evidence:normalizedEvidence,fundingResearch:funding?.fundingResearch,hiringIntelligence,now:generatedAt};
+  const canonical = canonicalResearch(material);
+  const canonicalConflicts = verifiedConflicts(reconciled.conflicts, canonical.claims);
+  const risks = buildRiskFindings(graph, canonical.claims, canonicalConflicts);
+  const informationGaps = buildInformationGaps(canonical.claims, canonical.evidence);
+  const questions = buildDiligenceQuestions(informationGaps, canonicalConflicts);
+  if(options.researchStateId) await researchStateStore.recordToolExecution({researchStateId:options.researchStateId,toolName:'evidence_verification',input:{},identityGraph:graph,
+    result:{status:'success',data:{fundingResearch:funding?.fundingResearch,hiringIntelligence},evidence:material.rawEvidence,observations:[],gaps:[],errors:[],metadata:{toolName:'evidence_verification',startedAt:generatedAt,completedAt:generatedAt,retrievalTime:generatedAt,sourceCount:material.rawEvidence.length}}});
+  const adaptiveResearch = adaptive ? {...adaptive.research,facts:adaptive.research.facts.filter(f=>canonical.claims.some(c=>c.researchFact?.value===f.value&&c.evidenceIds.includes(f.evidenceId))),coverage:adaptive.research.coverage.map(row=>{
+    const provisional = canonical.ledger.findings.some(f=>f.claimId&&reconciled.claims.find(c=>c.claimId===f.claimId)?.researchFact?.topic===row.topic&&f.verification.status!=='verified');
+    return {...row,status:provisional?'partial' as const:row.status,evidenceIds:row.evidenceIds.filter(id=>canonical.evidence.some(e=>e.evidenceId===id))};
+  })} : undefined;
   const reportArgs = {
-    researchId, input, graph, providerPlan, evidence: eligibleEvidence,
-    claims: reconciled.claims, conflicts: reconciled.conflicts, risks,
-    informationGaps, questions, generatedAt, hiringIntelligence, fundingResearch: funding?.fundingResearch, adaptiveResearch: adaptive?.research,
+    researchId, input, graph, providerPlan, verification: canonical.ledger, evidence: canonical.evidence,
+    claims: canonical.claims, conflicts: canonicalConflicts, risks,
+    informationGaps, questions, generatedAt, hiringIntelligence:canonical.hiringIntelligence, fundingResearch:canonical.fundingResearch, adaptiveResearch,
   };
   const report = quickMode ? buildQuickCompanyIntelligenceReport(reportArgs) : buildPrivateDiligenceReport(reportArgs);
+  attachVerificationReport(report,canonical.ledger);
   if (adaptive) {
     adaptive.research.budget = budget.snapshot();
-    report.adaptiveResearch = adaptive.research;
+    if(report.adaptiveResearch) report.adaptiveResearch.budget=budget.snapshot();
   }
   return { legalEntityDiscovery: legal?.discovery, providerPlan, providerResults, rawEvidence: [...rawEvidence, ...hiringEvidence], normalizedEvidence, hiringIntelligence, report };
 }

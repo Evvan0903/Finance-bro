@@ -1,4 +1,5 @@
 export type FundingField = {
+  verification?: import('../verification/types').VerificationResult;
   value: string | number;
   evidenceId: string;
   sourceUrl: string;
@@ -8,6 +9,7 @@ export type FundingField = {
   retrievedAt: string;
 };
 export type FundingEvent = {
+  verification?: import('../verification/types').VerificationResult;
   eventId: string;
   entityId: string;
   sourceKind: "announcement" | "formD";

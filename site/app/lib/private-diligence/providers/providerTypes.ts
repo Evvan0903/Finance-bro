@@ -140,7 +140,7 @@ async function executeProvider(
         entityMatches: evidence.filter((item) => item.entityMatchConfidence !== "Low").length,
         rejectedWeakMatches: search.rejectedWeakMatches ?? 0,
         rateLimitState: "clear",
-        sanitizedIssue: status === "upstreamUnavailable" ? "Discovered original sources could not be retrieved" : null,
+        sanitizedIssue: status === "upstreamUnavailable" ? "Discovered original sources could not be retrieved" : search.sanitizedIssue ?? null,
         lastSuccessfulRetrievalTime: evidence.length ? context.now().toISOString() : null,
       },
     };

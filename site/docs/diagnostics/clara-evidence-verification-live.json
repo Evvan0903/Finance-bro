@@ -1,0 +1,508 @@
+{
+  "validatedAt": "2026-09-18T21:52:36.840Z",
+  "isolatedDatabase": "/var/folders/px/4c6br34515x5zxjxf7b0x_6w0000gn/T/clara-funding-live-NAS7HG/clara.db",
+  "productionDataUsed": false,
+  "credentialsLogged": false,
+  "fixtureCoverage": {
+    "source": "tests/clara-verification-persistence.test.mjs",
+    "cases": [
+      "verified issuer and original Form D",
+      "plausible name-only issuer and original Form D",
+      "wrong issuer rejected without original document fetch"
+    ],
+    "path": [
+      "injected SEC transport fixtures",
+      "real SEC provider",
+      "deterministic governance",
+      "Quick report builder",
+      "application store",
+      "new process",
+      "report GET handler"
+    ],
+    "manualDatabaseRows": false
+  },
+  "runs": [
+    {
+      "company": "Mercury",
+      "researchId": "f79bf185-5395-4a3f-a4b2-f3a6eb0527a6",
+      "generatedAt": "2026-09-18T21:46:12.957Z",
+      "mode": "fresh live application HTTP request",
+      "path": [
+        "candidates",
+        "confirm-entity",
+        "run",
+        "report"
+      ],
+      "checks": {
+        "persistedReportEqualsGET": true,
+        "confirmedIdentityUnchanged": true,
+        "allCanonicalClaimsVerified": true,
+        "allCanonicalFundingFieldsVerified": true,
+        "onlyVerifiedEventsInNormalTimeline": true,
+        "verificationHistoryPersisted": true
+      },
+      "sec": [
+        {
+          "cik": "0001719932",
+          "issuer": "Mercury Technologies, Inc.",
+          "status": "verified",
+          "reasonCodes": [
+            "legal_name_match",
+            "related_person_match",
+            "related_person_insufficient"
+          ],
+          "downstreamStage": "evidence",
+          "downstreamError": null,
+          "matchedSignals": [
+            {
+              "code": "legal_name_match",
+              "evidenceIds": [
+                "sec-submissions-0001719932",
+                "identityGraph:entity-7a4611c6-2c56-4a83-8525-63a134f73317"
+              ],
+              "sourceUrls": [
+                "https://data.sec.gov/submissions/CIK0001719932.json",
+                "https://mercury.com/"
+              ]
+            },
+            {
+              "code": "related_person_match",
+              "evidenceIds": [
+                "sec-identity-0001719932-0001719932-26-000001",
+                "identityGraph:entity-7a4611c6-2c56-4a83-8525-63a134f73317"
+              ],
+              "sourceUrls": [
+                "https://www.sec.gov/Archives/edgar/data/1719932/000171993226000001/primary_doc.xml",
+                "https://mercury.com/"
+              ]
+            },
+            {
+              "code": "related_person_match",
+              "evidenceIds": [
+                "sec-identity-0001719932-0001719932-25-000003",
+                "identityGraph:entity-7a4611c6-2c56-4a83-8525-63a134f73317"
+              ],
+              "sourceUrls": [
+                "https://www.sec.gov/Archives/edgar/data/1719932/000171993225000003/primary_doc.xml",
+                "https://mercury.com/"
+              ]
+            },
+            {
+              "code": "related_person_insufficient",
+              "evidenceIds": [
+                "sec-identity-0001719932-0001719932-19-000002",
+                "identityGraph:entity-7a4611c6-2c56-4a83-8525-63a134f73317"
+              ],
+              "sourceUrls": [
+                "https://www.sec.gov/Archives/edgar/data/1719932/000171993219000002/primary_doc.xml",
+                "https://mercury.com/"
+              ]
+            }
+          ]
+        }
+      ],
+      "originalFormDFilings": [
+        {
+          "url": "https://www.sec.gov/Archives/edgar/data/1719932/000171993226000001/primary_doc.xml",
+          "evidenceId": "sec-form-d-f79bf185-5395-4a3f-a4b2-f3a6eb0527a6-1",
+          "fields": [
+            "offeringAmount",
+            "amountSold",
+            "firstSaleDate",
+            "cik",
+            "accessionNumber",
+            "filingDate",
+            "form"
+          ]
+        },
+        {
+          "url": "https://www.sec.gov/Archives/edgar/data/1719932/000171993225000003/primary_doc.xml",
+          "evidenceId": "sec-form-d-f79bf185-5395-4a3f-a4b2-f3a6eb0527a6-2",
+          "fields": [
+            "offeringAmount",
+            "amountSold",
+            "firstSaleDate",
+            "cik",
+            "accessionNumber",
+            "filingDate",
+            "form"
+          ]
+        },
+        {
+          "url": "https://www.sec.gov/Archives/edgar/data/1719932/000171993219000002/primary_doc.xml",
+          "evidenceId": "sec-form-d-f79bf185-5395-4a3f-a4b2-f3a6eb0527a6-3",
+          "fields": [
+            "offeringAmount",
+            "amountSold",
+            "firstSaleDate",
+            "cik",
+            "accessionNumber",
+            "filingDate",
+            "form"
+          ]
+        }
+      ],
+      "canonicalFundingEvents": 6,
+      "normalTimeline": {
+        "financings": 3,
+        "cumulative": 0,
+        "offerings": 3
+      },
+      "displayableUnverified": [
+        {
+          "domain": "identity",
+          "label": "The identified legal or operating name is Mercury",
+          "reasonCodes": [
+            "legal_entity_relationship_unresolved"
+          ]
+        },
+        {
+          "domain": "identity",
+          "label": "The identified legal or operating name is Mercury Technologies, Inc.",
+          "reasonCodes": [
+            "conflicting_field_evidence"
+          ]
+        }
+      ],
+      "decisions": {
+        "verified": 100,
+        "unverified": 5,
+        "rejected": 6
+      },
+      "state": {
+        "id": "6541de35-556b-49fc-b4ba-e52d76bc2e22",
+        "historyEntries": 116,
+        "verificationGaps": [
+          {
+            "topic": "identity",
+            "status": "open",
+            "code": "verification:claim:entity-7a4611c6-2c56-4a83-8525-63a134f73317:legalName:mercury"
+          },
+          {
+            "topic": "leadership",
+            "status": "open",
+            "code": "verification:claim:entity-7a4611c6-2c56-4a83-8525-63a134f73317:founder:immad akhund"
+          },
+          {
+            "topic": "leadership",
+            "status": "open",
+            "code": "verification:claim:entity-7a4611c6-2c56-4a83-8525-63a134f73317:founder:max tagher"
+          },
+          {
+            "topic": "leadership",
+            "status": "open",
+            "code": "verification:claim:entity-7a4611c6-2c56-4a83-8525-63a134f73317:founder:jason zhang"
+          },
+          {
+            "topic": "identity",
+            "status": "open",
+            "code": "verification:claim:entity-7a4611c6-2c56-4a83-8525-63a134f73317:legalName:mercury technologies, inc."
+          }
+        ]
+      },
+      "finalCodeReplay": {
+        "mode": "read-only deterministic re-evaluation of the actual retrieved originals; no database writes or new network calls",
+        "canonicalFundingFieldsStillVerified": true,
+        "previousCanonicalClaimsStillVerified": true,
+        "decisionCounts": {
+          "verified": 100,
+          "unverified": 5,
+          "rejected": 6
+        }
+      }
+    },
+    {
+      "company": "Cohere",
+      "researchId": "9a42c1e8-3210-4822-b3ab-99a945fd8844",
+      "generatedAt": "2026-09-18T21:46:39.620Z",
+      "mode": "fresh live application HTTP request",
+      "path": [
+        "candidates",
+        "confirm-entity",
+        "run",
+        "report"
+      ],
+      "checks": {
+        "persistedReportEqualsGET": true,
+        "confirmedIdentityUnchanged": true,
+        "allCanonicalClaimsVerified": true,
+        "allCanonicalFundingFieldsVerified": true,
+        "onlyVerifiedEventsInNormalTimeline": true,
+        "verificationHistoryPersisted": true
+      },
+      "sec": [
+        {
+          "cik": "0001874178",
+          "issuer": "Rivian Automotive, Inc. / DE",
+          "status": "rejected",
+          "reasonCodes": [
+            "legal_name_conflict",
+            "business_address_conflict",
+            "entity_mismatch"
+          ],
+          "downstreamStage": "issuer_resolution",
+          "downstreamError": null,
+          "matchedSignals": []
+        },
+        {
+          "cik": "0001851745",
+          "issuer": "Cohere Health Inc.",
+          "status": "rejected",
+          "reasonCodes": [
+            "legal_name_conflict",
+            "business_address_conflict",
+            "entity_mismatch"
+          ],
+          "downstreamStage": "issuer_resolution",
+          "downstreamError": null,
+          "matchedSignals": []
+        }
+      ],
+      "originalFormDFilings": [],
+      "canonicalFundingEvents": 2,
+      "normalTimeline": {
+        "financings": 1,
+        "cumulative": 1,
+        "offerings": 0
+      },
+      "displayableUnverified": [
+        {
+          "domain": "identity",
+          "label": "Legal entity relationship: unknown",
+          "reasonCodes": [
+            "unbound_legal_name_mention"
+          ]
+        },
+        {
+          "domain": "identity",
+          "label": "The identified legal or operating name is Cohere",
+          "reasonCodes": [
+            "legal_entity_relationship_unresolved"
+          ]
+        }
+      ],
+      "decisions": {
+        "verified": 23,
+        "unverified": 5,
+        "rejected": 4
+      },
+      "state": {
+        "id": "e8aa193d-a3d7-4359-b3ea-d34940ae8ea7",
+        "historyEntries": 36,
+        "verificationGaps": [
+          {
+            "topic": "identity",
+            "status": "open",
+            "code": "verification:claim:entity-c83839da-0b14-4aff-88a3-b734f12c650c:legalName:cohere"
+          },
+          {
+            "topic": "identity",
+            "status": "open",
+            "code": "verification:legal-b57fa0c30efbdece"
+          },
+          {
+            "topic": "funding",
+            "status": "open",
+            "code": "verification:funding:funding-serpapi-9a42c1e8-3210-4822-b3ab-99a945fd8844-1-funding-2-0:eventStatus"
+          },
+          {
+            "topic": "funding",
+            "status": "open",
+            "code": "verification:funding:funding-serpapi-9a42c1e8-3210-4822-b3ab-99a945fd8844-1-funding-3-0:eventStatus"
+          },
+          {
+            "topic": "funding",
+            "status": "open",
+            "code": "verification:claim:entity-c83839da-0b14-4aff-88a3-b734f12c650c:funding.eventStatus:unknown"
+          }
+        ]
+      },
+      "finalCodeReplay": {
+        "mode": "read-only deterministic re-evaluation of the actual retrieved originals; no database writes or new network calls",
+        "canonicalFundingFieldsStillVerified": true,
+        "previousCanonicalClaimsStillVerified": true,
+        "decisionCounts": {
+          "verified": 23,
+          "unverified": 5,
+          "rejected": 4
+        }
+      }
+    },
+    {
+      "company": "Glean",
+      "researchId": "c7902159-7d9c-4bcd-babf-dbec0019cbe2",
+      "generatedAt": "2026-09-18T21:49:02.610Z",
+      "mode": "fresh live application HTTP request",
+      "path": [
+        "candidates",
+        "confirm-entity",
+        "run",
+        "report"
+      ],
+      "checks": {
+        "persistedReportEqualsGET": true,
+        "confirmedIdentityUnchanged": true,
+        "allCanonicalClaimsVerified": true,
+        "allCanonicalFundingFieldsVerified": true,
+        "onlyVerifiedEventsInNormalTimeline": true,
+        "verificationHistoryPersisted": true
+      },
+      "sec": [
+        {
+          "cik": "0001086222",
+          "issuer": "AKAMAI TECHNOLOGIES INC",
+          "status": "rejected",
+          "reasonCodes": [
+            "legal_name_conflict",
+            "business_address_conflict",
+            "entity_mismatch"
+          ],
+          "downstreamStage": "issuer_resolution",
+          "downstreamError": null,
+          "matchedSignals": []
+        }
+      ],
+      "originalFormDFilings": [],
+      "canonicalFundingEvents": 1,
+      "normalTimeline": {
+        "financings": 1,
+        "cumulative": 0,
+        "offerings": 0
+      },
+      "displayableUnverified": [
+        {
+          "domain": "leadership",
+          "label": "Arvind Jain is identified as a founder",
+          "reasonCodes": [
+            "person_role_association_incomplete"
+          ]
+        },
+        {
+          "domain": "identity",
+          "label": "The identified legal or operating name is Glean",
+          "reasonCodes": [
+            "legal_entity_relationship_unresolved"
+          ]
+        }
+      ],
+      "decisions": {
+        "verified": 32,
+        "unverified": 3,
+        "rejected": 5
+      },
+      "state": {
+        "id": "0708b22c-db74-42c0-9971-95d2df40ffda",
+        "historyEntries": 55,
+        "verificationGaps": [
+          {
+            "topic": "leadership",
+            "status": "open",
+            "code": "verification:claim:entity-86a64953-e1b9-4e5a-8584-8eee4b4635f1:founder:arvind jain"
+          },
+          {
+            "topic": "leadership",
+            "status": "open",
+            "code": "verification:claim:entity-86a64953-e1b9-4e5a-8584-8eee4b4635f1:founder:piyush prahladka"
+          },
+          {
+            "topic": "identity",
+            "status": "open",
+            "code": "verification:claim:entity-86a64953-e1b9-4e5a-8584-8eee4b4635f1:legalName:glean"
+          },
+          {
+            "topic": "identity",
+            "status": "resolved",
+            "code": "verification:legal-0324195aca0a11d2"
+          }
+        ]
+      },
+      "finalCodeReplay": {
+        "mode": "read-only deterministic re-evaluation of the actual retrieved originals; no database writes or new network calls",
+        "canonicalFundingFieldsStillVerified": true,
+        "previousCanonicalClaimsStillVerified": true,
+        "decisionCounts": {
+          "verified": 32,
+          "unverified": 3,
+          "rejected": 5
+        }
+      }
+    }
+  ],
+  "secNetwork": [
+    {
+      "startedAt": "2026-09-18T21:46:00.129Z",
+      "host": "data.sec.gov",
+      "path": "/submissions/CIK0001719932.json",
+      "userAgentDeclared": true,
+      "userAgentSource": "explicit env config",
+      "status": 200
+    },
+    {
+      "startedAt": "2026-09-18T21:46:00.432Z",
+      "host": "www.sec.gov",
+      "path": "/Archives/edgar/data/1719932/000171993226000001/primary_doc.xml",
+      "userAgentDeclared": true,
+      "userAgentSource": "explicit env config",
+      "status": 200
+    },
+    {
+      "startedAt": "2026-09-18T21:46:00.733Z",
+      "host": "www.sec.gov",
+      "path": "/Archives/edgar/data/1719932/000171993225000003/primary_doc.xml",
+      "userAgentDeclared": true,
+      "userAgentSource": "explicit env config",
+      "status": 200
+    },
+    {
+      "startedAt": "2026-09-18T21:46:01.035Z",
+      "host": "www.sec.gov",
+      "path": "/Archives/edgar/data/1719932/000171993219000002/primary_doc.xml",
+      "userAgentDeclared": true,
+      "userAgentSource": "explicit env config",
+      "status": 200
+    },
+    {
+      "startedAt": "2026-09-18T21:46:22.449Z",
+      "host": "data.sec.gov",
+      "path": "/submissions/CIK0001874178.json",
+      "userAgentDeclared": true,
+      "userAgentSource": "explicit env config",
+      "status": 200
+    },
+    {
+      "startedAt": "2026-09-18T21:46:22.750Z",
+      "host": "data.sec.gov",
+      "path": "/submissions/CIK0001851745.json",
+      "userAgentDeclared": true,
+      "userAgentSource": "explicit env config",
+      "status": 200
+    },
+    {
+      "startedAt": "2026-09-18T21:48:54.793Z",
+      "host": "data.sec.gov",
+      "path": "/submissions/CIK0001086222.json",
+      "userAgentDeclared": true,
+      "userAgentSource": "explicit env config",
+      "status": 200
+    }
+  ],
+  "browserChecks": {
+    "company": "Glean",
+    "yellowPanel": true,
+    "sourceExpanded": true,
+    "bilingualSwitch": true,
+    "narrowViewport": 390,
+    "documentScrollWidth": 390
+  },
+  "validation": {
+    "npm test": {
+      "status": "passed",
+      "tests": 304,
+      "failures": 0
+    },
+    "npm run lint": "passed",
+    "npx tsc --noEmit": "passed",
+    "npm run vercel-build": "passed",
+    "git diff --check": "passed"
+  }
+}

@@ -372,7 +372,9 @@ test("blocks SSRF, cross-domain redirects, oversized responses, and unsupported 
 
 test("filters and parses SEC Form D without changing the shared SEC client", async () => {
   const extractorUrl = await moduleUrl("../app/lib/private-diligence/extraction/formDExtractor.ts");
+  const verificationUrl = await moduleUrl("../app/lib/private-diligence/verification/types.ts");
   const issuerUrl = await moduleUrl("../app/lib/private-diligence/entity-resolution/secIssuerResolution.ts", {
+    '"../verification/types"': JSON.stringify(verificationUrl),
     '"../extraction/formDExtractor"': JSON.stringify(extractorUrl),
   });
   const secStub = "data:text/javascript,export const secClient={};";

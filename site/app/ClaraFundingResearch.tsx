@@ -9,9 +9,9 @@ export function ClaraFundingResearch({ report, locale }: { report: PrivateDilige
   return <section className="clara-report-section" aria-label="Funding research">
     <h2>{zh ? "融资信息（有限公开来源研究）" : "Funding — bounded public-source research"}</h2>
     <p>{zh ? "公告" : "Announcements"}: {zh ? status[funding.announcementStatus] : funding.announcementStatus} · SEC: {zh ? status[funding.secStatus] : funding.secStatus}</p>
-    {funding.events.map((event) => <article key={event.eventId}>
+    {funding.events.filter(event=>!event.verification||event.verification.status==='verified').map((event) => <article key={event.eventId}>
       <h3>{event.sourceKind === "formD" ? "SEC Form D / D/A" : zh ? "融资公告披露" : "Reported financing"}</h3>
-      <dl>{Object.entries(event.fields).map(([key, field]) => <div key={key}>
+      <dl>{Object.entries(event.fields).filter(([,field])=>!field.verification||field.verification.status==='verified').map(([key, field]) => <div key={key}>
         <dt>{zh ? labels[key] ?? key : key.replace(/([A-Z])/g, " $1")}</dt>
         <dd>{String(field.value)} · <a href={field.sourceUrl} target="_blank" rel="noreferrer">{zh ? "字段来源" : "Field source"}</a>
           <details><summary>{zh ? "原文与定位" : "Excerpt and locator"}</summary><blockquote>{field.excerpt}</blockquote><small>{field.locator} · {zh ? "发布" : "Published"}: {field.publicationDate ?? "Unknown"} · {zh ? "检索" : "Retrieved"}: {field.retrievedAt}</small></details>

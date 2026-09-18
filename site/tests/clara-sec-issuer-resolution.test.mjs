@@ -25,7 +25,7 @@ test('legal name and official website or issuer-scoped email domain verifies',()
  assert.equal(decide({...payload,website:'https://www.acme.test'}).decision,'verified');
  const d=decide(payload,graph,[filing('<issuerEmail>contact@acme.test</issuerEmail>')]);
  assert.equal(d.decision,'verified');assert.ok(d.reasonCodes.includes('official_domain_match'));
- assert.equal(decide(payload,graph,[filing('<issuerEmail>contact@acme.test.evil.test</issuerEmail>')]).decision,'unresolved');
+ assert.equal(decide(payload,graph,[filing('<issuerEmail>contact@acme.test.evil.test</issuerEmail>')]).decision,'rejected');
 });
 test('two distinct supported full related-person names corroborate; one common name does not',()=>{
  const g={...graph,founders:['Avery Chen','Morgan Patel']};
@@ -41,7 +41,7 @@ test('name only, city/postal only, similar name and brand do not verify',()=>{
 });
 test('domain/address contradictions override positive signals and retain provenance',()=>{
  const d=decide({...payload,website:'https://different.test',addresses:{business:address}},{...graph,addresses:[graphAddress]},[official]);
- assert.equal(d.decision,'unresolved');assert.ok(d.reasonCodes.includes('identity_conflict'));
+ assert.equal(d.decision,'rejected');assert.ok(d.reasonCodes.includes('identity_conflict'));
  assert.ok(d.conflictingSignals.every(s=>s.references.length));
  assert.equal(decide({...payload,website:'https://acme.test',addresses:{business:{...address,street1:'999 Other Road'}}},{...graph,addresses:[graphAddress]}).decision,'unresolved');
 });

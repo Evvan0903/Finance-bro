@@ -40,6 +40,8 @@ export type ResearchStateGap = ResearchGap & {
 };
 
 export type ResearchState = {
+  verification?: import('../verification/types').VerificationLedger;
+  verificationHistory?: import('../verification/types').VerificationTransition[];
   id: string;
   researchRequestId: string | null;
   objective: string;

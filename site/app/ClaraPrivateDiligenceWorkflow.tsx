@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ClaraQuickReportVisuals } from "./ClaraQuickReportVisuals";
+import { ClaraUnverifiedInformation } from './ClaraUnverifiedInformation';
 import { ClaraFundingResearch } from "./ClaraFundingResearch";
 import { ClaraHiringIntelligence } from "./ClaraHiringIntelligence";
 import { CLARA_COPY, CLARA_PROGRESS } from "./lib/private-diligence/copy";
@@ -208,7 +209,8 @@ function ClaraReport({ report, researchId, onReset, locale }: {
         {report.reportVersion === "clara-quick-v1" && <ClaraQuickReportVisuals report={report} locale={locale} />}
         {report.reportVersion !== "clara-quick-v1" && <ClaraHiringIntelligence report={report} locale={locale} />}
         <ClaraFundingResearch report={report} locale={locale} />
-        {report.sections.filter((section) => section.sectionId !== "funding").map((section) => (
+        <ClaraUnverifiedInformation report={report} locale={locale} />
+        {report.sections.filter((section) => section.sectionId !== "funding" && section.sectionId !== 'unverified').map((section) => (
           <section className="clara-report-section" key={section.sectionId} data-pdf-block>
             <header><span>{section.number}</span><h2>{section.title[locale]}</h2></header>
             {(report.reportVersion === "clara-quick-v1" ? localizedQuickSections.get(section.sectionId)?.paragraphs ?? section.paragraphs : section.paragraphs).map((paragraph, index) => <p key={`${section.sectionId}-${index}`}>{paragraph}</p>)}
