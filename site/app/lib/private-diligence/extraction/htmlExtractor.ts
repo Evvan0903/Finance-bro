@@ -22,6 +22,20 @@ function metaContent(html: string, key: string) {
   return null;
 }
 
+/** A page's declared publication date, never retrieval time or last-modified. */
+export function extractPublicationDate(html: string, extracted: ExtractedCompanyPage) {
+  const candidates = [
+    ...extracted.jsonLd.map(item => item.datePublished),
+    ...['article:published_time', 'date', 'datePublished'].map(key => metaContent(html, key)),
+  ];
+  for (const value of candidates) {
+    if (typeof value !== 'string') continue;
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) return parsed.toISOString().slice(0, 10);
+  }
+  return null;
+}
+
 function jsonLdBlocks(html: string) {
   const blocks: unknown[] = [];
   for (const match of html.matchAll(/<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
@@ -152,7 +166,7 @@ function offeringCandidates(blocks: ContentBlock[]) {
     for (const match of block.text.matchAll(statement)) {
       const offering = match[1].split(/\s+(?:for|to help|that helps|designed for)\s+/i)[0].trim();
       const values = offering.split(/\s*,\s*|\s+(?:and|or)\s+/i)
-        .map((value) => value.replace(/^(?:(?:and|or)\s+)?(?:both|including|such as|a|an|the)?\s*/i, "").trim())
+        .map((value) => value.replace(/^(?:(?:and|or)\s+)?(?:(?:both|including|such as|a|an|the)\s+)?/i, "").trim())
         .filter((value) => value.length >= 3 && value.length <= 100 && /[A-Za-z]/.test(value))
         .filter((value) => !/^(?:collecting|building|helping|providing|covering|using|delivering)\b/i.test(value))
         .filter((value) => !/\b(?:that|which)\s+(?:combines?|helps?|enables?|uses?)\b/i.test(value));
@@ -175,12 +189,16 @@ function offeringCandidates(blocks: ContentBlock[]) {
   return output;
 }
 
-const PERSON_NAME = "([A-Z][A-Za-z'’.-]+(?:\\s+[A-Z][A-Za-z'’.-]+){1,2})";
+// Flattened leadership cards must not consume the preceding card's title or
+// the following historical qualifier as part of a person's name.
+const NON_NAME_TOKEN = "(?:CEO|CFO|COO|CTO|CRO|CMO|CPO|CCO|VP|Chief|Head|President|Director|Founder|Co-Founder|Former|Leadership|Executive|Team|Supporters|Investors)";
+const PERSON_WORD = `(?!${NON_NAME_TOKEN}\\b)[A-Z][A-Za-z'’.-]+`;
+const PERSON_NAME = `\\b(${PERSON_WORD}(?:\\s+${PERSON_WORD}){1,2})`;
 const EXECUTIVE_ROLE = "(CEO|CFO|COO|CTO|CMO|CPO|Chief\\s+[A-Za-z-]+(?:\\s+[A-Za-z-]+){0,3}\\s+Officer|President|Vice President(?:\\s+of\\s+[A-Z][A-Za-z-]*(?:\\s+[A-Z][A-Za-z-]*){0,3})?|VP(?:\\s+of\\s+[A-Z][A-Za-z-]*(?:\\s+[A-Z][A-Za-z-]*){0,3})?|Managing Director|Executive Director)";
 
 function plausiblePersonName(value: string) {
   const tokens = value.split(/\s+/);
-  const blocked = /^(?:the|to|look|meet|team|our|your|company|leadership|executive|founder|university\.?|c-suites?)$/i;
+  const blocked = /^(?:the|to|look|meet|team|our|your|company|leadership|executive|founder|co-founder|former|chief|head|president|director|CEO|CFO|COO|CTO|CRO|CMO|CPO|CCO|VP|university\.?|c-suites?)$/i;
   return tokens.length >= 2 && tokens.length <= 3 && tokens.every((token) => !blocked.test(token));
 }
 
@@ -200,8 +218,16 @@ function canonicalExecutiveRole(value: string) {
 function executiveCandidates(blocks: ContentBlock[]) {
   const output: ExtractedFactCandidate[] = [];
   const historical = new RegExp(`${PERSON_NAME}\\s+(?:formerly|previously)\\s+(?:served|worked)?\\s*(?:as\\s+)?${EXECUTIVE_ROLE}\\b`, "g");
-  const former = new RegExp(`${PERSON_NAME}\\s+(?:is\\s+)?(?:a\\s+)?former\\s+${EXECUTIVE_ROLE}\\b`, "g");
+  const former = new RegExp(`${PERSON_NAME}\\s+(?:is\\s+)?(?:a\\s+)?[Ff]ormer\\s+${EXECUTIVE_ROLE}\\b`, "g");
   const current = new RegExp(`${PERSON_NAME}\\s+(?:is\\s+(?:the\\s+)?)?${EXECUTIVE_ROLE}\\b`, "g");
+  const supportingExcerpt = (text: string, match: RegExpMatchArray) => {
+    const start = match.index!;
+    const suffix = text.slice(start + match[0].length, start + match[0].length + 180);
+    // Keep an explicitly stated employer (including compound titles) in the
+    // original excerpt. Verification independently checks full rawText too.
+    const extension = /^\s+(?:(?:and|&)\s+(?:Co-Founder|Founder)\s+)?(?:at|of)\s+[^"“”!?]{1,160}/i.exec(suffix)?.[0] ?? '';
+    return text.slice(start, start + match[0].length + extension.length).slice(0, 320).trim();
+  };
   for (const block of blocks) {
     const historicalRanges: Array<[number, number]> = [];
     for (const pattern of [historical, former]) {
@@ -215,7 +241,7 @@ function executiveCandidates(blocks: ContentBlock[]) {
           personName: match[1],
           role: match[2],
           temporalStatus: "historical",
-          excerpt: bounded(match[0], 320),
+          excerpt: supportingExcerpt(block.text, match),
           locator: block.locator,
           extractionMethod: "visibleText",
         });
@@ -233,7 +259,7 @@ function executiveCandidates(blocks: ContentBlock[]) {
         personName: match[1],
         role: match[2],
         temporalStatus: "current",
-        excerpt: bounded(match[0], 320),
+        excerpt: supportingExcerpt(block.text, match),
         locator: block.locator,
         extractionMethod: "visibleText",
       });

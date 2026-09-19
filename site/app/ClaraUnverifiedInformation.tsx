@@ -33,7 +33,7 @@ export function ClaraUnverifiedInformation({report,locale}:{report:PrivateDilige
   const explain=(code:string)=>reasons[code]?.[zh?1:0]??code.replaceAll('_',' ');
   return <section className="clara-unverified-information" aria-labelledby="clara-unverified-title" data-pdf-block>
     <header><h2 id="clara-unverified-title">⚠ {zh?'未核验信息':'Unverified Information'}</h2><p>{zh?'以下信息可能相关，但尚未满足核验要求；不计入标准事实、融资金额、估值摘要或正常图表。':'These findings may be relevant but do not yet meet verification requirements. They are excluded from canonical facts, funding amounts, valuation summaries, and normal charts.'}</p></header>
-    {Object.entries(categories).map(([domain,label])=>{const group=items.filter(f=>f.domain===domain);return group.length?<section key={domain}><h3>{label[zh?1:0]}</h3>{group.map(item=><article key={item.id} data-verification="unverified">
+    {Object.entries(categories).map(([domain,label])=>{const group=items.filter(f=>f.domain===domain);return group.length?<details key={domain} className="clara-unverified-group"><summary>{label[zh?1:0]} ({group.length})</summary>{group.map(item=><article key={item.id} data-verification="unverified">
       <h4>{verificationText(item.label)}</h4>{item.value!==null&&<p className="clara-unverified-value">{verificationText(String(item.value))}</p>}
       <p><strong>{zh?'为何未核验':'Why unverified'}:</strong> {item.verification.reasonCodes.map(explain).join('; ')}</p>
       {item.verification.missingRequirements.length>0&&<p><strong>{zh?'仍需支持':'Missing corroboration'}:</strong> {item.verification.missingRequirements.map(explain).join('; ')}</p>}
@@ -44,6 +44,6 @@ export function ClaraUnverifiedInformation({report,locale}:{report:PrivateDilige
         {source.publicationDate&&<p>{zh?'来源发布日期（非事件日期）':'Source published (not event date)'}: {source.publicationDate}</p>}
         <small>{source.evidenceId}</small>
       </div>)}<p>{zh?'核验时间':'Evaluated'}: {item.verification.evaluatedAt}</p>{item.verification.conflictingEvidenceIds.length>0&&<p>{zh?'冲突证据':'Conflicting evidence'}: {item.verification.conflictingEvidenceIds.join(', ')}</p>}</details>
-    </article>)}</section>:null;})}
+    </article>)}</details>:null;})}
   </section>;
 }

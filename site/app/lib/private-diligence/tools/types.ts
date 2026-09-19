@@ -30,7 +30,7 @@ export type ClaraToolContext = {
     searched: Set<string>;
     providerOptions?: import("../providers/providerRegistry").PrivateProviderRegistryOptions;
   };
-  hiringOptions?: Pick<Parameters<typeof import("../hiring").researchHiringActivity>[0], "fetchImpl" | "browserRenderer" | "resolveHost">;
+  hiringOptions?: Pick<Parameters<typeof import("../hiring").researchHiringActivity>[0], "fetchImpl" | "browserRenderer" | "resolveHost" | "inspectedCompanyPages">;
   searchSession?: import("../search/sharedSearch").SearchSession;
   fundingSession?: {
     secProvider?: import("../providers/providerTypes").PrivateCompanyProvider;
@@ -65,6 +65,7 @@ export type ClaraToolResult<T> = {
   resolvedGapCodes?: string[];
   errors: ToolError[];
   metadata: {
+    research?: Pick<import('../research/types').AdaptiveResearch, 'targets' | 'budget' | 'stopReason'>;
     verification?: import('../verification/types').VerificationLedger;
     toolName: string;
     startedAt: string;

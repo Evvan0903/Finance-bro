@@ -6,6 +6,8 @@ import { analyzeLegalEntities } from '../entity-resolution/legalEntityDiscovery'
 import { extractFormD } from '../extraction/formDExtractor';
 import { validateFundingCandidates } from '../funding/extraction';
 import { verificationResult as result, type VerificationResult } from './types';
+import { supportsExpandedStatement } from '../research/sourceStatements';
+import type { ResearchTopic } from '../research/types';
 export const tidy = (value: string) => value.replace(/\s+/g, ' ').trim();
 const escape = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 export function sameCompanyDomain(url: string, graph: EntityIdentityGraph) {
@@ -107,6 +109,74 @@ export function explicitEventDate(excerpt: string): string | null {
     const date = new Date(value);
     return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value ? value : null;
 }
+
+const personRole = /\b(?:CEO|CFO|COO|CTO|CRO|CMO|CPO|CCO|chief|head of|VP|vice president|president|director|co-founder|founder)\b/i;
+const nameRoleToken = /\b(?:CEO|CFO|COO|CTO|CRO|CMO|CPO|CCO|VP|chief|head|president|director|co-founder|founder|former)\b/i;
+
+/** Inspect the original local text, not an extraction that may end before "at OtherCo". */
+function personSourceContext(source: RawEvidence, excerpt: string, person: string | null) {
+    const text = tidy(source.rawText), selected = tidy(excerpt);
+    const selectedIndex = text.indexOf(selected);
+    const personOffset = person ? selected.toLowerCase().indexOf(tidy(person).toLowerCase()) : 0;
+    let start = selectedIndex + Math.max(0, personOffset);
+    // A directly preceding title belongs to the named person too ("CEO Jane
+    // Doe"); unrelated roles elsewhere in the preceding paragraph do not.
+    const titleBefore = text.slice(Math.max(0, start - 100), start).match(/\b(?:(?:co-founder|founder)\s+(?:and|&)\s+)?(?:CEO|CFO|COO|CTO|CRO|CMO|CPO|CCO|president|co-founder|founder)\s+$/i)?.[0];
+    if (titleBefore) start -= titleBefore.length;
+    const after = text.slice(start, start + Math.max(600, selected.length));
+    // A quote/sentence boundary limits unrelated subsequent bios while the
+    // original tail restores employer names omitted from short candidates.
+    const stop = after.search(/["“”]|[.!?](?=\s|$)/);
+    const statement = stop >= 0 ? after.slice(0, stop + 1) : after;
+    return { statement, before: text.slice(Math.max(0, start - 220), start) };
+}
+
+function explicitRoleEmployers(text: string) {
+    const simple = '(?:CEO|CFO|COO|CTO|CRO|CMO|CPO|CCO|(?:Managing|Executive)\\s+Director|Director|(?<!Vice\\s)President|(?:Co[- ]?)?Founder|Chief\\s+[A-Za-z-]+(?:\\s+[A-Za-z-]+){0,3}\\s+Officer)';
+    const compound = `(?:${simple})(?:\\s*(?:,|and|&)\\s*${simple})*`;
+    // "of Engineering" is a functional title, not the name of an employer.
+    const departmental = '(?:VP|Vice\\s+President|Head)\\s+(?:of\\s+)?[A-Za-z&/-]+(?:\\s+[A-Za-z&/-]+){0,4}\\s+at';
+    const prefix = new RegExp(`\\b(?:${compound}\\s+(?:at|of)|${departmental})\\s+`, 'gi');
+    return [...text.matchAll(prefix)].map(match => text.slice(match.index! + match[0].length));
+}
+
+function employerIsTarget(employer: string, graph: EntityIdentityGraph) {
+    return /^(?:the company|our company)\b/i.test(employer)
+        || [graph.canonicalName, graph.confirmedDisplayName, ...graph.legalNames, ...graph.dbaNames].filter((name): name is string => Boolean(name))
+            .some(name => new RegExp(`^${escape(name)}(?:\\b|[.,])`, 'i').test(employer));
+}
+
+function verifyPersonClaim(claim: PrivateCompanyClaim, source: RawEvidence, excerpt: string, graph: EntityIdentityGraph, now: string) {
+    const ids = [source.evidenceId], path = new URL(source.sourceUrl).pathname;
+    const person = claim.claimType === 'research.people' ? null : String(claim.normalizedValue).split(/\s+[—–]\s+/)[0];
+    if (person && (nameRoleToken.test(person) || !tidy(excerpt).toLowerCase().includes(tidy(person).toLowerCase())))
+        return result('unverified', now, ['person_role_association_incomplete'], ids, ['explicit_person_role_and_company']);
+    if (!person && /^(?:CEO|CFO|COO|CTO|CRO|CMO|CPO|CCO|VP)\s+[A-Z][A-Za-z'’.-]+\s+[A-Z][A-Za-z'’.-]+\s+(?:CEO|CFO|COO|CTO|CRO|CMO|CPO|CCO|VP)\b/.test(tidy(excerpt)))
+        return result('unverified', now, ['person_name_boundary_unclear'], ids, ['explicit_person_role_and_company']);
+    const context = personSourceContext(source, excerpt, person);
+    const employers = explicitRoleEmployers(context.statement);
+    if (employers.some(employer => !employerIsTarget(employer, graph)))
+        return result('rejected', now, ['unrelated_person_context'], [], [], ids);
+    const explicitTargetRole = employers.some(employer => employerIsTarget(employer, graph));
+    // Section labels before the subject can qualify a bio. Later sections and
+    // ordinary company prose about "our customers" do not qualify this person.
+    const thirdPartyContext = /\b(?:testimonials?|investors?|supporters?|backed by)\b/i.test(context.before)
+        || /^(?:our\s+)?(?:testimonials?|investors?|supporters?|customers?|clients?)\b|\b(?:guest speaker|conference speaker)\b/i.test(excerpt)
+        || /\/(?:pricing|customers?|case-studies)(?:\/|$)/i.test(path);
+    if (thirdPartyContext && !explicitTargetRole)
+        return result('rejected', now, ['unrelated_person_context'], [], [], ids);
+    if (/\b(?:author|guest speaker|conference speaker|our customer|our client)\b/i.test(excerpt) && !namesTarget(excerpt, graph))
+        return result('rejected', now, ['unrelated_person_context'], [], [], ids);
+    if (/\/authors?\//i.test(path) && (!personRole.test(context.statement) || !explicitTargetRole))
+        return result('rejected', now, ['article_author_not_employee'], [], [], ids);
+    const associated = explicitTargetRole || namesTarget(excerpt, graph)
+        || source.companyReported && /\/(?:about|team|leadership)(?:\/|$)|introduc.*(?:cfo|cco|ceo|leadership)|appoint/i.test(path);
+    if (!personRole.test(context.statement) || claim.claimType === 'founder' && !/\b(?:co-)?founder\b/i.test(context.statement) || !associated)
+        return result('unverified', now, ['person_role_association_incomplete'], ids, ['explicit_person_role_and_company']);
+    if (/\b(?:may be|possibly|reportedly|unclear)\b/i.test(context.statement))
+        return result('unverified', now, ['role_status_unclear'], ids, ['role_time_context']);
+    return result('verified', now, [/\b(?:former|previously|until|was the)\b/i.test(context.statement) || claim.claimType === 'formerExecutiveRole' ? 'historical_role_supported' : 'role_supported_as_of_source'], ids);
+}
 export function verifyClaim(claim: PrivateCompanyClaim, sources: RawEvidence[], graph: EntityIdentityGraph, now: string): VerificationResult {
     if (claim.entityId !== graph.entityId)
         return result('rejected', now, ['entity_mismatch'], [], [], claim.evidenceIds);
@@ -128,25 +198,7 @@ export function verifyClaim(claim: PrivateCompanyClaim, sources: RawEvidence[], 
         if (!excerpt || !tidy(source.rawText).includes(tidy(excerpt)))
             return result('unverified', now, ['field_support_incomplete'], [source.evidenceId], ['original_supporting_excerpt']);
         const people = ['founder', 'executive', 'executiveRole', 'formerExecutiveRole', 'research.people'].includes(claim.claimType);
-        if (people) {
-            const path = new URL(source.sourceUrl).pathname;
-            const person = claim.claimType==='research.people' ? null : String(claim.normalizedValue).split(/\s+[—–]\s+/)[0];
-            if(person&&!tidy(excerpt).toLowerCase().includes(tidy(person).toLowerCase()))return result('unverified',now,['person_role_association_incomplete'],[source.evidenceId],['explicit_person_role_and_company']);
-            if (/\b(?:author|guest speaker|conference speaker|our customer|our client)\b/i.test(excerpt) && !namesTarget(excerpt, graph))
-                return result('rejected', now, ['unrelated_person_context'], [], [], [source.evidenceId]);
-            const role = /\b(?:CEO|CFO|COO|CTO|CRO|CMO|CPO|CCO|chief|head of|VP|vice president|president|director|co-founder|founder)\b/i;
-            const employer = excerpt.match(/\b(?:CEO|CFO|COO|CTO|president|founder)\s+(?:at|of)\s+([A-Z][A-Za-z0-9 &.-]{1,60}?)(?=[,;.!?]|\s+(?:spoke|said|joined|announced)\b|$)/)?.[1];
-            if (employer && !namesTarget(employer, graph) && !/^(?:the company|our company)\b/i.test(employer))
-                return result('rejected', now, ['unrelated_person_context'], [], [], [source.evidenceId]);
-            if (/\/authors?\//i.test(path) && (!role.test(excerpt) || !namesTarget(excerpt, graph)))
-                return result('rejected', now, ['article_author_not_employee'], [], [], [source.evidenceId]);
-            const associated = namesTarget(excerpt, graph) || source.companyReported && /\/(?:about|team|leadership)(?:\/|$)|introduc.*(?:cfo|cco|ceo|leadership)|appoint/i.test(path);
-            if (!role.test(excerpt) || claim.claimType === 'founder' && !/\b(?:co-)?founder\b/i.test(excerpt) || !associated)
-                return result('unverified', now, ['person_role_association_incomplete'], [source.evidenceId], ['explicit_person_role_and_company']);
-            if (/\b(?:may be|possibly|reportedly|unclear)\b/i.test(excerpt))
-                return result('unverified', now, ['role_status_unclear'], [source.evidenceId], ['role_time_context']);
-            return result('verified', now, [/\b(?:former|previously|until|was the)\b/i.test(excerpt) || claim.claimType === 'formerExecutiveRole' ? 'historical_role_supported' : 'role_supported_as_of_source'], [source.evidenceId]);
-        }
+        if (people) return verifyPersonClaim(claim, source, excerpt, graph, now);
         if (['businessActivity', 'acquisition', 'research.recent'].includes(claim.claimType)) {
             if (!namesTarget(excerpt, graph) && !(source.companyReported && /\b(?:we|our)\b/i.test(excerpt)))
                 return result('unverified', now, ['event_subject_unresolved'], [source.evidenceId], ['target_event_association']);
@@ -155,6 +207,13 @@ export function verifyClaim(claim: PrivateCompanyClaim, sources: RawEvidence[], 
             // Publication anchors the statement, never substitutes for an event date.
             if (!source.publicationDate && !explicitEventDate(excerpt))
                 return result('unverified', now, ['event_timing_unresolved'], [source.evidenceId], ['dated_original_source_or_event_date']);
+        }
+        if (['research.customers', 'research.partnerships', 'research.pricing', 'research.security'].includes(claim.claimType)) {
+            const statement = claim.researchFact?.value ?? claim.statement;
+            if (!tidy(excerpt).includes(tidy(statement)))
+                return result('unverified', now, ['statement_not_in_excerpt'], [source.evidenceId], ['verbatim_source_statement']);
+            if (!source.companyReported || !supportsExpandedStatement(claim.claimType.replace('research.', '') as ResearchTopic, statement, graph.confirmedDisplayName ?? graph.canonicalName))
+                return result('unverified', now, ['relationship_or_observation_not_established'], [source.evidenceId], ['explicit_non_hypothetical_statement']);
         }
         return result('verified', now, ['source_grounded_statement'], [source.evidenceId]);
     });

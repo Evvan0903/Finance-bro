@@ -114,7 +114,7 @@ test('rendering both locales makes no network calls, preserves identity and deta
  const fetchBefore=globalThis.fetch;globalThis.fetch=()=>{throw Error('Rendering must not fetch');};
  try {
   const en=renderToStaticMarkup(createElement(ClaraQuickReportVisuals,{report:r,locale:'en'}));const zh=renderToStaticMarkup(createElement(ClaraQuickReportVisuals,{report:r,locale:'zh'}));
-  assert.match(en,/Funding Timeline/);assert.match(zh,/融资时间线/);assert.match(en,/0 public openings observed in the checked sources/);assert.match(en,/No supported recent developments/);assert.match(en,/not employee headcount or company growth/);assert.doesNotMatch(en,/Current funding stage|87%|92%/);assert.match(en,/https:\/\/acme.example\/e/);assert.match(en,/View evidence/);
+  assert.match(en,/Financing Summary/);assert.match(zh,/融资摘要/);assert.match(en,/0 public openings observed in the checked sources/);assert.doesNotMatch(en,/No supported recent developments/);assert.doesNotMatch(en,/data-module="recent"/);assert.match(en,/not employee headcount or company growth/);assert.doesNotMatch(en,/Current funding stage|87%|92%/);assert.match(en,/https:\/\/acme.example\/e/);assert.match(en,/View evidence/);
   assert.match(renderToStaticMarkup(createElement(ClaraFundingResearch,{report:r,locale:'en'})),/Field source/);
   assert.equal(quickReportParagraphs(r,'en')[0].paragraphs[0],'Original detailed report remains');assert.equal(JSON.stringify(r),before);
  } finally {globalThis.fetch=fetchBefore;}

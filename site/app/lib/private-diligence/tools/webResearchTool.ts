@@ -1,3 +1,4 @@
+import { searchTopicForResearch } from '../research/registry';
 import { createSearchSession } from "../search/sharedSearch";
 import { normalizeEvidenceRegistry } from "../evidence/evidenceRegistry";
 import { createPrivateProviderRegistry } from "../providers/providerRegistry";
@@ -52,7 +53,7 @@ export function createWebResearchTool(dependencies: { createRegistry?: ProviderR
       }
       try {
         const providerIds = [...new Set(requested)];
-        const registry = createRegistry ? createRegistry() : createPrivateProviderRegistry({ ...session?.providerOptions, serpApi: { ...session?.providerOptions?.serpApi, searchSession: context.searchSession ??= createSearchSession(), ...(permitted ? {queries:[{topic:permitted.topic === "people" ? "leadership" : permitted.topic === "recent" ? "recentActivity" : "overviewProducts",query:permitted.query}],maxSearches:1,resultsPerSearch:3,maxFetchedUrls:3} : {}) } });
+        const registry = createRegistry ? createRegistry() : createPrivateProviderRegistry({ ...session?.providerOptions, serpApi: { ...session?.providerOptions?.serpApi, searchSession: context.searchSession ??= createSearchSession(), ...(permitted ? {queries:[{topic:searchTopicForResearch(permitted.topic),query:permitted.query}],maxSearches:1,resultsPerSearch:3,maxFetchedUrls:3} : {}) } });
         const providers = providerIds.map((id) => registry.get(id)).filter((provider): provider is PrivateCompanyProvider => Boolean(provider));
         if (providers.length !== providerIds.length) {
           return { status: "failed", observations: [], evidence: [], gaps: [], errors: [{ code: "provider_not_registered", message: "A requested Clara web provider is not registered", retryable: false }], metadata: toolMetadata(name, startedAt, context, []) };

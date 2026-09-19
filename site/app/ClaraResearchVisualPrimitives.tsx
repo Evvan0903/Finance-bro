@@ -13,7 +13,7 @@ export function ClaraVisualSource({ source, locale }: { source: VisualSource; lo
     <span>{ATTRIBUTION[source.attribution][zh ? 1 : 0]}</span>{' · '}
     {source.url ? <a href={source.url} target="_blank" rel="noreferrer">{source.title}</a> : <span>{zh ? '来源链接不可用' : 'Source link unavailable'}</span>}
     <details><summary>{zh ? '查看证据' : 'View evidence'}</summary>
-      {source.excerpt && <blockquote>{source.excerpt}</blockquote>}<small>{source.evidenceId}</small>
+      {source.excerpt && <blockquote>{source.excerpt}</blockquote>}<small>{source.evidenceId || (source.recordId ? `${zh ? '职位记录' : 'Job record'}: ${source.recordId}` : '')}</small>
     </details>
   </div>;
 }

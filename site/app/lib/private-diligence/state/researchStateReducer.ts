@@ -154,6 +154,8 @@ export function applyToolExecutionToResearchState(state: ResearchState, executio
     evidenceRefs: mergeEvidenceReferences(state, execution),
     verification: {version:1,evaluatedAt:execution.completedAt,findings:[...findings.values()]},
     verificationHistory: history,
+    researchProgress: execution.toolName === 'evidence_verification' && execution.metadata.research
+      ? execution.metadata.research : state.researchProgress,
     executionIds: [...state.executionIds, execution.id],
     updatedAt: execution.completedAt,
   };

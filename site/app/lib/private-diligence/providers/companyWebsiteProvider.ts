@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { extractFundingParagraphs, extractCompanyPage, type ExtractedCompanyPage } from "../extraction/htmlExtractor";
+import { extractFundingParagraphs, extractCompanyPage, extractPublicationDate, type ExtractedCompanyPage } from "../extraction/htmlExtractor";
 import { normalizeOfficialCompanyUrl, robotsDisallows, safeCompanyFetch } from "../security";
 import type { RawEvidence } from "../types";
 import type { PrivateCompanyProvider, ProviderSearchResult } from "./providerTypes";
@@ -9,7 +9,7 @@ const PREFERRED_PATHS = [
   "/products", "/services", "/careers", "/news", "/terms", "/privacy",
 ];
 
-const IDENTITY_PATH = /(?:^|\/)(?:about|company|team|leadership|contact|products?|services?|careers?|news|press|terms|privacy|legal)(?:\/|$)/i;
+const IDENTITY_PATH = /(?:^|\/)(?:about|company|team|leadership|contact|products?|services?|careers?|jobs|news|newsroom|press|blog|customers?|case-studies|partners?|partnerships|integrations|pricing|security|trust|compliance|terms|privacy|legal)(?:\/|$)/i;
 
 type WebsiteRecord = {
   url: string;
@@ -17,6 +17,7 @@ type WebsiteRecord = {
   depth: number;
   extracted: ExtractedCompanyPage;
   fundingText: string;
+  publicationDate: string | null;
 };
 
 export type CompanyWebsiteProviderOptions = {
@@ -58,6 +59,25 @@ export function selectIdentityLinks(base: URL, links: string[], maxDepth = 2) {
   return [...new Set(output)];
 }
 
+/** One page per promising subject before another page from the same navigation group. */
+export function diversifyResearchLinks(links: string[]) {
+  const groups = [
+    /\/(?:about|company|team|leadership)(?:\/|$)/i,
+    /\/(?:products?|services?)(?:\/|$)/i,
+    /\/(?:customers?|case-studies|partners?|partnerships|integrations)(?:\/|$)/i,
+    /\/(?:careers?|jobs)(?:\/|$)/i,
+    /\/(?:news|newsroom|press|blog)(?:\/|$)/i,
+    /\/(?:pricing|security|trust|compliance)(?:\/|$)/i,
+  ];
+  const buckets: string[][] = Array.from({ length: groups.length + 1 }, () => []);
+  for (const link of [...new Set(links)]) {
+    const index = groups.findIndex(pattern => pattern.test(new URL(link).pathname));
+    buckets[index < 0 ? groups.length : index].push(link);
+  }
+  return Array.from({ length: Math.max(0, ...buckets.map(b => b.length)) }, (_, position) =>
+    buckets.flatMap(bucket => bucket[position] ? [bucket[position]] : [])).flat();
+}
+
 export function createCompanyWebsiteProvider(
   options: CompanyWebsiteProviderOptions = {},
 ): PrivateCompanyProvider {
@@ -92,8 +112,11 @@ export function createCompanyWebsiteProvider(
       const configured = options.paths ?? [PREFERRED_PATHS[0]];
       const queue = configured.map((path) => new URL(path, official).toString());
       const seen = new Set<string>();
-      while (queue.length && records.length < maxPages) {
-        const batchUrls = queue.splice(0, Math.min(3, maxPages - records.length))
+      // Failed guessed paths are also work: they must not consume an entire run.
+      const maxAttempts = maxPages + 4;
+      let failedPages = 0;
+      while (queue.length && records.length < maxPages && seen.size < maxAttempts) {
+        const batchUrls = queue.splice(0, Math.min(3, maxPages - records.length, maxAttempts - seen.size))
           .filter((value) => !seen.has(value));
         batchUrls.forEach((value) => seen.add(value));
         const batch = await Promise.all(batchUrls.map(async (value) => {
@@ -107,8 +130,10 @@ export function createCompanyWebsiteProvider(
               timeoutMs: Math.min(options.timeoutMs ?? 5_000, 8_000),
             });
             const resolved = new URL(response.url);
-            return { url: response.url, pageType: pageType(resolved), depth: urlDepth(resolved), extracted: extractCompanyPage(response.text), fundingText: extractFundingParagraphs(response.text) };
+            const extracted = extractCompanyPage(response.text);
+            return { url: response.url, pageType: pageType(resolved), depth: urlDepth(resolved), extracted, fundingText: extractFundingParagraphs(response.text), publicationDate: extractPublicationDate(response.text, extracted) };
           } catch {
+            failedPages++;
             return null;
           }
         }));
@@ -117,13 +142,12 @@ export function createCompanyWebsiteProvider(
         if (!options.paths) {
           const discovered = usable.flatMap((item) => selectIdentityLinks(new URL(item.url), item.extracted.links, maxDepth));
           const fallbacks = PREFERRED_PATHS.map((path) => new URL(path, official).toString());
-          for (const next of [...discovered, ...fallbacks]) {
-            if (!seen.has(next) && !queue.includes(next)) queue.push(next);
-          }
+          const candidates = diversifyResearchLinks([...queue.filter(url => !fallbacks.includes(url)), ...discovered]);
+          queue.splice(0, queue.length, ...[...new Set([...candidates, ...fallbacks])].filter(url => !seen.has(url)));
         }
       }
       return {
-        status: records.length ? (records.length < 2 ? "partial" : "success") : "noData",
+        status: records.length ? (records.length < 2 || failedPages ? "partial" : "success") : failedPages ? 'upstreamUnavailable' : "noData",
         records,
         sanitizedIssue: records.length ? null : "No supported public HTML pages were retrieved",
       };
@@ -148,7 +172,7 @@ export function createCompanyWebsiteProvider(
           sourceTitle: extracted.title,
           sourceUrl: record.url,
           publicReferenceUrl: record.url,
-          publicationDate: null,
+          publicationDate: record.publicationDate,
           retrievedAt: context.now().toISOString(),
           rawText,
           structuredData: {

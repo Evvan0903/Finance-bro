@@ -1,3 +1,4 @@
+import { adaptiveReportSections } from './adaptiveReportComposer';
 import type { ClaimStatus, DiligenceLocale, NormalizedEvidence, PrivateDiligenceReport } from "../types";
 
 export type QuickCoverageId =
@@ -214,7 +215,8 @@ export function buildQuickReportVisualizations(report: PrivateDiligenceReport): 
 }
 
 export function quickReportParagraphs(report: PrivateDiligenceReport, locale: DiligenceLocale) {
-  return report.sections.map((section) => ({
+  const sections = report.presentation ? [...adaptiveReportSections(report), ...report.sections.filter(section => section.sectionId === 'unverified')] : report.sections;
+  return sections.map((section) => ({
     sectionId: section.sectionId,
     title: section.title[locale],
     paragraphs: section.paragraphsByLocale?.[locale] ?? section.paragraphs,

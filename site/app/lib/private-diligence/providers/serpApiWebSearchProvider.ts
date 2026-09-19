@@ -1,6 +1,6 @@
 import { createSharedSearch, safeDiscoveryUrl, searchProviderStatus, type DiscoveryLead, type SearchOptions } from "../search/sharedSearch";
 import { createHash } from "node:crypto";
-import { extractFundingParagraphs, extractCompanyPage, type ExtractedCompanyPage } from "../extraction/htmlExtractor";
+import { extractFundingParagraphs, extractCompanyPage, extractPublicationDate, type ExtractedCompanyPage } from "../extraction/htmlExtractor";
 import { normalizeEntityName } from "../entity-resolution/entityMatcher";
 import { safeCompanyFetch } from "../security";
 import type { RawEvidence } from "../types";
@@ -153,18 +153,7 @@ export function deduplicateSerpApiLeads(leads: SerpApiSearchLead[]) {
   return [...output.values()];
 }
 
-export function publicationDate(html: string, extracted: ExtractedCompanyPage) {
-  const candidates = [
-    ...extracted.jsonLd.flatMap((item) => [item.datePublished]),
-    ...[...html.matchAll(/<meta\b[^>]*(?:property|name)=["'](?:article:published_time|date|datePublished)["'][^>]*content=["']([^"']+)["'][^>]*>/gi)].map((match) => match[1]),
-  ];
-  for (const value of candidates) {
-    if (typeof value !== "string") continue;
-    const parsed = new Date(value);
-    if (!Number.isNaN(parsed.getTime())) return parsed.toISOString().slice(0, 10);
-  }
-  return null;
-}
+export const publicationDate = extractPublicationDate;
 
 function sameCompanyDomain(hostname: string, domains: string[]) {
   const host = hostname.toLowerCase().replace(/^www\./, "");

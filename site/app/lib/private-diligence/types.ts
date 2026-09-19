@@ -394,6 +394,8 @@ export type ReportSection = {
 };
 
 export type PrivateDiligenceReport = {
+  structuredRecords?: import('./structuredRecords').StructuredResearchRecord[];
+  presentation?: import('./reports/adaptiveReportComposer').ReportPresentation;
   verification?: import('./verification/types').VerificationLedger;
   adaptiveResearch?: import("./research/types").AdaptiveResearch;
   fundingResearch?: import("./funding/types").FundingResearch;

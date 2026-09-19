@@ -1,5 +1,7 @@
 import { ResearchBudget } from "./research/budget";
-import { researchAdaptively } from "./research/adaptive";
+import { researchAdaptively, mergeTargetProgress } from "./research/adaptive";
+import { baselineResearchQueries } from './research/registry';
+import type { TargetResearchProgress } from './research/types';
 import { getClaraTool } from "./tools/registry";
 import { executeClaraTool } from "./state/executeClaraTool";
 import type { ClaraToolContext } from "./tools/types";
@@ -25,6 +27,8 @@ import type { EntityIdentityGraph, PrivateCompanyInput } from "./types";
 import { canonicalResearch, verifiedConflicts } from './verification/governance';
 import { attachVerificationReport } from './verification/presentation';
 import { researchStateStore } from './state/researchStateStore';
+import { buildStructuredResearchRecords } from './structuredRecords';
+import { composeAdaptiveReport } from './reports/adaptiveReportComposer';
 
 export class PrivateDiligenceEngineError extends Error {
   constructor(readonly code: "ENTITY_NOT_RESOLVED" | "INSUFFICIENT_PUBLIC_INFORMATION", message: string) {
@@ -50,10 +54,7 @@ export async function runPrivateDiligence(
   const sharedFetch = budget.fetch(options.website?.fetchImpl);
   const searchOptions = { ...options.serpApi, searchSession: options.serpApi?.searchSession ?? createSearchSession(), deadline, onQuery:(query:string)=>{if(!budget.queries.includes(query))budget.queries.push(query);},
     ...(quickMode ? { fetchImpl: sharedFetch, searchFetchImpl: budget.fetch(options.serpApi?.searchFetchImpl), maxSearches: 2, maxAttempts: 3, resultsPerSearch: 3, maxFetchedUrls: 6,
-      queries: [
-        {topic: "leadership" as const, query: `site:${graph.domains[0]} "${graph.canonicalName.replace(/["\\]/g, " ")}" founders leadership team`},
-        {topic: "recentActivity" as const, query: `site:${graph.domains[0]} "${graph.canonicalName.replace(/["\\]/g, " ")}" announcements news ${now().getUTCFullYear()}`},
-      ] } : {}) };
+      queries: baselineResearchQueries(graph, now()) } : {}) };
   const providerOptions = { ...options, ...(quickMode ? {usaSpendingFetch:budget.fetch(options.usaSpendingFetch)} : {}), website: { ...options.website, ...(quickMode ? {fetchImpl: sharedFetch,maxPages:8} : {}) }, serpApi: searchOptions };
   const context: ClaraToolContext = {researchId,input,identityGraph:graph,now,searchSession:searchOptions.searchSession,
     researchSession: {budget,permittedQueries:[],searched:new Set(searchOptions.queries?.map(q=>q.query.trim().replace(/\s+/g," ").toLowerCase()) ?? []),providerOptions},
@@ -79,6 +80,9 @@ export async function runPrivateDiligence(
     fetchImpl: sharedFetch, resolveHost: options.website?.resolveHost, deadline, now,
   }) : null;
   const officialDomain = graph.domains[0];
+  context.hiringOptions = { ...context.hiringOptions, inspectedCompanyPages: rawEvidence
+    .filter(page => page.companyReported && page.entityId === graph.entityId)
+    .map(page => ({ url: page.sourceUrl, links: Array.isArray(page.structuredData.links) ? page.structuredData.links.filter((link): link is string => typeof link === 'string') : [] })) };
   // Independent useful branches share the run deadline and outbound counters.
   const [hiringOutcome, funding, adaptive] = await Promise.all([
     quickMode && officialDomain ? runTool<HiringActivityResult>("hiring_intelligence",{}) : null,
@@ -111,12 +115,45 @@ export async function runPrivateDiligence(
   const generatedAt = now().toISOString();
   const material = {graph,rawEvidence:[...rawEvidence,...hiringEvidence],claims:reconciled.claims,evidence:normalizedEvidence,fundingResearch:funding?.fundingResearch,hiringIntelligence,now:generatedAt};
   const canonical = canonicalResearch(material);
+  if (adaptive) {
+    const branch = (targetId: string, attempts: number, status: TargetResearchProgress['status'], evidenceIds: string[], stopReason: string): TargetResearchProgress => ({
+      targetId, phase: ['funding', 'sec_filings', 'hiring'].includes(targetId) ? 'deepening' : 'discovery',
+      attempts, emptyAttempts: status === 'searched_not_found' ? attempts : 0, status, stopReason, evidenceIds,
+    });
+    const f = funding?.fundingResearch;
+    const fundingStatus = (status: import('./funding/types').FundingStatus, supported: boolean): TargetResearchProgress['status'] => supported ? 'supported'
+      : ['inaccessible', 'budget_exhausted'].includes(status) ? 'source_unavailable'
+        : ['issuer_unresolved', 'partial', 'supported'].includes(status) ? 'entity_unresolved' : status === 'not_performed' ? 'not_researched' : 'searched_not_found';
+    const fundingEvidence = (kind: 'announcement' | 'formD') => canonical.fundingResearch?.events.filter(e => e.sourceKind === kind).flatMap(e => Object.values(e.fields).map(field => field.evidenceId)) ?? [];
+    const hiringStatus: TargetResearchProgress['status'] = canonical.hiringIntelligence?.verification?.status === 'verified' ? 'supported'
+      : !hiringIntelligence ? 'not_researched' : ['success_with_jobs', 'success_zero_jobs', 'partial'].includes(hiringIntelligence.status) ? 'entity_unresolved' : 'source_unavailable';
+    const government = providerResults.find(p => p.providerId === 'usaSpending');
+    const governmentIds = canonical.claims.filter(c => c.category === 'Government').flatMap(c => c.evidenceIds);
+    mergeTargetProgress(adaptive.research, [
+      branch('identity', 1, 'supported', graph.identityEvidenceIds ?? [], 'confirmed_brand_locked'),
+      branch('legal_entity', legal?.discovery.requests ?? 0, legal?.discovery.status === 'selected' ? 'supported' : legal?.discovery.candidates.length ? 'entity_unresolved'
+        : legal?.discovery.sources.some(s => ['unavailable', 'budgetExceeded'].includes(s.status)) ? 'source_unavailable' : 'searched_not_found',
+        legal?.discovery.candidates.filter(c => c.status === 'accepted').flatMap(c => c.evidence.map(e => e.evidenceId)) ?? [], legal?.discovery.status === 'selected' ? 'supported_legal_operator' : 'legal_operator_not_established'),
+      branch('hiring', hiringOutcome ? 1 : 0, hiringStatus, hiringStatus === 'supported' ? hiringEvidence.map(e => e.evidenceId) : [], hiringStatus === 'supported' ? 'observed_snapshot_obtained' : 'career_source_or_snapshot_not_established'),
+      branch('funding', f?.actions.filter(a => a.action !== 'sec_funding').length ?? 0, fundingStatus(f?.announcementStatus ?? 'not_performed', fundingEvidence('announcement').length > 0), fundingEvidence('announcement'), f?.announcementStatus ?? 'not_performed'),
+      branch('sec_filings', f?.requests.sec ?? 0, fundingStatus(f?.secStatus ?? 'not_performed', fundingEvidence('formD').length > 0), fundingEvidence('formD'), f?.secStatus ?? 'not_performed'),
+      branch('government_activity', government ? 1 : 0, governmentIds.length ? 'supported' : !government ? 'not_researched' : government.status === 'noData' ? 'searched_not_found' : ['success', 'partial'].includes(government.status) ? 'entity_unresolved' : 'source_unavailable', governmentIds, government?.status ?? 'not_relevant_to_research_objective'),
+    ]);
+    // Extraction discovers candidates; only governance establishes supported coverage.
+    for (const target of adaptive.research.targets ?? []) if (target.topic && target.status === 'supported') {
+      const approved = canonical.claims.filter(c => c.researchFact?.topic === target.topic);
+      target.evidenceIds = [...new Set(approved.flatMap(c => c.evidenceIds))];
+      if (!approved.length) { target.status = 'entity_unresolved'; target.stopReason = 'candidate_evidence_not_verified'; }
+    }
+    adaptive.research.budget = budget.snapshot();
+  }
   const canonicalConflicts = verifiedConflicts(reconciled.conflicts, canonical.claims);
   const risks = buildRiskFindings(graph, canonical.claims, canonicalConflicts);
   const informationGaps = buildInformationGaps(canonical.claims, canonical.evidence);
   const questions = buildDiligenceQuestions(informationGaps, canonicalConflicts);
   if(options.researchStateId) await researchStateStore.recordToolExecution({researchStateId:options.researchStateId,toolName:'evidence_verification',input:{},identityGraph:graph,
-    result:{status:'success',data:{fundingResearch:funding?.fundingResearch,hiringIntelligence},evidence:material.rawEvidence,observations:[],gaps:[],errors:[],metadata:{toolName:'evidence_verification',startedAt:generatedAt,completedAt:generatedAt,retrievalTime:generatedAt,sourceCount:material.rawEvidence.length}}});
+    result:{status:'success',data:{fundingResearch:funding?.fundingResearch,hiringIntelligence},evidence:material.rawEvidence,observations:[],gaps:[],errors:[],metadata:{toolName:'evidence_verification',startedAt:generatedAt,completedAt:generatedAt,retrievalTime:generatedAt,sourceCount:material.rawEvidence.length,
+      ...(adaptive ? { research: { targets: adaptive.research.targets, budget: adaptive.research.budget, stopReason: adaptive.research.stopReason } } : {})}}});
   const adaptiveResearch = adaptive ? {...adaptive.research,facts:adaptive.research.facts.filter(f=>canonical.claims.some(c=>c.researchFact?.value===f.value&&c.evidenceIds.includes(f.evidenceId))),coverage:adaptive.research.coverage.map(row=>{
     const provisional = canonical.ledger.findings.some(f=>f.claimId&&reconciled.claims.find(c=>c.claimId===f.claimId)?.researchFact?.topic===row.topic&&f.verification.status!=='verified');
     return {...row,status:provisional?'partial' as const:row.status,evidenceIds:row.evidenceIds.filter(id=>canonical.evidence.some(e=>e.evidenceId===id))};
@@ -128,6 +165,11 @@ export async function runPrivateDiligence(
   };
   const report = quickMode ? buildQuickCompanyIntelligenceReport(reportArgs) : buildPrivateDiligenceReport(reportArgs);
   attachVerificationReport(report,canonical.ledger);
+  if (quickMode) {
+    report.structuredRecords = buildStructuredResearchRecords(report.claims, report.evidence);
+    const { version, title, modules, keyFindings } = composeAdaptiveReport(report);
+    report.presentation = { version, title, modules, keyFindings };
+  }
   if (adaptive) {
     adaptive.research.budget = budget.snapshot();
     if(report.adaptiveResearch) report.adaptiveResearch.budget=budget.snapshot();

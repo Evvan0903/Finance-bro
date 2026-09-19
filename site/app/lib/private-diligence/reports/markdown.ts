@@ -1,3 +1,4 @@
+import { adaptiveReportSections, confirmedCompanyTitle, supportedLegalEntities } from './adaptiveReportComposer';
 import type { DiligenceLocale, PrivateDiligenceReport } from "../types";
 
 export function privateDiligenceReportToMarkdown(report: PrivateDiligenceReport, requestedLocale?: DiligenceLocale) {
@@ -15,7 +16,7 @@ export function privateDiligenceReportToMarkdown(report: PrivateDiligenceReport,
       } as const)[report.coverageStatus]
     : report.coverageStatus;
   const lines = [
-    `# ${report.entity.canonicalName} — ${title}`,
+    `# ${confirmedCompanyTitle(report)} — ${title}`,
     "",
     `**${locale === "zh" ? "研究日期" : "Research date"}:** ${report.generatedAt}`,
     `**${locale === "zh" ? "证据覆盖" : "Evidence coverage"}:** ${coverage}`,
@@ -23,7 +24,9 @@ export function privateDiligenceReportToMarkdown(report: PrivateDiligenceReport,
     `> ${quick ? report.disclosureByLocale?.[locale] ?? report.disclosure : report.disclosure}`,
     "",
   ];
-  for (const section of report.sections) {
+  if (quick) for (const item of supportedLegalEntities(report)) lines.push(`Legal entity: ${item.name} (${item.status})${item.sourceUrl ? ` — ${item.sourceUrl}` : ''}`, '');
+  const sections = quick && report.presentation ? [...adaptiveReportSections(report), ...report.sections.filter(section => section.sectionId === 'unverified')] : report.sections;
+  for (const section of sections) {
     lines.push(`## ${section.number} ${section.title[locale]}`, "");
     const paragraphs = quick ? section.paragraphsByLocale?.[locale] ?? section.paragraphs : section.paragraphs;
     for (const paragraph of paragraphs) lines.push(paragraph, "");

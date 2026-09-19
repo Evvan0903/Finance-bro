@@ -23,7 +23,7 @@ export async function POST(request: Request) {
   }
   try {
     await privateDiligenceStore.update(researchId, { stage: "sourceRetrieval", stageStatus: "running" });
-    const state = await researchStateStore.createResearchState({ objective: "Resolve the confirmed company’s business, people, funding, hiring and dated developments using bounded public-source research", researchRequestId: researchId, identityGraph: graph });
+    const state = await researchStateStore.createResearchState({ objective: "Within the bounded research budget, discover the highest-value source-supported information about the confirmed company; prioritize promising targets and stop branches with low marginal value", researchRequestId: researchId, identityGraph: graph });
     const result = await runPrivateDiligence(researchId, record.input, graph, { researchStateId: state.id });
     await privateDiligenceStore.update(researchId, {
       stage: "reportValidation", stageStatus: "complete",

@@ -1,8 +1,9 @@
+import { analyzeHiringRoles } from '../hiring/core';
 import type { PrivateDiligenceReport, PrivateCompanyClaim, NormalizedEvidence } from '../types';
 
 export type CoverageStatus = 'supported' | 'partial' | 'conflicting' | 'searched-not-found' | 'source-unavailable' | 'not-researched';
 export type Attribution = 'company-reported' | 'independently-reported' | 'official-record' | 'unverified';
-export type VisualSource = { evidenceId: string; url: string | null; title: string; excerpt: string | null; attribution: Attribution };
+export type VisualSource = { evidenceId: string; recordId?: string; url: string | null; title: string; excerpt: string | null; attribution: Attribution };
 export type VisualField = { key: string; value: string | number; source: VisualSource };
 export type FundingObservation = {
   id: string; kind: 'financing' | 'cumulative' | 'offering' | 'unclassified'; fields: VisualField[];
@@ -17,6 +18,8 @@ export type HiringVisualizationData = {
   sources: { url: string | null; retrievedAt: string }[];
   jobs: { id: string; title: string; location: string | null; url: string | null; evidenceIds: string[] }[];
   limitations: string[];
+  roleAnalysis: ReturnType<typeof analyzeHiringRoles>;
+  notableJobs: { id: string; title: string; location: string | null; url: string | null; evidenceIds: string[]; reasons: string[] }[];
 };
 export type RecentDevelopment = {
   id: string; claimIds: string[]; evidenceIds: string[]; eventType: 'acquisition' | 'development';
@@ -98,7 +101,7 @@ function counts(labels: string[]): BarDatum[] {
 }
 export function buildHiringVisualizationData(report: PrivateDiligenceReport): HiringVisualizationData {
   const result = report.hiringIntelligence;
-  const empty: HiringVisualizationData = { status: 'not-researched', count: null, retrievedDates: [], functions: [], locations: [], seniority: [], remote: [], sources: [], jobs: [], limitations: [] };
+  const empty: HiringVisualizationData = { status: 'not-researched', count: null, retrievedDates: [], functions: [], locations: [], seniority: [], remote: [], sources: [], jobs: [], limitations: [], roleAnalysis: analyzeHiringRoles([]), notableJobs: [] };
   if (!result) return empty;
   if(result.verification && result.verification.status!=='verified') return {...empty,status:result.verification.status==='rejected'?'unavailable':'partial',limitations:result.verification.reasonCodes};
   if (result.companyId !== report.entity.entityId) return { ...empty, status: 'unavailable' };
@@ -108,6 +111,7 @@ export function buildHiringVisualizationData(report: PrivateDiligenceReport): Hi
   const consistent = result.summary.totalOpenRoles === jobs.length && (result.status !== 'success_zero_jobs' || jobs.length === 0);
   const sources = result.summary.sources.map(s => ({ url: visualSourceUrl(s.sourceUrl), retrievedAt: s.retrievedAt }));
   const evidence = report.evidence.filter(e => eligible(e, report));
+  const roleAnalysis = analyzeHiringRoles(jobs);
   const locations = counts(jobs.map(j => j.location?.trim() || 'Unknown'));
   return { status: success && consistent ? jobs.length ? 'success' : 'zero' : partial || (success && !consistent) ? 'partial' : 'unavailable',
     count: success && consistent ? result.summary.totalOpenRoles : null,
@@ -116,8 +120,9 @@ export function buildHiringVisualizationData(report: PrivateDiligenceReport): Hi
     locations: locations.length > 6 ? [...locations.slice(0, 5), { label: 'Other locations', count: locations.slice(5).reduce((n, r) => n + r.count, 0) }] : locations,
     // Existing adapters may set false simply because “remote” was absent. Do not label it on-site.
     remote: counts(jobs.map(j => j.remote === true ? 'Remote indicated' : j.remote === false ? 'Remote not indicated' : 'Unknown')),
+    roleAnalysis, notableJobs: roleAnalysis.notableRoles.map(j => ({ id: j.id, title: j.title, location: j.location ?? null, url: visualSourceUrl(j.sourceUrl), evidenceIds: evidence.filter(e => e.normalizedFields.jobId === j.id || e.sourceUrl === j.sourceUrl).map(e => e.evidenceId), reasons: j.selectionReasons })),
     sources, jobs: jobs.map(j => ({ id: j.id, title: j.title, location: j.location ?? null, url: visualSourceUrl(j.sourceUrl), evidenceIds: evidence.filter(e => e.normalizedFields.jobId === j.id || e.sourceUrl === j.sourceUrl).map(e => e.evidenceId) })),
-    limitations: unique([...result.limitations, ...result.summary.limitations, ...result.failures.map(f => f.reason), ...(!consistent && success ? ['Stored role count and normalized jobs differ; total is unavailable.'] : [])]),
+    limitations: unique([...result.limitations, ...(result.summary.limitations ?? []), ...result.failures.map(f => f.reason), ...(!consistent && success ? ['Stored role count and normalized jobs differ; total is unavailable.'] : [])]),
   };
 }
 

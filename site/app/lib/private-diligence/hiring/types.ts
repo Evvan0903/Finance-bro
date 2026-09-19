@@ -14,6 +14,18 @@ export type JobFunction =
   | "Operations" | "HR / People" | "Legal / Compliance" | "Customer Success"
   | "Security" | "Other";
 export type JobSeniority = "Intern" | "Entry" | "Mid" | "Senior" | "Lead" | "Manager" | "Director" | "VP" | "Executive" | "Unknown";
+export type KeyRoleCategory = "finance_leadership" | "technical_leadership" | "ai_ml" | "data" | "security_compliance" | "commercial_leadership";
+export type HiringRoleAnalysis = {
+  metrics: { leadership: number; aiMl: number; financeLeadership: number; securityCompliance: number };
+  byKeyRole: Record<KeyRoleCategory, number>;
+  notableRoles: Array<JobPosting & { normalizedTitle: string; keyRoleCategories: KeyRoleCategory[]; selectionReasons: string[] }>;
+  descriptiveSignals: Array<{
+    type: "category_count" | "leadership_count" | "largest_function" | "observed_locations";
+    text: string;
+    evidenceCount: number;
+    supportingJobIds: string[];
+  }>;
+};
 
 export type JobPosting = {
   id: string;
@@ -32,6 +44,7 @@ export type JobPosting = {
   sourceType: HiringSourceType;
   sourceJobId?: string;
   postedAt?: string;
+  updatedAt?: string;
   retrievedAt: string;
 };
 
@@ -40,6 +53,9 @@ export type CareerSourceCandidate = {
   sourceType: HiringSourceType;
   discoveryMethod: "linked_from_website" | "known_path" | "confirmed_source";
   score: number;
+  /** The inspected official page that supplied this URL, not a search snippet. */
+  sourcePageUrl?: string;
+  referenceType?: "anchor" | "iframe" | "supported_reference" | "known_path" | "sitemap";
 };
 
 export type HiringSignal = {
@@ -60,6 +76,7 @@ export type HiringIntelligenceSummary = {
   sources: { adapter: string; sourceUrl: string; retrievedAt: string; jobCount: number }[];
   signals: HiringSignal[];
   limitations: string[];
+  roleAnalysis?: HiringRoleAnalysis;
 };
 
 export type HiringActivityResult = {

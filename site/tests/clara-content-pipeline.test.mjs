@@ -1,3 +1,4 @@
+import { tsImport } from "tsx/esm/api";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
@@ -15,7 +16,7 @@ async function pipeline(html, overrides = {}) {
   const extractor = await import(`${await moduleUrl("../app/lib/private-diligence/extraction/htmlExtractor.ts")}#extract-${Math.random()}`);
   const evidenceRegistry = await import(`${await moduleUrl("../app/lib/private-diligence/evidence/evidenceRegistry.ts")}#evidence-${Math.random()}`);
   const claimRegistry = await import(`${await moduleUrl("../app/lib/private-diligence/evidence/claimRegistry.ts")}#claims-${Math.random()}`);
-  const reportBuilder = await import(`${await moduleUrl("../app/lib/private-diligence/reports/quickReportBuilder.ts")}#report-${Math.random()}`);
+  const reportBuilder = await tsImport(new URL("../app/lib/private-diligence/reports/quickReportBuilder.ts", import.meta.url).href, import.meta.url);
   const extracted = extractor.extractCompanyPage(html);
   const evidenceId = overrides.evidenceId ?? "website-r-1";
   const sourceUrl = overrides.sourceUrl ?? "https://northstar.example/services";
@@ -149,7 +150,7 @@ test("search-topic discovery alone does not mark relationships or activity cover
   const { report } = await pipeline(`<!doctype html><title>Northstar AI</title><main><p>Northstar AI is a private company.</p></main>`, {
     searchTopics: ["customersPartners", "recentActivity", "fundingAcquisitions"],
   });
-  const presentation = await import(`${await moduleUrl("../app/lib/private-diligence/reports/quickReportPresentation.ts")}#presentation-${Math.random()}`);
+  const presentation = await tsImport(new URL("../app/lib/private-diligence/reports/quickReportPresentation.ts", import.meta.url).href, import.meta.url);
   const coverage = presentation.buildQuickReportVisualizations(report).coverage;
   assert.equal(coverage.find((item) => item.id === "customers").covered, false);
   assert.equal(coverage.find((item) => item.id === "partners").covered, false);
@@ -167,7 +168,7 @@ test("existing hiring snapshot remains covered without inferring growth", async 
         sources: [{ adapter: "FixtureAdapter", sourceUrl: "https://northstar.example/careers", retrievedAt: "2026-09-15T20:00:00.000Z", jobCount: 2 }], signals: [] },
     },
   });
-  const presentation = await import(`${await moduleUrl("../app/lib/private-diligence/reports/quickReportPresentation.ts")}#hiring-${Math.random()}`);
+  const presentation = await tsImport(new URL("../app/lib/private-diligence/reports/quickReportPresentation.ts", import.meta.url).href, import.meta.url);
   assert.equal(presentation.buildQuickReportVisualizations(report).coverage.find((item) => item.id === "hiring").covered, true);
   const text = report.sections.find((section) => section.sectionId === "04").paragraphs.join(" ");
   assert.match(text, /2 public open roles/);

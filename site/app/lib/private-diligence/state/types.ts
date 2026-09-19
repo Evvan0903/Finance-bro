@@ -40,6 +40,7 @@ export type ResearchStateGap = ResearchGap & {
 };
 
 export type ResearchState = {
+  researchProgress?: Pick<import('../research/types').AdaptiveResearch, 'targets' | 'budget' | 'stopReason'>;
   verification?: import('../verification/types').VerificationLedger;
   verificationHistory?: import('../verification/types').VerificationTransition[];
   id: string;

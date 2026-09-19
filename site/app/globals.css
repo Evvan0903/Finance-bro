@@ -5135,3 +5135,64 @@ tbody th, .driver-table a strong { color: #003FC2; }
 .clara-unverified-information small { overflow-wrap: anywhere; }
 .clara-unverified-information summary:focus-visible, .clara-unverified-information a:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
 @media (max-width: 700px) { .clara-unverified-information { padding: 18px; margin: 18px; } }
+
+/* Clara's module footprint follows source-grounded record density. */
+.clara-adaptive-report { background-image: none; padding-top: 24px; }
+.clara-key-findings header > span { color: var(--brand-blue); font-size: .68rem; font-weight: 800; letter-spacing: .12em; }
+.clara-key-findings h2 { font-size: 1.55rem; margin: 6px 0 16px; }
+.clara-key-findings > ul { list-style: none; padding: 0; margin: 0 0 24px; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
+.clara-key-findings > ul > li { min-width: 0; padding: 16px; background: var(--surface-subtle); border-top: 3px solid var(--brand-blue); }
+.clara-key-findings p { margin: 8px 0; font-size: .9rem; font-weight: 600; line-height: 1.55; }
+.clara-finding-domain { color: var(--text-muted); text-transform: uppercase; font-size: .65rem; letter-spacing: .05em; }
+.clara-adaptive-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; align-items: start; }
+.clara-adaptive-grid > * { min-width: 0; }
+.clara-adaptive-grid .clara-visual-card { margin: 0; height: auto; }
+.clara-module-wide { grid-column: 1/-1; }
+.clara-compact-facts { padding: 0; margin: 0; list-style: none; }
+.clara-compact-facts > li + li { margin-top: 14px; border-top: 1px solid var(--border-light); padding-top: 14px; }
+.clara-compact-facts p { margin: 0 0 5px; line-height: 1.55; font-size: .85rem; }
+.clara-compact-facts small { color: var(--text-muted); font-size: .72rem; }
+.clara-item-sources { margin-top: 7px; font-size: .75rem; }
+.clara-item-sources > summary { color: var(--brand-blue); cursor: pointer; }
+.clara-item-sources .clara-visual-source { margin-top: 8px; overflow-wrap: anywhere; }
+.clara-horizontal-rail { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(210px,1fr); overflow-x: auto; gap: 16px; padding-bottom: 8px; }
+.clara-horizontal-rail .clara-funding-observation { border-left: 0; border-top: 2px solid var(--brand-blue); padding: 14px 0 0; }
+.clara-summary-rail { border-left: 0; padding-left: 0; }
+.clara-summary-rail .clara-funding-observation { border-left: 0; padding-left: 0; }
+.clara-funding-timeline.is-summary .clara-timeline-group-title { font-size: .72rem; }
+.clara-hiring-notable { list-style: none; margin: 15px 0 0; padding: 0; }
+.clara-hiring-notable li { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border-light); font-size: .8rem; }
+.clara-hiring-notable li div { display: flex; flex-direction: column; gap: 3px; }
+.clara-hiring-notable small { color: var(--text-muted); }
+.clara-hiring-metrics { display: flex; gap: 16px; flex-wrap: wrap; margin: 16px 0; }
+.clara-hiring-metrics > div { border-left: 2px solid var(--brand-blue); padding-left: 10px; display: flex; flex-direction: column; }
+.clara-hiring-metrics strong { font-size: 1.25rem; }
+.clara-hiring-metrics span { color: var(--text-secondary); font-size: .72rem; }
+.clara-research-footer { padding: 24px clamp(28px,6vw,76px) 32px; border-top: 1px solid var(--border-light); }
+.clara-research-footer h2 { margin: 0 0 12px; font-size: 1rem; }
+.clara-compact-coverage { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 0; }
+.clara-compact-coverage > div { display: flex; gap: 8px; font-size: .72rem; }
+.clara-compact-coverage dt { color: var(--text-secondary); }
+.clara-compact-coverage dd { margin: 0; color: var(--text-muted); }
+.clara-compact-coverage dd[data-status="supported"] { color: #15803d; }
+.clara-compact-coverage dd[data-status="partial"], .clara-compact-coverage dd[data-status="conflicting"] { color: #92400e; }
+.clara-research-footer > details { margin-top: 12px; font-size: .78rem; line-height: 1.5; }
+.clara-research-footer summary { cursor: pointer; }
+.clara-research-footer li { overflow-wrap: anywhere; }
+.clara-header-legal { font-size: .82rem; color: var(--text-secondary); }
+.clara-header-legal p { margin: 5px 0; }
+.clara-header-legal small { padding: 2px 5px; border-radius: 3px; margin-left: 6px; background: var(--surface-subtle); }
+.clara-header-legal small[data-status="unverified"] { background: #fef3c7; color: #92400e; }
+@media (max-width: 760px) { .clara-key-findings > ul { grid-template-columns: repeat(2,minmax(0,1fr)); } .clara-adaptive-grid { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .clara-key-findings > ul { grid-template-columns: 1fr; } .clara-research-footer { padding: 20px; } .clara-horizontal-rail { grid-auto-flow: row; grid-auto-columns: auto; } }
+@media print { .clara-adaptive-grid { display: block; } .clara-adaptive-grid > * { margin-bottom: 16px; } .clara-horizontal-rail { grid-auto-flow: row; overflow: visible; } }
+.clara-report[data-report-version="clara-quick-v1"] .clara-report-cover { padding-top: 30px; padding-bottom: 24px; }
+.clara-report[data-report-version="clara-quick-v1"] .clara-report-cover h1 { margin-top: 16px; font-size: clamp(2rem,4vw,3.2rem); }
+.clara-report[data-report-version="clara-quick-v1"] .clara-report-cover h2 { margin-bottom: 20px; font-size: 1rem; }
+.clara-report[data-report-version="clara-quick-v1"] .clara-report-cover > p { margin-top: 18px; padding: 10px 12px; font-size: .76rem; }
+.clara-additional-records { margin-top: 14px; font-size: .78rem; }
+.clara-additional-records > summary { cursor: pointer; color: var(--brand-blue); }
+.clara-additional-records > ul { margin-top: 12px; }
+.clara-unverified-group { margin-top: 12px; }
+.clara-unverified-group > summary { cursor: pointer; font-size: .85rem; font-weight: 650; }
+.clara-legal-relation { font-size: .72rem; color: var(--text-muted); }

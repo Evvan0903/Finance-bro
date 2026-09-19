@@ -1,3 +1,4 @@
+import { tsImport } from "tsx/esm/api";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
@@ -12,7 +13,7 @@ async function moduleUrl(path) {
 }
 
 const builder = await import(await moduleUrl("../app/lib/private-diligence/reports/quickReportBuilder.ts"));
-const presentation = await import(await moduleUrl("../app/lib/private-diligence/reports/quickReportPresentation.ts"));
+const presentation = await tsImport(new URL("../app/lib/private-diligence/reports/quickReportPresentation.ts", import.meta.url).href, import.meta.url);
 
 function input(locale = "en") {
   return {

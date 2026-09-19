@@ -1,9 +1,10 @@
 "use client";
+import { confirmedCompanyTitle, supportedLegalEntities, legalRelationshipLabel } from './lib/private-diligence/reports/adaptiveReportComposer';
 
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ClaraQuickReportVisuals } from "./ClaraQuickReportVisuals";
+import { ClaraQuickReportVisuals, ClaraResearchFooter } from "./ClaraQuickReportVisuals";
 import { ClaraUnverifiedInformation } from './ClaraUnverifiedInformation';
 import { ClaraFundingResearch } from "./ClaraFundingResearch";
 import { ClaraHiringIntelligence } from "./ClaraHiringIntelligence";
@@ -172,9 +173,9 @@ function ClaraReport({ report, researchId, onReset, locale }: {
     try {
       const { exportReportPdf } = await import("./lib/pdf-export");
       await exportReportPdf(reportRef.current, {
-        ticker: "CLARA", agentId: "clara", subject: report.entity.canonicalName,
+        ticker: "CLARA", agentId: "clara", subject: confirmedCompanyTitle(report),
         researchDate: report.generatedAt.slice(0, 10),
-        filename: `finbro-clara-${report.entity.canonicalName}-${report.generatedAt.slice(0, 10)}-${locale}.pdf`,
+        filename: `finbro-clara-${confirmedCompanyTitle(report)}-${report.generatedAt.slice(0, 10)}-${locale}.pdf`,
       });
     } finally { setExporting(false); }
   }
@@ -191,10 +192,11 @@ function ClaraReport({ report, researchId, onReset, locale }: {
         <button type="button" onClick={() => exportServer("claims", "xlsx")}>{copy.claimsXlsx}</button>
         <button type="button" onClick={() => exportServer("risks", "csv")}>{copy.riskCsv}</button>
       </div>
-      <div className="clara-report" ref={reportRef} data-rendering-model={REPORT_RENDERING_MODEL.pdf} data-report-locale={locale}>
+      <div className="clara-report" ref={reportRef} data-rendering-model={REPORT_RENDERING_MODEL.pdf} data-report-locale={locale} data-report-version={report.reportVersion}>
         <header className="clara-report-cover" data-pdf-block>
           <span>FINBRO · CLARA</span>
-          <h1>{report.entity.canonicalName}</h1>
+          <h1>{confirmedCompanyTitle(report)}</h1>
+          {supportedLegalEntities(report).length > 0 && <div className="clara-header-legal">{supportedLegalEntities(report).map(item => <p key={item.name}><span>{locale === "zh" ? "法律实体" : "Legal entity"}: </span>{item.sourceUrl ? <a href={item.sourceUrl} target="_blank" rel="noreferrer">{item.name}</a> : item.name} <span className="clara-legal-relation"> · {legalRelationshipLabel(item.relationship, locale)}</span> <small data-status={item.status}>{item.status === "verified" ? locale === "zh" ? "已核验" : "Verified" : locale === "zh" ? "未核验" : "Unverified"}</small></p>)}</div>}
           <h2>{report.reportVersion === "clara-quick-v1"
             ? locale === "zh" ? "快速企业调查简报" : "Quick Company Intelligence Brief"
             : locale === "zh" ? "公开来源私营公司尽调" : "Public-Source Private Company Due Diligence"}</h2>
@@ -208,9 +210,9 @@ function ClaraReport({ report, researchId, onReset, locale }: {
         </header>
         {report.reportVersion === "clara-quick-v1" && <ClaraQuickReportVisuals report={report} locale={locale} />}
         {report.reportVersion !== "clara-quick-v1" && <ClaraHiringIntelligence report={report} locale={locale} />}
-        <ClaraFundingResearch report={report} locale={locale} />
+        {report.reportVersion !== "clara-quick-v1" && <ClaraFundingResearch report={report} locale={locale} />}
         <ClaraUnverifiedInformation report={report} locale={locale} />
-        {report.sections.filter((section) => section.sectionId !== "funding" && section.sectionId !== 'unverified').map((section) => (
+        {(report.reportVersion === "clara-quick-v1" ? [] : report.sections).filter((section) => section.sectionId !== "funding" && section.sectionId !== 'unverified').map((section) => (
           <section className="clara-report-section" key={section.sectionId} data-pdf-block>
             <header><span>{section.number}</span><h2>{section.title[locale]}</h2></header>
             {(report.reportVersion === "clara-quick-v1" ? localizedQuickSections.get(section.sectionId)?.paragraphs ?? section.paragraphs : section.paragraphs).map((paragraph, index) => <p key={`${section.sectionId}-${index}`}>{paragraph}</p>)}
@@ -229,20 +231,7 @@ function ClaraReport({ report, researchId, onReset, locale }: {
             )}
           </section>
         ))}
-        {report.reportVersion === "clara-quick-v1" && <section className="clara-report-section clara-source-register" data-pdf-block>
-          <header><span>SRC</span><h2>{locale === "zh" ? "证据与来源" : "Evidence and Sources"}</h2></header>
-          {report.references.length ? <ol className="clara-reference-list">{report.references.map((reference) => {
-            const evidence = report.evidence.find((item) => item.evidenceId === reference.evidenceId);
-            const status = evidence?.officialRecord
-              ? (locale === "zh" ? "已验证" : "Verified")
-              : evidence?.companyReported
-                ? (locale === "zh" ? "公司自行披露" : "Management Reported")
-                : evidence?.independentlyPublished
-                  ? (locale === "zh" ? "部分验证" : "Partially Verified")
-                  : (locale === "zh" ? "未验证" : "Unverified");
-            return <li key={reference.evidenceId}><a href={reference.sourceUrl} target="_blank" rel="noreferrer">{reference.sourceTitle}</a><span>{status} · {locale === "zh" ? "来源层级" : "Tier"} {reference.sourceTier} · {reference.publicationDate ?? reference.retrievedAt.slice(0, 10)}</span></li>;
-          })}</ol> : <p>{locale === "zh" ? "未识别可展示的公开来源" : "No displayable public sources were identified"}</p>}
-        </section>}
+        {report.reportVersion === "clara-quick-v1" && <ClaraResearchFooter report={report} locale={locale} />}
       </div>
     </div>
   );

@@ -19,8 +19,9 @@ function ref(source: RawEvidence, excerpt: string, url = source.publicReferenceU
     return { evidenceId: source.evidenceId, sourceUrl: url, title: source.sourceTitle, excerpt, retrievedAt: source.retrievedAt, publicationDate: source.publicationDate };
 }
 export function claimVerificationId(claim: PrivateCompanyClaim) {
-    // Stable across reordered extraction and later executions; claim-1 is not a durable identity.
-    return `claim:${claim.entityId}:${claim.claimType}:${String(claim.normalizedValue).trim().toLowerCase()}`;
+    // Stable across reordered extraction, but scoped to the evidence actually evaluated.
+    // Equal values on different pages must not inherit each other's verification decisions.
+    return `claim:${claim.entityId}:${claim.claimType}:${String(claim.normalizedValue).trim().toLowerCase()}:${JSON.stringify([...new Set(claim.evidenceIds)].sort())}`;
 }
 /** The only domain evaluation boundary. Stored/model-supplied verification labels are not inputs. */
 export function evaluateVerification(input: VerificationInput): VerificationLedger {
@@ -110,7 +111,12 @@ export function canonicalResearch(input: VerificationInput & {
         }) } : undefined;
     const hiringVerification = input.hiringIntelligence ? verifyHiring(input.hiringIntelligence, input.graph, input.now) : undefined;
     const hiringIntelligence = input.hiringIntelligence ? { ...input.hiringIntelligence, verification: hiringVerification,
-        ...(hiringVerification?.status !== 'verified' ? { jobs: [], status: ['success_with_jobs', 'success_zero_jobs'].includes(input.hiringIntelligence.status) ? 'partial' as const : input.hiringIntelligence.status, summary: { ...input.hiringIntelligence.summary, totalOpenRoles: 0, signals: [] } } : {}) } : null;
+        ...(hiringVerification?.status !== 'verified' ? { jobs: [], status: ['success_with_jobs', 'success_zero_jobs'].includes(input.hiringIntelligence.status) ? 'partial' as const : input.hiringIntelligence.status, summary: {
+            ...input.hiringIntelligence.summary, totalOpenRoles: 0, signals: [], roleAnalysis: undefined,
+            byFunction: Object.fromEntries(Object.keys(input.hiringIntelligence.summary.byFunction ?? {}).map(key => [key, 0])) as HiringActivityResult['summary']['byFunction'],
+            bySeniority: Object.fromEntries(Object.keys(input.hiringIntelligence.summary.bySeniority ?? {}).map(key => [key, 0])) as HiringActivityResult['summary']['bySeniority'],
+            byLocation: {}, remoteRoles: 0,
+        } } : {}) } : null;
     const approvedEvidenceIds = new Set(claims.flatMap(c => c.evidenceIds));
     const evidence = input.evidence.flatMap(e => {
         const raw = input.rawEvidence.find(s => s.evidenceId === e.evidenceId);
@@ -131,7 +137,11 @@ export function canonicalResearch(input: VerificationInput & {
         }
         if (!approvedEvidenceIds.has(e.evidenceId))
             delete fields.searchTopics;
-        return [{ ...e, verification, normalizedFields: fields, fundingEvents: fundingResearch?.events.filter(event => Object.values(event.fields).some(f => f.evidenceId === e.evidenceId)) ?? [], researchFacts: e.researchFacts?.filter(f => claims.some(c => c.researchFact?.value === f.value && c.evidenceIds.includes(e.evidenceId))), factCandidates: e.factCandidates?.filter(f => claims.some(c => c.normalizedValue === f.value && c.evidenceIds.includes(e.evidenceId))) }];
+        // The confirmed careers/board snapshot decision supersedes the preliminary name-match hint.
+        // Keep its original evidence addressable by legacy presentation adapters after governance.
+        const verificationEligibility = raw.providerId.startsWith('hiring:') && hiringVerification?.status === 'verified'
+            ? 'supportingEvidence' as const : e.verificationEligibility;
+        return [{ ...e, verification, verificationEligibility, normalizedFields: fields, fundingEvents: fundingResearch?.events.filter(event => Object.values(event.fields).some(f => f.evidenceId === e.evidenceId)) ?? [], researchFacts: e.researchFacts?.filter(f => claims.some(c => c.researchFact?.value === f.value && c.evidenceIds.includes(e.evidenceId))), factCandidates: e.factCandidates?.filter(f => claims.some(c => c.normalizedValue === f.value && c.evidenceIds.includes(e.evidenceId))) }];
     });
     return { ledger, claims, evidence, fundingResearch, hiringIntelligence };
 }

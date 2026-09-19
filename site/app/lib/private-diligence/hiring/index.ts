@@ -1,6 +1,6 @@
 import { AshbyAdapter, GenericCareersAdapter, GreenhouseAdapter, LeverAdapter, type CareersAdapterInput } from "./adapters";
 import { deduplicateJobs, finalHiringFailureStatus, summarizeHiring } from "./core";
-import { discoverCareerSources } from "./discovery";
+import { discoverCareerSources, type InspectedCompanyCareerPage } from "./discovery";
 import { SourceAdapterRegistry } from "./registry";
 import { createPlaywrightBrowserRenderer } from "./playwrightFallback";
 import type { HiringActivityResult, JobPosting } from "./types";
@@ -29,10 +29,11 @@ export async function researchHiringActivity(input: {
   fetchImpl?: typeof fetch;
   resolveHost?: CareersAdapterInput["resolveHost"];
   browserRenderer?: CareersAdapterInput["browserRenderer"];
+  inspectedCompanyPages?: InspectedCompanyCareerPage[];
 }): Promise<HiringActivityResult> {
   let candidates;
   try {
-    candidates = await discoverCareerSources({ officialUrl: input.officialUrl, fetchImpl: input.fetchImpl, resolveHost: input.resolveHost });
+    candidates = await discoverCareerSources({ officialUrl: input.officialUrl, fetchImpl: input.fetchImpl, resolveHost: input.resolveHost, inspectedCompanyPages: input.inspectedCompanyPages });
   } catch { return empty(input.companyId, "retrieval_failed", ["The confirmed company website could not be searched for a public careers source."]); }
   if (!candidates.length) {
     const result = empty(input.companyId, "unsupported_source", ["No supported public careers source was discovered on the confirmed company website."]);
@@ -81,4 +82,4 @@ export function hiringObservationPayload(result: HiringActivityResult) {
 }
 
 export * from "./types";
-export { deduplicateJobs, classifyJobFunction, classifyJobSeniority, detectHiringSourceType, finalHiringFailureStatus, rankCareerSources, summarizeHiring } from "./core";
+export { analyzeHiringRoles, classifyKeyRoleTitle, normalizeJobTitle, deduplicateJobs, classifyJobFunction, classifyJobSeniority, detectHiringSourceType, finalHiringFailureStatus, rankCareerSources, summarizeHiring } from "./core";
